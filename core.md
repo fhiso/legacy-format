@@ -142,6 +142,12 @@ The options are listed from least to most specific; when more than one context m
 
 The following outlines all of the type that have legacy tags associated with them.
 
+When listing known substructures, each is followed by a single character:
+
+- `!` means "required": there must be one and only one of these
+- `?` means "optional": there may be one and no more than one of these
+- `*` means "set-valued": there may be zero or more of these
+
 {.ednote} this section is far from complete...
 
 ## Supertypes
@@ -161,7 +167,7 @@ Any Event subtype is known to have the following substructures:
 [DATE](#date)?
 [NOTE](#note)*
 [OBJE](#obje)*
-[PHON](#phon)(0--3)
+[PHON](#phon)*
 [PLAC](#plac)?
 [SOUR](#sour)*
 [TYPE](#type)?
@@ -215,9 +221,9 @@ Payload
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.SOUR.CORP.ADDR` || see above | `ADR1`?, `ADR2`?, `CITY`?, `STAE`?, `POST`?, `CTRY`?
-`.REPO.ADDR`  |         | see above | `ADR1`?, `ADR2`?, `CITY`?, `STAE`?, `POST`?, `CTRY`? 
-`.SUBM.ADDR`  |         | see above | `ADR1`?, `ADR2`?, `CITY`?, `STAE`?, `POST`?, `CTRY`?
+`.HEAD.SOUR.CORP.ADDR` || see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY](#city)?, [STAE](#stae)?, [POST](#post)?, [CTRY](#ctry)?
+`.REPO.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY](#city)?, [STAE](#stae)?, [POST](#post)?, [CTRY](#ctry)?
+`.SUBM.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY](#city)?, [STAE](#stae)?, [POST](#post)?, [CTRY](#ctry)?
 
 
 
@@ -363,7 +369,7 @@ An indicator to link friends, neighbors, relatives, or associates of an individu
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.ASSO`  |         | Pointer to an [INDI](#indi) | [RELA](#rela), [NOTE](#note)*, [SOUR](#sour)*
+`.INDI.ASSO`  |         | Pointer to an [INDI](#indi) | [RELA](#rela)!, [NOTE](#note)*, [SOUR](#sour)*
 
 
 ### AUTH
