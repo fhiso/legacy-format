@@ -85,6 +85,25 @@
 
         {.ednote} Luther: I think this is implied to be permitted, and hence there is an implication that the grammar is sufficient but not complete and that other substructures are allowed generally.
 
+5.  The grammar states 
+    
+    ````
+    n  REPO @<XREF:REPO>@ {1:1}
+      +1 <<NOTE_STRUCTURE>>  {0:M}
+      +1 CALN <SOURCE_CALL_NUMBER>  {0:M}
+        +2 MEDI <SOURCE_MEDIA_TYPE>  {0:1}
+    ````
+    
+    But the example included in the specification is
+    
+    ````gedcom
+    1 REPO   @7@
+      2 CALN   13B-1234.01
+      2 MEDI   Microfilm
+    ````
+    
+    Are `MEDI` tags subordinate to `REPO` or `CALN`?
+
 # Other concerns with the spec
 
 ## The `{0:3}` cardinality

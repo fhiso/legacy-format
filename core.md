@@ -257,7 +257,7 @@ Pertaining to creation of a child-parent relationship that does not exist biolog
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.ADOP`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that an adoption occurred; otherwise just discusses the idea of an adoption | Either `Y` or None | [IndividualEvent](#individualevent) | [FAMC](#famc)?
+`.INDI.ADOP`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that an adoption occurred; otherwise just discusses the idea of an adoption | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event),[FAMC](#famc)?
 `ADOP.FAMC.ADOP` | Which parent(s) adopted | `HUSB`, `WIFE`, or `BOTH` | None | None
 
 
@@ -323,7 +323,7 @@ Pertaining to forbearers of an individual.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.SUBN`  |  The number of generations of ancestors included in this transmission. | 1--4 characters | None
+`.SUBN.ANCE` |  The number of generations of ancestors included in this transmission. | 1--4 characters | None
 
 {.ednote} Presumably this is supposed to be a base-10 integer?  Also, the Appendix A text and the Chapter 2 text for this tag don't seem to have much relationship to one another.
 
@@ -347,7 +347,7 @@ Declaring a marriage void from the beginning (never existed).
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.ANUL`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that an annulment occurred; otherwise just discusses the idea of an annulment | Either `Y` or None | [FamilyEvent](#familyevent) | None
+`.FAM.ANUL`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that an annulment occurred; otherwise just discusses the idea of an annulment | Either `Y` or None | [FamilyEvent](#familyevent) | [*inherited*](#event)
 
 
 ### ASSO
@@ -371,17 +371,18 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `.SOUR.AUTH`  | The person, agency, or entity who created the record. For a published work, this could be the author, compiler, transcriber, abstractor, or editor. For an unpublished source, this may be an individual, a government agency, church organization, or private organization, etc. | String of arbitrary length | None
 
-----
-
-{.ednote) continue expanding this list
-
-----
-
 ### BAPM
 
 `http://fihso.org/legacy/longform/BAPTISM`
 
-The event of baptism (not LDS), performed in infancy or later. (See also BAPL, and CHR.)
+The event of baptism, performed in infancy or later.
+
+See also [BAPL](#bapl) and [CHR](#chr)
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BAPM`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that a baptism occurred; otherwise just discusses the idea of a baptsim | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
 
 ### BARM
 
@@ -389,11 +390,21 @@ The event of baptism (not LDS), performed in infancy or later. (See also BAPL, a
 
 The ceremonial event held when a Jewish boy reaches age 13.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BARM`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
+
 ### BASM
 
 `http://fihso.org/legacy/longform/BAS_MITZVAH`
 
 The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat Mitzvah."
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BASM`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
 
 ### BIRT
 
@@ -401,11 +412,21 @@ The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat 
 
 The event of entering into life.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BIRT`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)
+
+
 ### BLES
 
 `http://fihso.org/legacy/longform/BLESSING`
 
 A religious event of bestowing divine care or intercession. Sometimes given in connection with a naming ceremony.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BLES`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
 
 ### BLOB
 
@@ -413,17 +434,59 @@ A religious event of bestowing divine care or intercession. Sometimes given in c
 
 A grouping of data used as input to a multimedia system that processes binary data to represent images, sound, and video.
 
+When multiple blobs are present in the same structure, their contents are concatenated in order.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.OBJE.BLOB`  | Encoded binary data | Two or more lines of ELF-style base-64 encoded data | None
+
+The first line of of a blob is always empty.
+Each subsequent line is between 4 and 72 characters long, encoded in a base-64 format that differs from other base-64 encodings:
+it uses U+00FF (LATIN SMALL LETTER Y WITH DIAERESIS `ÿ`) as padding instead of the more common U+003D (EQUALS SIGN `=`)
+and maps bytes as follows:
+
+| Byte range | Code point mapping |
+|------------|--------------------|
+| 0x00--0x0B | byte + 0x2E        |
+| 0x0C--0x25 | byte + 0x35        |
+| 0x25--0x3F | byte + 0x3B        |
+
+
+{.ednote} Probably need more detail than this... also GEDCOM discusses this topic in bytes, not characters, (even though in another place it explicit states it always means character, not bytes) so U+00FF might be wrong.
+
+
 ### BURI
 
 `http://fihso.org/legacy/longform/BURIAL`
 
 The event of the proper disposing of the mortal remains of a deceased person.
 
+{.ednote} GEDCOM calls burial "proper disposing" sans discussion of method, but cremation "disposal […] by fire" sans proper?  Why?
+
+See also [CREM](#crem)
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BURI`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
+
 ### CALN
 
 `http://fihso.org/legacy/longform/CALL_NUMBER`
 
 The number used by a repository to identify the specific items in its collections.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.SOUR.REPO.CALN` | An identification or reference description used to file and retrieve items from the holdings of a repository.  | 1--120 characters | [MEDI](#medi)?
+
+{.ednote} The example given in the GEDCOM specification is inconsistent with the grammar, putting the `MEDI` coordinate with, instead of subordinate to, `CALN`.
+
+----
+
+{.ednote} continue expanding this list
+
+----
 
 ### CAST
 
