@@ -261,17 +261,6 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `ADOP.FAMC.ADOP` | Which parent(s) adopted | `HUSB`, `WIFE`, or `BOTH` | None | None
 
 
-### AFN
-
-`http://fihso.org/legacy/longform/AFN`
-
-A unique permanent record file number of an individual record stored in Ancestral File.
-
-Known Context | Meaning | Payload | Substructures 
---------------|---------|---------|--------------
-`.INDI.AFN`   | A unique permanent record number of an individual record contained in the Family History Department's Ancestral File.| 1--12 characters | None
-
-
 ### AGE
 
 `http://fihso.org/legacy/longform/AGE`
@@ -388,12 +377,6 @@ Known Context | Meaning | Payload | Substructures
 
 ----
 
-### BAPL
-
-`http://fihso.org/legacy/longform/BAPTISM-LDS`
-
-The event of baptism performed at age eight or later by priesthood authority of the LDS Church. (See also BAPM)
-
 ### BAPM
 
 `http://fihso.org/legacy/longform/BAPTISM`
@@ -498,29 +481,13 @@ The religious event (not LDS) of baptizing and/or naming an adult person.
 
 A lower level jurisdictional unit. Normally an incorporated municipal unit.
 
-### CONC
-
-`http://fihso.org/legacy/longform/CONCATENATION`
-
-An indicator that additional data belongs to the superior value. The information from the CONC value is to be connected to the value of the superior preceding line without a space and without a carriage return and/or new line character. Values that are split for a CONC tag must always be split at a non-space. If the value is split on a space the space will be lost when concatenation takes place. This is because of the treatment that spaces get as a GEDCOM delimiter, many GEDCOM values are trimmed of trailing spaces and some systems look for the first non-space starting after the tag to determine the beginning of the value.
-
 ### CONF
 
 `http://fihso.org/legacy/longform/CONFIRMATION`
 
 The religious event (not LDS) of conferring the gift of the Holy Ghost and, among protestants, full church membership.
 
-### CONL
-
-`http://fihso.org/legacy/longform/CONFIRMATION_L`
-
-The religious event by which a person receives membership in the LDS Church.
-
-### CONT
-
-`http://fihso.org/legacy/longform/CONTINUED`
-
-An indicator that additional data belongs to the superior value. The information from the CONT value is to be connected to the value of the superior preceding line with a carriage return and/or new line character. Leading spaces could be important to the formatting of the resultant text. When importing values from CONT lines the reader should assume only one delimiter character following the CONT tag. Assume that the rest of the leading spaces are to be a part of the value.
+{.ednote} Is this the right definition of a confirmation?
 
 ### COPR
 
@@ -611,12 +578,6 @@ Indicator of a level of education attained.
 
 An event of leaving one's homeland with the intent of residing elsewhere.
 
-### ENDL
-
-`http://fihso.org/legacy/longform/ENDOWMENT`
-
-A religious event where an endowment ordinance for an individual was performed by priesthood authority in an LDS temple.
-
 ### ENGA
 
 `http://fihso.org/legacy/longform/ENGAGEMENT`
@@ -640,12 +601,6 @@ Identifies a legal, common law, or other customary relationship of man and woman
 `http://fihso.org/legacy/longform/FAMILY_CHILD`
 
 Identifies the family in which an individual appears as a child.
-
-### FAMF
-
-`http://fihso.org/legacy/longform/FAMILY_FILE`
-
-Pertaining to, or the name of, a family file. Names stored in a file that are assigned to a family for doing temple ordinance work.
 
 ### FAMS
 
@@ -677,7 +632,10 @@ An assigned name given to a consistent format in which information can be convey
 
 Information about the use of GEDCOM in a transmission.
 
-GIVN {GIVEN_NAME}
+### GIVN
+
+`http://fihso.org/legacy/longform/GIVEN_NAME`
+
 A given or earned name used for official identification of a person.
 
 ### GRAD
@@ -966,18 +924,6 @@ A name given to a role played by an individual in connection with an event.
 
 Indicates the sex of an individual--male or female.
 
-### SLGC
-
-`http://fihso.org/legacy/longform/SEALING_CHILD`
-
-A religious event pertaining to the sealing of a child to his or her parents in an LDS temple ceremony.
-
-### SLGS
-
-`http://fihso.org/legacy/longform/SEALING_SPOUSE`
-
-A religious event pertaining to the sealing of a husband and wife in an LDS temple ceremony.
-
 ### SOUR
 
 `http://fihso.org/legacy/longform/SOURCE`
@@ -1002,12 +948,6 @@ A number assigned by the United States Social Security Administration. Used for 
 
 A geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
-### STAT
-
-`http://fihso.org/legacy/longform/STATUS`
-
-An assessment of the state or condition of something.
-
 ### SUBM
 
 `http://fihso.org/legacy/longform/SUBMITTER`
@@ -1025,12 +965,6 @@ Pertains to a collection of data issued for processing.
 `http://fihso.org/legacy/longform/SURNAME`
 
 A family name passed on or used by members of a family.
-
-### TEMP
-
-`http://fihso.org/legacy/longform/TEMPLE`
-
-The name or code that represents the name a temple of the LDS Church.
 
 ### TEXT
 
@@ -1079,3 +1013,67 @@ An individual in the role as a mother and/or married woman.
 `http://fihso.org/legacy/longform/WILL`
 
 A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also [PROB](#prob)ate.) 
+
+## LDS-specific tags
+
+### AFN
+
+`http://fihso.org/legacy/longform/AFN`
+
+A unique permanent record file number of an individual record stored in Ancestral File.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.AFN`   | A unique permanent record number of an individual record contained in the Family History Department's Ancestral File.| 1--12 characters | None
+
+
+### BAPL
+
+`http://fihso.org/legacy/longform/BAPTISM-LDS`
+
+The event of baptism performed at age eight or later by priesthood authority of the LDS Church. (See also BAPM)
+
+### CONL
+
+`http://fihso.org/legacy/longform/CONFIRMATION_L`
+
+The religious event by which a person receives membership in the LDS Church.
+
+See also [CONF](#conf)
+
+### ENDL
+
+`http://fihso.org/legacy/longform/ENDOWMENT`
+
+A religious event where an endowment ordinance for an individual was performed by priesthood authority in an LDS temple.
+
+### FAMF
+
+`http://fihso.org/legacy/longform/FAMILY_FILE`
+
+Pertaining to, or the name of, a family file. Names stored in a file that are assigned to a family for doing temple ordinance work.
+
+### SLGC
+
+`http://fihso.org/legacy/longform/SEALING_CHILD`
+
+A religious event pertaining to the sealing of a child to his or her parents in an LDS temple ceremony.
+
+### SLGS
+
+`http://fihso.org/legacy/longform/SEALING_SPOUSE`
+
+A religious event pertaining to the sealing of a husband and wife in an LDS temple ceremony.
+
+### STAT
+
+`http://fihso.org/legacy/longform/STATUS`
+
+An assessment of the state or condition of something.
+
+### TEMP
+
+`http://fihso.org/legacy/longform/TEMPLE`
+
+The name or code that represents the name a temple of the LDS Church.
+
