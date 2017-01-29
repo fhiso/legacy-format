@@ -165,11 +165,11 @@ Any Event subtype is known to have the following substructures:
 [AGNC](#agnc)?
 [CAUS](#caus)?
 [DATE](#date)?
-[NOTE](#note)*
-[OBJE](#obje)*
-[PHON](#phon)*
+[NOTE](#note)\*
+[OBJE](#obje)\*
+[PHON](#phon)\*
 [PLAC](#plac)?
-[SOUR](#sour)*
+[SOUR](#sour)\*
 [TYPE](#type)?
 
 ### IndividualEvent
@@ -369,7 +369,7 @@ An indicator to link friends, neighbors, relatives, or associates of an individu
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.ASSO`  |         | Pointer to an [INDI](#indi) | [RELA](#rela)!, [NOTE](#note)*, [SOUR](#sour)*
+`.INDI.ASSO`  |         | Pointer to an [INDI](#indi) | [RELA](#rela)!, [NOTE](#note)\*, [SOUR](#sour)\*
 
 
 ### AUTH
