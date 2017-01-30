@@ -123,7 +123,7 @@ But to remove them breaks full compatibility…
 
 {.ednote} We could say something like "A tag without an underscore is either documented in this standard OR is part of the LDS Legacy Descriptor Set".
 
-{.ednote} We could say that conforming implementations MUST NOT generate undocumented non-underscored tags, but also MUST NOT crash if they are present; omit to document the `BAPL`, `CHIL`, `CONL`, `ENDL`, `SLGC`, `SLGS`, `STAT`, and `TEMP` tags; and define valid GEDCOM 5.5 containing those tags to contain undocumented non-underscored extensions under the ELF standard.
+{.ednote} We could say that conforming implementations MUST NOT generate undocumented non-underscored tags, but also MUST NOT crash if they are present; omit to document LDS-specific tags; and define valid GEDCOM 5.5 containing those tags to contain undocumented non-underscored extensions under the ELF standard.
 
 # Structure generality and string length
 
