@@ -459,7 +459,7 @@ The event of entering into life.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BIRT`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)
+`.INDI.BIRT`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)?
 
 
 ### BLES
@@ -607,7 +607,7 @@ The religious event (not LDS) of baptizing and/or naming a child.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CHR`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)
+`.INDI.CHR`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)?
 
 
 ### CHRA
@@ -698,7 +698,7 @@ Pertaining to stored automated information.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.SOUR.DATA` | The name of the electronic data source that was used to obtain the data in this transmission. For example, the data may have been obtained from a CD-ROM disc that was named "U.S. 1880 CENSUS CD-ROM vol. 13." | 1--90 characters | [DATE](#date), [COPR](#copr)
+`.HEAD.SOUR.DATA` | The name of the electronic data source that was used to obtain the data in this transmission. For example, the data may have been obtained from a CD-ROM disc that was named "U.S. 1880 CENSUS CD-ROM vol. 13." | 1--90 characters | [DATE](#date)?, [COPR](#copr)?
 `.SOUR.DATA` | | None | [EVEN](#even)\*, [AGNC](#agnc)?, [NOTE](#note)\*
 `SOUR.DATA`  | | None | [DATE](#date)?, [TEXT](#text)\*
 
@@ -736,8 +736,8 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 [*Event*](#event)`.DATE` | The DATE_VALUE represents the date of an activity, attribute, or event where: INT = Interpreted from knowledge about the associated date phrase included in parentheses. | see VALUE above | None
 [*LDS*](#lds)`.DATE` | | see EXACT above | None
-`.HEAD.DATE` | The date that this transmission was created. | see EXACT above| [TIME](#time)
-`CHAN.DATE` | The date that this data was changed. | see EXACT above | [TIME](#time)
+`.HEAD.DATE` | The date that this transmission was created. | see EXACT above| [TIME](#time)?
+`CHAN.DATE` | The date that this data was changed. | see EXACT above | [TIME](#time)?
 `SOUR.DATA.DATE` |  The date that this event data was entered into the original source document. | see VALUE above | None
 `.HEAD.SOUR.DATA.DATE` | The date this source was published or created. | see EXACT above | None
 `.SOUR.DATA.EVEN.DATE` | | see PERIOD above | None
