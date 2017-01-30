@@ -108,7 +108,7 @@
 
 ## The `{0:3}` cardinality
 
-Every cardinality in the grammar is one of `{0:1}`, `{1:1}`, `{0:M}`, or `{0:3}`.
+Every cardinality in the grammar is one of `{0:1}`, `{1:1}`, `{0:M}`, `{1:M}`, or `{0:3}`.
 The `{0:3}` doesn't seem to me to logically belong in this set,
 nor to belong in either place it appears (it is used for `.SUBM.LANG` and for `PHON`, neither of which is intrinsically limited to 3).
 
