@@ -174,6 +174,8 @@ Any Event subtype is known to have the following substructures:
 
 Known subtypes: [IndividualEvent](#individualevent), [FamilyEvent](#familyevent), [IndividualAttribute](#individualattribute)
 
+{.ednote} [AGE](#age) is listed as a substructure of Event but I can't see a meaning for it as a substructure of a [FamilyEvent](#familyevent), only an [IndividualEvent](#individualevent) and [IndividualAttribute](#individualattribute).
+
 ### IndividualEvent
 
 `http://fihso.org/legacy/supertype/IndividualEvent`
@@ -203,6 +205,11 @@ A subtype of [Event](#event), representing an event that appertained to a partic
 
 Known subtypes: [ANUL](#anul), [CENS](#cens), [DIV](#div), [DIVF](#divf), [ENGA](#enga), [MARR](#marr), [MARB](#marb), [MARC](#marc), [MARL](#marl), [MARS](#mars), [EVEN](#even)
 
+Any FamilyEvent subtype is known to have the following substructures, in addition to those inherited from [Event](#event):
+
+[HUSB](#husb)?
+[WIFE](#wife)?
+
 The payload of an FamilyEvent is either the string `Y` or not present.
 If any of the following are true 
 
@@ -214,6 +221,8 @@ If any of the following are true
 then the FamilyEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
 
 There should never be a payload for the FamilyEvent subclass [EVEN](#even).
+
+
 
 ### IndividualAttribute
 
@@ -291,7 +300,7 @@ Pertaining to creation of a child-parent relationship that does not exist biolog
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.ADOP`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that an adoption occurred; otherwise just discusses the idea of an adoption | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event),[FAMC](#famc)?
+`.INDI.ADOP`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event),[FAMC](#famc)?
 `ADOP.FAMC.ADOP` | Which parent(s) adopted | `HUSB`, `WIFE`, or `BOTH` | None | None
 
 
@@ -355,6 +364,8 @@ Known Context | Meaning | Payload | Substructures
 
 Pertaining to forbearers of an individual.
 
+See also [DESC](#desc)
+
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `.SUBN.ANCE` |  The number of generations of ancestors included in this transmission. | 1--4 characters | None
@@ -381,7 +392,7 @@ Declaring a marriage void from the beginning (never existed).
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.ANUL`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that an annulment occurred; otherwise just discusses the idea of an annulment | Either `Y` or None | [FamilyEvent](#familyevent) | [*inherited*](#event)
+`.FAM.ANUL`   | *see [FamilyEvent](#familyevent)* | Either `Y` or None | [FamilyEvent](#familyevent) | [*inherited*](#event)
 
 
 ### ASSO
@@ -415,7 +426,7 @@ See also [BAPL](#bapl) and [CHR](#chr)
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BAPM`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that a baptism occurred; otherwise just discusses the idea of a baptsim | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BAPM`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
 
 
 ### BARM
@@ -426,7 +437,7 @@ The ceremonial event held when a Jewish boy reaches age 13.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BARM`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BARM`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
 
 
 ### BASM
@@ -437,7 +448,7 @@ The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat 
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BASM`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BASM`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
 
 
 ### BIRT
@@ -448,7 +459,7 @@ The event of entering into life.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BIRT`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)
+`.INDI.BIRT`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)
 
 
 ### BLES
@@ -459,7 +470,7 @@ A religious event of bestowing divine care or intercession. Sometimes given in c
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BLES`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BLES`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
 
 
 ### BLOB
@@ -501,7 +512,7 @@ See also [CREM](#crem)
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BURI`  | If the payload is `Y` or there is [DATE](#date) or [PLAC](#plac) substructure, asserts that this event occurred; otherwise just discusses the idea of this event | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BURI`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
 
 
 ### CALN
@@ -516,11 +527,6 @@ Known Context | Meaning | Payload | Substructures
 
 {.ednote} The example given in the GEDCOM specification is inconsistent with the grammar, putting the `MEDI` coordinate with, instead of subordinate to, `CALN`.
 
-----
-
-{.ednote} continue expanding this list
-
-----
 
 ### CAST
 
@@ -530,11 +536,21 @@ The name of an individual's rank or status in society, based
 on racial or religious differences, or differences in wealth, inherited
 rank, profession, occupation, etc.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.CAST`  |  A name assigned to a particular group that this person was associated with, such as a particular racial group, religious group, or a group with an inherited status.  | 1--90 characters | [IndividualAttribute](#individualattribute) | [*inherited*](#event)
+
+
 ### CAUS
 
 `http://fihso.org/legacy/longform/CAUSE`
 
 A description of the cause of the associated event or fact, such as the cause of death.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+*Event*`.CAUS`  |  Used in special cases to record the reasons which precipitated an event. Normally this will be used subordinate to a death event to show cause of death, such as might be listed on a death certificate. | None
+
 
 ### CENS
 
@@ -542,11 +558,23 @@ A description of the cause of the associated event or fact, such as the cause of
 
 The event of the periodic count of the population for a designated locality, such as a national or state Census.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.CENS`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.FAM.CENS`   | *see [FamilyEvent](#familyevent)* | Either `Y` or None | [FamilyEvent](#familyevent) | [*inherited*](#event)
+
+
 ### CHAN
 
 `http://fihso.org/legacy/longform/CHANGE`
 
 Indicates a change, correction, or modification. Typically used in connection with a DATE to specify when a change in information occurred.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+*record*`.CHAN`   | The change date is intended to only record the last change to a record. Some systems may want to manage the change process with more detail, but it is sufficient for GEDCOM purposes to indicate the last time that a record was modified. | None | [DATE](#date)!, [NOTE](#note)\*
+
+`CHAN` is known a the substructure of every known record *except* [SUBN](#subn), [HEAD](#head), and [TAIL](#tail).
 
 ### CHAR
 
@@ -554,11 +582,22 @@ Indicates a change, correction, or modification. Typically used in connection wi
 
 An indicator of the character set used in writing this automated information.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+.HEAD.CHAN`   | A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.  | one of `ANSEL`, `UNICODE`, or `ASCII` | [VERS](#vers)?
+
 ### CHIL
 
 `http://fihso.org/legacy/longform/CHILD`
 
 The natural, adopted, or sealed (LDS) child of a father and a mother.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.FAM.CHIL`   |         | A pointer to an [INDI](#indi) | None
+
+{.note} In GEDCOM versions 3 and 4, `FAM.CHIL` had a substructure [ADOP](#adop).
+
 
 ### CHR
 
@@ -566,17 +605,32 @@ The natural, adopted, or sealed (LDS) child of a father and a mother.
 
 The religious event (not LDS) of baptizing and/or naming a child.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.CHR`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)
+
+
 ### CHRA
 
 `http://fihso.org/legacy/longform/ADULT_CHRISTENING`
 
 The religious event (not LDS) of baptizing and/or naming an adult person.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.CHRA`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
+
 ### CITY
 
 `http://fihso.org/legacy/longform/CITY`
 
 A lower level jurisdictional unit. Normally an incorporated municipal unit.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.CITY`   | The name of the city used in the address. Isolated for sorting or indexing. | 1--60 characters | None
+
 
 ### CONF
 
@@ -586,11 +640,22 @@ The religious event (not LDS) of conferring the gift of the Holy Ghost and, amon
 
 {.ednote} Is this the right definition of a confirmation?
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.CONF`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
+
 ### COPR
 
 `http://fihso.org/legacy/longform/COPYRIGHT`
 
 A statement that accompanies data to protect it from unlawful duplication and distribution.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.COPR`  |  A copyright statement needed to protect the copyrights of the submitter of this GEDCOM file. | 1--90 characters | None
+`.HEAD.SOUR.DATA.COPR` |  A copyright statement required by the owner of data from which this information was down- loaded. For example, when a GEDCOM down-load is requested from the Ancestral File, this would be the copyright statement to indicate that the data came from a copyrighted source. | 1--90 characters | None
+
 
 ### CORP
 
@@ -598,11 +663,21 @@ A statement that accompanies data to protect it from unlawful duplication and di
 
 A name of an institution, agency, corporation, or company.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.SOUR.CORP` | Name of the business, corporation, or person that produced or commissioned the product.  | 1--90 characters | [ADDR](#addr)?, [PHON](#phon)\*
+
 ### CREM
 
 `http://fihso.org/legacy/longform/CREMATION`
 
 Disposal of the remains of a person's body by fire.
+
+See also [BURI](#buri)
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.BURI`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
 
 ### CTRY
 
@@ -610,11 +685,22 @@ Disposal of the remains of a person's body by fire.
 
 The name or code of the country.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.CTRY`   | The name of the country that pertains to the associated address. Isolated by some systems for sorting or indexing. Used in most cases to facilitate automatic sorting of mail. | 1--60 characters | None
+
+
 ### DATA
 
 `http://fihso.org/legacy/longform/DATA`
 
 Pertaining to stored automated information.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.SOUR.DATA` | The name of the electronic data source that was used to obtain the data in this transmission. For example, the data may have been obtained from a CD-ROM disc that was named "U.S. 1880 CENSUS CD-ROM vol. 13." | 1--90 characters | [DATE](#date), [COPR](#copr)
+`.SOUR.DATA` | | None | [EVEN](#even)\*, [AGNC](#agnc)?, [NOTE](#note)\*
+`SOUR.DATA`  | | None | [DATE](#date)?, [TEXT](#text)\*
 
 ### DATE
 
@@ -622,17 +708,71 @@ Pertaining to stored automated information.
 
 The time of an event in a calendar format.
 
+{.ednote} The date following pseudo-syntax is ugly and leaves out meaning... update it
+
+VALUE ::= DATE | PERIOD | RANGE | APPROXIMATED | `INT` DATE `(` 1--35 characters `)` | `(` 1--35 characters `)`
+
+RANGE ::= `BEF` DATE | `AFT` DATE | `BET` DATE `AND` DATE
+
+PERIOD ::= `FROM` DATE | `TO` DATE | `FROM` DATE `TO` DATE
+
+APPROXIMATED ::= ( `ABT` | `CAL` | `EST` ) DATE
+
+DATE ::= GREG | JULN | HEBR | FREN
+
+GREG ::= escape(`DGREGORIAN`)? `(([0-3]?[0-9])? (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))? [0-9]+/([0-9][0-9])?`
+
+EXACT ::= `[0-3]?[0-9] (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC) [0-9]+`
+
+FREN ::= escape(`DFRENCH R`) `(([0-3]?[0-9])? (VEND|BRUM|FRIM|NIVO|PLUV|VENT|GERM|FLOR|PRAI|MESS|THER|FRUC|COMP))? [0-9]+`
+
+HEBR ::= escape(`DHEBREW`) `(([0-3]?[0-9])? (TSH|CSH|KSL|TVT|SHV|ADR|ADS|NSN|IYR|SVN|TMZ|AAV|ELL))? [0-9]+`
+
+JULN ::= escape(`DJULIAN`) `(([0-3]?[0-9])? (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))? [0-9]+`
+
+{.ednote} There is a documented escape(`DROMAN`) and escape(`DUNKNOWN`) but there is no documentation of what, if anything, may follow those escapes.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+[*Event*](#event)`.DATE` | The DATE_VALUE represents the date of an activity, attribute, or event where: INT = Interpreted from knowledge about the associated date phrase included in parentheses. | see VALUE above | None
+[*LDS*](#lds)`.DATE` | | see EXACT above | None
+`.HEAD.DATE` | The date that this transmission was created. | see EXACT above| [TIME](#time)
+`CHAN.DATE` | The date that this data was changed. | see EXACT above | [TIME](#time)
+`SOUR.DATA.DATE` |  The date that this event data was entered into the original source document. | see VALUE above | None
+`.HEAD.SOUR.DATA.DATE` | The date this source was published or created. | see EXACT above | None
+`.SOUR.DATA.EVEN.DATE` | | see PERIOD above | None
+
 ### DEAT
 
 `http://fihso.org/legacy/longform/DEATH`
 
 The event when mortal life terminates.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.DEAT`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+
 ### DESC
 
 `http://fihso.org/legacy/longform/DESCENDANTS`
 
 Pertaining to offspring of an individual.
+
+See also [ANCE](#ance)
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.SUBN.DESC` |  The number of generations of descendants included in this transmission. | 1--4 characters | None
+
+{.ednote} Presumably this is supposed to be a base-10 integer?  Also, the Appendix A text and the Chapter 2 text for this tag don't seem to have much relationship to one another.
+
+----
+
+{.ednote} text below this point has not had even a first drafting pass
+
+----
+
+
 ### DESI
 
 `http://fihso.org/legacy/longform/DESCENDANT_INT`
