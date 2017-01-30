@@ -108,7 +108,7 @@
 
 ## The `{0:3}` cardinality
 
-Every cardinality in the grammar is one of `{0:1}`, `{1:1}`, `{0:M}`, or `{0:3}`.
+Every cardinality in the grammar is one of `{0:1}`, `{1:1}`, `{0:M}`, `{1:M}`, or `{0:3}`.
 The `{0:3}` doesn't seem to me to logically belong in this set,
 nor to belong in either place it appears (it is used for `.SUBM.LANG` and for `PHON`, neither of which is intrinsically limited to 3).
 
@@ -123,7 +123,7 @@ But to remove them breaks full compatibility…
 
 {.ednote} We could say something like "A tag without an underscore is either documented in this standard OR is part of the LDS Legacy Descriptor Set".
 
-{.ednote} We could say that conforming implementations MUST NOT generate undocumented non-underscored tags, but also MUST NOT crash if they are present; omit to document the `BAPL`, `CHIL`, `CONL`, `ENDL`, `SLGC`, `SLGS`, `STAT`, and `TEMP` tags; and define valid GEDCOM 5.5 containing those tags to contain undocumented non-underscored extensions under the ELF standard.
+{.ednote} We could say that conforming implementations MUST NOT generate undocumented non-underscored tags, but also MUST NOT crash if they are present; omit to document LDS-specific tags; and define valid GEDCOM 5.5 containing those tags to contain undocumented non-underscored extensions under the ELF standard.
 
 # Structure generality and string length
 
