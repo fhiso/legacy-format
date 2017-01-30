@@ -172,17 +172,48 @@ Any Event subtype is known to have the following substructures:
 [SOUR](#sour)\*
 [TYPE](#type)?
 
+Known subtypes: [IndividualEvent](#individualevent), [FamilyEvent](#familyevent), [IndividualAttribute](#individualattribute)
+
 ### IndividualEvent
 
 `http://fihso.org/legacy/supertype/IndividualEvent`
 
 A subtype of [Event](#event), representing an event that appertained to a particular individual.
 
+Known subtypes: [BIRT](#birt), [CHR](#chr), [DEAT](#deat), [BURI](#buri), [CREM](#crem), [ADOP](#adop), [BAPM](#bapm), [BARM](#barm), [BASM](#basm), [BLES](#bles), [CHRA](#chra), [CONF](#conf), [FCOM](#fcom), [ORDN](#ordn), [NATU](#natu), [EMIG](#emig), [IMMI](#immi), [CENS](#cens), [PROB](#prob), [WILL](#will), [GRAD](#grad), [RETI](#reti), [EVEN](#even)
+
+The payload of an IndividualEvent is either the string `Y` or not present.
+If any of the following are true 
+
+- the payload is `Y` 
+- there is a [DATE](#date) substructure
+- there is a [PLAC](#plac) substructure
+- the tag is [EVEN](#even)
+
+then the IndividualEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
+
+There should never be a payload for the IndividualEvent subclass [EVEN](#even).
+
+
 ### FamilyEvent
 
 `http://fihso.org/legacy/supertype/FamilyEvent`
 
 A subtype of [Event](#event), representing an event that appertained to a particular couple or nuclear family.
+
+Known subtypes: [ANUL](#anul), [CENS](#cens), [DIV](#div), [DIVF](#divf), [ENGA](#enga), [MARR](#marr), [MARB](#marb), [MARC](#marc), [MARL](#marl), [MARS](#mars), [EVEN](#even)
+
+The payload of an FamilyEvent is either the string `Y` or not present.
+If any of the following are true 
+
+- the payload is `Y` 
+- there is a [DATE](#date) substructure
+- there is a [PLAC](#plac) substructure
+- the tag is [EVEN](#even)
+
+then the FamilyEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
+
+There should never be a payload for the FamilyEvent subclass [EVEN](#even).
 
 ### IndividualAttribute
 
@@ -192,6 +223,9 @@ A subtype of [Event](#event), representing attributes or facts are used to descr
 These are not generally thought of as events.
 However, they are often described like events because they were observed at a particular time and/or place.
 
+Known subtypes: [CAST](#cast), [DSCR](#dscr), [EDUC](#educ), [IDNO](#idno), [NATI](#nati), [NCHI](#nchi), [NMR](#nmr), [OCCU](#occu), [PROP](#prop), [RELI](#reli), [RESI](#resi), [SSN](#ssn), [TITL](#titl)
+
+{.note} The generic [EVEN](.even) tag is *not* a known subtype of IndividualAttribute; however IndividualEvent is permitted in every known context where IndividualAttribute is permitted and may be used for attributes as well as events.
 
 ## Tags
 
@@ -653,6 +687,11 @@ An event of recording or announcing an agreement between two people to become ma
 
 A noteworthy happening related to an individual, a group, or an organization.
 
+The EVEN tag is for recording general events or attributes that are not other known subtypes of [Event](#event).
+The general event or attribute type is declared by using a subordinate [TYPE](#type) tag to show what event or attribute is recorded.
+
+{.note} despite the above text describing the use of EVEN tags for attributes, they are not a known subtype of [IndividualAttribute](#individualattribute) and are not known to carry a payload.  Use of EVEN for attributes is thus under-defined.
+
 ### FAM
 
 `http://fihso.org/legacy/longform/FAMILY`
@@ -724,6 +763,9 @@ An individual in the family role of a married man or father.
 `http://fihso.org/legacy/longform/IDENT_NUMBER`
 
 A number assigned to identify a person within some significant external system.
+
+See also [SSN](#ssn)
+
 
 ### IMMI
 
@@ -1004,6 +1046,8 @@ A name piece used as a non-indexing pre-part of a surname.
 `http://fihso.org/legacy/longform/SOC_SEC_NUMBER`
 
 A number assigned by the United States Social Security Administration. Used for tax identification purposes.
+
+See also [IDNO](#idno)
 
 ### STAE
 
