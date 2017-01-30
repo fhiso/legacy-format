@@ -584,7 +584,7 @@ An indicator of the character set used in writing this automated information.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-.HEAD.CHAN`   | A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.  | one of `ANSEL`, `UNICODE`, or `ASCII` | [VERS](#vers)?
+`.HEAD.CHAN`   | A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.  | one of `ANSEL`, `UNICODE`, or `ASCII` | [VERS](#vers)?
 
 ### CHIL
 
