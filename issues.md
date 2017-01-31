@@ -104,6 +104,14 @@
     
     Are `MEDI` tags subordinate to `REPO` or `CALN`?
 
+6.  The grammar asserts that `OBJE` encodes binary into ASCII, but appendix E uses 0xFF as padding.
+    
+    If this is padding before encoding, then we end up with stray 0xFF bytes upon decode.  Additionally, pre-encoding padding renders step 3.a. useless (pad but do not encode).
+    
+    If this is padding after encoding, then we end up with non-ASCII content.  Additionally, post-encoding renders steps 3.b. and 3.c. under-defined.
+    
+    There is probably a perfectly reasonable understanding of this encoding that I am missing…
+
 # Other concerns with the spec
 
 ## The `{0:3}` cardinality
@@ -113,6 +121,24 @@ The `{0:3}` doesn't seem to me to logically belong in this set,
 nor to belong in either place it appears (it is used for `.SUBM.LANG` and for `PHON`, neither of which is intrinsically limited to 3).
 
 {.ednote} Luther: I suggest we change all `{0:3}` to `{0:M}`
+
+## Mismatched documentation
+
+The `LEGA` tag appears in the appendix describing tags, but not in the grammar.
+
+The `DESC` and `ANCE` tags have inconsistent descriptions in the appendix and the grammar.
+
+Family events like `MARR` have, as listed subordinate structures, the `AGE` tag; but the definition of `AGE` presumes it is subordinate to just one person, not a couple of different ages.  Family events also have `HUSB.AGE` and `WIFE.AGE`; presumably the intend was for these to be used *instead of* rather than *along with* unqualified `AGE`s
+
+## Are escapes really part of the grammar?
+
+Chapter 1 of the specification spends some effort defining escapes: `@#text@`, with rules for escaping internal `@` and so on and permission for them to appear in any piece of text.
+However, escapes appear only once in chapter 2: there are size permitted escapes that might appear in front of a date.  Since dates are already constrained by an detailed grammar, these escapes could easily be included without providing any particular definition of "escape".
+
+Is there any value in the escape definition?
+Do any implementations use escapes for any purpose?
+What do implementations do when they encounter escapes in unexpected places?
+What do they do if they encounter an unterminated escape like `!@#%$%^&*`?
 
 ## LDS-specific material
 

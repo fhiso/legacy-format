@@ -15,6 +15,13 @@ It will likely change significantly prior to being released.
 
 # The organization of ELF data
 
+Every ELF dataset consists of the following, in order:
+
+1. one [HEAD] record, 
+1. optionally one [SUBN] record, 
+1. any number of [FAM], [INDI], [OBJE], [NOTE], [REPO], [SOUR], and [SUBM] records in any order
+1. one [TRLR] record
+
 ## Structures
 
 Each structure consists of the following parts:
@@ -160,67 +167,67 @@ Some tags in some contexts are logically collected into a type hierarchy.
 
 Any Event subtype is known to have the following substructures:
 
-[ADDR](#addr)?
-[AGE](#age)?
-[AGNC](#agnc)?
-[CAUS](#caus)?
-[DATE](#date)?
-[NOTE](#note)\*
-[OBJE](#obje)\*
-[PHON](#phon)\*
-[PLAC](#plac)?
-[SOUR](#sour)\*
-[TYPE](#type)?
+[ADDR]?
+[AGE]?
+[AGNC]?
+[CAUS]?
+[DATE]?
+[NOTE]\*
+[OBJE]\*
+[PHON]\*
+[PLAC]?
+[SOUR]\*
+[TYPE]?
 
-Known subtypes: [IndividualEvent](#individualevent), [FamilyEvent](#familyevent), [IndividualAttribute](#individualattribute)
+Known subtypes: [IndividualEvent], [FamilyEvent], [IndividualAttribute]
 
-{.ednote} [AGE](#age) is listed as a substructure of Event but I can't see a meaning for it as a substructure of a [FamilyEvent](#familyevent), only an [IndividualEvent](#individualevent) and [IndividualAttribute](#individualattribute).
+{.ednote} [AGE] is listed as a substructure of Event but I can't see a meaning for it as a substructure of a [FamilyEvent], only an [IndividualEvent] and [IndividualAttribute].
 
 ### IndividualEvent
 
 `http://fihso.org/legacy/supertype/IndividualEvent`
 
-A subtype of [Event](#event), representing an event that appertained to a particular individual.
+A subtype of [Event], representing an event that appertained to a particular individual.
 
-Known subtypes: [BIRT](#birt), [CHR](#chr), [DEAT](#deat), [BURI](#buri), [CREM](#crem), [ADOP](#adop), [BAPM](#bapm), [BARM](#barm), [BASM](#basm), [BLES](#bles), [CHRA](#chra), [CONF](#conf), [FCOM](#fcom), [ORDN](#ordn), [NATU](#natu), [EMIG](#emig), [IMMI](#immi), [CENS](#cens), [PROB](#prob), [WILL](#will), [GRAD](#grad), [RETI](#reti), [EVEN](#even)
+Known subtypes: [BIRT], [CHR], [DEAT], [BURI], [CREM], [ADOP], [BAPM], [BARM], [BASM], [BLES], [CHRA], [CONF], [FCOM], [ORDN], [NATU], [EMIG], [IMMI], [CENS], [PROB], [WILL], [GRAD], [RETI], [EVEN]
 
 The payload of an IndividualEvent is either the string `Y` or not present.
 If any of the following are true 
 
 - the payload is `Y` 
-- there is a [DATE](#date) substructure
-- there is a [PLAC](#plac) substructure
-- the tag is [EVEN](#even)
+- there is a [DATE] substructure
+- there is a [PLAC] substructure
+- the tag is [EVEN]
 
 then the IndividualEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
 
-There should never be a payload for the IndividualEvent subclass [EVEN](#even).
+There should never be a payload for the IndividualEvent subclass [EVEN].
 
 
 ### FamilyEvent
 
 `http://fihso.org/legacy/supertype/FamilyEvent`
 
-A subtype of [Event](#event), representing an event that appertained to a particular couple or nuclear family.
+A subtype of [Event], representing an event that appertained to a particular couple or nuclear family.
 
-Known subtypes: [ANUL](#anul), [CENS](#cens), [DIV](#div), [DIVF](#divf), [ENGA](#enga), [MARR](#marr), [MARB](#marb), [MARC](#marc), [MARL](#marl), [MARS](#mars), [EVEN](#even)
+Known subtypes: [ANUL], [CENS], [DIV], [DIVF], [ENGA], [MARR], [MARB], [MARC], [MARL], [MARS], [EVEN]
 
-Any FamilyEvent subtype is known to have the following substructures, in addition to those inherited from [Event](#event):
+Any FamilyEvent subtype is known to have the following substructures, in addition to those inherited from [Event]:
 
-[HUSB](#husb)?
-[WIFE](#wife)?
+[HUSB]?
+[WIFE]?
 
 The payload of an FamilyEvent is either the string `Y` or not present.
 If any of the following are true 
 
 - the payload is `Y` 
-- there is a [DATE](#date) substructure
-- there is a [PLAC](#plac) substructure
-- the tag is [EVEN](#even)
+- there is a [DATE] substructure
+- there is a [PLAC] substructure
+- the tag is [EVEN]
 
 then the FamilyEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
 
-There should never be a payload for the FamilyEvent subclass [EVEN](#even).
+There should never be a payload for the FamilyEvent subclass [EVEN].
 
 
 
@@ -228,11 +235,11 @@ There should never be a payload for the FamilyEvent subclass [EVEN](#even).
 
 `http://fihso.org/legacy/supertype/IndividualAttribute`
 
-A subtype of [Event](#event), representing attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
+A subtype of [Event], representing attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
 However, they are often described like events because they were observed at a particular time and/or place.
 
-Known subtypes: [CAST](#cast), [DSCR](#dscr), [EDUC](#educ), [IDNO](#idno), [NATI](#nati), [NCHI](#nchi), [NMR](#nmr), [OCCU](#occu), [PROP](#prop), [RELI](#reli), [RESI](#resi), [SSN](#ssn), [TITL](#titl)
+Known subtypes: [CAST], [DSCR], [EDUC], [IDNO], [NATI], [NCHI], [NMR], [OCCU], [PROP], [RELI], [RESI], [SSN], [TITL]
 
 {.note} The generic [EVEN](.even) tag is *not* a known subtype of IndividualAttribute; however IndividualEvent is permitted in every known context where IndividualAttribute is permitted and may be used for attributes as well as events.
 
@@ -264,9 +271,9 @@ Payload
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.SOUR.CORP.ADDR` || see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY](#city)?, [STAE](#stae)?, [POST](#post)?, [CTRY](#ctry)?
-`.REPO.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY](#city)?, [STAE](#stae)?, [POST](#post)?, [CTRY](#ctry)?
-`.SUBM.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY](#city)?, [STAE](#stae)?, [POST](#post)?, [CTRY](#ctry)?
+`.HEAD.SOUR.CORP.ADDR` || see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY]?, [STAE]?, [POST]?, [CTRY]?
+`.REPO.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY]?, [STAE]?, [POST]?, [CTRY]?
+`.SUBM.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY]?, [STAE]?, [POST]?, [CTRY]?
 
 
 
@@ -300,7 +307,7 @@ Pertaining to creation of a child-parent relationship that does not exist biolog
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.ADOP`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event),[FAMC](#famc)?
+`.INDI.ADOP`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event),[FAMC]?
 `ADOP.FAMC.ADOP` | Which parent(s) adopted | `HUSB`, `WIFE`, or `BOTH` | None | None
 
 
@@ -355,7 +362,7 @@ An indicator to link different record descriptions of a person who may be the sa
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.ALIA`  |         | Pointer to an [INDI](#indi) | None
+`.INDI.ALIA`  |         | Pointer to an [INDI] | None
 
 
 ### ANCE
@@ -364,7 +371,7 @@ Known Context | Meaning | Payload | Substructures
 
 Pertaining to forbearers of an individual.
 
-See also [DESC](#desc)
+See also [DESC]
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
@@ -377,11 +384,11 @@ Known Context | Meaning | Payload | Substructures
 
 `http://fihso.org/legacy/longform/ANCES_INTEREST`
 
-Indicates an interest in additional research for ancestors of this individual. (See also [DESI](#desi).)
+Indicates an interest in additional research for ancestors of this individual. (See also [DESI].)
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.ANCI`  |         | Pointer to an [SUBM](#subm) | None
+`.INDI.ANCI`  |         | Pointer to an [SUBM] | None
 
 
 ### ANUL
@@ -392,7 +399,7 @@ Declaring a marriage void from the beginning (never existed).
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.ANUL`   | *see [FamilyEvent](#familyevent)* | Either `Y` or None | [FamilyEvent](#familyevent) | [*inherited*](#event)
+`.FAM.ANUL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
 
 
 ### ASSO
@@ -403,7 +410,7 @@ An indicator to link friends, neighbors, relatives, or associates of an individu
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.ASSO`  |         | Pointer to an [INDI](#indi) | [RELA](#rela)!, [NOTE](#note)\*, [SOUR](#sour)\*
+`.INDI.ASSO`  |         | Pointer to an [INDI] | [RELA]!, [NOTE]\*, [SOUR]\*
 
 
 ### AUTH
@@ -422,11 +429,11 @@ Known Context | Meaning | Payload | Substructures
 
 The event of baptism, performed in infancy or later.
 
-See also [BAPL](#bapl) and [CHR](#chr)
+See also [BAPL] and [CHR]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BAPM`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BAPM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### BARM
@@ -437,7 +444,7 @@ The ceremonial event held when a Jewish boy reaches age 13.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BARM`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BARM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### BASM
@@ -448,7 +455,7 @@ The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat 
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BASM`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BASM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### BIRT
@@ -459,7 +466,7 @@ The event of entering into life.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BIRT`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)?
+`.INDI.BIRT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event), [FAMC]?
 
 
 ### BLES
@@ -470,7 +477,7 @@ A religious event of bestowing divine care or intercession. Sometimes given in c
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BLES`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BLES`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### BLOB
@@ -508,11 +515,11 @@ The event of the proper disposing of the mortal remains of a deceased person.
 
 {.ednote} GEDCOM calls burial "proper disposing" sans discussion of method, but cremation "disposal […] by fire" sans proper?  Why?
 
-See also [CREM](#crem)
+See also [CREM]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BURI`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### CALN
@@ -523,7 +530,7 @@ The number used by a repository to identify the specific items in its collection
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.SOUR.REPO.CALN` | An identification or reference description used to file and retrieve items from the holdings of a repository.  | 1--120 characters | [MEDI](#medi)?
+`.SOUR.REPO.CALN` | An identification or reference description used to file and retrieve items from the holdings of a repository.  | 1--120 characters | [MEDI]?
 
 {.ednote} The example given in the GEDCOM specification is inconsistent with the grammar, putting the `MEDI` coordinate with, instead of subordinate to, `CALN`.
 
@@ -538,7 +545,7 @@ rank, profession, occupation, etc.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CAST`  |  A name assigned to a particular group that this person was associated with, such as a particular racial group, religious group, or a group with an inherited status.  | 1--90 characters | [IndividualAttribute](#individualattribute) | [*inherited*](#event)
+`.INDI.CAST`  |  A name assigned to a particular group that this person was associated with, such as a particular racial group, religious group, or a group with an inherited status.  | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
 
 
 ### CAUS
@@ -560,8 +567,8 @@ The event of the periodic count of the population for a designated locality, suc
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CENS`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
-`.FAM.CENS`   | *see [FamilyEvent](#familyevent)* | Either `Y` or None | [FamilyEvent](#familyevent) | [*inherited*](#event)
+`.INDI.CENS`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.FAM.CENS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
 
 
 ### CHAN
@@ -572,9 +579,9 @@ Indicates a change, correction, or modification. Typically used in connection wi
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-*record*`.CHAN`   | The change date is intended to only record the last change to a record. Some systems may want to manage the change process with more detail, but it is sufficient for GEDCOM purposes to indicate the last time that a record was modified. | None | [DATE](#date)!, [NOTE](#note)\*
+*record*`.CHAN`   | The change date is intended to only record the last change to a record. Some systems may want to manage the change process with more detail, but it is sufficient for GEDCOM purposes to indicate the last time that a record was modified. | None | [DATE]!, [NOTE]\*
 
-`CHAN` is known a the substructure of every known record *except* [SUBN](#subn), [HEAD](#head), and [TAIL](#tail).
+`CHAN` is known a the substructure of every known record *except* [SUBN], [HEAD], and [TAIL].
 
 ### CHAR
 
@@ -584,7 +591,7 @@ An indicator of the character set used in writing this automated information.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.CHAN`   | A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.  | one of `ANSEL`, `UNICODE`, or `ASCII` | [VERS](#vers)?
+`.HEAD.CHAN`   | A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.  | one of `ANSEL`, `UNICODE`, or `ASCII` | [VERS]?
 
 ### CHIL
 
@@ -594,9 +601,9 @@ The natural, adopted, or sealed (LDS) child of a father and a mother.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.FAM.CHIL`   |         | A pointer to an [INDI](#indi) | None
+`.FAM.CHIL`   |         | A pointer to an [INDI] | None
 
-{.note} In GEDCOM versions 3 and 4, `FAM.CHIL` had a substructure [ADOP](#adop).
+{.note} In GEDCOM versions 3 and 4, `FAM.CHIL` had a substructure [ADOP].
 
 
 ### CHR
@@ -607,7 +614,7 @@ The religious event (not LDS) of baptizing and/or naming a child.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CHR`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event), [FAMC](#famc)?
+`.INDI.CHR`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event), [FAMC]?
 
 
 ### CHRA
@@ -618,7 +625,7 @@ The religious event (not LDS) of baptizing and/or naming an adult person.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CHRA`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.CHRA`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### CITY
@@ -642,7 +649,7 @@ The religious event (not LDS) of conferring the gift of the Holy Ghost and, amon
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CONF`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.CONF`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 
 ### COPR
@@ -665,7 +672,7 @@ A name of an institution, agency, corporation, or company.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.SOUR.CORP` | Name of the business, corporation, or person that produced or commissioned the product.  | 1--90 characters | [ADDR](#addr)?, [PHON](#phon)\*
+`.HEAD.SOUR.CORP` | Name of the business, corporation, or person that produced or commissioned the product.  | 1--90 characters | [ADDR]?, [PHON]\*
 
 ### CREM
 
@@ -673,11 +680,11 @@ Known Context | Meaning | Payload | Substructures
 
 Disposal of the remains of a person's body by fire.
 
-See also [BURI](#buri)
+See also [BURI]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BURI`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 ### CTRY
 
@@ -698,9 +705,9 @@ Pertaining to stored automated information.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.SOUR.DATA` | The name of the electronic data source that was used to obtain the data in this transmission. For example, the data may have been obtained from a CD-ROM disc that was named "U.S. 1880 CENSUS CD-ROM vol. 13." | 1--90 characters | [DATE](#date)?, [COPR](#copr)?
-`.SOUR.DATA` | | None | [EVEN](#even)\*, [AGNC](#agnc)?, [NOTE](#note)\*
-`SOUR.DATA`  | | None | [DATE](#date)?, [TEXT](#text)\*
+`.HEAD.SOUR.DATA` | The name of the electronic data source that was used to obtain the data in this transmission. For example, the data may have been obtained from a CD-ROM disc that was named "U.S. 1880 CENSUS CD-ROM vol. 13." | 1--90 characters | [DATE]?, [COPR]?
+`.SOUR.DATA` | | None | [EVEN]\*, [AGNC]?, [NOTE]\*
+`SOUR.DATA`  | | None | [DATE]?, [TEXT]\*
 
 ### DATE
 
@@ -736,8 +743,8 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 [*Event*](#event)`.DATE` | The DATE_VALUE represents the date of an activity, attribute, or event where: INT = Interpreted from knowledge about the associated date phrase included in parentheses. | see VALUE above | None
 [*LDS*](#lds)`.DATE` | | see EXACT above | None
-`.HEAD.DATE` | The date that this transmission was created. | see EXACT above| [TIME](#time)?
-`CHAN.DATE` | The date that this data was changed. | see EXACT above | [TIME](#time)?
+`.HEAD.DATE` | The date that this transmission was created. | see EXACT above| [TIME]?
+`CHAN.DATE` | The date that this data was changed. | see EXACT above | [TIME]?
 `SOUR.DATA.DATE` |  The date that this event data was entered into the original source document. | see VALUE above | None
 `.HEAD.SOUR.DATA.DATE` | The date this source was published or created. | see EXACT above | None
 `.SOUR.DATA.EVEN.DATE` | | see PERIOD above | None
@@ -750,7 +757,7 @@ The event when mortal life terminates.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.DEAT`  | *see [IndividualEvent](#individualevent)* | Either `Y` or None | [IndividualEvent](#individualevent) | [*inherited*](#event)
+`.INDI.DEAT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
 
 ### DESC
 
@@ -758,7 +765,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 Pertaining to offspring of an individual.
 
-See also [ANCE](#ance)
+See also [ANCE]
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
@@ -766,18 +773,17 @@ Known Context | Meaning | Payload | Substructures
 
 {.ednote} Presumably this is supposed to be a base-10 integer?  Also, the Appendix A text and the Chapter 2 text for this tag don't seem to have much relationship to one another.
 
-----
-
-{.ednote} text below this point has not had even a first drafting pass
-
-----
-
 
 ### DESI
 
 `http://fihso.org/legacy/longform/DESCENDANT_INT`
 
-Indicates an interest in research to identify additional descendants of this individual. (See also ANCI.)
+Indicates an interest in research to identify additional descendants of this individual. (See also [ANCI].)
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.DESI`  |         | Pointer to an [SUBM] | None
+
 
 ### DEST
 
@@ -785,11 +791,21 @@ Indicates an interest in research to identify additional descendants of this ind
 
 A system receiving data.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.DEST` | The name of the system expected to process the GEDCOM-compatible transmission. | 1--20 characters | None
+
+
 ### DIV
 
 `http://fihso.org/legacy/longform/DIVORCE`
 
 An event of dissolving a marriage through civil action.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.DIV`    | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
 
 ### DIVF
 
@@ -797,11 +813,21 @@ An event of dissolving a marriage through civil action.
 
 An event of filing for a divorce by a spouse.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.DIVF`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
+
 ### DSCR
 
 `http://fihso.org/legacy/longform/PHY_DESCRIPTION`
 
 The physical characteristics of a person, place, or thing.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.DSCR`  | An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
+
 
 ### EDUC
 
@@ -809,11 +835,21 @@ The physical characteristics of a person, place, or thing.
 
 Indicator of a level of education attained.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.EDUC`  | A description of a scholastic or educational achievement or pursuit. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
+
+
 ### EMIG
 
 `http://fihso.org/legacy/longform/EMIGRATION`
 
 An event of leaving one's homeland with the intent of residing elsewhere.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.EMIG`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
 
 ### ENGA
 
@@ -821,16 +857,31 @@ An event of leaving one's homeland with the intent of residing elsewhere.
 
 An event of recording or announcing an agreement between two people to become married.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.ENGA`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
+
 ### EVEN
 
 `http://fihso.org/legacy/longform/EVENT`
 
 A noteworthy happening related to an individual, a group, or an organization.
 
-The EVEN tag is for recording general events or attributes that are not other known subtypes of [Event](#event).
-The general event or attribute type is declared by using a subordinate [TYPE](#type) tag to show what event or attribute is recorded.
+The EVEN tag is for recording general events or attributes that are not other known subtypes of [Event].
+The general event or attribute type is declared by using a subordinate [TYPE] tag to show what event or attribute is recorded.
 
-{.note} despite the above text describing the use of EVEN tags for attributes, they are not a known subtype of [IndividualAttribute](#individualattribute) and are not known to carry a payload.  Use of EVEN for attributes is thus under-defined.
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.EVEN`  | see above | None | [IndividualEvent] | [*inherited*](#event), [TYPE]!
+`.FAM.EVEN`   | see above | None | [FamilyEvent] | [*inherited*](#event), [TYPE]!
+`SOUR.EVEN` |  A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be BIRT regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.  | 1--15 characters; one of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`} | None | [ROLE]
+`.SOUR.DATA.EVEN` |  An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be BIRT, DEAT, MARR. | 1--90 characters forming a comma-separated list of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`} | None | [DATE]?, [PLAC]?
+
+{.note} despite the above text describing the use of EVEN tags for attributes, they are not a known subtype of [IndividualAttribute] and are not known to carry a payload.  Use of EVEN for attributes is thus under-defined.
+
+{.note} Uncharacteristically for enumerated values, `SOUR.EVEN` is listed to be up to 15 characters even though the longest known value is 4 characters long.
+
 
 ### FAM
 
@@ -838,11 +889,30 @@ The general event or attribute type is declared by using a subordinate [TYPE](#t
 
 Identifies a legal, common law, or other customary relationship of man and woman and their children, if any, or a family created by virtue of the birth of a child to its biological father and mother.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.FAM` | The FAM record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one HUSB/father and one WIFE/mother listed in each FAM. If, for example, a man participated in more than one family union, then he would appear in more than one FAM. The family record structure assumes that the HUSB/father is male and WIFE/mother is female. | None | [FamilyEvent]\*, [HUSB]? [WIFE]?, [CHIL]\*, [NCHI]?, [SUBM]\*, [SOUR]\*, [OBJE]\*, [NOTE]\*, [REFN]\*, [RIN]?, [CHAN]?
+
+The preferred order of the [CHIL] substructures within a FAM structure is chronological by birth. 
+ 
+See also [SLGS] in the [LDS-specific tags] section.
+
+
 ### FAMC
 
 `http://fihso.org/legacy/longform/FAMILY_CHILD`
 
 Identifies the family in which an individual appears as a child.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.FAMC`  | | Pointer to a [FAM] | [PEDI]?, [NOTE]\*
+`BIRT.FAMC`   | | Pointer to a [FAM] | None
+`CHR.FAMC`    | | Pointer to a [FAM] | None
+`.INDI.ADOP.FAMC` | | Pointer to a [FAM] | [ADOP]
+
+See also [SLGC] in the [LDS-specific tags] section.
+
 
 ### FAMS
 
@@ -850,11 +920,21 @@ Identifies the family in which an individual appears as a child.
 
 Identifies the family in which an individual appears as a spouse.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.FAMS`  | | Pointer to a [FAM] | [NOTE]\*
+
+
 ### FCOM
 
 `http://fihso.org/legacy/longform/FIRST_COMMUNION`
 
 A religious rite, the first act of sharing in the Lord's supper as part of church worship.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.FCOM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
 
 ### FILE
 
@@ -862,11 +942,25 @@ A religious rite, the first act of sharing in the Lord's supper as part of churc
 
 An information storage place that is ordered and arranged for preservation and reference.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.FILE` |  The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext). | 1--90 characters | None
+`OBJE.FILE` |  A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained. | 1--30 characters | None
+
+
 ### FORM
 
 `http://fihso.org/legacy/longform/FORMAT`
 
 An assigned name given to a consistent format in which information can be conveyed.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`OBJE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
+`.HEAD.PLAC.FORM` | Implies that all place names follow this jurisdictional format and each jurisdiction is accounted for by a comma, whether the name is known or not. May be overridden by [Event]`.PLAC.FORM`. | 1--120 characters | None
+[Event]`.PLAC.FORM` | Jurisdictional entities that are named in a sequence from the lowest to the highest jurisdiction. The jurisdictions are separated by commas, and any jurisdiction's name that is missing is still accounted for by a comma. | 1--120 characters | None
+`.HEAD.GEDC.FORM` | The GEDCOM form used to construct this transmission. | 14--20 characters, specifically `LINEAGE_LINKED` | None
+
 
 ### GEDC
 
@@ -874,11 +968,21 @@ An assigned name given to a consistent format in which information can be convey
 
 Information about the use of GEDCOM in a transmission.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.GEDC`  |         | None    | [VERS]!, [FORM]!
+
+
 ### GIVN
 
 `http://fihso.org/legacy/longform/GIVEN_NAME`
 
 A given or earned name used for official identification of a person.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.GIVN`   |  Given name or earned name. Different given names are separated by a comma. | 1--120 characters, with 1--90 characters between each comma | None
+
 
 ### GRAD
 
@@ -886,11 +990,21 @@ A given or earned name used for official identification of a person.
 
 An event of awarding educational diplomas or degrees to individuals.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.GRAD`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
 ### HEAD
 
 `http://fihso.org/legacy/longform/HEADER`
 
 Identifies information pertaining to an entire GEDCOM transmission.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD`       |         | None    | [SOUR]!, [DEST]?, [DATE]?, [SUBM]!, [SUBN]?, [FILE]?, [COPR]?, [GEDC]!, [CHAR]!, [LANG]?, [PLAC]?, [NOTE]?
+
 
 ### HUSB
 
@@ -898,13 +1012,25 @@ Identifies information pertaining to an entire GEDCOM transmission.
 
 An individual in the family role of a married man or father.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.FAM.`[FamilyEvent]`.HUSB` | | None | [AGE]!
+`.FAM.HUSB`   |         | pointer to an [INDI] | None
+
+
 ### IDNO
 
 `http://fihso.org/legacy/longform/IDENT_NUMBER`
 
 A number assigned to identify a person within some significant external system.
 
-See also [SSN](#ssn)
+See also [SSN]
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.IDNO`  | A nationally-controlled number assigned to an individual. | 1--30 characters | [IndividualAttribute] | [*inherited*](#event), [TYPE]!
+
+{.note} Although called a "number", the payload of an `IDNO` is *not* restricted to numeric values.
 
 
 ### IMMI
@@ -913,11 +1039,23 @@ See also [SSN](#ssn)
 
 An event of entering into a new locality with the intent of residing there.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.IMMI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
 ### INDI
 
 `http://fihso.org/legacy/longform/INDIVIDUAL`
 
 A person.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI` | The individual record is a compilation of facts, known or discovered, about an individual. Sometimes these facts are from different sources. This form allows documentation of the source where each of the facts were discovered. | None | [RESN]?, [NAME]\*, [SEX]?, [IndividualEvent], [IndividualAttribute], [FAMC]\*, [FAMS]\*, [SUBM]\*, [ASSO]\*, [ALIA]\*, [ANCI]\*, [DESI]\*, [SOUR]\*, [OBJE]\*, [NOTE]\*, [RFN]?, [REFN]\*, [RIN]?, [CHAN]?
+
+See also [LDS-specific tags]
+
 
 ### LANG
 
@@ -925,11 +1063,24 @@ A person.
 
 The name of the language used in a communication or transmission of information.
 
+The set of known language payload value is {`Afrikaans`, `Albanian`, `Anglo-Saxon`, `Catalan`, `Catalan_Spn`, `Czech`, `Danish`, `Dutch`, `English`, `Esperanto`, `Estonian`, `Faroese`, `Finnish`, `French`, `German`, `Hawaiian`, `Hungarian`, `Icelandic`, `Indonesian`, `Italian`, `Latvian`, `Lithuanian`, `Navaho`, `Norwegian`, `Polish`, `Portuguese`, `Romanian`, `Serbo_Croa`, `Slovak`, `Slovene`, `Spanish`, `Swedish`, `Turkish`, `Wendic`, `Amharic`, `Arabic`, `Armenian`, `Assamese`, `Belorusian`, `Bengali`, `Braj`, `Bulgarian`, `Burmese`, `Cantonese`, `Church-Slavic`, `Dogri`, `Georgian`, `Greek`, `Gujarati`, `Hebrew`, `Hindi`, `Japanese`, `Kannada`, `Khmer`, `Konkani`, `Korean`, `Lahnda`, `Lao`, `Macedonian`, `Maithili`, `Malayalam`, `Mandrin`, `Manipuri`, `Marathi`, `Mewari`, `Nepali`, `Oriya`, `Pahari`, `Pali`, `Panjabi`, `Persian`, `Prakrit`, `Pusto`, `Rajasthani`, `Russian`, `Sanskrit`, `Serb`, `Tagalog`, `Tamil`, `Telugu`, `Thai`, `Tibetan`, `Ukrainian`, `Urdu`, `Vietnamese`, `Yiddish`}
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.LANG` | The human language in which the data in the transmission is normally read or written. | 1--15 characters; see above | None
+`.SUBM.LANG` | The language in which a person prefers to communicate. Multiple language preference is shown by using multiple occurrences in order of priority. | 1--90 characters; see above | None
+
+{.note} There is no obvious reason why the two contexts in which `LANG` appear have the same set of values but different character lengths.
+
 ### LEGA
 
 `http://fihso.org/legacy/longform/LEGATEE`
 
 A role of an individual acting as a person receiving a bequest or legal devise.
+
+This tag does not appear in any known context.
+
+
 
 ### MARB
 
@@ -937,11 +1088,21 @@ A role of an individual acting as a person receiving a bequest or legal devise.
 
 An event of an official public notice given that two people intend to marry.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.MARB`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
+
 ### MARC
 
 `http://fihso.org/legacy/longform/MARR_CONTRACT`
 
 An event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.MARC`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
 
 ### MARL
 
@@ -949,11 +1110,21 @@ An event of recording a formal agreement of marriage, including the prenuptial a
 
 An event of obtaining a legal license to marry.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.MARL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
+
 ### MARR
 
 `http://fihso.org/legacy/longform/MARRIAGE`
 
 A legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.MARR`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
 
 ### MARS
 
@@ -961,17 +1132,41 @@ A legal, common-law, or customary event of creating a family unit of a man and a
 
 An event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.FAM.MARS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+
+
 ### MEDI
 
 `http://fihso.org/legacy/longform/MEDIA`
 
 Identifies information about the media or having to do with the medium in which information is stored.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.SOUR.REPO.CALN.MEDI` |  A code, selected from one of the media classifications choices above, that indicates the type of material in which the referenced source is stored.  | 1--15 characters, one of {`audio`, `book`, `card`, `electronic`, `fiche`, `film`, `magazine`, `manuscript`, `map`, `newspaper`, `photo`, `tombstone`, `video`} | None
+
+
 ### NAME
 
 `http://fihso.org/legacy/longform/NAME`
 
 A word or combination of words used to help identify an individual, title, or other item. More than one NAME line should be used for people who were known by multiple names.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.SOUR.NAME` | The name of the software product that produced this transmission. | 1--90 characters | None
+`.REPO.NAME` | The official name of the archive in which the stated source material is stored. | 1--90 characters | None
+`.SUBM.NAME` | The name of the submitter formatted for display and address generation. | 1--60 characters | None
+`.INDI.NAME` | The name value is formed in the manner the name is normally spoken, with the given name and family name (surname) separated by slashes `/`. | 1--120 characters, optionally with a substring offset by `/`, optionally with portions elided with `...` | [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [SOUR]\*, [NOTE]\*
+
+
+---
+
+{.ednote} Resume first pass here
+
+---
 
 ### NATI
 
@@ -1187,7 +1382,7 @@ A name piece used as a non-indexing pre-part of a surname.
 
 A number assigned by the United States Social Security Administration. Used for tax identification purposes.
 
-See also [IDNO](#idno)
+See also [IDNO]
 
 ### STAE
 
@@ -1259,7 +1454,7 @@ An individual in the role as a mother and/or married woman.
 
 `http://fihso.org/legacy/longform/WILL`
 
-A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also [PROB](#prob)ate.) 
+A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also [PROB]ate.) 
 
 ## LDS-specific tags
 
@@ -1286,7 +1481,7 @@ The event of baptism performed at age eight or later by priesthood authority of 
 
 The religious event by which a person receives membership in the LDS Church.
 
-See also [CONF](#conf)
+See also [CONF]
 
 ### ENDL
 

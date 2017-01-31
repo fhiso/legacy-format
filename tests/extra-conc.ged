@@ -1,0 +1,13 @@
+0 HEAD
+1 SOUR FHISO_ELF_hand_made_tests
+1 SUBM @me@
+1 GEDC
+2 VERS 5.5
+2 FORM LINEAGE-LINKED
+0 @me@ SUBM
+1 NAME This payload intentionally exceeds the specification-imposed limit of 60 characters and also includes undocu
+2 CONC mented CONC and CONT tags, potentially allowing it to exceed 248 characters on a single line and to contain multiple lines.  It is our postulate that this will be read in three different ways by different programs.
+2 CONT Some will fail to parse the file completely
+2 CONT Some will see only the first 60 characters
+2 CONT Some will keep this entire multi-line text
+@ TRLR
