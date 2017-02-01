@@ -1559,11 +1559,6 @@ Known Context | Meaning | Payload | Substructures
 
 {.ednote} I have not put this in the LDS section because, although it says "Ancestral File", I surmise it might be used for the same purpose by other data providers.
 
-----
-
-{.ednote} resume first pass here
-
-----
 
 ### RETI
 
@@ -1571,11 +1566,32 @@ Known Context | Meaning | Payload | Substructures
 
 An event of exiting an occupational relationship with an employer after a qualifying time period.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.RETI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
 ### RFN
 
 `http://fihso.org/legacy/longform/REC_FILE_NUMBER`
 
 A permanent number assigned to a record that uniquely identifies it within a known file.
+
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.RFN`   | see below | 1--90 characters | None
+`.SUBM.RFN`   | A registered number of a submitter of Ancestral File data. This number is used in subsequent submissions or inquiries by the submitter for identification purposes. | 1--90 characters | None
+
+An individual `RFN`
+
+-   uniquely identifies this record within a registered network resource.
+-   is usable as a cross-reference pointer.
+-   may contain a colon (`:`) in which case the portion preceding the colon is an identifier assigned to a resource database that is available through access to a network and the portion following the colon is an an identification number assigned to each record within a specific database; or it may omit a colon and refer to a record within the current dataset.
+-   marked in GEDCOM 5.5 as being "for future use".
+
+{.ednote} It is not clear what benefit a `.INDI.RFN` has over an ID.
+
 
 ### RIN
 
@@ -1583,17 +1599,39 @@ A permanent number assigned to a record that uniquely identifies it within a kno
 
 A number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`RIN` | A unique record identification number assigned to the record by the source system. This number is intended to serve as a more sure means of identification of a record between two interfacing systems. | 1--12 characters | None
+
+`RIN` is known to be a substructure of all records *except* [HEAD] and [TRLR].
+
+
 ### ROLE
 
 `http://fihso.org/legacy/longform/ROLE`
 
 A name given to a role played by an individual in connection with an event.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`SOUR.EVEN.ROLE` | Either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record. | 1--25 characters | None
+
+
 ### SEX
 
 `http://fihso.org/legacy/longform/SEX`
 
-Indicates the sex of an individual--male or female.
+Indicates the sex of an individual---male or female.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.SEX` | A code that indicates the sex of the individual | 1--7 characters, which is one of {`M`, `F`} | None
+
+----
+
+{.ednote} resume first pass here
+
+----
 
 ### SOUR
 
