@@ -29,7 +29,7 @@ Each structure consists of the following parts:
 Name       | Required? | Notes
 -----------|-----------|------
 Tag        | Required  | short identifiers describing structure meaning, of three kinds
-Identifier | Required for *records*, optional otherwise | short identifiers allowing pointers to point to structure
+Identifier | Forbidden for [HEAD] and [TRLR], required for all other *records*, optional otherwise | short identifiers allowing pointers to point to structure
 Payload    | Required, Optional, or Forbidden (varies by Tag) | EITHER string content OR pointer (but never both)
 Substructures | Required or Optional (varies by Tag) | structured content
 
@@ -1081,7 +1081,6 @@ A role of an individual acting as a person receiving a bequest or legal devise.
 This tag does not appear in any known context.
 
 
-
 ### MARB
 
 `http://fihso.org/legacy/longform/MARRIAGE_BANN`
@@ -1162,17 +1161,16 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME` | The name value is formed in the manner the name is normally spoken, with the given name and family name (surname) separated by slashes `/`. | 1--120 characters, optionally with a substring offset by `/`, optionally with portions elided with `...` | [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [SOUR]\*, [NOTE]\*
 
 
----
-
-{.ednote} Resume first pass here
-
----
-
 ### NATI
 
 `http://fihso.org/legacy/longform/NATIONALITY`
 
 The national heritage of an individual.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.NATI`  | The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth. | 1--120 characters | [IndividualAttribute] | [*inherited*](#event)
+
 
 ### NATU
 
@@ -1180,11 +1178,24 @@ The national heritage of an individual.
 
 The event of obtaining citizenship.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.NATU`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
 ### NCHI
 
 `http://fihso.org/legacy/longform/CHILDREN_COUNT`
 
 The number of children that this person is known to be the parent of (all marriages) when subordinate to an individual, or that belong to this family when subordinate to a FAM_RECORD.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.NCHI`  | The known number of children of this individual from all marriages. | 1--3 characters | [IndividualAttribute] | [*inherited*](#event)
+`.FAM.NCHI`   | The reported number of children known to belong to this family, regardless of whether the associated children are represented in the corresponding structure. | 1--3 characters | None | None
+
+{.ednote} Presumably this is supposed to be a base-10 integer?
+
 
 ### NICK
 
@@ -1192,11 +1203,25 @@ The number of children that this person is known to be the parent of (all marria
 
 A descriptive or familiar that is used instead of, or in addition to, one's proper name.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.NICK` | A descriptive or familiar name used in connection with one's proper name. | 1--30 characters | None
+
+{.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is not descriptive text describing the meaning of the commas.
+
+
 ### NMR
 
 `http://fihso.org/legacy/longform/MARRIAGE_COUNT`
 
 The number of times this person has participated in a family as a spouse or parent.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.NMR`   | The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset. | 1--3 characters | [IndividualAttribute] | [*inherited*](#event)
+
+{.ednote} Presumably this is supposed to be a base-10 integer?
+
 
 ### NOTE
 
@@ -1204,13 +1229,42 @@ The number of times this person has participated in a family as a spouse or pare
 
 Additional information provided by the submitter for understanding the enclosing data.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.NOTE` | Comments or opinions from the submitter. | [SOUR]\*, [REFN]\*, [RIN]?, [CHAN]?
+`.HEAD.NOTE` | A note that a user enters to describe the contents of the lineage-linked file in terms of "ancestors or descendants of" so that the person receiving the data knows what genealogical information the transmission contains. | arbitrary-length text | None
+`NOTE` | Comments or opinions from the submitter. | pointer to a `NOTE` | [SOUR]\*
+`NOTE` | Comments or opinions from the submitter. | arbitrary-length text | [SOUR]\*
+
+Every structures that is known to have substructures is known to admit an arbitrary number of the unanchored [NOTE] substructures, except: 
+
+-   [ADDR]
+-   [ADOP].[FAMC]
+-   [CALN]
+-   [DATE]
+-   [FamilyEvent]`.`[HUSB] and [FamilyEvent]`.`[WIFE]
+-   .[HEAD] and its nested substructures
+-   [NOTE] itself (recursive notes are not known to be permitted)
+-   [REFN]
+-   [SOUR].[DATA]
+-   [SOUR].[DATA].[EVEN]
+-   [SOUR].[EVEN]
+
+
 ### NPFX
 
 `http://fihso.org/legacy/longform/NAME_PREFIX`
 
 Text which appears on a name line before the given and surname parts of a name.
+
 i.e. ( Lt. Cmndr. ) Joseph /Allen/ jr.
+
 In this example Lt. Cmndr. is considered as the name prefix portion.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.NPFX` | Non indexing name piece that appears preceding the given name and surname parts. Different name prefix parts are separated by a comma. | 1--30 characters | None
+
 
 ### NSFX
 
@@ -1220,11 +1274,40 @@ Text which appears on a name line after or behind the given and surname parts of
 i.e. Lt. Cmndr. Joseph /Allen/ ( jr. )
 In this example jr. is considered as the name suffix portion.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.NSFX` | Non-indexing name piece that appears after the given name and surname parts. Different name suffix parts are separated by a comma. | 1--30 characters | None
+
+
 ### OBJE
 
 `http://fihso.org/legacy/longform/OBJECT`
 
 Pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.OBJE` | | None | [FORM]!, [TITL]?, [NOTE]\*, [SOUR]\*, [BLOB]!, [OBJE]?, [REFN]\*, [RIN]?, [CHAN]?
+`.OBJE.OBJE` | chain to continued object | pointer to an `.OBJE` | None
+`OBJE` | embedded form | pointer to an `.OBJE` | None
+`OBJE` | linked form | None | [FORM]!, [TITL]?, [FILE]!, [NOTE]\*
+
+The both unanchored forms of `OBJE` are known to exist in the following contexts:
+
+-   .[FAM]`.OBJE`
+-   .[FAM].[SOUR]`.OBJE`
+-   .[INDI]`.OBJE`
+-   .[SOUR]`.OBJE`
+-   .[SUBM]`.OBJE`
+-   [Event]`.OBJE`
+-   [Event].[SOUR]`.OBJE`
+-   [NAME].[SOUR]`.OBJE`
+-   [SOUR]`.OBJE` if the payload of the [SOUR] is a pointer, not text 
+
+{.note} The reason for the inconsistent presence/absence of `SOUR.OBJE` is not understood by the author of this document
+
+{.ednote} The "if the payload is a pointer" distinction in where `OBJE` is known to occur is annoying in that the context specifier alone cannot describe this, but is embedded in the table for [SOUR] using just context specifiers so it isn't itself sufficient reason to revise the context specifier language
+
 
 ### OCCU
 
@@ -1232,11 +1315,10 @@ Pertaining to a grouping of attributes used in describing something. Usually ref
 
 The type of work or profession of an individual.
 
-### ORDI
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.OCCU`  | The kind of activity that an individual does for a job, profession, or principal activity. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
 
-`http://fihso.org/legacy/longform/ORDINANCE`
-
-Pertaining to a religious ordinance in general.
 
 ### ORDN
 
@@ -1244,11 +1326,21 @@ Pertaining to a religious ordinance in general.
 
 A religious event of receiving authority to act in religious matters.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.ORDN`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
 ### PAGE
 
 `http://fihso.org/legacy/longform/PAGE`
 
 A number or description to identify where information can be found in a referenced work.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`SOUR.PAGE`   | Specific location with in the information referenced. For a published work, this could include the volume of a multi-volume work and the page number(s). For a periodical, it could include volume, issue, and page numbers. For a newspaper, it could include a column number and page number. For an unpublished source, this could be a sheet number, page number, frame number, etc. A census record might have a line number or dwelling and family numbers in addition to the page number. | 1--248 characters | None
+
 
 ### PEDI
 
@@ -1256,11 +1348,31 @@ A number or description to identify where information can be found in a referenc
 
 Information pertaining to an individual to parent lineage chart.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.FAMC.PEDI` | A code used to indicate the child to family relationship for pedigree navigation purposes. | one of {`adopted`, `birth`, `foster`} | None
+
+`adopted`
+:   indicates adoptive parents.
+
+`birth`
+:   indicates birth parents.
+
+`foster`
+:   indicates child was included in a foster or guardian family.
+
 ### PHON
 
 `http://fihso.org/legacy/longform/PHONE`
 
 A unique number assigned to access a specific telephone.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.SOUR.CORP.PHON` || 1--25 characters | None
+`.REPO.PHON`  |         | 1--25 characters | None
+`.SUBM.PHON`  |         | 1--25 characters | None
+
 
 ### PLAC
 
@@ -1268,11 +1380,29 @@ A unique number assigned to access a specific telephone.
 
 A jurisdictional name to identify the place or location of an event.
 
+Places are often represented by a **place hierarchy**.
+This is a comma-separated list of place names, each subsumed by the place to its right.
+No accommodation for place names that include commas is made by this structure.
+
+See also [FORM] for the interpretation of the elements of a place hierarchy list.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.PLAC`  | see [FORM] | None | [FORM]!
+`.SOUR.DATa.EVEN.PLAC` | The name of the lowest jurisdiction that encompasses all lower-level places named in this source. For example, "Oneida, Idaho" would be used as a source jurisdiction place for events occurring in the various towns within Oneida County. "Idaho" would be the source jurisdiction place if the events recorded took place in other counties as well as Oneida County. | 1--120 characters formatted as a *place hierarchy* | None
+[Event]`.PLAC` | | 1--120 characters formatted as a *place hierarchy* | [FORM]?, [SOUR]\*, [NOTE]\*
+
+
 ### POST
 
 `http://fihso.org/legacy/longform/POSTAL_CODE`
 
 A code used by a postal service to identify an area to facilitate mail handling.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.POST`   | The ZIP or postal code used by the various localities in handling of mail. Isolated for sorting or indexing. | 1--10 characters | None
+
 
 ### PROB
 
@@ -1280,11 +1410,21 @@ A code used by a postal service to identify an area to facilitate mail handling.
 
 An event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.PROB`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
 ### PROP
 
 `http://fihso.org/legacy/longform/PROPERTY`
 
 Pertaining to possessions such as real estate or other property of interest.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.ORDN`  | A list of possessions (real estate or other property) belonging to this individual. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
+
 
 ### PUBL
 
@@ -1292,11 +1432,41 @@ Pertaining to possessions such as real estate or other property of interest.
 
 Refers to when and/or were a work was published or created.
 
+When and where the record was created. For published works, this includes information such as the city of publication, name of the publisher, and year of publication.
+
+For an unpublished work, it includes the date the record was created and the place where it was created. For example, the county and state of residence of a person making a declaration for a pension or the city and state of residence of the writer of a letter.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.SOUR.PUBL` | see above | 248 or more characters | None
+
+{.ednote} It is almost certainly an error in GEDCOM that asserts that every `PUBL` payload must be *at least* 248 characters and *cannot* have a newline in the first 248 characters.
+
+
 ### QUAY
 
 `http://fihso.org/legacy/longform/QUALITY_OF_DATA`
 
 An assessment of the certainty of the evidence to support the conclusion drawn from evidence.
+
+The QUAY tag's value conveys the submitter's quantitative evaluation of the credibility of a piece of information, based upon its supporting evidence. Some systems use this feature to rank multiple conflicting opinions for display of most likely information first. It is not intended to eliminate the receiver's need to evaluate the evidence for themselves.
+
+0
+:   Unreliable evidence or estimated data
+
+1
+:   Questionable reliability of evidence (interviews, census, oral genealogies, or potential for bias for example, an autobiography)
+
+2
+:   Secondary evidence, data officially recorded sometime after event
+
+3
+:   Direct and primary evidence used, or by dominance of the evidence
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`SOUR.QUAY` | see above | one of {`0`, `1`, `2`, `3`} | None
+
 
 ### REFN
 
@@ -1304,11 +1474,34 @@ An assessment of the certainty of the evidence to support the conclusion drawn f
 
 A description or number used to identify an item for filing, storage, or other reference purposes.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`REFN` | A user-defined number or text that the submitter uses to identify this record. For instance, it may be a record number within the submitter's automated or manual system, or it may be a page and position number on a pedigree chart. | 1--20 characters | [TYPE]?
+
+`REFN` is known to be a substructure of .[FAM], .[INDI], .[NOTE], .[OBJE], .[REPO], and .[SOUR].
+
 ### RELA
 
 `http://fihso.org/legacy/longform/RELATIONSHIP`
 
 A relationship value between the indicated contexts.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ASSO.RELA` | A word or phrase that states object 1's relation is object 2. | 1--25 characters | None
+
+Example:
+You would read the following as "Joe Jacob's great grandson is the person described by the record with id "jim":
+
+````gedcom
+0 INDI
+  1 NAME Joe /Jacob/
+  1 ASSO @jim@
+    2 RELA great grandson
+````
+
+{.ednote} This example, does not have an ID for Joe; that is also true of the example in the GEDCOM specification, despite that specification not allowing `0 INDI` without an ID.
+
 
 ### RELI
 
@@ -1316,11 +1509,24 @@ A relationship value between the indicated contexts.
 
 A religious denomination to which a person is affiliated or for which a record applies.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
+
+{.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of [SOUR] and [Event], the specification only lists it as an individual attribute.
+
+
 ### REPO
 
 `http://fihso.org/legacy/longform/REPOSITORY`
 
 An institution or person that has the specified item as part of their collection(s).
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.REPO` | | None | [NAME]?, [ADDR]?, [NOTE]\*, [REFN]\*, [RIN]?, [CHAN]?
+`.SOUR.REPO` | This structure is used within a source record to point to a name and address record of the holder of the source document. | pointer to `.REPO` | [NOTE]\*, [CALN]\*
+
 
 ### RESI
 
@@ -1328,11 +1534,36 @@ An institution or person that has the specified item as part of their collection
 
 The act of dwelling at an address for a period of time.
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.RESI`  |  | None | [IndividualAttribute] | [*inherited*](#event)
+
+{.note} The `RESI` is the only known [IndividualAttribute] that does not have a payload.
+
+
 ### RESN
 
 `http://fihso.org/legacy/longform/RESTRICTION`
 
 A processing indicator signifying access to information has been denied or otherwise restricted.
+
+`locked`
+:   Some records in Ancestral File have been satisfactorily proven by evidence, but because of source conflicts or incorrect traditions, there are repeated attempts to change this record. By arrangement, the Ancestral File Custodian can lock a record so that it cannot be changed without an agreement from the person assigned as the steward of such a record. The assigned steward is either the submitter listed for the record or Family History Support when no submitter is listed.
+
+`privacy`
+:   Information concerning this record is not present due to rights of or an approved request for privacy. 
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `locked` or `privacy` | None
+
+{.ednote} I have not put this in the LDS section because, although it says "Ancestral File", I surmise it might be used for the same purpose by other data providers.
+
+----
+
+{.ednote} resume first pass here
+
+----
 
 ### RETI
 
@@ -1494,6 +1725,16 @@ A religious event where an endowment ordinance for an individual was performed b
 `http://fihso.org/legacy/longform/FAMILY_FILE`
 
 Pertaining to, or the name of, a family file. Names stored in a file that are assigned to a family for doing temple ordinance work.
+
+### ORDI
+
+`http://fihso.org/legacy/longform/ORDINANCE`
+
+Pertaining to a religious ordinance in general.
+
+### PEDI extension
+
+`sealing` is another known value, to indicate the child was sealed to parents other than birth parents. 
 
 ### SLGC
 
