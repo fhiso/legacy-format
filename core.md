@@ -1256,10 +1256,8 @@ Every structures that is known to have substructures is known to admit an arbitr
 `http://fihso.org/legacy/longform/NAME_PREFIX`
 
 Text which appears on a name line before the given and surname parts of a name.
-
-i.e. ( Lt. Cmndr. ) Joseph /Allen/ jr.
-
-In this example Lt. Cmndr. is considered as the name prefix portion.
+i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
+In this example `Lt. Cmndr.` is considered as the name prefix portion.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
@@ -1271,8 +1269,8 @@ Known Context | Meaning | Payload | Substructures
 `http://fihso.org/legacy/longform/NAME_SUFFIX`
 
 Text which appears on a name line after or behind the given and surname parts of a name.
-i.e. Lt. Cmndr. Joseph /Allen/ ( jr. )
-In this example jr. is considered as the name suffix portion.
+i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
+In this example `jr.` is considered as the name suffix portion.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
@@ -1627,11 +1625,6 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `.INDI.SEX` | A code that indicates the sex of the individual | 1--7 characters, which is one of {`M`, `F`} | None
 
-----
-
-{.ednote} resume first pass here
-
-----
 
 ### SOUR
 
@@ -1639,11 +1632,30 @@ Known Context | Meaning | Payload | Substructures
 
 The initial or original material from which information was obtained.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.SOUR` |  A system identification name which was obtained through the GEDCOM registration process. This name must be unique from any other product. Spaces within the name must be substituted with a 0x5F (underscore `_`) so as to create one word. | 1--20 characters | [VERS]?, [NAME]?, [CORP]?, [DATA]?
+`.SOUR` | Source records are used to provide a bibliographic description of the source cited. | None | [DATA]?, [AUTH]?, [TITL]?, [ABBR]?, [PUBL]?, [TEXT]?, [REPO]?, [OBJE]\*, [NOTE]\*, [REFN]\*, [RIN]?, [CHAN]?
+`SOUR` | pointer to source record | pointer to `.SOUR` | [PAGE]?, [EVEN]?, [DATA]?, [QUAY]?, [OBJE]\*, [NOTE]\*
+`SOUR` | for systems not using source records | unlimited numbers of characters | [TEXT]\*, [NOTE]\*
+
+The non-pointer unanchored `SOUR` is described as follows:
+
+> A free form text block used to describe the source from which information was obtained. This text block is used by those systems which cannot use a pointer to a source record. It must contain a descriptive title, who created the work, where and when it was created, and where is source data stored. The developer should encourage users to use an appropriate style for forming this free form bibliographic reference. Developers are encouraged to support the `.SOUR` method of reporting bibliographic reference descriptions. 
+
+Both unanchored `SOUR` are known to be substructures of .[FAM], .[INDI], .[OBJE], .[NOTE], [ASSO], [Event], [NAME], and [PLAC].
+
+
 ### SPFX
 
 `http://fihso.org/legacy/longform/SURN_PREFIX`
 
 A name piece used as a non-indexing pre-part of a surname.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.SPFX` | Surname prefix or article used in a family name. Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la". | 1--30 characters | None
+
 
 ### SSN
 
@@ -1653,11 +1665,21 @@ A number assigned by the United States Social Security Administration. Used for 
 
 See also [IDNO]
 
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.SSN`  | A number assigned to a person in the United States for identification purposes. | 9--11 characters | [IndividualAttribute] | [*inherited*](#event)
+
+
 ### STAE
 
 `http://fihso.org/legacy/longform/STATE`
 
 A geographical division of a larger jurisdictional area, such as a State within the United States of America.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.STAE` | The name of the state used in the address. Isolated for sorting or indexing. | 1--60 characters | None
+
 
 ### SUBM
 
@@ -1665,11 +1687,26 @@ A geographical division of a larger jurisdictional area, such as a State within 
 
 An individual or organization who contributes genealogical data to a file or transfers it to someone else.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.SUBM`       | The submitter record identifies an individual or organization that contributed information contained in the dataset. | None | [NAME]!, [ADDR]?, [OBJE]\*, [LANG]\*, [RFN]?, [RIN]?, [CHAN]?
+`.HEAD.SUBM`  |         | pointer to `.SUBM` | None
+`.FAM.SUBM`   |         | pointer to `.SUBM` | None
+`.INDI.SUBM`  |         | pointer to `.SUBM` | None
+`.SUBN.SUBM`  |         | pointer to `.SUBM` | None
+
+
 ### SUBN
 
 `http://fihso.org/legacy/longform/SUBMISSION`
 
 Pertains to a collection of data issued for processing.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.SUBN` | The sending system uses a submission record to send instructions and information to the receiving system. | None | [SUBM]?, [ANCE]?, [DESC]?, [RIN]?; also various [LDS-specific tags]
+`.HEAD.SUBN` | | pointer to a `.SUBN` | None
+
 
 ### SURN
 
@@ -1677,11 +1714,22 @@ Pertains to a collection of data issued for processing.
 
 A family name passed on or used by members of a family.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.SURN` | Surname or family name. Different surnames are separated by a comma. | 1--120 characters | None
+
+
 ### TEXT
 
 `http://fihso.org/legacy/longform/TEXT`
 
 The exact wording found in an original source document.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`SOUR.TEXT`   | A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source. | arbitrary-length string | None
+`SOUR.DATA.TEXT` | A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source. | arbitrary-length string | None
+
 
 ### TIME
 
@@ -1689,11 +1737,24 @@ The exact wording found in an original source document.
 
 A time value in a 24-hour clock format, including hours, minutes, and optional seconds, separated by a colon (:). Fractions of seconds are shown in decimal notation.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.DATE.TIME` | The time of a specific event, usually a computer-timed event. | 1--12 characters matching `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9][0-9]?)?)?` | None
+`CHAN.DATE.TIME` | The time of a specific event, usually a computer-timed event. | 1--12 characters matching `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9]+)?)?` | None
+
+
 ### TITL
 
 `http://fihso.org/legacy/longform/TITLE`
 
 A description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`OBJE.TITL` | The title of a work, record, item, or object. | 1--248 characters | None | None
+`.SOUR.TITL` | The title of the work, record, or item and, when appropriate, the title of the larger work or series of which it is a part. | arbtrary-length string | None | None
+`.INDI.TITL` | The title given to or used by a person, especially of royalty or other noble class within a locality. | 1--120 characters | [IndividualAttribute] | [inherited](Event) 
+
 
 ### TRLR
 
@@ -1701,11 +1762,24 @@ A description of a specific writing or other work, such as the title of a book w
 
 At level 0, specifies the end of a GEDCOM transmission.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.TRLR` | End of dataset | None | None
+
+When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
+
+
 ### TYPE
 
 `http://fihso.org/legacy/longform/TYPE`
 
 A further qualification to the meaning of the associated superior tag. The value does not have any computer processing reliability. It is more in the form of a short one or two word note that should be displayed any time the associated data is displayed.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`REFN.TYPE` | A user-defined definition of the [REFN]. | 1--40 characters | None 
+[EVENT]`.TYPE` | A descriptor that should be used whenever the EVEN tag is used to define the event being cited. The event descriptor should use the same word or phrase and in the same language, when possible, as was used by the recorder of the event. | 1--90 characters | None
+
 
 ### VERS
 
@@ -1713,17 +1787,38 @@ A further qualification to the meaning of the associated superior tag. The value
 
 Indicates which version of a product, item, or publication is being used or referenced.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.HEAD.SOUR.VERS` | An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product. | 1--15 characters | None
+`.HEAD.GEDC.VERS` | An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product. | 1--15 characters | None
+`.HEAD.CHAR.VERS` | An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product. | 1--15 characters | None
+
+{.note} This draft is based off of a specification for which `.HEAD.GEDC.VERS` would typically be `5.5`, though depending on the specific features used other version strings might be appropriate too.
+
+
 ### WIFE
 
 `http://fihso.org/legacy/longform/WIFE`
 
 An individual in the role as a mother and/or married woman.
 
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.FAM.WIFE` | | pointer to a [INDI] | None
+[FamilyEvent]`.WIFE` | | None | [AGE]!
+
+
+
 ### WILL
 
 `http://fihso.org/legacy/longform/WILL`
 
 A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also [PROB]ate.) 
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.WILL`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
 
 ## LDS-specific tags
 
