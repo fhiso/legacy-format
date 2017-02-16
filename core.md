@@ -47,7 +47,7 @@ A tag is a string of between 2 and 31 characters from the class `[A-Za-z0-9_]`.
 No two distinct tags within a data set may share the same initial 15 characters.
 It may contain at most one underscore, and maps to an IRI as follows:
 
--   If there is no underscore, the IRI of the tag is `http://fhiso.org/legacy/` followed by the tag.
+-   If there is no underscore, the IRI of the tag is `http://terms.fhiso.org/legacy/` followed by the tag.
     The set of no-underscore tags is limited to those defined in this document, has not changed since 1995, and will not be expanded in future documents.
     
     Tags of this kind are referred to in this document as "[legacy tags](#legacy-tags)".
@@ -163,7 +163,7 @@ Some tags in some contexts are logically collected into a type hierarchy.
 
 ### Event
 
-`http://fihso.org/legacy/supertype/Event`
+`http://terms.fhiso.org/legacy/supertype/Event`
 
 Any Event subtype is known to have the following substructures:
 
@@ -186,7 +186,7 @@ Known subtypes: [IndividualEvent], [FamilyEvent], [IndividualAttribute]
 
 ### IndividualEvent
 
-`http://fihso.org/legacy/supertype/IndividualEvent`
+`http://terms.fhiso.org/legacy/supertype/IndividualEvent`
 
 A subtype of [Event], representing an event that appertained to a particular individual.
 
@@ -211,7 +211,7 @@ There should never be a payload for the IndividualEvent subclass [EVEN].
 
 ### FamilyEvent
 
-`http://fihso.org/legacy/supertype/FamilyEvent`
+`http://terms.fhiso.org/legacy/supertype/FamilyEvent`
 
 A subtype of [Event], representing an event that appertained to a particular couple or nuclear family.
 
@@ -238,7 +238,7 @@ There should never be a payload for the FamilyEvent subclass [EVEN].
 
 ### IndividualAttribute
 
-`http://fihso.org/legacy/supertype/IndividualAttribute`
+`http://terms.fhiso.org/legacy/supertype/IndividualAttribute`
 
 A subtype of [Event], representing attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
@@ -259,7 +259,7 @@ Attribute subtype.
 
 ### ABBR
 
-`http://fihso.org/legacy/longform/ABBREVIATION`
+`http://terms.fhiso.org/legacy/longform/ABBREVIATION`
 
 A short name of a title, description, or name.
 
@@ -270,7 +270,7 @@ Known Context | Meaning| Payload | Substructures
 
 ### ADDR
 
-`http://fihso.org/legacy/longform/ADDRESS`
+`http://terms.fhiso.org/legacy/longform/ADDRESS`
 
 The contemporary place, usually required for postal purposes, of an individual, a submitter of information, a repository, a business, a school, or a company.
 
@@ -291,7 +291,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ADR1
 
-`http://fihso.org/legacy/longform/ADDRESS1`
+`http://terms.fhiso.org/legacy/longform/ADDRESS1`
 
 The first line of an address.
 
@@ -302,7 +302,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ADR2
 
-`http://fihso.org/legacy/longform/ADDRESS2`
+`http://terms.fhiso.org/legacy/longform/ADDRESS2`
 
 The second line of an address.
 
@@ -313,7 +313,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ADOP
 
-`http://fihso.org/legacy/longform/ADOPTION`
+`http://terms.fhiso.org/legacy/longform/ADOPTION`
 
 Pertaining to creation of a child-parent relationship that does not exist biologically.
 
@@ -325,7 +325,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### AGE
 
-`http://fihso.org/legacy/longform/AGE`
+`http://terms.fhiso.org/legacy/longform/AGE`
 
 The age of the individual at the time an event occurred, or the age listed in the document.
 
@@ -358,7 +358,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### AGNC
 
-`http://fihso.org/legacy/longform/AGENCY`
+`http://terms.fhiso.org/legacy/longform/AGENCY`
 
 The institution or individual having authority and/or responsibility to manage or govern.
 
@@ -369,7 +369,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ALIA
 
-`http://fihso.org/legacy/longform/ALIAS`
+`http://terms.fhiso.org/legacy/longform/ALIAS`
 
 An indicator to link different record descriptions of a person who may be the same person.
 
@@ -380,7 +380,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ANCE
 
-`http://fihso.org/legacy/longform/ANCESTORS`
+`http://terms.fhiso.org/legacy/longform/ANCESTORS`
 
 Pertaining to forbearers of an individual.
 
@@ -395,7 +395,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ANCI
 
-`http://fihso.org/legacy/longform/ANCES_INTEREST`
+`http://terms.fhiso.org/legacy/longform/ANCES_INTEREST`
 
 Indicates an interest in additional research for ancestors of this individual. (See also [DESI].)
 
@@ -406,7 +406,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ANUL
 
-`http://fihso.org/legacy/longform/ANNULMENT`
+`http://terms.fhiso.org/legacy/longform/ANNULMENT`
 
 Declaring a marriage void from the beginning (never existed).
 
@@ -417,7 +417,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### ASSO
 
-`http://fihso.org/legacy/longform/ASSOCIATES`
+`http://terms.fhiso.org/legacy/longform/ASSOCIATES`
 
 An indicator to link friends, neighbors, relatives, or associates of an individual.
 
@@ -428,7 +428,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### AUTH
 
-`http://fihso.org/legacy/longform/AUTHOR`
+`http://terms.fhiso.org/legacy/longform/AUTHOR`
 
 The name of the individual who created or compiled information.
 
@@ -438,7 +438,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### BAPM
 
-`http://fihso.org/legacy/longform/BAPTISM`
+`http://terms.fhiso.org/legacy/longform/BAPTISM`
 
 The event of baptism, performed in infancy or later.
 
@@ -451,7 +451,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### BARM
 
-`http://fihso.org/legacy/longform/BAR_MITZVAH`
+`http://terms.fhiso.org/legacy/longform/BAR_MITZVAH`
 
 The ceremonial event held when a Jewish boy reaches age 13.
 
@@ -462,7 +462,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### BASM
 
-`http://fihso.org/legacy/longform/BAS_MITZVAH`
+`http://terms.fhiso.org/legacy/longform/BAS_MITZVAH`
 
 The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat Mitzvah."
 
@@ -473,7 +473,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### BIRT
 
-`http://fihso.org/legacy/longform/BIRTH`
+`http://terms.fhiso.org/legacy/longform/BIRTH`
 
 The event of entering into life.
 
@@ -484,7 +484,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### BLES
 
-`http://fihso.org/legacy/longform/BLESSING`
+`http://terms.fhiso.org/legacy/longform/BLESSING`
 
 A religious event of bestowing divine care or intercession. Sometimes given in connection with a naming ceremony.
 
@@ -495,7 +495,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### BLOB
 
-`http://fihso.org/legacy/longform/BINARY_OBJECT`
+`http://terms.fhiso.org/legacy/longform/BINARY_OBJECT`
 
 A grouping of data used as input to a multimedia system that processes binary data to represent images, sound, and video.
 
@@ -524,7 +524,7 @@ and maps bytes as follows:
 
 ### BURI
 
-`http://fihso.org/legacy/longform/BURIAL`
+`http://terms.fhiso.org/legacy/longform/BURIAL`
 
 The event of the proper disposing of the mortal remains of a deceased person.
 
@@ -539,7 +539,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### CALN
 
-`http://fihso.org/legacy/longform/CALL_NUMBER`
+`http://terms.fhiso.org/legacy/longform/CALL_NUMBER`
 
 The number used by a repository to identify the specific items in its collections.
 
@@ -552,7 +552,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CAST
 
-`http://fihso.org/legacy/longform/CASTE`
+`http://terms.fhiso.org/legacy/longform/CASTE`
 
 The name of an individual's rank or status in society, based
 on racial or religious differences, or differences in wealth, inherited
@@ -565,7 +565,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### CAUS
 
-`http://fihso.org/legacy/longform/CAUSE`
+`http://terms.fhiso.org/legacy/longform/CAUSE`
 
 A description of the cause of the associated event or fact, such as the cause of death.
 
@@ -576,7 +576,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CENS
 
-`http://fihso.org/legacy/longform/CENSUS`
+`http://terms.fhiso.org/legacy/longform/CENSUS`
 
 The event of the periodic count of the population for a designated locality, such as a national or state Census.
 
@@ -588,7 +588,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### CHAN
 
-`http://fihso.org/legacy/longform/CHANGE`
+`http://terms.fhiso.org/legacy/longform/CHANGE`
 
 Indicates a change, correction, or modification. Typically used in connection with a DATE to specify when a change in information occurred.
 
@@ -600,7 +600,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CHAR
 
-`http://fihso.org/legacy/longform/CHARACTER`
+`http://terms.fhiso.org/legacy/longform/CHARACTER`
 
 An indicator of the character set used in writing this automated information.
 
@@ -610,7 +610,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CHIL
 
-`http://fihso.org/legacy/longform/CHILD`
+`http://terms.fhiso.org/legacy/longform/CHILD`
 
 The natural, adopted, or sealed (LDS) child of a father and a mother.
 
@@ -623,7 +623,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CHR
 
-`http://fihso.org/legacy/longform/CHRISTENING`
+`http://terms.fhiso.org/legacy/longform/CHRISTENING`
 
 The religious event (not LDS) of baptizing and/or naming a child.
 
@@ -634,7 +634,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### CHRA
 
-`http://fihso.org/legacy/longform/ADULT_CHRISTENING`
+`http://terms.fhiso.org/legacy/longform/ADULT_CHRISTENING`
 
 The religious event (not LDS) of baptizing and/or naming an adult person.
 
@@ -645,7 +645,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### CITY
 
-`http://fihso.org/legacy/longform/CITY`
+`http://terms.fhiso.org/legacy/longform/CITY`
 
 A lower level jurisdictional unit. Normally an incorporated municipal unit.
 
@@ -656,7 +656,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CONF
 
-`http://fihso.org/legacy/longform/CONFIRMATION`
+`http://terms.fhiso.org/legacy/longform/CONFIRMATION`
 
 The religious event (not LDS) of conferring the gift of the Holy Ghost and, among protestants, full church membership.
 
@@ -669,7 +669,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### COPR
 
-`http://fihso.org/legacy/longform/COPYRIGHT`
+`http://terms.fhiso.org/legacy/longform/COPYRIGHT`
 
 A statement that accompanies data to protect it from unlawful duplication and distribution.
 
@@ -682,7 +682,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CORP
 
-`http://fihso.org/legacy/longform/CORPORATE`
+`http://terms.fhiso.org/legacy/longform/CORPORATE`
 
 A name of an institution, agency, corporation, or company.
 
@@ -692,7 +692,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### CREM
 
-`http://fihso.org/legacy/longform/CREMATION`
+`http://terms.fhiso.org/legacy/longform/CREMATION`
 
 Disposal of the remains of a person's body by fire.
 
@@ -704,7 +704,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### CTRY
 
-`http://fihso.org/legacy/longform/COUNTRY`
+`http://terms.fhiso.org/legacy/longform/COUNTRY`
 
 The name or code of the country.
 
@@ -715,7 +715,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### DATA
 
-`http://fihso.org/legacy/longform/DATA`
+`http://terms.fhiso.org/legacy/longform/DATA`
 
 Pertaining to stored automated information.
 
@@ -727,7 +727,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### DATE
 
-`http://fihso.org/legacy/longform/DATE`
+`http://terms.fhiso.org/legacy/longform/DATE`
 
 The time of an event in a calendar format.
 
@@ -767,7 +767,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### DEAT
 
-`http://fihso.org/legacy/longform/DEATH`
+`http://terms.fhiso.org/legacy/longform/DEATH`
 
 The event when mortal life terminates.
 
@@ -777,7 +777,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### DESC
 
-`http://fihso.org/legacy/longform/DESCENDANTS`
+`http://terms.fhiso.org/legacy/longform/DESCENDANTS`
 
 Pertaining to offspring of an individual.
 
@@ -792,7 +792,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### DESI
 
-`http://fihso.org/legacy/longform/DESCENDANT_INT`
+`http://terms.fhiso.org/legacy/longform/DESCENDANT_INT`
 
 Indicates an interest in research to identify additional descendants of this individual. (See also [ANCI].)
 
@@ -803,7 +803,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### DEST
 
-`http://fihso.org/legacy/longform/DESTINATION`
+`http://terms.fhiso.org/legacy/longform/DESTINATION`
 
 A system receiving data.
 
@@ -814,7 +814,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### DIV
 
-`http://fihso.org/legacy/longform/DIVORCE`
+`http://terms.fhiso.org/legacy/longform/DIVORCE`
 
 An event of dissolving a marriage through civil action.
 
@@ -825,7 +825,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### DIVF
 
-`http://fihso.org/legacy/longform/DIVORCE_FILED`
+`http://terms.fhiso.org/legacy/longform/DIVORCE_FILED`
 
 An event of filing for a divorce by a spouse.
 
@@ -836,7 +836,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### DSCR
 
-`http://fihso.org/legacy/longform/PHY_DESCRIPTION`
+`http://terms.fhiso.org/legacy/longform/PHY_DESCRIPTION`
 
 The physical characteristics of a person, place, or thing.
 
@@ -847,7 +847,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### EDUC
 
-`http://fihso.org/legacy/longform/EDUCATION`
+`http://terms.fhiso.org/legacy/longform/EDUCATION`
 
 Indicator of a level of education attained.
 
@@ -858,7 +858,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### EMAIL
 
-`http://fihso.org/legacy/longform/EMAIL`
+`http://terms.fhiso.org/legacy/longform/EMAIL`
 
 An electronic mail address.
 
@@ -871,7 +871,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### EMIG
 
-`http://fihso.org/legacy/longform/EMIGRATION`
+`http://terms.fhiso.org/legacy/longform/EMIGRATION`
 
 An event of leaving one's homeland with the intent of residing elsewhere.
 
@@ -882,7 +882,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### ENGA
 
-`http://fihso.org/legacy/longform/ENGAGEMENT`
+`http://terms.fhiso.org/legacy/longform/ENGAGEMENT`
 
 An event of recording or announcing an agreement between two people to become married.
 
@@ -893,7 +893,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### EVEN
 
-`http://fihso.org/legacy/longform/EVENT`
+`http://terms.fhiso.org/legacy/longform/EVENT`
 
 A noteworthy happening related to an individual, a group, or an organization.
 
@@ -914,7 +914,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### FACT
 
-`http://fihso.org/legacy/longform/FACT`
+`http://terms.fhiso.org/legacy/longform/FACT`
 
 Pertaining to a noteworthy attribute or fact concerning an individual, a group, or an organization. A `FACT` structure is usually qualified or classified by a subordinate use of the `TYPE` tag.
 
@@ -925,7 +925,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### FAM
 
-`http://fihso.org/legacy/longform/FAMILY`
+`http://terms.fhiso.org/legacy/longform/FAMILY`
 
 Identifies a legal, common law, or other customary relationship of man and woman and their children, if any, or a family created by virtue of the birth of a child to its biological father and mother.
 
@@ -940,7 +940,7 @@ See also [SLGS] in the [LDS-specific tags] section.
 
 ### FAMC
 
-`http://fihso.org/legacy/longform/FAMILY_CHILD`
+`http://terms.fhiso.org/legacy/longform/FAMILY_CHILD`
 
 Identifies the family in which an individual appears as a child.
 
@@ -956,7 +956,7 @@ See also [SLGC] in the [LDS-specific tags] section.
 
 ### FAMS
 
-`http://fihso.org/legacy/longform/FAMILY_SPOUSE`
+`http://terms.fhiso.org/legacy/longform/FAMILY_SPOUSE`
 
 Identifies the family in which an individual appears as a spouse.
 
@@ -967,7 +967,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### FAX
 
-`http://fihso.org/legacy/longform/FACIMILIE`
+`http://terms.fhiso.org/legacy/longform/FACIMILIE`
 
 Electronic facimilie transmission.
 
@@ -980,7 +980,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### FCOM
 
-`http://fihso.org/legacy/longform/FIRST_COMMUNION`
+`http://terms.fhiso.org/legacy/longform/FIRST_COMMUNION`
 
 A religious rite, the first act of sharing in the Lord's supper as part of church worship.
 
@@ -991,7 +991,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### FILE
 
-`http://fihso.org/legacy/longform/FILE`
+`http://terms.fhiso.org/legacy/longform/FILE`
 
 An information storage place that is ordered and arranged for preservation and reference.
 
@@ -1016,7 +1016,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### FONE
 
-`http://fihso.org/legacy/longform/PHONETIC`
+`http://terms.fhiso.org/legacy/longform/PHONETIC`
 
 A phonetic variation of a superior text string.
 
@@ -1032,7 +1032,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### FORM
 
-`http://fihso.org/legacy/longform/FORMAT`
+`http://terms.fhiso.org/legacy/longform/FORMAT`
 
 An assigned name given to a consistent format in which information can be conveyed.
 
@@ -1058,7 +1058,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### GEDC
 
-`http://fihso.org/legacy/longform/GEDCOM`
+`http://terms.fhiso.org/legacy/longform/GEDCOM`
 
 Information about the use of GEDCOM in a transmission.
 
@@ -1069,7 +1069,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### GIVN
 
-`http://fihso.org/legacy/longform/GIVEN_NAME`
+`http://terms.fhiso.org/legacy/longform/GIVEN_NAME`
 
 A given or earned name used for official identification of a person.
 
@@ -1080,7 +1080,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### GRAD
 
-`http://fihso.org/legacy/longform/GRADUATION`
+`http://terms.fhiso.org/legacy/longform/GRADUATION`
 
 An event of awarding educational diplomas or degrees to individuals.
 
@@ -1091,7 +1091,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### HEAD
 
-`http://fihso.org/legacy/longform/HEADER`
+`http://terms.fhiso.org/legacy/longform/HEADER`
 
 Identifies information pertaining to an entire GEDCOM transmission.
 
@@ -1102,7 +1102,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### HUSB
 
-`http://fihso.org/legacy/longform/HUSBAND`
+`http://terms.fhiso.org/legacy/longform/HUSBAND`
 
 An individual in the family role of a married man or father.
 
@@ -1114,7 +1114,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### IDNO
 
-`http://fihso.org/legacy/longform/IDENT_NUMBER`
+`http://terms.fhiso.org/legacy/longform/IDENT_NUMBER`
 
 A number assigned to identify a person within some significant external system.
 
@@ -1129,7 +1129,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### IMMI
 
-`http://fihso.org/legacy/longform/IMMIGRATION`
+`http://terms.fhiso.org/legacy/longform/IMMIGRATION`
 
 An event of entering into a new locality with the intent of residing there.
 
@@ -1140,7 +1140,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### INDI
 
-`http://fihso.org/legacy/longform/INDIVIDUAL`
+`http://terms.fhiso.org/legacy/longform/INDIVIDUAL`
 
 A person.
 
@@ -1153,7 +1153,7 @@ See also [LDS-specific tags]
 
 ### LANG
 
-`http://fihso.org/legacy/longform/LANGUAGE`
+`http://terms.fhiso.org/legacy/longform/LANGUAGE`
 
 The name of the language used in a communication or transmission of information.
 
@@ -1168,7 +1168,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### LEGA
 
-`http://fihso.org/legacy/longform/LEGATEE`
+`http://terms.fhiso.org/legacy/longform/LEGATEE`
 
 A role of an individual acting as a person receiving a bequest or legal devise.
 
@@ -1177,7 +1177,7 @@ This tag does not appear in any known context.
 
 ### LATI
 
-`http://fihso.org/legacy/longform/LATITUDE`
+`http://terms.fhiso.org/legacy/longform/LATITUDE`
 
 A value indicating a coordinate position on a line, plane, or space.
 
@@ -1198,7 +1198,7 @@ desired accuracy. | 5--8 characters | None
 
 ### LONG
 
-`http://fihso.org/legacy/longform/LONGITUDE`
+`http://terms.fhiso.org/legacy/longform/LONGITUDE`
 
 A value indicating a coordinate position on a line, plane, or space.
 
@@ -1217,7 +1217,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### MAP
 
-`http://fihso.org/legacy/longform/MAP`
+`http://terms.fhiso.org/legacy/longform/MAP`
 
 Pertains to a representation of measurements usually presented in a graphical form.
 
@@ -1230,7 +1230,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### MARB
 
-`http://fihso.org/legacy/longform/MARRIAGE_BANN`
+`http://terms.fhiso.org/legacy/longform/MARRIAGE_BANN`
 
 An event of an official public notice given that two people intend to marry.
 
@@ -1241,7 +1241,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### MARC
 
-`http://fihso.org/legacy/longform/MARR_CONTRACT`
+`http://terms.fhiso.org/legacy/longform/MARR_CONTRACT`
 
 An event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
 
@@ -1252,7 +1252,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### MARL
 
-`http://fihso.org/legacy/longform/MARR_LICENSE`
+`http://terms.fhiso.org/legacy/longform/MARR_LICENSE`
 
 An event of obtaining a legal license to marry.
 
@@ -1263,7 +1263,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### MARR
 
-`http://fihso.org/legacy/longform/MARRIAGE`
+`http://terms.fhiso.org/legacy/longform/MARRIAGE`
 
 A legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
 
@@ -1274,7 +1274,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### MARS
 
-`http://fihso.org/legacy/longform/MARR_SETTLEMENT`
+`http://terms.fhiso.org/legacy/longform/MARR_SETTLEMENT`
 
 An event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
 
@@ -1285,7 +1285,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### MEDI
 
-`http://fihso.org/legacy/longform/MEDIA`
+`http://terms.fhiso.org/legacy/longform/MEDIA`
 
 Identifies information about the media or having to do with the medium in which information is stored.
 
@@ -1296,7 +1296,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### NAME
 
-`http://fihso.org/legacy/longform/NAME`
+`http://terms.fhiso.org/legacy/longform/NAME`
 
 A word or combination of words used to help identify an individual, title, or other item. More than one NAME line should be used for people who were known by multiple names.
 
@@ -1310,7 +1310,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### NATI
 
-`http://fihso.org/legacy/longform/NATIONALITY`
+`http://terms.fhiso.org/legacy/longform/NATIONALITY`
 
 The national heritage of an individual.
 
@@ -1321,7 +1321,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### NATU
 
-`http://fihso.org/legacy/longform/NATURALIZATION`
+`http://terms.fhiso.org/legacy/longform/NATURALIZATION`
 
 The event of obtaining citizenship.
 
@@ -1332,7 +1332,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### NCHI
 
-`http://fihso.org/legacy/longform/CHILDREN_COUNT`
+`http://terms.fhiso.org/legacy/longform/CHILDREN_COUNT`
 
 The number of children that this person is known to be the parent of (all marriages) when subordinate to an individual, or that belong to this family when subordinate to a FAM_RECORD.
 
@@ -1346,7 +1346,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### NICK
 
-`http://fihso.org/legacy/longform/NICKNAME`
+`http://terms.fhiso.org/legacy/longform/NICKNAME`
 
 A descriptive or familiar that is used instead of, or in addition to, one's proper name.
 
@@ -1359,7 +1359,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### NMR
 
-`http://fihso.org/legacy/longform/MARRIAGE_COUNT`
+`http://terms.fhiso.org/legacy/longform/MARRIAGE_COUNT`
 
 The number of times this person has participated in a family as a spouse or parent.
 
@@ -1372,7 +1372,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### NOTE
 
-`http://fihso.org/legacy/longform/NOTE`
+`http://terms.fhiso.org/legacy/longform/NOTE`
 
 Additional information provided by the submitter for understanding the enclosing data.
 
@@ -1400,7 +1400,7 @@ Every structures that is known to have substructures is known to admit an arbitr
 
 ### NPFX
 
-`http://fihso.org/legacy/longform/NAME_PREFIX`
+`http://terms.fhiso.org/legacy/longform/NAME_PREFIX`
 
 Text which appears on a name line before the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
@@ -1413,7 +1413,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### NSFX
 
-`http://fihso.org/legacy/longform/NAME_SUFFIX`
+`http://terms.fhiso.org/legacy/longform/NAME_SUFFIX`
 
 Text which appears on a name line after or behind the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
@@ -1426,7 +1426,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### OBJE
 
-`http://fihso.org/legacy/longform/OBJECT`
+`http://terms.fhiso.org/legacy/longform/OBJECT`
 
 Pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
 
@@ -1472,7 +1472,7 @@ The both unanchored forms of `OBJE` are known to exist in the following contexts
 
 ### OCCU
 
-`http://fihso.org/legacy/longform/OCCUPATION`
+`http://terms.fhiso.org/legacy/longform/OCCUPATION`
 
 The type of work or profession of an individual.
 
@@ -1483,7 +1483,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### ORDN
 
-`http://fihso.org/legacy/longform/ORDINATION`
+`http://terms.fhiso.org/legacy/longform/ORDINATION`
 
 A religious event of receiving authority to act in religious matters.
 
@@ -1494,7 +1494,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### PAGE
 
-`http://fihso.org/legacy/longform/PAGE`
+`http://terms.fhiso.org/legacy/longform/PAGE`
 
 A number or description to identify where information can be found in a referenced work.
 
@@ -1505,7 +1505,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### PEDI
 
-`http://fihso.org/legacy/longform/PEDIGREE`
+`http://terms.fhiso.org/legacy/longform/PEDIGREE`
 
 Information pertaining to an individual to parent lineage chart.
 
@@ -1524,7 +1524,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### PHON
 
-`http://fihso.org/legacy/longform/PHONE`
+`http://terms.fhiso.org/legacy/longform/PHONE`
 
 A unique number assigned to access a specific telephone.
 
@@ -1538,7 +1538,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### PLAC
 
-`http://fihso.org/legacy/longform/PLACE`
+`http://terms.fhiso.org/legacy/longform/PLACE`
 
 A jurisdictional name to identify the place or location of an event.
 
@@ -1557,7 +1557,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### POST
 
-`http://fihso.org/legacy/longform/POSTAL_CODE`
+`http://terms.fhiso.org/legacy/longform/POSTAL_CODE`
 
 A code used by a postal service to identify an area to facilitate mail handling.
 
@@ -1568,7 +1568,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### PROB
 
-`http://fihso.org/legacy/longform/PROBATE`
+`http://terms.fhiso.org/legacy/longform/PROBATE`
 
 An event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
 
@@ -1579,7 +1579,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### PROP
 
-`http://fihso.org/legacy/longform/PROPERTY`
+`http://terms.fhiso.org/legacy/longform/PROPERTY`
 
 Pertaining to possessions such as real estate or other property of interest.
 
@@ -1590,7 +1590,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### PUBL
 
-`http://fihso.org/legacy/longform/PUBLICATION`
+`http://terms.fhiso.org/legacy/longform/PUBLICATION`
 
 Refers to when and/or were a work was published or created.
 
@@ -1607,7 +1607,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### QUAY
 
-`http://fihso.org/legacy/longform/QUALITY_OF_DATA`
+`http://terms.fhiso.org/legacy/longform/QUALITY_OF_DATA`
 
 An assessment of the certainty of the evidence to support the conclusion drawn from evidence.
 
@@ -1632,7 +1632,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### REFN
 
-`http://fihso.org/legacy/longform/REFERENCE`
+`http://terms.fhiso.org/legacy/longform/REFERENCE`
 
 A description or number used to identify an item for filing, storage, or other reference purposes.
 
@@ -1644,7 +1644,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### RELA
 
-`http://fihso.org/legacy/longform/RELATIONSHIP`
+`http://terms.fhiso.org/legacy/longform/RELATIONSHIP`
 
 A relationship value between the indicated contexts.
 
@@ -1667,7 +1667,7 @@ You would read the following as "Joe Jacob's great grandson is the person descri
 
 ### RELI
 
-`http://fihso.org/legacy/longform/RELIGION`
+`http://terms.fhiso.org/legacy/longform/RELIGION`
 
 A religious denomination to which a person is affiliated or for which a record applies.
 
@@ -1681,7 +1681,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### REPO
 
-`http://fihso.org/legacy/longform/REPOSITORY`
+`http://terms.fhiso.org/legacy/longform/REPOSITORY`
 
 An institution or person that has the specified item as part of their collection(s).
 
@@ -1693,7 +1693,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### RESI
 
-`http://fihso.org/legacy/longform/RESIDENCE`
+`http://terms.fhiso.org/legacy/longform/RESIDENCE`
 
 The act of dwelling at an address for a period of time.
 
@@ -1706,7 +1706,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### RESN
 
-`http://fihso.org/legacy/longform/RESTRICTION`
+`http://terms.fhiso.org/legacy/longform/RESTRICTION`
 
 A processing indicator signifying access to information has been denied or otherwise restricted.
 
@@ -1732,7 +1732,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### RETI
 
-`http://fihso.org/legacy/longform/RETIREMENT`
+`http://terms.fhiso.org/legacy/longform/RETIREMENT`
 
 An event of exiting an occupational relationship with an employer after a qualifying time period.
 
@@ -1743,7 +1743,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### RFN
 
-`http://fihso.org/legacy/longform/REC_FILE_NUMBER`
+`http://terms.fhiso.org/legacy/longform/REC_FILE_NUMBER`
 
 A permanent number assigned to a record that uniquely identifies it within a known file.
 
@@ -1765,7 +1765,7 @@ An individual `RFN`
 
 ### RIN
 
-`http://fihso.org/legacy/longform/REC_ID_NUMBER`
+`http://terms.fhiso.org/legacy/longform/REC_ID_NUMBER`
 
 A number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
@@ -1778,7 +1778,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ROLE
 
-`http://fihso.org/legacy/longform/ROLE`
+`http://terms.fhiso.org/legacy/longform/ROLE`
 
 A name given to a role played by an individual in connection with an event.
 
@@ -1789,7 +1789,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### ROMN
 
-`http://fihso.org/legacy/longform/ROMANIZED`
+`http://terms.fhiso.org/legacy/longform/ROMANIZED`
 
 A romanized variation of a superior text string.
 
@@ -1805,7 +1805,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### SEX
 
-`http://fihso.org/legacy/longform/SEX`
+`http://terms.fhiso.org/legacy/longform/SEX`
 
 Indicates the sex of an individual---male or female.
 
@@ -1816,7 +1816,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### SOUR
 
-`http://fihso.org/legacy/longform/SOURCE`
+`http://terms.fhiso.org/legacy/longform/SOURCE`
 
 The initial or original material from which information was obtained.
 
@@ -1836,7 +1836,7 @@ Both unanchored `SOUR` are known to be substructures of .[FAM], .[INDI], .[OBJE]
 
 ### SPFX
 
-`http://fihso.org/legacy/longform/SURN_PREFIX`
+`http://terms.fhiso.org/legacy/longform/SURN_PREFIX`
 
 A name piece used as a non-indexing pre-part of a surname.
 
@@ -1847,7 +1847,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### SSN
 
-`http://fihso.org/legacy/longform/SOC_SEC_NUMBER`
+`http://terms.fhiso.org/legacy/longform/SOC_SEC_NUMBER`
 
 A number assigned by the United States Social Security Administration. Used for tax identification purposes.
 
@@ -1860,7 +1860,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### STAE
 
-`http://fihso.org/legacy/longform/STATE`
+`http://terms.fhiso.org/legacy/longform/STATE`
 
 A geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
@@ -1871,7 +1871,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### STAT
 
-`http://fihso.org/legacy/longform/STATUS`
+`http://terms.fhiso.org/legacy/longform/STATUS`
 
 An assessment of the state or condition of something.
 
@@ -1897,7 +1897,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### SUBM
 
-`http://fihso.org/legacy/longform/SUBMITTER`
+`http://terms.fhiso.org/legacy/longform/SUBMITTER`
 
 An individual or organization who contributes genealogical data to a file or transfers it to someone else.
 
@@ -1912,7 +1912,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### SUBN
 
-`http://fihso.org/legacy/longform/SUBMISSION`
+`http://terms.fhiso.org/legacy/longform/SUBMISSION`
 
 Pertains to a collection of data issued for processing.
 
@@ -1924,7 +1924,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### SURN
 
-`http://fihso.org/legacy/longform/SURNAME`
+`http://terms.fhiso.org/legacy/longform/SURNAME`
 
 A family name passed on or used by members of a family.
 
@@ -1935,7 +1935,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### TEXT
 
-`http://fihso.org/legacy/longform/TEXT`
+`http://terms.fhiso.org/legacy/longform/TEXT`
 
 The exact wording found in an original source document.
 
@@ -1947,7 +1947,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### TIME
 
-`http://fihso.org/legacy/longform/TIME`
+`http://terms.fhiso.org/legacy/longform/TIME`
 
 A time value in a 24-hour clock format, including hours, minutes, and optional seconds, separated by a colon (:). Fractions of seconds are shown in decimal notation.
 
@@ -1959,7 +1959,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### TITL
 
-`http://fihso.org/legacy/longform/TITLE`
+`http://terms.fhiso.org/legacy/longform/TITLE`
 
 A description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
 
@@ -1976,7 +1976,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### TRLR
 
-`http://fihso.org/legacy/longform/TRAILER`
+`http://terms.fhiso.org/legacy/longform/TRAILER`
 
 At level 0, specifies the end of a GEDCOM transmission.
 
@@ -1989,7 +1989,7 @@ When encountering a `TRLR`, applications may cease parsing before even looking f
 
 ### TYPE
 
-`http://fihso.org/legacy/longform/TYPE`
+`http://terms.fhiso.org/legacy/longform/TYPE`
 
 A further qualification to the meaning of the associated superior tag. The value does not have any computer processing reliability. It is more in the form of a short one or two word note that should be displayed any time the associated data is displayed.
 
@@ -2003,7 +2003,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### VERS
 
-`http://fihso.org/legacy/longform/VERSION`
+`http://terms.fhiso.org/legacy/longform/VERSION`
 
 Indicates which version of a product, item, or publication is being used or referenced.
 
@@ -2018,7 +2018,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### WIFE
 
-`http://fihso.org/legacy/longform/WIFE`
+`http://terms.fhiso.org/legacy/longform/WIFE`
 
 An individual in the role as a mother and/or married woman.
 
@@ -2031,7 +2031,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### WILL
 
-`http://fihso.org/legacy/longform/WILL`
+`http://terms.fhiso.org/legacy/longform/WILL`
 
 A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also [PROB]ate.) 
 
@@ -2042,7 +2042,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 ### WWW
 
-`http://fihso.org/legacy/longform/WEB`
+`http://terms.fhiso.org/legacy/longform/WEB`
 
 World Wide Web home page.
 
@@ -2058,7 +2058,7 @@ Known Context | Meaning | Payload | Substructures
 
 ### AFN
 
-`http://fihso.org/legacy/longform/AFN`
+`http://terms.fhiso.org/legacy/longform/AFN`
 
 A unique permanent record file number of an individual record stored in Ancestral File.
 
@@ -2069,13 +2069,13 @@ Known Context | Meaning | Payload | Substructures
 
 ### BAPL
 
-`http://fihso.org/legacy/longform/BAPTISM-LDS`
+`http://terms.fhiso.org/legacy/longform/BAPTISM-LDS`
 
 The event of baptism performed at age eight or later by priesthood authority of the LDS Church. (See also BAPM)
 
 ### CONL
 
-`http://fihso.org/legacy/longform/CONFIRMATION_L`
+`http://terms.fhiso.org/legacy/longform/CONFIRMATION_L`
 
 The religious event by which a person receives membership in the LDS Church.
 
@@ -2083,19 +2083,19 @@ See also [CONF]
 
 ### ENDL
 
-`http://fihso.org/legacy/longform/ENDOWMENT`
+`http://terms.fhiso.org/legacy/longform/ENDOWMENT`
 
 A religious event where an endowment ordinance for an individual was performed by priesthood authority in an LDS temple.
 
 ### FAMF
 
-`http://fihso.org/legacy/longform/FAMILY_FILE`
+`http://terms.fhiso.org/legacy/longform/FAMILY_FILE`
 
 Pertaining to, or the name of, a family file. Names stored in a file that are assigned to a family for doing temple ordinance work.
 
 ### ORDI
 
-`http://fihso.org/legacy/longform/ORDINANCE`
+`http://terms.fhiso.org/legacy/longform/ORDINANCE`
 
 Pertaining to a religious ordinance in general.
 
@@ -2105,25 +2105,25 @@ Pertaining to a religious ordinance in general.
 
 ### SLGC
 
-`http://fihso.org/legacy/longform/SEALING_CHILD`
+`http://terms.fhiso.org/legacy/longform/SEALING_CHILD`
 
 A religious event pertaining to the sealing of a child to his or her parents in an LDS temple ceremony.
 
 ### SLGS
 
-`http://fihso.org/legacy/longform/SEALING_SPOUSE`
+`http://terms.fhiso.org/legacy/longform/SEALING_SPOUSE`
 
 A religious event pertaining to the sealing of a husband and wife in an LDS temple ceremony.
 
 ### STAT
 
-`http://fihso.org/legacy/longform/STATUS`
+`http://terms.fhiso.org/legacy/longform/STATUS`
 
 An assessment of the state or condition of something.
 
 ### TEMP
 
-`http://fihso.org/legacy/longform/TEMPLE`
+`http://terms.fhiso.org/legacy/longform/TEMPLE`
 
 The name or code that represents the name a temple of the LDS Church.
 
