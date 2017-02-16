@@ -89,7 +89,7 @@ We thus propose replacing these with the following:
 ## The `OBJE` mess
 
 GEDCOM 5.5.1 changed the meaning of `OBJE` in several ways, making 5.5.1 and 5.5 incompatible in this regard.
-In addition, both versions contained unusual quirks, such as the inconsistent set of places a `SOUR` may contain an `OBJE` substructure -- these are progress blockers, but are hard to defend and difficult to document clearly.
+In addition, both versions contained unusual quirks, such as the inconsistent set of places a `SOUR` may contain an `OBJE` substructure -- these are not progress blockers, but are hard to defend and difficult to document clearly.
 
 It is not clear to us that either 5.5 or 5.5.1 usage of this tag predominates to a sufficient degree not to mention the other usage.
 This suggests the need to document a more permissive hybrid syntax that encompasses both.
