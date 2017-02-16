@@ -62,8 +62,11 @@ To simplify the grammar and remove the under-defined escape terminology, we prop
     
     1.  Pointers are encoded as `@identifier@`.
         Payloads that are not pointers MUST NOT begin with a valid pointer.
+        
+        To support limited-look-ahead lex-free parsers,
+        payloads that are not pointers SHOULD NOT begin with an `@` followed by a valid first character of a pointer (i.e., `[A-Za-z0-9_]`).
     
-    2.  The `DATE` tag may begin with a calender identifier such as `@#DROMAN@`
+    2.  The `DATE` tag payload may begin with a calender identifier such as `@#DROMAN@`
 
 1.  When encountering an `@` outside of the above cases, implementations SHOULD treat any `@[^@]+@` as equivalent to the empty string.
 
