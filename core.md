@@ -151,11 +151,11 @@ The following outlines all of the type that have legacy tags associated with the
 
 When listing known substructures, each is followed by a single character:
 
-- `!` means "required": there must be one and only one of these
-- `?` means "optional": there may be one and no more than one of these
-- `*` means "set-valued": there may be zero or more of these
+- `!` means "required": there must be one and only one of these.
+- `?` means "optional": there may be one and no more than one of these.
+- `*` means "set-valued": there may be zero or more of these.  Some implementations may provide a maximum number for some or all set-values substructures.
+- `+` means "non-empty set-valued": there must be one and may be more than one of these. In the current spec, `+` only appears for the .[OBJE].[FILE].
 
-{.ednote} this section is far from complete...
 
 ## Supertypes
 
@@ -168,7 +168,6 @@ Some tags in some contexts are logically collected into a type hierarchy.
 Any Event subtype is known to have the following substructures:
 
 [ADDR]?
-[AGE]?
 [AGNC]?
 [CAUS]?
 [DATE]?
@@ -190,6 +189,10 @@ Known subtypes: [IndividualEvent], [FamilyEvent], [IndividualAttribute]
 `http://fihso.org/legacy/supertype/IndividualEvent`
 
 A subtype of [Event], representing an event that appertained to a particular individual.
+
+Any IndividualEvent subtype is known to have the following substructures: [AGE], as well as those inherited from [Event].
+
+{.note} GEDCOM 5.5 put [AGE] as a substructure of [Event], not [IndividualEvent].
 
 Known subtypes: [BIRT], [CHR], [DEAT], [BURI], [CREM], [ADOP], [BAPM], [BARM], [BASM], [BLES], [CHRA], [CONF], [FCOM], [ORDN], [NATU], [EMIG], [IMMI], [CENS], [PROB], [WILL], [GRAD], [RETI], [EVEN]
 
@@ -240,6 +243,10 @@ There should never be a payload for the FamilyEvent subclass [EVEN].
 A subtype of [Event], representing attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
 However, they are often described like events because they were observed at a particular time and/or place.
+
+Any IndividualAttribute subtype is known to have the following substructures: [AGE], as well as those inherited from [Event].
+
+{.note} GEDCOM 5.5 put [AGE] as a substructure of [Event], not [IndividualAttribute].
 
 Known subtypes: [CAST], [DSCR], [EDUC], [IDNO], [NATI], [NCHI], [NMR], [OCCU], [PROP], [RELI], [RESI], [SSN], [TITL], [FACT]
 
@@ -312,7 +319,7 @@ Pertaining to creation of a child-parent relationship that does not exist biolog
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.ADOP`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event),[FAMC]?
+`.INDI.ADOP`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent),[FAMC]?
 `ADOP.FAMC.ADOP` | Which parent(s) adopted | `HUSB`, `WIFE`, or `BOTH` | None | None
 
 
@@ -404,7 +411,7 @@ Declaring a marriage void from the beginning (never existed).
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.ANUL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.ANUL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### ASSO
@@ -438,7 +445,7 @@ See also [BAPL] and [CHR]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BAPM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.BAPM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### BARM
@@ -449,7 +456,7 @@ The ceremonial event held when a Jewish boy reaches age 13.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BARM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.BARM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### BASM
@@ -460,7 +467,7 @@ The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat 
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BASM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.BASM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### BIRT
@@ -471,7 +478,7 @@ The event of entering into life.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BIRT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event), [FAMC]?
+`.INDI.BIRT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent), [FAMC]?
 
 
 ### BLES
@@ -482,7 +489,7 @@ A religious event of bestowing divine care or intercession. Sometimes given in c
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BLES`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.BLES`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### BLOB
@@ -526,7 +533,7 @@ See also [CREM]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### CALN
@@ -552,7 +559,7 @@ rank, profession, occupation, etc.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CAST`  |  A name assigned to a particular group that this person was associated with, such as a particular racial group, religious group, or a group with an inherited status.  | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.CAST`  |  A name assigned to a particular group that this person was associated with, such as a particular racial group, religious group, or a group with an inherited status.  | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### CAUS
@@ -574,8 +581,8 @@ The event of the periodic count of the population for a designated locality, suc
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CENS`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
-`.FAM.CENS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.INDI.CENS`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
+`.FAM.CENS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### CHAN
@@ -621,7 +628,7 @@ The religious event (not LDS) of baptizing and/or naming a child.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CHR`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event), [FAMC]?
+`.INDI.CHR`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent), [FAMC]?
 
 
 ### CHRA
@@ -632,7 +639,7 @@ The religious event (not LDS) of baptizing and/or naming an adult person.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CHRA`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.CHRA`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### CITY
@@ -656,7 +663,7 @@ The religious event (not LDS) of conferring the gift of the Holy Ghost and, amon
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.CONF`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.CONF`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### COPR
@@ -692,7 +699,7 @@ See also [BURI]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 ### CTRY
 
@@ -765,7 +772,7 @@ The event when mortal life terminates.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.DEAT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.DEAT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 ### DESC
 
@@ -812,7 +819,7 @@ An event of dissolving a marriage through civil action.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.DIV`    | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.DIV`    | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### DIVF
@@ -823,7 +830,7 @@ An event of filing for a divorce by a spouse.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.DIVF`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.DIVF`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### DSCR
@@ -834,7 +841,7 @@ The physical characteristics of a person, place, or thing.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.DSCR`  | An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.DSCR`  | An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute. | 1--248 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### EDUC
@@ -845,7 +852,7 @@ Indicator of a level of education attained.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.EDUC`  | A description of a scholastic or educational achievement or pursuit. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.EDUC`  | A description of a scholastic or educational achievement or pursuit. | 1--248 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### EMAIL
@@ -869,7 +876,7 @@ An event of leaving one's homeland with the intent of residing elsewhere.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.EMIG`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.EMIG`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### ENGA
@@ -880,7 +887,7 @@ An event of recording or announcing an agreement between two people to become ma
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.ENGA`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.ENGA`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### EVEN
@@ -894,8 +901,8 @@ The general event or attribute type is declared by using a subordinate [TYPE] ta
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.EVEN`  | see above | None | [IndividualEvent] | [*inherited*](#event), [TYPE]!
-`.FAM.EVEN`   | see above | None | [FamilyEvent] | [*inherited*](#event), [TYPE]!
+`.INDI.EVEN`  | see above | None | [IndividualEvent] | [*inherited*](#individualevent), [TYPE]!
+`.FAM.EVEN`   | see above | None | [FamilyEvent] | [*inherited*](#familyevent), [TYPE]!
 `SOUR.EVEN` |  A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be BIRT regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.  | 1--15 characters; one of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`} | None | [ROLE]
 `.SOUR.DATA.EVEN` |  An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be BIRT, DEAT, MARR. | 1--90 characters forming a comma-separated list of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`} | None | [DATE]?, [PLAC]?
 
@@ -912,7 +919,7 @@ Pertaining to a noteworthy attribute or fact concerning an individual, a group, 
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.FACT`  | Text describing a particular characteristic or attribute assigned to an individual. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event), [TYPE]!
+`.INDI.FACT`  | Text describing a particular characteristic or attribute assigned to an individual. | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute), [TYPE]!
 
 
 ### FAM
@@ -978,7 +985,7 @@ A religious rite, the first act of sharing in the Lord's supper as part of churc
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.FCOM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.FCOM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### FILE
@@ -1078,7 +1085,7 @@ An event of awarding educational diplomas or degrees to individuals.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.GRAD`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.GRAD`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### HEAD
@@ -1114,7 +1121,7 @@ See also [SSN]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.IDNO`  | A nationally-controlled number assigned to an individual. | 1--30 characters | [IndividualAttribute] | [*inherited*](#event), [TYPE]!
+`.INDI.IDNO`  | A nationally-controlled number assigned to an individual. | 1--30 characters | [IndividualAttribute] | [*inherited*](#individualattribute), [TYPE]!
 
 {.note} Although called a "number", the payload of an `IDNO` is *not* restricted to numeric values.
 
@@ -1127,7 +1134,7 @@ An event of entering into a new locality with the intent of residing there.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.IMMI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.IMMI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### INDI
@@ -1228,7 +1235,7 @@ An event of an official public notice given that two people intend to marry.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.MARB`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.MARB`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### MARC
@@ -1239,7 +1246,7 @@ An event of recording a formal agreement of marriage, including the prenuptial a
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.MARC`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.MARC`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### MARL
@@ -1250,7 +1257,7 @@ An event of obtaining a legal license to marry.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.MARL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.MARL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### MARR
@@ -1261,7 +1268,7 @@ A legal, common-law, or customary event of creating a family unit of a man and a
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.MARR`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.MARR`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### MARS
@@ -1272,7 +1279,7 @@ An event of creating an agreement between two people contemplating marriage, at 
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.FAM.MARS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#event)
+`.FAM.MARS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
 ### MEDI
@@ -1308,7 +1315,7 @@ The national heritage of an individual.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.NATI`  | The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth. | 1--120 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.NATI`  | The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth. | 1--120 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### NATU
@@ -1319,7 +1326,7 @@ The event of obtaining citizenship.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.NATU`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.NATU`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### NCHI
@@ -1330,7 +1337,7 @@ The number of children that this person is known to be the parent of (all marria
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.NCHI`  | The known number of children of this individual from all marriages. | 1--3 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.NCHI`  | The known number of children of this individual from all marriages. | 1--3 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 `.FAM.NCHI`   | The reported number of children known to belong to this family, regardless of whether the associated children are represented in the corresponding structure. | 1--3 characters | None | None
 
 {.ednote} Presumably this is supposed to be a base-10 integer?
@@ -1357,7 +1364,7 @@ The number of times this person has participated in a family as a spouse or pare
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.NMR`   | The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset. | 1--3 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.NMR`   | The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset. | 1--3 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 {.ednote} Presumably this is supposed to be a base-10 integer?
 
@@ -1470,7 +1477,7 @@ The type of work or profession of an individual.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.OCCU`  | The kind of activity that an individual does for a job, profession, or principal activity. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.OCCU`  | The kind of activity that an individual does for a job, profession, or principal activity. | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### ORDN
@@ -1481,7 +1488,7 @@ A religious event of receiving authority to act in religious matters.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.ORDN`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.ORDN`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### PAGE
@@ -1566,7 +1573,7 @@ An event of judicial determination of the validity of a will. May indicate sever
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.PROB`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.PROB`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### PROP
@@ -1577,7 +1584,7 @@ Pertaining to possessions such as real estate or other property of interest.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.ORDN`  | A list of possessions (real estate or other property) belonging to this individual. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.ORDN`  | A list of possessions (real estate or other property) belonging to this individual. | 1--248 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### PUBL
@@ -1665,7 +1672,7 @@ A religious denomination to which a person is affiliated or for which a record a
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 [Event]`.RELI` | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | None | None
 
 {.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of [SOUR] and [Event], the specification only lists it as an individual attribute.
@@ -1691,7 +1698,7 @@ The act of dwelling at an address for a period of time.
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.RESI`  |  | None | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.RESI`  |  | None | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 {.note} The `RESI` is the only known [IndividualAttribute] that does not have a payload.
 
@@ -1730,7 +1737,7 @@ An event of exiting an occupational relationship with an employer after a qualif
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.RETI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.RETI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### RFN
@@ -1847,7 +1854,7 @@ See also [IDNO]
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.SSN`  | A number assigned to a person in the United States for identification purposes. | 9--11 characters | [IndividualAttribute] | [*inherited*](#event)
+`.INDI.SSN`  | A number assigned to a person in the United States for identification purposes. | 9--11 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
 ### STAE
@@ -2029,7 +2036,7 @@ A legal document treated as an event, by which a person disposes of his or her e
 
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
-`.INDI.WILL`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+`.INDI.WILL`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
 ### WWW
