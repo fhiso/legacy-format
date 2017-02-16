@@ -52,7 +52,7 @@ However, the only known implementation of escapes is in the prefix position of `
 
 To simplify the grammar and remove the under-defined escape terminology, we propose the following change:
 
-1.  When encoded, strings must preserve `@` (U+0040, COMMERCIAL AT) in pairs.
+1.  When encoded, strings must have `@` (U+0040, COMMERCIAL AT) in pairs.
 
 1.  Two adjacent `@` represent a literal `@`; thus `person@example.com` would be encoded as `person@@example.com`
 
