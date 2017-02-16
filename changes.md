@@ -78,7 +78,18 @@ This change is intended to
 
 ### Pointers as continuations
 
-The GEDCOM specification implicitly implies that oversized records may be split into two records, 
+The following passage in the GEDCOM specification
+
+> Logical GEDCOM record sizes should be constrained so that they will fit in a memory buffer of less than 32K. GEDCOM files with records sizes greater than 32K run the risk of not being able to be loaded in some programs.  Use of pointers to records, particularly NOTE records, should ensure that this limit will be sufficient.
+
+can be taken, particularly in concert with the OBJE chaining in GEDCOM 5.5 (but not 5.5.1) to suggest that oversized records can be created by breaking them into chunks that chain from one to another.
+However, it does not unambiguously assert that such chaining is permitted.
+
+Due to complexity in defining the meaning of chained records,
+particularly as relates to substructures but also as relates to semantic ambiguity (e.g., is a `NOTE` inside a `NOTE` a meta-note *about* the note or a split continuation of the note?),
+we propose that split-and-chain is not supported except where explicitly supported by OBJE.
+We are unaware of any implementations that this decision breaks.
+
 
 
 ## Only point to records
