@@ -178,6 +178,8 @@ Any Event subtype is known to have the following substructures:
 [PLAC]?
 [SOUR]\*
 [TYPE]?
+[RESN]?
+[RELI]?
 
 Known subtypes: [IndividualEvent], [FamilyEvent], [IndividualAttribute]
 
@@ -239,9 +241,12 @@ A subtype of [Event], representing attributes or facts are used to describe an i
 These are not generally thought of as events.
 However, they are often described like events because they were observed at a particular time and/or place.
 
-Known subtypes: [CAST], [DSCR], [EDUC], [IDNO], [NATI], [NCHI], [NMR], [OCCU], [PROP], [RELI], [RESI], [SSN], [TITL]
+Known subtypes: [CAST], [DSCR], [EDUC], [IDNO], [NATI], [NCHI], [NMR], [OCCU], [PROP], [RELI], [RESI], [SSN], [TITL], [FACT]
 
 {.note} The generic [EVEN](.even) tag is *not* a known subtype of IndividualAttribute; however IndividualEvent is permitted in every known context where IndividualAttribute is permitted and may be used for attributes as well as events.
+
+{.note} [FACT] was added in GEDCOM 5.5.1, presumably to replace [EVEN] as an implicit Individual
+Attribute subtype.
 
 ## Tags
 
@@ -271,11 +276,11 @@ Payload
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.HEAD.SOUR.CORP.ADDR` || see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY]?, [STAE]?, [POST]?, [CTRY]?
-`.REPO.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY]?, [STAE]?, [POST]?, [CTRY]?
-`.SUBM.ADDR`  |         | see above | [ADR1](#adr1)?, [ADR2](#adr2)?, [CITY]?, [STAE]?, [POST]?, [CTRY]?
+`.HEAD.SOUR.CORP.ADDR` || see above | [ADR1]?, [ADR2]?, [CITY]?, [STAE]?, [POST]?, [CTRY]?, [PHON]\*, [EMAIL]\*, [FAX]\*, [WWW]\*
+`.REPO.ADDR`  |         | see above | [ADR1]?, [ADR2]?, [CITY]?, [STAE]?, [POST]?, [CTRY]?, [PHON]\*,  [EMAIL]\*, [FAX]\*, [WWW]\*
+`.SUBM.ADDR`  |         | see above | [ADR1]?, [ADR2]?, [CITY]?, [STAE]?, [POST]?, [CTRY]?, [PHON]\*,  [EMAIL]\*, [FAX]\*, [WWW]\*
 
-
+{.note} The spec allows at most 3 each of `ADDR.CONT`, `ADDR.PHON`, `ADDR.EMAIL`, `ADDR.FAX`, and `ADDR.WWW`.
 
 ### ADR1
 
@@ -486,6 +491,8 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A grouping of data used as input to a multimedia system that processes binary data to represent images, sound, and video.
 
+{.note} This tag was present in GEDCOM 5.5 but was **removed** from GEDCOM 5.5.1.
+
 When multiple blobs are present in the same structure, their contents are concatenated in order.
 
 Known Context | Meaning | Payload | Substructures 
@@ -661,8 +668,9 @@ A statement that accompanies data to protect it from unlawful duplication and di
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `.HEAD.COPR`  |  A copyright statement needed to protect the copyrights of the submitter of this GEDCOM file. | 1--90 characters | None
-`.HEAD.SOUR.DATA.COPR` |  A copyright statement required by the owner of data from which this information was down- loaded. For example, when a GEDCOM down-load is requested from the Ancestral File, this would be the copyright statement to indicate that the data came from a copyrighted source. | 1--90 characters | None
+`.HEAD.SOUR.DATA.COPR` |  A copyright statement required by the owner of data from which this information was down- loaded. For example, when a GEDCOM down-load is requested from the Ancestral File, this would be the copyright statement to indicate that the data came from a copyrighted source. | 1--90 characters\* | None
 
+\* The 5.5.1 spec allows `CONC`/`CONT` extension of `.HEAD.SOUR.DATA.COPR` (allowing it to be arbitrarily long) but does not extend the 1--90 character limit (contradicting the other change).
 
 ### CORP
 
@@ -840,6 +848,19 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.EDUC`  | A description of a scholastic or educational achievement or pursuit. | 1--248 characters | [IndividualAttribute] | [*inherited*](#event)
 
 
+### EMAIL
+
+`http://fihso.org/legacy/longform/EMAIL`
+
+An electronic mail address.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.  The spec is inconsistent in its short form name: Appendix A lists it as `EMAI` but the grammar uses `EMAIL` instead.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.EMAIL` | An electronic address that can be used for contact such as an email address.  | 5--120 characters | None
+
+
 ### EMIG
 
 `http://fihso.org/legacy/longform/EMIGRATION`
@@ -875,12 +896,23 @@ Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
 `.INDI.EVEN`  | see above | None | [IndividualEvent] | [*inherited*](#event), [TYPE]!
 `.FAM.EVEN`   | see above | None | [FamilyEvent] | [*inherited*](#event), [TYPE]!
-`SOUR.EVEN` |  A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be BIRT regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.  | 1--15 characters; one of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`} | None | [ROLE]
-`.SOUR.DATA.EVEN` |  An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be BIRT, DEAT, MARR. | 1--90 characters forming a comma-separated list of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`} | None | [DATE]?, [PLAC]?
+`SOUR.EVEN` |  A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be BIRT regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.  | 1--15 characters; one of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`} | None | [ROLE]
+`.SOUR.DATA.EVEN` |  An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be BIRT, DEAT, MARR. | 1--90 characters forming a comma-separated list of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`} | None | [DATE]?, [PLAC]?
 
 {.note} despite the above text describing the use of EVEN tags for attributes, they are not a known subtype of [IndividualAttribute] and are not known to carry a payload.  Use of EVEN for attributes is thus under-defined.
 
 {.note} Uncharacteristically for enumerated values, `SOUR.EVEN` is listed to be up to 15 characters even though the longest known value is 4 characters long.
+
+
+### FACT
+
+`http://fihso.org/legacy/longform/FACT`
+
+Pertaining to a noteworthy attribute or fact concerning an individual, a group, or an organization. A `FACT` structure is usually qualified or classified by a subordinate use of the `TYPE` tag.
+
+Known Context | Meaning | Payload | Supertype | Substructures 
+--------------|---------|---------|-----------|--------------
+`.INDI.FACT`  | Text describing a particular characteristic or attribute assigned to an individual. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event), [TYPE]!
 
 
 ### FAM
@@ -891,7 +923,7 @@ Identifies a legal, common law, or other customary relationship of man and woman
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.FAM` | The FAM record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one HUSB/father and one WIFE/mother listed in each FAM. If, for example, a man participated in more than one family union, then he would appear in more than one FAM. The family record structure assumes that the HUSB/father is male and WIFE/mother is female. | None | [FamilyEvent]\*, [HUSB]? [WIFE]?, [CHIL]\*, [NCHI]?, [SUBM]\*, [SOUR]\*, [OBJE]\*, [NOTE]\*, [REFN]\*, [RIN]?, [CHAN]?
+`.FAM` | The FAM record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one HUSB/father and one WIFE/mother listed in each FAM. If, for example, a man participated in more than one family union, then he would appear in more than one FAM. The family record structure assumes that the HUSB/father is male and WIFE/mother is female. | None | [FamilyEvent]\*, [HUSB]? [WIFE]?, [CHIL]\*, [NCHI]?, [SUBM]\*, [SOUR]\*, [OBJE]\*, [NOTE]\*, [REFN]\*, [RIN]?, [CHAN]?, [RESN]?
 
 The preferred order of the [CHIL] substructures within a FAM structure is chronological by birth. 
  
@@ -906,7 +938,7 @@ Identifies the family in which an individual appears as a child.
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.FAMC`  | | Pointer to a [FAM] | [PEDI]?, [NOTE]\*
+`.INDI.FAMC`  | | Pointer to a [FAM] | [PEDI]?, [NOTE]\*, [STAT]?
 `BIRT.FAMC`   | | Pointer to a [FAM] | None
 `CHR.FAMC`    | | Pointer to a [FAM] | None
 `.INDI.ADOP.FAMC` | | Pointer to a [FAM] | [ADOP]
@@ -923,6 +955,19 @@ Identifies the family in which an individual appears as a spouse.
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `.INDI.FAMS`  | | Pointer to a [FAM] | [NOTE]\*
+
+
+### FAX
+
+`http://fihso.org/legacy/longform/FACIMILIE`
+
+Electronic facimilie transmission.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.EMAIL` | A FAX telephone number appropriate for sending data facsimiles.  | 5--60 characters | None
 
 
 ### FCOM
@@ -942,10 +987,39 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 An information storage place that is ordered and arranged for preservation and reference.
 
+#### GEDCOM 5.5-compatible version
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`OBJE.FILE` |  A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained. | 1--30 characters | None
+
+#### GEDCOM 5.5.1-compatible version
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`OBJE.FILE` |  A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained. | 1--30 characters | [FORM]!, [TITL]?
+
+#### Common information
+
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `.HEAD.FILE` |  The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext). | 1--90 characters | None
-`OBJE.FILE` |  A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained. | 1--30 characters | None
+
+
+### FONE
+
+`http://fihso.org/legacy/longform/PHONETIC`
+
+A phonetic variation of a superior text string.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+The method of phonetic writing is indicated by the subordinate `TYPE` value; for example if hiragana was used to provide a reading of a name written in kanji, then the `TYPE` value would indicate `kana`.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.FONE` | The phonetic variation of the name in the same form as the was the name used in the superior primitive.  | 1--120 characters | [TYPE]!, [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [NOTE]\*, [SOUR]\*
+[Event]`.PLAC.FONE` | The phonetic variation of the place name in the same form as the was the name used in the superior primitive. | [TYPE]!
 
 
 ### FORM
@@ -956,10 +1030,22 @@ An assigned name given to a consistent format in which information can be convey
 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`OBJE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
 `.HEAD.PLAC.FORM` | Implies that all place names follow this jurisdictional format and each jurisdiction is accounted for by a comma, whether the name is known or not. May be overridden by [Event]`.PLAC.FORM`. | 1--120 characters | None
 [Event]`.PLAC.FORM` | Jurisdictional entities that are named in a sequence from the lowest to the highest jurisdiction. The jurisdictions are separated by commas, and any jurisdiction's name that is missing is still accounted for by a comma. | 1--120 characters | None
 `.HEAD.GEDC.FORM` | The GEDCOM form used to construct this transmission. | 14--20 characters, specifically `LINEAGE_LINKED` | None
+
+
+#### GEDCOM 5.5-compatible version
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`OBJE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
+
+#### GEDCOM 5.5.1-compatible version
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`FILE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
 
 
 ### GEDC
@@ -1081,6 +1167,59 @@ A role of an individual acting as a person receiving a bequest or legal devise.
 This tag does not appear in any known context.
 
 
+### LATI
+
+`http://fihso.org/legacy/longform/LATITUDE`
+
+A value indicating a coordinate position on a line, plane, or space.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+For example:  18 degrees, 9 minutes, and 3.4 seconds North would be formatted as `N18.150944`.
+Minutes and seconds are converted by dividing the minutes value by 60 and the seconds value by 3600 and adding the results together.
+This sum becomes the fractional part of the degree's value.
+
+{.ednote} The example in the GEDCOM spec uses 10 characters, while restricting it to 8.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`MAP.LATI` | The value specifying the latitudinal coordinate of the place name. The latitude coordinate is the
+direction North or South from the equator in degrees and fraction of degrees carried out to give the 
+desired accuracy. | 5--8 characters | None
+
+
+### LONG
+
+`http://fihso.org/legacy/longform/LONGITUDE`
+
+A value indicating a coordinate position on a line, plane, or space.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+For example:  168 degrees, 9 minutes, and 3.4 seconds East would be formatted as `E168.150944`.
+Minutes and seconds are converted by dividing the minutes value by 60 and the seconds value by 3600 and adding the results together.
+This sum becomes the fractional part of the degree's value.
+
+{.ednote} The example in the GEDCOM spec uses 11 characters, while restricting it to 8.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`MAP.LONG` | The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate. |  5--8 characters | None
+
+
+### MAP
+
+`http://fihso.org/legacy/longform/MAP`
+
+Pertains to a representation of measurements usually presented in a graphical form.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+[Event]`.PLAC.MAP` | | None | [LATI]!, [LONG]!
+
+
 ### MARB
 
 `http://fihso.org/legacy/longform/MARRIAGE_BANN`
@@ -1158,7 +1297,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.SOUR.NAME` | The name of the software product that produced this transmission. | 1--90 characters | None
 `.REPO.NAME` | The official name of the archive in which the stated source material is stored. | 1--90 characters | None
 `.SUBM.NAME` | The name of the submitter formatted for display and address generation. | 1--60 characters | None
-`.INDI.NAME` | The name value is formed in the manner the name is normally spoken, with the given name and family name (surname) separated by slashes `/`. | 1--120 characters, optionally with a substring offset by `/`, optionally with portions elided with `...` | [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [SOUR]\*, [NOTE]\*
+`.INDI.NAME` | The name value is formed in the manner the name is normally spoken, with the given name and family name (surname) separated by slashes `/`. | 1--120 characters, optionally with a substring offset by `/`, optionally with portions elided with `...` | [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [SOUR]\*, [NOTE]\*, [FONE]\*, [ROMN]\*
 
 
 ### NATI
@@ -1283,12 +1422,26 @@ Known Context | Meaning | Payload | Substructures
 
 Pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
 
+The meaning and use of OBJE changed significantly between GEDCOM 5.5 and GEDCOM 5.5.1
+
+#### GEDCOM 5.5-compatible version
+
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `.OBJE` | | None | [FORM]!, [TITL]?, [NOTE]\*, [SOUR]\*, [BLOB]!, [OBJE]?, [REFN]\*, [RIN]?, [CHAN]?
 `.OBJE.OBJE` | chain to continued object | pointer to an `.OBJE` | None
-`OBJE` | embedded form | pointer to an `.OBJE` | None
-`OBJE` | linked form | None | [FORM]!, [TITL]?, [FILE]!, [NOTE]\*
+`OBJE` | linked form | pointer to an `.OBJE` | None
+`OBJE` | embedded form | None | [FORM]!, [TITL]?, [FILE]!, [NOTE]\*
+
+#### GEDCOM 5.5.1-compatible version
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.OBJE` | | None | [FILE]+, [REFN]\*, [RIN]?, [NOTE]\*, [SOUR]\*, [CHAN]?
+`OBJE` | linked form | pointer to an `.OBJE` | None
+`OBJE` | embedded form | None | [FILE]+, [TITL]?
+
+#### Shared Information
 
 The both unanchored forms of `OBJE` are known to exist in the following contexts:
 
@@ -1305,6 +1458,8 @@ The both unanchored forms of `OBJE` are known to exist in the following contexts
 {.note} The reason for the inconsistent presence/absence of `SOUR.OBJE` is not understood by the author of this document
 
 {.ednote} The "if the payload is a pointer" distinction in where `OBJE` is known to occur is annoying in that the context specifier alone cannot describe this, but is embedded in the table for [SOUR] using just context specifiers so it isn't itself sufficient reason to revise the context specifier language
+
+#### Common 
 
 
 ### OCCU
@@ -1370,6 +1525,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.SOUR.CORP.PHON` || 1--25 characters | None
 `.REPO.PHON`  |         | 1--25 characters | None
 `.SUBM.PHON`  |         | 1--25 characters | None
+`ADDR.PHON`   |         | 1--25 characters | None
 
 
 ### PLAC
@@ -1510,6 +1666,7 @@ A religious denomination to which a person is affiliated or for which a record a
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
 `.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | [IndividualAttribute] | [*inherited*](#event)
+[Event]`.RELI` | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | None | None
 
 {.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of [SOUR] and [Event], the specification only lists it as an individual attribute.
 
@@ -1545,15 +1702,22 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A processing indicator signifying access to information has been denied or otherwise restricted.
 
+`confidential`
+:   This data was marked as confidential by the user.  In some systems data marked as confidential will be treated differently, for example, there might be an option that would stop confidential data from appearing on printed reports or would prevent that information from being exported.
+
 `locked`
 :   Some records in Ancestral File have been satisfactorily proven by evidence, but because of source conflicts or incorrect traditions, there are repeated attempts to change this record. By arrangement, the Ancestral File Custodian can lock a record so that it cannot be changed without an agreement from the person assigned as the steward of such a record. The assigned steward is either the submitter listed for the record or Family History Support when no submitter is listed.
 
 `privacy`
 :   Information concerning this record is not present due to rights of or an approved request for privacy. 
 
+{.note} `confidential` was added in GEDCOM 5.5.1.
+
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
-`.INDI.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `locked` or `privacy` | None
+`.INDI.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `confidential`, `locked`, or `privacy` | None
+`.FAM.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `confidential`, `locked`, or `privacy` | None
+[Event]`.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `confidential`, `locked`, or `privacy` | None
 
 {.ednote} I have not put this in the LDS section because, although it says "Ancestral File", I surmise it might be used for the same purpose by other data providers.
 
@@ -1613,6 +1777,22 @@ A name given to a role played by an individual in connection with an event.
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `SOUR.EVEN.ROLE` | Either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record. | 1--25 characters | None
+
+
+### ROMN
+
+`http://fihso.org/legacy/longform/ROMANIZED`
+
+A romanized variation of a superior text string.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+The method used to romanize the name is indicated by the subordinate `TYPE`; for example if romaji was used to provide a reading of a name written in kanji, then the `TYPE` subordinate to the `ROMN` tag would indicate `romaji`. 
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.NAME.ROMN` | The romanized variation of the name in the same form as the was the name used in the superior primitive.  | 1--120 characters | [TYPE]!, [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [NOTE]\*, [SOUR]\*
+[Event]`.PLAC.ROMN` | The romanized variation of the place name in the same form as the was the name used in the superior primitive. | [TYPE]!
 
 
 ### SEX
@@ -1679,6 +1859,32 @@ A geographical division of a larger jurisdictional area, such as a State within 
 Known Context | Meaning | Payload | Substructures 
 --------------|---------|---------|--------------
 `ADDR.STAE` | The name of the state used in the address. Isolated for sorting or indexing. | 1--60 characters | None
+
+
+### STAT
+
+`http://fihso.org/legacy/longform/STATUS`
+
+An assessment of the state or condition of something.
+
+{.note} Most uses of this tag are [LDS-specific tags].  The one documented here was introduced in GEDCOM 5.5.1.
+
+Payload meanings are defined as
+
+challenged
+:   Linking this child to this family is suspect, but the linkage has been neither proven nor disproven.
+
+disproven 
+:   There has been a claim by some that this child belongs to this family, but the linkage has been disproven.
+
+proven
+:   There has been a claim by some that this child does not belongs to this family, but the linkage has been proven.
+
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`.INDI.FAMC.STAT` | A status code that allows passing on the users opinion of the status of a child to family link. | 1--15 characters; one of `challenged`, `disproven`, or `proven` | None
+
 
 
 ### SUBM
@@ -1754,6 +1960,10 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `OBJE.TITL` | The title of a work, record, item, or object. | 1--248 characters | None | None
 `.SOUR.TITL` | The title of the work, record, or item and, when appropriate, the title of the larger work or series of which it is a part. | arbtrary-length string | None | None
 `.INDI.TITL` | The title given to or used by a person, especially of royalty or other noble class within a locality. | 1--120 characters | [IndividualAttribute] | [inherited](Event) 
+`.OBJE.FILE.TITL` | The title of a work, record, item, or object. | 1--248 characters | None | None
+
+{.note} In GEDCOM 5.5, `OBJE.TITL` can appear in both record and substructure `OBJE`; in 5.5.1 it may only appear in substructure `OBJE`.  In GEDCOM 5.5, `.OBJE.FILE.TITL` is not supported; in 5.5.1 it is.
+
 
 
 ### TRLR
@@ -1779,6 +1989,8 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `REFN.TYPE` | A user-defined definition of the [REFN]. | 1--40 characters | None 
 [EVENT]`.TYPE` | A descriptor that should be used whenever the EVEN tag is used to define the event being cited. The event descriptor should use the same word or phrase and in the same language, when possible, as was used by the recorder of the event. | 1--90 characters | None
+`FONE.TYPE` | Indicates the method used in transforming the text to the phonetic variation. | 5--30 characters (may be `hangul`, `kana`, or other) | None
+`ROMN.TYPE` | Indicates the method used in transforming the text to a romanized variation. | 5--30 characters (may be `pinyin`, `romanji`, `wadegiles`, or other) | None
 
 
 ### VERS
@@ -1818,6 +2030,20 @@ A legal document treated as an event, by which a person disposes of his or her e
 Known Context | Meaning | Payload | Supertype | Substructures 
 --------------|---------|---------|-----------|--------------
 `.INDI.WILL`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#event)
+
+
+### WWW
+
+`http://fihso.org/legacy/longform/WEB`
+
+World Wide Web home page.
+
+{.note} This tag was introduced in GEDCOM 5.5.1.
+
+Known Context | Meaning | Payload | Substructures 
+--------------|---------|---------|--------------
+`ADDR.WWW` | The world wide web page address. | 5--120 characters | None
+
 
 
 ## LDS-specific tags
