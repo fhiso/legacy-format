@@ -352,7 +352,8 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `.FAM.FamilyEvent.HUSB.AGE` | see above | see above | None
 `.FAM.FamilyEvent.WIFE.AGE` | see above | see above | None
-`Event.AGE` | see above | see above | None
+`IndividualEvent.AGE` | see above | see above | None
+`IndividualAttribute.AGE` | see above | see above | None
 
 
 ### AGNC

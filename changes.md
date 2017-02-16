@@ -76,6 +76,10 @@ This change is intended to
 1.  Remove the ambiguity of when escapes are allowed and what they mean
 1.  More clearly give room for extensions to define other `@`-delimited special meanings
 
+### Pointers as continuations
+
+The GEDCOM specification implicitly implies that oversized records may be split into two records, 
+
 
 ## Only point to records
 
@@ -87,6 +91,8 @@ We thus propose replacing these with the following:
     Implementations MAY ignore other IDs, though preserving them if present is RECOMMENDED.
 
 1.  Pointers that contain either `!` or `:` have undefined semantics.
+
+
 
 
 ## The `OBJE` mess
