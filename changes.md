@@ -39,10 +39,10 @@ We propose taking the general statement in the **grammar rules** section,
 
 to be a universal rule, independent of the presence or absence of a `CONT` or `CONC` in the lineage-linked grammar specification, and state that `CONC` and `CONT` are *encoding* details rather than *data model* concepts.
 
-This change also involves 
+Changing limits to be implementation-defined also involves 
 
 -   Replacing all `{0:3}` cardinalities in the grammar to `{0:M}` -- limiting to 3 is implementation-defined.
--   Removing the ambiguity regarding line_value length, whitespace stripping, and escapes -- implementations that cannot encode strings of 500 spaces may document that themselves.
+-   Removing the ambiguity regarding `line_value` length, whitespace stripping, and escapes -- for example, implementations that cannot encode strings of 500 spaces should now document that themselves.
 
 
 ## Reframing Escapes
