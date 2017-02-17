@@ -20,8 +20,8 @@ We propose that all such limits shall be replaced with the following statements,
     say how to compute variable limits as a function of available resources,
     or say that fixed limits do not exist or are unknown.
 
-2.  The limits may constrain quantities that include those listed below or others.
-    Sizes within the standard, when given, are recommended as the minimum for that quantity.
+2.  The limits may constrain quantities such as payload length, record size, lines per payload, substructures per structure, or others.
+    In some instances this specification gives a RECOMMENDED minimum for one or more of these quantities.
     However, these quantities are only guidelines and do not determine compliance.
 
 3.  When an implementation encounters a value in excess of its ability to process,
