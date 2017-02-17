@@ -47,7 +47,7 @@ Changing limits to be implementation-defined also involves
 
 ## Reframing Escapes
 
-Escapes are in the GEDCOM lexical specification of the GEDCOM grammar, implied to be admissible in any location within and payload of any structure.
+Escapes are in the GEDCOM lexical specification of the GEDCOM grammar, implied to be admissible in any location within any payload of any structure.
 However, the only known implementation of escapes is in the prefix position of `DATE`-tag payloads.
 
 To simplify the grammar and remove the under-defined escape terminology, we propose the following change:
@@ -61,20 +61,21 @@ To simplify the grammar and remove the under-defined escape terminology, we prop
     other uses may be defined by extensions to this specification.
     
     1.  Pointers are encoded as `@identifier@`.
-        Payloads that are not pointers MUST NOT begin with a valid pointer.
+        Payloads that are not pointers MUST NOT begin with a syntactically-valid pointer.
         
-        To support limited-look-ahead lex-free parsers,
+        To support limited-look-ahead parsers,
         payloads that are not pointers SHOULD NOT begin with an `@` followed by a valid first character of a pointer (i.e., `[A-Za-z0-9_]`).
     
-    2.  The `DATE` tag payload may begin with a calender identifier such as `@#DROMAN@`
+    2.  The `DATE` tag payload may begin with a calender identifier such as `@#DROMAN@`.
 
-1.  When encountering an `@` outside of the above cases, implementations SHOULD treat any `@[^@]+@` as equivalent to the empty string.
+1.  When encountering an `@` outside of the above cases, implementations SHOULD treat any `@[^@]+@` as equivalent to the empty string UNLESS the case is covered by a supported extension to this specification.
 
 This change is intended to
 
 1.  Remove the ambiguity of what an `@` followed by something other than a `#` or an `@` means
 1.  Remove the ambiguity of when escapes are allowed and what they mean
 1.  More clearly give room for extensions to define other `@`-delimited special meanings
+1.  Be backward compatible with any existing implementations that do use escapes or pointers outside of the situations allowed for by the GEDCOM spec.
 
 ### Pointers as continuations
 
