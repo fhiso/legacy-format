@@ -128,7 +128,7 @@ The following tags are not encountered directly, but are instead present only as
 
 
 
-### Event
+### Event   {#Event}
 
 The *Event* type has no GEDCOM tag name and cannot be directly instantiated.
 It serves as an abstract supertype for other events and attributes.
@@ -163,7 +163,7 @@ Known Subtypes:
         -   [RESN]?
         -   [RELI]? 
 
-### IndividualEvent
+### IndividualEvent   {#IndividualEvent}
 
 The *IndividualEvent* type has no GEDCOM tag name and cannot be directly instantiated.
 It serves as an abstract supertype for other events and attributes.
@@ -222,7 +222,7 @@ Known Subtypes:
 
 
 
-### FamilyEvent
+### FamilyEvent   {#FamilyEvent}
 
 The *FamilyEvent* type has no GEDCOM tag name and cannot be directly instantiated.
 It serves as an abstract supertype for other events and attributes.
@@ -270,7 +270,7 @@ Known Subtypes:
 
 
 
-### IndividualAttribute
+### IndividualAttribute   {#IndividualAttribute}
 
 The *IndividualAttribute* type has no GEDCOM tag name and cannot be directly instantiated.
 It serves as an abstract supertype for other events and attributes.
@@ -320,7 +320,7 @@ Known Subtypes:
 ## Concrete Types
 
 
-### ABBR
+### ABBR  {#ABBR}
 
 A short name of a title, description, or name.
 
@@ -337,7 +337,7 @@ A short name of a title, description, or name.
     :   None
 
 
-### ADDR
+### ADDR  {#ADDR}
 
 The contemporary place, usually required for postal purposes, of an individual, a submitter of information, a repository, a business, a school, or a company.
 
@@ -376,7 +376,7 @@ The contemporary place, usually required for postal purposes, of an individual, 
 
 
 
-### ADR1
+### ADR1  {#ADR1}
 
 The first line of an address.
 
@@ -393,7 +393,7 @@ The first line of an address.
     substructures
     :   None
 
-### ADR2
+### ADR2  {#ADR2}
 
 The second line of an address.
 
@@ -411,7 +411,7 @@ The second line of an address.
     :   None
 
 
-### ADOP
+### ADOP   {#ADOP}
 
 Pertaining to creation of a child-parent relationship that does not exist biologically.
 
@@ -448,7 +448,7 @@ Pertaining to creation of a child-parent relationship that does not exist biolog
 
 -----
 
-### AGE
+### AGE   {#AGE}
 
 `http://terms.fhiso.org/legacy/longform/AGE`
 
@@ -481,7 +481,7 @@ Known Context | Meaning | Payload | Substructures
 `IndividualAttribute.AGE` | see above | see above | None
 
 
-### AGNC
+### AGNC   {#AGNC}
 
 `http://terms.fhiso.org/legacy/longform/AGENCY`
 
@@ -492,7 +492,7 @@ Known Context | Meaning | Payload | Substructures
 `.SOUR.DATA.AGNC` | The organization, institution, corporation, person, or other entity that has authority or control interests in the associated context. For example, an organization responsible for creating and/or archiving records. | 1--120 characters | None
 `Event.AGNC` | The organization, institution, corporation, person, or other entity that has authority or control interests in the associated context. For example, an employer of a person of an associated occupation, or a church that administered rites or event. | 1--120 characters | None
 
-### ALIA
+### ALIA   {#ALIA}
 
 `http://terms.fhiso.org/legacy/longform/ALIAS`
 
@@ -503,7 +503,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.ALIA`  |         | Pointer to an [INDI] | None
 
 
-### ANCE
+### ANCE   {#ANCE}
 
 `http://terms.fhiso.org/legacy/longform/ANCESTORS`
 
@@ -518,7 +518,7 @@ Known Context | Meaning | Payload | Substructures
 {.ednote} Presumably this is supposed to be a base-10 integer?  Also, the Appendix A text and the Chapter 2 text for this tag don't seem to have much relationship to one another.
 
 
-### ANCI
+### ANCI   {#ANCI}
 
 `http://terms.fhiso.org/legacy/longform/ANCES_INTEREST`
 
@@ -529,7 +529,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.ANCI`  |         | Pointer to an [SUBM] | None
 
 
-### ANUL
+### ANUL  {#ANUL}
 
 `http://terms.fhiso.org/legacy/longform/ANNULMENT`
 
@@ -540,7 +540,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.ANUL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### ASSO
+### ASSO   {#ASSO}
 
 `http://terms.fhiso.org/legacy/longform/ASSOCIATES`
 
@@ -551,7 +551,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.ASSO`  |         | Pointer to an [INDI] | [RELA]!, [NOTE]\*, [SOUR]\*
 
 
-### AUTH
+### AUTH   {#AUTH}
 
 `http://terms.fhiso.org/legacy/longform/AUTHOR`
 
@@ -561,7 +561,7 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `.SOUR.AUTH`  | The person, agency, or entity who created the record. For a published work, this could be the author, compiler, transcriber, abstractor, or editor. For an unpublished source, this may be an individual, a government agency, church organization, or private organization, etc. | String of arbitrary length | None
 
-### BAPM
+### BAPM   {#BAPM}
 
 `http://terms.fhiso.org/legacy/longform/BAPTISM`
 
@@ -574,7 +574,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.BAPM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### BARM
+### BARM   {#BARM}
 
 `http://terms.fhiso.org/legacy/longform/BAR_MITZVAH`
 
@@ -585,7 +585,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.BARM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### BASM
+### BASM   {#BASM}
 
 `http://terms.fhiso.org/legacy/longform/BAS_MITZVAH`
 
@@ -596,7 +596,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.BASM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### BIRT
+### BIRT   {#BIRT}
 
 `http://terms.fhiso.org/legacy/longform/BIRTH`
 
@@ -607,7 +607,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.BIRT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent), [FAMC]?
 
 
-### BLES
+### BLES   {#BLES}
 
 `http://terms.fhiso.org/legacy/longform/BLESSING`
 
@@ -618,7 +618,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.BLES`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### BLOB
+### BLOB   {#BLOB}
 
 `http://terms.fhiso.org/legacy/longform/BINARY_OBJECT`
 
@@ -647,7 +647,7 @@ and maps bytes as follows:
 {.ednote} Probably need more detail than this... also GEDCOM discusses this topic in bytes, not characters, (even though in another place it explicit states it always means character, not bytes) so U+00FF might be wrong.
 
 
-### BURI
+### BURI   {#BURI}
 
 `http://terms.fhiso.org/legacy/longform/BURIAL`
 
@@ -662,7 +662,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### CALN
+### CALN   {#CALN}
 
 `http://terms.fhiso.org/legacy/longform/CALL_NUMBER`
 
@@ -675,7 +675,7 @@ Known Context | Meaning | Payload | Substructures
 {.ednote} The example given in the GEDCOM specification is inconsistent with the grammar, putting the `MEDI` coordinate with, instead of subordinate to, `CALN`.
 
 
-### CAST
+### CAST   {#CAST}
 
 `http://terms.fhiso.org/legacy/longform/CASTE`
 
@@ -688,7 +688,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.CAST`  |  A name assigned to a particular group that this person was associated with, such as a particular racial group, religious group, or a group with an inherited status.  | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### CAUS
+### CAUS   {#CAUS}
 
 `http://terms.fhiso.org/legacy/longform/CAUSE`
 
@@ -699,7 +699,7 @@ Known Context | Meaning | Payload | Substructures
 *Event*`.CAUS`  |  Used in special cases to record the reasons which precipitated an event. Normally this will be used subordinate to a death event to show cause of death, such as might be listed on a death certificate. | None
 
 
-### CENS
+### CENS  {#CENS}
 
 `http://terms.fhiso.org/legacy/longform/CENSUS`
 
@@ -711,7 +711,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.CENS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### CHAN
+### CHAN   {#CHAN}
 
 `http://terms.fhiso.org/legacy/longform/CHANGE`
 
@@ -723,7 +723,7 @@ Known Context | Meaning | Payload | Substructures
 
 `CHAN` is known a the substructure of every known record *except* [SUBN], [HEAD], and [TAIL].
 
-### CHAR
+### CHAR   {#CHAR}
 
 `http://terms.fhiso.org/legacy/longform/CHARACTER`
 
@@ -733,7 +733,7 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `.HEAD.CHAN`   | A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.  | one of `ANSEL`, `UNICODE`, or `ASCII` | [VERS]?
 
-### CHIL
+### CHIL   {#CHIL}
 
 `http://terms.fhiso.org/legacy/longform/CHILD`
 
@@ -746,7 +746,7 @@ Known Context | Meaning | Payload | Substructures
 {.note} In GEDCOM versions 3 and 4, `FAM.CHIL` had a substructure [ADOP].
 
 
-### CHR
+### CHR   {#CHR}
 
 `http://terms.fhiso.org/legacy/longform/CHRISTENING`
 
@@ -757,7 +757,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.CHR`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent), [FAMC]?
 
 
-### CHRA
+### CHRA   {#CHRA}
 
 `http://terms.fhiso.org/legacy/longform/ADULT_CHRISTENING`
 
@@ -768,7 +768,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.CHRA`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### CITY
+### CITY   {#CITY}
 
 `http://terms.fhiso.org/legacy/longform/CITY`
 
@@ -779,7 +779,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.CITY`   | The name of the city used in the address. Isolated for sorting or indexing. | 1--60 characters | None
 
 
-### CONF
+### CONF   {#CONF}
 
 `http://terms.fhiso.org/legacy/longform/CONFIRMATION`
 
@@ -792,7 +792,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.CONF`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### COPR
+### COPR   {#COPR}
 
 `http://terms.fhiso.org/legacy/longform/COPYRIGHT`
 
@@ -805,7 +805,7 @@ Known Context | Meaning | Payload | Substructures
 
 \* The 5.5.1 spec allows `CONC`/`CONT` extension of `.HEAD.SOUR.DATA.COPR` (allowing it to be arbitrarily long) but does not extend the 1--90 character limit (contradicting the other change).
 
-### CORP
+### CORP   {#CORP}
 
 `http://terms.fhiso.org/legacy/longform/CORPORATE`
 
@@ -815,7 +815,7 @@ Known Context | Meaning | Payload | Substructures
 --------------|---------|---------|--------------
 `.HEAD.SOUR.CORP` | Name of the business, corporation, or person that produced or commissioned the product.  | 1--90 characters | [ADDR]?, [PHON]\*
 
-### CREM
+### CREM   {#CREM}
 
 `http://terms.fhiso.org/legacy/longform/CREMATION`
 
@@ -827,7 +827,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
 `.INDI.BURI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
-### CTRY
+### CTRY   {#CTRY}
 
 `http://terms.fhiso.org/legacy/longform/COUNTRY`
 
@@ -838,7 +838,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.CTRY`   | The name of the country that pertains to the associated address. Isolated by some systems for sorting or indexing. Used in most cases to facilitate automatic sorting of mail. | 1--60 characters | None
 
 
-### DATA
+### DATA   {#DATA}
 
 `http://terms.fhiso.org/legacy/longform/DATA`
 
@@ -850,7 +850,7 @@ Known Context | Meaning | Payload | Substructures
 `.SOUR.DATA` | | None | [EVEN]\*, [AGNC]?, [NOTE]\*
 `SOUR.DATA`  | | None | [DATE]?, [TEXT]\*
 
-### DATE
+### DATE   {#DATE}
 
 `http://terms.fhiso.org/legacy/longform/DATE`
 
@@ -890,7 +890,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.SOUR.DATA.DATE` | The date this source was published or created. | see EXACT above | None
 `.SOUR.DATA.EVEN.DATE` | | see PERIOD above | None
 
-### DEAT
+### DEAT   {#DEAT}
 
 `http://terms.fhiso.org/legacy/longform/DEATH`
 
@@ -900,7 +900,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
 `.INDI.DEAT`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
-### DESC
+### DESC   {#DESC}
 
 `http://terms.fhiso.org/legacy/longform/DESCENDANTS`
 
@@ -915,7 +915,7 @@ Known Context | Meaning | Payload | Substructures
 {.ednote} Presumably this is supposed to be a base-10 integer?  Also, the Appendix A text and the Chapter 2 text for this tag don't seem to have much relationship to one another.
 
 
-### DESI
+### DESI   {#DESI}
 
 `http://terms.fhiso.org/legacy/longform/DESCENDANT_INT`
 
@@ -926,7 +926,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.DESI`  |         | Pointer to an [SUBM] | None
 
 
-### DEST
+### DEST   {#DEST}
 
 `http://terms.fhiso.org/legacy/longform/DESTINATION`
 
@@ -937,7 +937,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.DEST` | The name of the system expected to process the GEDCOM-compatible transmission. | 1--20 characters | None
 
 
-### DIV
+### DIV   {#DIV}
 
 `http://terms.fhiso.org/legacy/longform/DIVORCE`
 
@@ -948,7 +948,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.DIV`    | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### DIVF
+### DIVF   {#DIVF}
 
 `http://terms.fhiso.org/legacy/longform/DIVORCE_FILED`
 
@@ -959,7 +959,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.DIVF`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### DSCR
+### DSCR   {#DSCR}
 
 `http://terms.fhiso.org/legacy/longform/PHY_DESCRIPTION`
 
@@ -970,7 +970,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.DSCR`  | An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute. | 1--248 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### EDUC
+### EDUC   {#EDUC}
 
 `http://terms.fhiso.org/legacy/longform/EDUCATION`
 
@@ -981,7 +981,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.EDUC`  | A description of a scholastic or educational achievement or pursuit. | 1--248 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### EMAIL
+### EMAIL   {#EMAIL}
 
 `http://terms.fhiso.org/legacy/longform/EMAIL`
 
@@ -994,7 +994,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.EMAIL` | An electronic address that can be used for contact such as an email address.  | 5--120 characters | None
 
 
-### EMIG
+### EMIG   {#EMIG}
 
 `http://terms.fhiso.org/legacy/longform/EMIGRATION`
 
@@ -1005,7 +1005,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.EMIG`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### ENGA
+### ENGA   {#ENGA}
 
 `http://terms.fhiso.org/legacy/longform/ENGAGEMENT`
 
@@ -1016,7 +1016,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.ENGA`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### EVEN
+### EVEN   {#EVEN}
 
 `http://terms.fhiso.org/legacy/longform/EVENT`
 
@@ -1037,7 +1037,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 {.note} Uncharacteristically for enumerated values, `SOUR.EVEN` is listed to be up to 15 characters even though the longest known value is 4 characters long.
 
 
-### FACT
+### FACT   {#FACT}
 
 `http://terms.fhiso.org/legacy/longform/FACT`
 
@@ -1048,7 +1048,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.FACT`  | Text describing a particular characteristic or attribute assigned to an individual. | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute), [TYPE]!
 
 
-### FAM
+### FAM   {#FAM}
 
 `http://terms.fhiso.org/legacy/longform/FAMILY`
 
@@ -1063,7 +1063,7 @@ The preferred order of the [CHIL] substructures within a FAM structure is chrono
 See also [SLGS] in the [LDS-specific tags] section.
 
 
-### FAMC
+### FAMC   {#FAMC}
 
 `http://terms.fhiso.org/legacy/longform/FAMILY_CHILD`
 
@@ -1079,7 +1079,7 @@ Known Context | Meaning | Payload | Substructures
 See also [SLGC] in the [LDS-specific tags] section.
 
 
-### FAMS
+### FAMS   {#FAMS}
 
 `http://terms.fhiso.org/legacy/longform/FAMILY_SPOUSE`
 
@@ -1090,7 +1090,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.FAMS`  | | Pointer to a [FAM] | [NOTE]\*
 
 
-### FAX
+### FAX   {#FAX}
 
 `http://terms.fhiso.org/legacy/longform/FACIMILIE`
 
@@ -1103,7 +1103,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.EMAIL` | A FAX telephone number appropriate for sending data facsimiles.  | 5--60 characters | None
 
 
-### FCOM
+### FCOM   {#FCOM}
 
 `http://terms.fhiso.org/legacy/longform/FIRST_COMMUNION`
 
@@ -1114,7 +1114,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.FCOM`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### FILE
+### FILE   {#FILE}
 
 `http://terms.fhiso.org/legacy/longform/FILE`
 
@@ -1139,7 +1139,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.FILE` |  The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext). | 1--90 characters | None
 
 
-### FONE
+### FONE   {#FONE}
 
 `http://terms.fhiso.org/legacy/longform/PHONETIC`
 
@@ -1155,7 +1155,7 @@ Known Context | Meaning | Payload | Substructures
 [Event]`.PLAC.FONE` | The phonetic variation of the place name in the same form as the was the name used in the superior primitive. | [TYPE]!
 
 
-### FORM
+### FORM   {#FORM}
 
 `http://terms.fhiso.org/legacy/longform/FORMAT`
 
@@ -1181,7 +1181,7 @@ Known Context | Meaning | Payload | Substructures
 `FILE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
 
 
-### GEDC
+### GEDC   {#GEDC}
 
 `http://terms.fhiso.org/legacy/longform/GEDCOM`
 
@@ -1192,7 +1192,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.GEDC`  |         | None    | [VERS]!, [FORM]!
 
 
-### GIVN
+### GIVN   {#GIVN}
 
 `http://terms.fhiso.org/legacy/longform/GIVEN_NAME`
 
@@ -1203,7 +1203,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME.GIVN`   |  Given name or earned name. Different given names are separated by a comma. | 1--120 characters, with 1--90 characters between each comma | None
 
 
-### GRAD
+### GRAD   {#GRAD}
 
 `http://terms.fhiso.org/legacy/longform/GRADUATION`
 
@@ -1214,7 +1214,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.GRAD`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### HEAD
+### HEAD   {#HEAD}
 
 `http://terms.fhiso.org/legacy/longform/HEADER`
 
@@ -1225,7 +1225,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD`       |         | None    | [SOUR]!, [DEST]?, [DATE]?, [SUBM]!, [SUBN]?, [FILE]?, [COPR]?, [GEDC]!, [CHAR]!, [LANG]?, [PLAC]?, [NOTE]?
 
 
-### HUSB
+### HUSB   {#HUSB}
 
 `http://terms.fhiso.org/legacy/longform/HUSBAND`
 
@@ -1237,7 +1237,7 @@ Known Context | Meaning | Payload | Substructures
 `.FAM.HUSB`   |         | pointer to an [INDI] | None
 
 
-### IDNO
+### IDNO   {#IDNO}
 
 `http://terms.fhiso.org/legacy/longform/IDENT_NUMBER`
 
@@ -1252,7 +1252,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 {.note} Although called a "number", the payload of an `IDNO` is *not* restricted to numeric values.
 
 
-### IMMI
+### IMMI   {#IMMI}
 
 `http://terms.fhiso.org/legacy/longform/IMMIGRATION`
 
@@ -1263,7 +1263,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.IMMI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### INDI
+### INDI   {#INDI}
 
 `http://terms.fhiso.org/legacy/longform/INDIVIDUAL`
 
@@ -1276,7 +1276,7 @@ Known Context | Meaning | Payload | Substructures
 See also [LDS-specific tags]
 
 
-### LANG
+### LANG   {#LANG}
 
 `http://terms.fhiso.org/legacy/longform/LANGUAGE`
 
@@ -1291,7 +1291,7 @@ Known Context | Meaning | Payload | Substructures
 
 {.note} There is no obvious reason why the two contexts in which `LANG` appear have the same set of values but different character lengths.
 
-### LEGA
+### LEGA   {#LEGA}
 
 `http://terms.fhiso.org/legacy/longform/LEGATEE`
 
@@ -1300,7 +1300,7 @@ A role of an individual acting as a person receiving a bequest or legal devise.
 This tag does not appear in any known context.
 
 
-### LATI
+### LATI   {#LATI}
 
 `http://terms.fhiso.org/legacy/longform/LATITUDE`
 
@@ -1321,7 +1321,7 @@ direction North or South from the equator in degrees and fraction of degrees car
 desired accuracy. | 5--8 characters | None
 
 
-### LONG
+### LONG   {#LONG}
 
 `http://terms.fhiso.org/legacy/longform/LONGITUDE`
 
@@ -1340,7 +1340,7 @@ Known Context | Meaning | Payload | Substructures
 `MAP.LONG` | The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate. |  5--8 characters | None
 
 
-### MAP
+### MAP   {#MAP}
 
 `http://terms.fhiso.org/legacy/longform/MAP`
 
@@ -1353,7 +1353,7 @@ Known Context | Meaning | Payload | Substructures
 [Event]`.PLAC.MAP` | | None | [LATI]!, [LONG]!
 
 
-### MARB
+### MARB   {#MARB}
 
 `http://terms.fhiso.org/legacy/longform/MARRIAGE_BANN`
 
@@ -1364,7 +1364,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.MARB`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### MARC
+### MARC   {#MARC}
 
 `http://terms.fhiso.org/legacy/longform/MARR_CONTRACT`
 
@@ -1375,7 +1375,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.MARC`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### MARL
+### MARL   {#MARL}
 
 `http://terms.fhiso.org/legacy/longform/MARR_LICENSE`
 
@@ -1386,7 +1386,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.MARL`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### MARR
+### MARR   {#MARR}
 
 `http://terms.fhiso.org/legacy/longform/MARRIAGE`
 
@@ -1397,7 +1397,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.MARR`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### MARS
+### MARS   {#MARS}
 
 `http://terms.fhiso.org/legacy/longform/MARR_SETTLEMENT`
 
@@ -1408,7 +1408,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.FAM.MARS`   | *see [FamilyEvent]* | Either `Y` or None | [FamilyEvent] | [*inherited*](#familyevent)
 
 
-### MEDI
+### MEDI   {#MEDI}
 
 `http://terms.fhiso.org/legacy/longform/MEDIA`
 
@@ -1419,7 +1419,7 @@ Known Context | Meaning | Payload | Substructures
 `.SOUR.REPO.CALN.MEDI` |  A code, selected from one of the media classifications choices above, that indicates the type of material in which the referenced source is stored.  | 1--15 characters, one of {`audio`, `book`, `card`, `electronic`, `fiche`, `film`, `magazine`, `manuscript`, `map`, `newspaper`, `photo`, `tombstone`, `video`} | None
 
 
-### NAME
+### NAME   {#NAME}
 
 `http://terms.fhiso.org/legacy/longform/NAME`
 
@@ -1433,7 +1433,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME` | The name value is formed in the manner the name is normally spoken, with the given name and family name (surname) separated by slashes `/`. | 1--120 characters, optionally with a substring offset by `/`, optionally with portions elided with `...` | [NPFX]?, [GIVN]?, [NICK]?, [SPFX]?, [SURN]?, [NSFX]?, [SOUR]\*, [NOTE]\*, [FONE]\*, [ROMN]\*
 
 
-### NATI
+### NATI   {#NATI}
 
 `http://terms.fhiso.org/legacy/longform/NATIONALITY`
 
@@ -1444,7 +1444,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.NATI`  | The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth. | 1--120 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### NATU
+### NATU   {#NATU}
 
 `http://terms.fhiso.org/legacy/longform/NATURALIZATION`
 
@@ -1455,7 +1455,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.NATU`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### NCHI
+### NCHI   {#NCHI}
 
 `http://terms.fhiso.org/legacy/longform/CHILDREN_COUNT`
 
@@ -1469,7 +1469,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 {.ednote} Presumably this is supposed to be a base-10 integer?
 
 
-### NICK
+### NICK   {#NICK}
 
 `http://terms.fhiso.org/legacy/longform/NICKNAME`
 
@@ -1482,7 +1482,7 @@ Known Context | Meaning | Payload | Substructures
 {.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is not descriptive text describing the meaning of the commas.
 
 
-### NMR
+### NMR   {#NMR}
 
 `http://terms.fhiso.org/legacy/longform/MARRIAGE_COUNT`
 
@@ -1495,7 +1495,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 {.ednote} Presumably this is supposed to be a base-10 integer?
 
 
-### NOTE
+### NOTE   {#NOTE}
 
 `http://terms.fhiso.org/legacy/longform/NOTE`
 
@@ -1523,7 +1523,7 @@ Every structures that is known to have substructures is known to admit an arbitr
 -   [SOUR].[EVEN]
 
 
-### NPFX
+### NPFX   {#NPFX}
 
 `http://terms.fhiso.org/legacy/longform/NAME_PREFIX`
 
@@ -1536,7 +1536,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME.NPFX` | Non indexing name piece that appears preceding the given name and surname parts. Different name prefix parts are separated by a comma. | 1--30 characters | None
 
 
-### NSFX
+### NSFX   {#NSFX}
 
 `http://terms.fhiso.org/legacy/longform/NAME_SUFFIX`
 
@@ -1549,7 +1549,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME.NSFX` | Non-indexing name piece that appears after the given name and surname parts. Different name suffix parts are separated by a comma. | 1--30 characters | None
 
 
-### OBJE
+### OBJE   {#OBJE}
 
 `http://terms.fhiso.org/legacy/longform/OBJECT`
 
@@ -1595,7 +1595,7 @@ The both unanchored forms of `OBJE` are known to exist in the following contexts
 #### Common 
 
 
-### OCCU
+### OCCU   {#OCCU}
 
 `http://terms.fhiso.org/legacy/longform/OCCUPATION`
 
@@ -1606,7 +1606,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.OCCU`  | The kind of activity that an individual does for a job, profession, or principal activity. | 1--90 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### ORDN
+### ORDN   {#ORDN}
 
 `http://terms.fhiso.org/legacy/longform/ORDINATION`
 
@@ -1617,7 +1617,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.ORDN`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### PAGE
+### PAGE   {#PAGE}
 
 `http://terms.fhiso.org/legacy/longform/PAGE`
 
@@ -1628,7 +1628,7 @@ Known Context | Meaning | Payload | Substructures
 `SOUR.PAGE`   | Specific location with in the information referenced. For a published work, this could include the volume of a multi-volume work and the page number(s). For a periodical, it could include volume, issue, and page numbers. For a newspaper, it could include a column number and page number. For an unpublished source, this could be a sheet number, page number, frame number, etc. A census record might have a line number or dwelling and family numbers in addition to the page number. | 1--248 characters | None
 
 
-### PEDI
+### PEDI   {#PEDI}
 
 `http://terms.fhiso.org/legacy/longform/PEDIGREE`
 
@@ -1647,7 +1647,7 @@ Known Context | Meaning | Payload | Substructures
 `foster`
 :   indicates child was included in a foster or guardian family.
 
-### PHON
+### PHON   {#PHON}
 
 `http://terms.fhiso.org/legacy/longform/PHONE`
 
@@ -1661,7 +1661,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.PHON`   |         | 1--25 characters | None
 
 
-### PLAC
+### PLAC   {#PLAC}
 
 `http://terms.fhiso.org/legacy/longform/PLACE`
 
@@ -1680,7 +1680,7 @@ Known Context | Meaning | Payload | Substructures
 [Event]`.PLAC` | | 1--120 characters formatted as a *place hierarchy* | [FORM]?, [SOUR]\*, [NOTE]\*
 
 
-### POST
+### POST   {#POST}
 
 `http://terms.fhiso.org/legacy/longform/POSTAL_CODE`
 
@@ -1691,7 +1691,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.POST`   | The ZIP or postal code used by the various localities in handling of mail. Isolated for sorting or indexing. | 1--10 characters | None
 
 
-### PROB
+### PROB   {#PROB}
 
 `http://terms.fhiso.org/legacy/longform/PROBATE`
 
@@ -1702,7 +1702,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.PROB`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### PROP
+### PROP   {#PROP}
 
 `http://terms.fhiso.org/legacy/longform/PROPERTY`
 
@@ -1713,7 +1713,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.ORDN`  | A list of possessions (real estate or other property) belonging to this individual. | 1--248 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### PUBL
+### PUBL   {#PUBL}
 
 `http://terms.fhiso.org/legacy/longform/PUBLICATION`
 
@@ -1730,7 +1730,7 @@ Known Context | Meaning | Payload | Substructures
 {.ednote} It is almost certainly an error in GEDCOM that asserts that every `PUBL` payload must be *at least* 248 characters and *cannot* have a newline in the first 248 characters.
 
 
-### QUAY
+### QUAY   {#QUAY}
 
 `http://terms.fhiso.org/legacy/longform/QUALITY_OF_DATA`
 
@@ -1755,7 +1755,7 @@ Known Context | Meaning | Payload | Substructures
 `SOUR.QUAY` | see above | one of {`0`, `1`, `2`, `3`} | None
 
 
-### REFN
+### REFN   {#REFN}
 
 `http://terms.fhiso.org/legacy/longform/REFERENCE`
 
@@ -1767,7 +1767,7 @@ Known Context | Meaning | Payload | Substructures
 
 `REFN` is known to be a substructure of .[FAM], .[INDI], .[NOTE], .[OBJE], .[REPO], and .[SOUR].
 
-### RELA
+### RELA   {#RELA}
 
 `http://terms.fhiso.org/legacy/longform/RELATIONSHIP`
 
@@ -1790,7 +1790,7 @@ You would read the following as "Joe Jacob's great grandson is the person descri
 {.ednote} This example, does not have an ID for Joe; that is also true of the example in the GEDCOM specification, despite that specification not allowing `0 INDI` without an ID.
 
 
-### RELI
+### RELI   {#RELI}
 
 `http://terms.fhiso.org/legacy/longform/RELIGION`
 
@@ -1804,7 +1804,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 {.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of [SOUR] and [Event], the specification only lists it as an individual attribute.
 
 
-### REPO
+### REPO   {#REPO}
 
 `http://terms.fhiso.org/legacy/longform/REPOSITORY`
 
@@ -1816,7 +1816,7 @@ Known Context | Meaning | Payload | Substructures
 `.SOUR.REPO` | This structure is used within a source record to point to a name and address record of the holder of the source document. | pointer to `.REPO` | [NOTE]\*, [CALN]\*
 
 
-### RESI
+### RESI   {#RESI}
 
 `http://terms.fhiso.org/legacy/longform/RESIDENCE`
 
@@ -1829,7 +1829,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 {.note} The `RESI` is the only known [IndividualAttribute] that does not have a payload.
 
 
-### RESN
+### RESN   {#RESN}
 
 `http://terms.fhiso.org/legacy/longform/RESTRICTION`
 
@@ -1855,7 +1855,7 @@ Known Context | Meaning | Payload | Substructures
 {.ednote} I have not put this in the LDS section because, although it says "Ancestral File", I surmise it might be used for the same purpose by other data providers.
 
 
-### RETI
+### RETI   {#RETI}
 
 `http://terms.fhiso.org/legacy/longform/RETIREMENT`
 
@@ -1866,7 +1866,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.RETI`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### RFN
+### RFN   {#RFN}
 
 `http://terms.fhiso.org/legacy/longform/REC_FILE_NUMBER`
 
@@ -1888,7 +1888,7 @@ An individual `RFN`
 {.ednote} It is not clear what benefit a `.INDI.RFN` has over an ID.
 
 
-### RIN
+### RIN   {#RIN}
 
 `http://terms.fhiso.org/legacy/longform/REC_ID_NUMBER`
 
@@ -1901,7 +1901,7 @@ Known Context | Meaning | Payload | Substructures
 `RIN` is known to be a substructure of all records *except* [HEAD] and [TRLR].
 
 
-### ROLE
+### ROLE   {#ROLE}
 
 `http://terms.fhiso.org/legacy/longform/ROLE`
 
@@ -1912,7 +1912,7 @@ Known Context | Meaning | Payload | Substructures
 `SOUR.EVEN.ROLE` | Either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record. | 1--25 characters | None
 
 
-### ROMN
+### ROMN   {#ROMN}
 
 `http://terms.fhiso.org/legacy/longform/ROMANIZED`
 
@@ -1928,7 +1928,7 @@ Known Context | Meaning | Payload | Substructures
 [Event]`.PLAC.ROMN` | The romanized variation of the place name in the same form as the was the name used in the superior primitive. | [TYPE]!
 
 
-### SEX
+### SEX   {#SEX}
 
 `http://terms.fhiso.org/legacy/longform/SEX`
 
@@ -1939,7 +1939,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.SEX` | A code that indicates the sex of the individual | 1--7 characters, which is one of {`M`, `F`} | None
 
 
-### SOUR
+### SOUR   {#SOUR}
 
 `http://terms.fhiso.org/legacy/longform/SOURCE`
 
@@ -1959,7 +1959,7 @@ The non-pointer unanchored `SOUR` is described as follows:
 Both unanchored `SOUR` are known to be substructures of .[FAM], .[INDI], .[OBJE], .[NOTE], [ASSO], [Event], [NAME], and [PLAC].
 
 
-### SPFX
+### SPFX   {#SPFX}
 
 `http://terms.fhiso.org/legacy/longform/SURN_PREFIX`
 
@@ -1970,7 +1970,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME.SPFX` | Surname prefix or article used in a family name. Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la". | 1--30 characters | None
 
 
-### SSN
+### SSN   {#SSN}
 
 `http://terms.fhiso.org/legacy/longform/SOC_SEC_NUMBER`
 
@@ -1983,7 +1983,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.SSN`  | A number assigned to a person in the United States for identification purposes. | 9--11 characters | [IndividualAttribute] | [*inherited*](#individualattribute)
 
 
-### STAE
+### STAE   {#STAE}
 
 `http://terms.fhiso.org/legacy/longform/STATE`
 
@@ -1994,7 +1994,7 @@ Known Context | Meaning | Payload | Substructures
 `ADDR.STAE` | The name of the state used in the address. Isolated for sorting or indexing. | 1--60 characters | None
 
 
-### STAT
+### STAT   {#STAT}
 
 `http://terms.fhiso.org/legacy/longform/STATUS`
 
@@ -2020,7 +2020,7 @@ Known Context | Meaning | Payload | Substructures
 
 
 
-### SUBM
+### SUBM   {#SUBM}
 
 `http://terms.fhiso.org/legacy/longform/SUBMITTER`
 
@@ -2035,7 +2035,7 @@ Known Context | Meaning | Payload | Substructures
 `.SUBN.SUBM`  |         | pointer to `.SUBM` | None
 
 
-### SUBN
+### SUBN   {#SUBN}
 
 `http://terms.fhiso.org/legacy/longform/SUBMISSION`
 
@@ -2047,7 +2047,7 @@ Known Context | Meaning | Payload | Substructures
 `.HEAD.SUBN` | | pointer to a `.SUBN` | None
 
 
-### SURN
+### SURN   {#SURN}
 
 `http://terms.fhiso.org/legacy/longform/SURNAME`
 
@@ -2058,7 +2058,7 @@ Known Context | Meaning | Payload | Substructures
 `.INDI.NAME.SURN` | Surname or family name. Different surnames are separated by a comma. | 1--120 characters | None
 
 
-### TEXT
+### TEXT   {#TEXT}
 
 `http://terms.fhiso.org/legacy/longform/TEXT`
 
@@ -2070,7 +2070,7 @@ Known Context | Meaning | Payload | Substructures
 `SOUR.DATA.TEXT` | A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source. | arbitrary-length string | None
 
 
-### TIME
+### TIME   {#TIME}
 
 `http://terms.fhiso.org/legacy/longform/TIME`
 
@@ -2082,7 +2082,7 @@ Known Context | Meaning | Payload | Substructures
 `CHAN.DATE.TIME` | The time of a specific event, usually a computer-timed event. | 1--12 characters matching `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9]+)?)?` | None
 
 
-### TITL
+### TITL   {#TITL}
 
 `http://terms.fhiso.org/legacy/longform/TITLE`
 
@@ -2099,7 +2099,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 
 
-### TRLR
+### TRLR   {#TRLR}
 
 `http://terms.fhiso.org/legacy/longform/TRAILER`
 
@@ -2112,7 +2112,7 @@ Known Context | Meaning | Payload | Substructures
 When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
 
 
-### TYPE
+### TYPE   {#TYPE}
 
 `http://terms.fhiso.org/legacy/longform/TYPE`
 
@@ -2126,7 +2126,7 @@ Known Context | Meaning | Payload | Substructures
 `ROMN.TYPE` | Indicates the method used in transforming the text to a romanized variation. | 5--30 characters (may be `pinyin`, `romanji`, `wadegiles`, or other) | None
 
 
-### VERS
+### VERS   {#VERS}
 
 `http://terms.fhiso.org/legacy/longform/VERSION`
 
@@ -2141,7 +2141,7 @@ Known Context | Meaning | Payload | Substructures
 {.note} This draft is based off of a specification for which `.HEAD.GEDC.VERS` would typically be `5.5`, though depending on the specific features used other version strings might be appropriate too.
 
 
-### WIFE
+### WIFE   {#WIFE}
 
 `http://terms.fhiso.org/legacy/longform/WIFE`
 
@@ -2154,7 +2154,7 @@ Known Context | Meaning | Payload | Substructures
 
 
 
-### WILL
+### WILL   {#WILL}
 
 `http://terms.fhiso.org/legacy/longform/WILL`
 
@@ -2165,7 +2165,7 @@ Known Context | Meaning | Payload | Supertype | Substructures
 `.INDI.WILL`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent)
 
 
-### WWW
+### WWW   {#WWW}
 
 `http://terms.fhiso.org/legacy/longform/WEB`
 
