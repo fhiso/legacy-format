@@ -133,35 +133,35 @@ The following tags are not encountered directly, but are instead present only as
 The *Event* type has no GEDCOM tag name and cannot be directly instantiated.
 It serves as an abstract supertype for other events and attributes.
 
-Known Subtypes:
-:   -   `[IndividualEvent]`
-    -   `[FamilyEvent]`
-    -   `[IndividualAttribute]`
+Known Subtypes
+:   `[IndividualEvent]`
+:   `[FamilyEvent]`
+:   `[IndividualAttribute]`
+
+Contexts
+:   `[INDI]`.(`[Event]`)
+
+Description
+:   Varies by subtype
+
+Payload
+:   Varies by subtype
+
+Substructures
+:   `[ADDR]`?
+:   `[AGNC]`?
+:   `[CAUS]`?
+:   `[DATE]`?
+:   `[NOTE]`\*
+:   `[OBJE]`\*
+:   `[PHON]`\*
+:   `[PLAC]`?
+:   `[SOUR]`\*
+:   `[TYPE]`?
+:   `[RESN]`?
+:   `[RELI]`? 
 
 {.note} GEDCOM 5.5 also includes `[AGE]` as a substructure of `[Event]`, but GEDCOM 5.5.1 moves that to `[IndividualEvent]` and `[IndividualAttribute]` instead.
-
-#### Contexts
-
-.`[INDI]`.(`[Event]`)
-:   description
-    :   Varies by subtype
-    
-    payload
-    :   Varies by subtype
-    
-    substructures
-    :   -   `[ADDR]`?
-        -   `[AGNC]`?
-        -   `[CAUS]`?
-        -   `[DATE]`?
-        -   `[NOTE]`\*
-        -   `[OBJE]`\*
-        -   `[PHON]`\*
-        -   `[PLAC]`?
-        -   `[SOUR]`\*
-        -   `[TYPE]`?
-        -   `[RESN]`?
-        -   `[RELI]`? 
 
 ### IndividualEvent   {#IndividualEvent}
 
@@ -171,54 +171,53 @@ It serves as an abstract supertype for other events and attributes.
 Supertype
 :   `[Event]`
 
-Known Subtypes:
-:   - `[ADOP]`
-    - `[BAPM]`
-    - `[BARM]`
-    - `[BASM]`
-    - `[BIRT]`
-    - `[BLES]`
-    - `[BURI]`
-    - `[CENS]`
-    - `[CHR]`
-    - `[CHRA]`
-    - `[CONF]`
-    - `[CREM]`
-    - `[DEAT]`
-    - `[EMIG]`
-    - `[FCOM]`
-    - `[GRAD]`
-    - `[IMMI]`
-    - `[NATU]`
-    - `[ORDN]`
-    - `[PROB]`
-    - `[RETI]`
-    - `[WILL]`
-    - `[EVEN]`
+Known Subtypes
+:   `[ADOP]`
+:   `[BAPM]`
+:   `[BARM]`
+:   `[BASM]`
+:   `[BIRT]`
+:   `[BLES]`
+:   `[BURI]`
+:   `[CENS]`
+:   `[CHR]`
+:   `[CHRA]`
+:   `[CONF]`
+:   `[CREM]`
+:   `[DEAT]`
+:   `[EMIG]`
+:   `[FCOM]`
+:   `[GRAD]`
+:   `[IMMI]`
+:   `[NATU]`
+:   `[ORDN]`
+:   `[PROB]`
+:   `[RETI]`
+:   `[WILL]`
+:   `[EVEN]`
 
-#### Contexts
+Contexts
+:   `[INDI]`.(`[IndividualEvent]`)
 
+Description
+:   Varies by subtype
 
-.`[INDI]`.(`[IndividualEvent]`)
-:   description
-    :   Varies by subtype
+Payload
+:   Either the string `Y` or not present.
+    If any of the following are true 
+
+    - the payload is `Y` 
+    - there is a `[DATE]` substructure
+    - there is a `[PLAC]` substructure
+    - the tag is `[EVEN]`
+
+    then the IndividualEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
     
-    payload
-    :   Either the string `Y` or not present.
-        If any of the following are true 
+    There SHOULD NOT be a payload for the IndividualEvent subclass `[EVEN]`.
 
-        - the payload is `Y` 
-        - there is a `[DATE]` substructure
-        - there is a `[PLAC]` substructure
-        - the tag is `[EVEN]`
-
-        then the IndividualEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
-        
-        There SHOULD NOT be a payload for the IndividualEvent subclass `[EVEN]`.
-    
-    substructures
-    :   -   Those inherited from `[Event]`
-        -   `[AGE]`?
+Substructures
+:   Those inherited from `[Event]`
+:   `[AGE]`?
 
 
 
@@ -230,43 +229,42 @@ It serves as an abstract supertype for other events and attributes.
 Supertype
 :   `[Event]`
 
-Known Subtypes:
-:   - `[ANUL]`
-    - `[CENS]`
-    - `[DIV]`
-    - `[DIVF]`
-    - `[ENGA]`
-    - `[MARR]`
-    - `[MARB]`
-    - `[MARC]`
-    - `[MARL]`
-    - `[MARS]`
-    - `[EVEN]`
+Known Subtypes
+:   `[ANUL]`
+:   `[CENS]`
+:   `[DIV]`
+:   `[DIVF]`
+:   `[ENGA]`
+:   `[MARR]`
+:   `[MARB]`
+:   `[MARC]`
+:   `[MARL]`
+:   `[MARS]`
+:   `[EVEN]`
 
-#### Contexts
+Contexts
+:   `[INDI]`.(`[FamilyEvent]`)
 
+Description
+:   Varies by subtype
 
-.`[INDI]`.(`[FamilyEvent]`)
-:   description
-    :   Varies by subtype
+Payload
+:   Either the string `Y` or not present.
+    If any of the following are true 
+
+    - the payload is `Y` 
+    - there is a `[DATE]` substructure
+    - there is a `[PLAC]` substructure
+    - the tag is `[EVEN]`
+
+    then the FamilyEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
     
-    payload
-    :   Either the string `Y` or not present.
-        If any of the following are true 
+    There SHOULD NOT be a payload for the FamilyEvent subclass `[EVEN]`.
 
-        - the payload is `Y` 
-        - there is a `[DATE]` substructure
-        - there is a `[PLAC]` substructure
-        - the tag is `[EVEN]`
-
-        then the FamilyEvent asserts that the event occurred; otherwise it just discusses the idea of the event.
-        
-        There SHOULD NOT be a payload for the FamilyEvent subclass `[EVEN]`.
-    
-    substructures
-    :   -   Those inherited from `[Event]`
-        -   `[HUSB]`?
-        -   `[WIFE]`?
+Substructures
+:   Those inherited from `[Event]`
+:   `[HUSB]`?
+:   `[WIFE]`?
 
 
 
@@ -285,34 +283,34 @@ However, they are often described like events because they were observed at a pa
 Supertype
 :   `[Event]`
 
-Known Subtypes:
-:   - `[CAST]`
-    - `[DSCR]`
-    - `[EDUC]`
-    - `[IDNO]`
-    - `[NATI]`
-    - `[NCHI]`
-    - `[NMR]`
-    - `[OCCU]`
-    - `[PROP]`
-    - `[RELI]`
-    - `[RESI]`
-    - `[SSN]`
-    - `[TITL]`
-    - `[FACT]`
+Known Subtypes
+:   `[CAST]`
+:   `[DSCR]`
+:   `[EDUC]`
+:   `[IDNO]`
+:   `[NATI]`
+:   `[NCHI]`
+:   `[NMR]`
+:   `[OCCU]`
+:   `[PROP]`
+:   `[RELI]`
+:   `[RESI]`
+:   `[SSN]`
+:   `[TITL]`
+:   `[FACT]`
 
-#### Contexts
+Contexts
+:   `[INDI]`.(`[IndividualAttribute]`)
 
-.`[INDI]`.(`[IndividualAttribute]`)
-:   description
-    :   Varies by subtype
-    
-    payload
-    :   Varies by subtype
-    
-    substructures
-    :   -   Those inherited from `[Event]`
-        -   `[AGE]`?
+Description
+:   Varies by subtype
+
+Payload
+:   Varies by subtype
+
+Substructures
+:   Those inherited from `[Event]`
+:   `[AGE]`?
 
 
 
@@ -324,52 +322,45 @@ Known Subtypes:
 
 A short name of a title, description, or name.
 
-#### Contexts
+Contexts
+:   `[SOUR]`.`[ABBR]`
+   
+Description
+:   A short title used for sorting, filing, and retrieving source records.
 
-.`[SOUR]`.`[ABBR]`
-:   description
-    :   A short title used for sorting, filing, and retrieving source records.
-    
-    payload
-    :   1--60 characters
-    
-    substructures
-    :   None
+Payload
+:   1--60 characters
+
+Substructures
+:   None
 
 
 ### ADDR  {#ADDR}
 
 The contemporary place, usually required for postal purposes, of an individual, a submitter of information, a repository, a business, a school, or a company.
 
-#### Contexts
+Contexts
+:   .`[HEAD]`.`[SOUR]`.`[CORP]`.`[ADDR]`
+:   .`[REPO]`.`[ADDR]`
+:   .`[SUBM]`.`[ADDR]`
 
-.`[HEAD]`.`[SOUR]`.`[CORP]`.`[ADDR]`
-:   see ..`[ADDR]`
+Description
+:   Address information that, when combined with NAME substructure, meets requirements for sending communications through the mail.
 
-.`[REPO]`.`[ADDR]`
-:   see ..`[ADDR]`
+Payload
+:   A string. It is RECOMMENDED that implementations support at least three lines of at least 60 characters each.
 
-.`[SUBM]`.`[ADDR]`
-:   see ..`[ADDR]`
-
-..`[ADDR]`
-:   description
-    :   Address information that, when combined with NAME substructure, meets requirements for sending communications through the mail.
-    
-    payload
-    :   A string. It is RECOMMENDED that implementations support at least three lines of at least 60 characters each.
-    
-    substructures
-    :   -   `[ADR1]`?
-        -   `[ADR2]`?
-        -   `[CITY]`?
-        -   `[STAE]`?
-        -   `[POST]`?
-        -   `[CTRY]`?
-        -   `[PHON]`\* -- it is RECOMMENDED that at least three `ADDR.PHON` be supported per `ADDR`
-        -   `[EMAIL]`\* -- it is RECOMMENDED that at least three `ADDR.FAX` be supported per `ADDR`
-        -   `[FAX]`\* -- it is RECOMMENDED that at least three `ADDR.EMAIL` be supported per `ADDR`
-        -   `[WWW]`\* -- it is RECOMMENDED that at least three `ADDR.WWW` be supported per `ADDR`
+Substructures
+:   `[ADR1]`?
+:   `[ADR2]`?
+:   `[CITY]`?
+:   `[STAE]`?
+:   `[POST]`?
+:   `[CTRY]`?
+:   `[PHON]`\* -- it is RECOMMENDED that at least three `ADDR.PHON` be supported per `ADDR`
+:   `[EMAIL]`\* -- it is RECOMMENDED that at least three `ADDR.FAX` be supported per `ADDR`
+:   `[FAX]`\* -- it is RECOMMENDED that at least three `ADDR.EMAIL` be supported per `ADDR`
+:   `[WWW]`\* -- it is RECOMMENDED that at least three `ADDR.WWW` be supported per `ADDR`
 
 {.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `ADDR.EMAI` as synonymous with `ADDR.EMAIL`.
 
@@ -380,66 +371,69 @@ The contemporary place, usually required for postal purposes, of an individual, 
 
 The first line of an address.
 
-#### Contexts
+Contexts
+:   `[ADDR]`.`[ADR1]`
+   
+Description
+:   The first line of the address used for indexing.
+    This SHOULD correspond to the first line of the superstructure's payload.
 
-`[ADDR]`.`[ADR1]`
-:   description
-    :   The first line of the address used for indexing.
-        This SHOULD correspond to the first line of the superstructure's payload.
-    
-    payload
-    :   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
-    
-    substructures
-    :   None
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+
+Substructures
+:   None
 
 ### ADR2  {#ADR2}
 
 The second line of an address.
 
-#### Contexts
+Contexts
+:   `[ADDR]`.`[ADR1]`
 
-`[ADDR]`.`[ADR1]`
-:   description
-    :   The second line of the address used for indexing.
-        This SHOULD correspond to the second line of the superstructure's payload.
-    
-    payload
-    :   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
-    
-    substructures
-    :   None
+Description
+:   The second line of the address used for indexing.
+    This SHOULD correspond to the second line of the superstructure's payload.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+
+Substructures
+:   None
 
 
 ### ADOP   {#ADOP}
 
 Pertaining to creation of a child-parent relationship that does not exist biologically.
 
-#### Contexts
+Contexts
+:   .`[INDI]`.`[ADOP]`
+:   .`[ADOP]`.`[FAMC]`.`[ADOP]`
 
-.`[INDI]`.`[ADOP]`
-:   description
-    :   *see `[IndividualEvent]`*
-    
-    supertype
-    :   `[IndividualEvent]`
-    
-    payload
-    :   Either `Y` or None, as described under `[IndividualEvent]`
-    
-    substructures
-    :   [*inherited*](#individualevent),
-        `[FAMC]`?
-    
-`[ADOP]`.`[FAMC]`.`[ADOP]`
-:   description
-    :   Which parent(s) adopted
-    
-    payload
-    :   A string, which SHOULD be from the set {`HUSB`, `WIFE`, `BOTH`}
-    
-    substructures
-    :   None
+####  Context .`[INDI]`.`[ADOP]`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Supertype
+:   `[IndividualEvent]`
+
+Payload
+:   Either `Y` or None, as described under `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#individualevent),
+    `[FAMC]`?
+
+####  Context `[ADOP]`.`[FAMC]`.`[ADOP]`
+Description
+:   Which parent(s) adopted
+
+Payload
+:   A string, which SHOULD be from the set {`HUSB`, `WIFE`, `BOTH`}
+
+Substructures
+:   None
 
 
 -----
