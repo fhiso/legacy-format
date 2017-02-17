@@ -348,12 +348,10 @@ The contemporary place, usually required for postal purposes, of an individual, 
 
 ..[ADDR]
 :   description
-    :   None
+    :   Address information that, when combined with NAME substructure, meets requirements for sending communications through the mail.
     
     payload
-    :   Address information that, when combined with NAME substructure, meets requirements for sending communications through the mail. 
-    
-        It is RECOMMENDED that implementations support at least three lines of at least 60 characters each.
+    :   A string. It is RECOMMENDED that implementations support at least three lines of at least 60 characters each.
     
     substructures
     :   -   [ADR1]?
@@ -362,12 +360,80 @@ The contemporary place, usually required for postal purposes, of an individual, 
         -   [STAE]?
         -   [POST]?
         -   [CTRY]?
-        -   [PHON]\* -- it is RECOMMENDED that at least three `ADDR.PHON` be supported
-        -   [EMAIL]\* -- it is RECOMMENDED that at least three `ADDR.FAX` be supported
-        -   [FAX]\* -- it is RECOMMENDED that at least three `ADDR.EMAIL` be supported
-        -   [WWW]\* -- it is RECOMMENDED that at least three `ADDR.WWW` be supported
+        -   [PHON]\* -- it is RECOMMENDED that at least three `ADDR.PHON` be supported per `ADDR`
+        -   [EMAIL]\* -- it is RECOMMENDED that at least three `ADDR.FAX` be supported per `ADDR`
+        -   [FAX]\* -- it is RECOMMENDED that at least three `ADDR.EMAIL` be supported per `ADDR`
+        -   [WWW]\* -- it is RECOMMENDED that at least three `ADDR.WWW` be supported per `ADDR`
 
 {.note} [EMAIL] was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `ADDR.EMAI` as synonymous with `ADDR.EMAIL`.
+
+
+
+
+### ADR1
+
+The first line of an address.
+
+#### Contexts
+
+[ADDR].[ADR1]
+:   description
+    :   The first line of the address used for indexing.
+        This SHOULD correspond to the first line of the superstructure's payload.
+    
+    payload
+    :   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+    
+    substructures
+    :   None
+
+### ADR2
+
+The second line of an address.
+
+#### Contexts
+
+[ADDR].[ADR1]
+:   description
+    :   The second line of the address used for indexing.
+        This SHOULD correspond to the second line of the superstructure's payload.
+    
+    payload
+    :   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+    
+    substructures
+    :   None
+
+
+### ADOP
+
+Pertaining to creation of a child-parent relationship that does not exist biologically.
+
+#### Contexts
+
+.[INDI].[ADOP]
+:   description
+    :   *see [IndividualEvent]*
+    
+    supertype
+    :   [IndividualEvent]
+    
+    payload
+    :   Either `Y` or None, as described under [IndividualEvent]
+    
+    substructures
+    :   [*inherited*](#individualevent),
+        [FAMC]?
+    
+[ADOP].[FAMC].[ADOP]
+:   description
+    :   Which parent(s) adopted
+    
+    payload
+    :   A string, which SHOULD be from the set {`HUSB`, `WIFE`, `BOTH`}
+    
+    substructures
+    :   None
 
 
 -----
@@ -375,41 +441,6 @@ The contemporary place, usually required for postal purposes, of an individual, 
 {.ednote} Continue reformatting from here
 
 -----
-
-
-### ADR1
-
-`http://terms.fhiso.org/legacy/longform/ADDRESS1`
-
-The first line of an address.
-
-Known Context | Meaning | Payload | Substructures 
---------------|---------|---------|--------------
-`ADDR.ADR1` | The first line of the address used for indexing. This SHOULD correspond to the first line of the superstructure's payload. | 1--60 characters | None
-
-
-### ADR2
-
-`http://terms.fhiso.org/legacy/longform/ADDRESS2`
-
-The second line of an address.
-
-Known Context | Meaning | Payload | Substructures 
---------------|---------|---------|--------------
-`ADDR.ADR2` |  The second line of the address used for indexing. This SHOULD correspond to the second line of the superstructure's payload. | 1--60 characters | None
-
-
-### ADOP
-
-`http://terms.fhiso.org/legacy/longform/ADOPTION`
-
-Pertaining to creation of a child-parent relationship that does not exist biologically.
-
-Known Context | Meaning | Payload | Supertype | Substructures 
---------------|---------|---------|-----------|--------------
-`.INDI.ADOP`  | *see [IndividualEvent]* | Either `Y` or None | [IndividualEvent] | [*inherited*](#individualevent),[FAMC]?
-`ADOP.FAMC.ADOP` | Which parent(s) adopted | `HUSB`, `WIFE`, or `BOTH` | None | None
-
 
 ### AGE
 
