@@ -1,3 +1,9 @@
+---
+title: "Extended Legacy Format (ELF)"
+subtitle: Lineage-Linked Form
+date: 17 February 2017
+numbersections: true
+...
 This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.
 Goals include 
 
