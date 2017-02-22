@@ -880,7 +880,7 @@ Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
-:   [*inherited*](#individualattribute)
+:   [*inherited*](#IndividualAttribute)
 
 
 ### CAUS   {#CAUS}
@@ -1372,144 +1372,219 @@ Payload
 Substructures
 :   None
 
----
-
-{.ednote} Resume reformatting here
-
----
-
 
 
 ### DEAT   {#DEAT}
 
-`http://terms.fhiso.org/legacy/longform/DEATH`
-
 The event when mortal life terminates.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.DEAT`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+
+Contexts
+:   .`[INDI]`.`[DEAT]`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Supertype
+:   `[IndividualEvent]`
+
+Payload
+:   Either `Y` or None, as described under `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
+
 
 ### DESC   {#DESC}
-
-`http://terms.fhiso.org/legacy/longform/DESCENDANTS`
 
 Pertaining to offspring of an individual.
 
 See also `[ANCE]`
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.SUBN.DESC` |  The number of generations of descendants included in this transmission. | 1--4 characters | None
+Contexts
+:   .`[ANCE]`.`[DESC]`
 
-{.ednote} Presumably this is supposed to be a base-10 integer?  Also, the Appendix A text and the Chapter 2 text for this tag don't seem to have much relationship to one another.
+Description
+:   The number of generations of descendants included in this transmission.
+
+    This value should be considered a hint, not as any kind of hard limit on the contents of the data set.
+
+Payload
+:   A non-negative integer represented in base 10.
+
+Substructures
+:   None
 
 
 ### DESI   {#DESI}
 
-`http://terms.fhiso.org/legacy/longform/DESCENDANT_INT`
-
 Indicates an interest in research to identify additional descendants of this individual. (See also `[ANCI]`.)
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.DESI`  |         | Pointer to an `[SUBM]` | None
+Contexts
+:   .`[INDI]`.`[DESI]`
+
+Payload
+:   Pointer to an `[SUBM]`
+
+Substructures
+:   None
 
 
 ### DEST   {#DEST}
 
-`http://terms.fhiso.org/legacy/longform/DESTINATION`
-
 A system receiving data.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.DEST` | The name of the system expected to process the GEDCOM-compatible transmission. | 1--20 characters | None
+Contexts
+:   .`[HEAD]`.`[DEST]`
+
+Description
+:   The name of the system expected to process the transmission.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+Substructures
+:   None
+
 
 
 ### DIV   {#DIV}
 
-`http://terms.fhiso.org/legacy/longform/DIVORCE`
-
 An event of dissolving a marriage through civil action.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.DIV`    | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   .`[FAM]`.`[DIV]`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None, as described under `[FamilyEvent]`
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### DIVF   {#DIVF}
 
-`http://terms.fhiso.org/legacy/longform/DIVORCE_FILED`
-
 An event of filing for a divorce by a spouse.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.DIVF`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   .`[FAM]`.`[DIVF]`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None, as described under `[FamilyEvent]`
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### DSCR   {#DSCR}
 
-`http://terms.fhiso.org/legacy/longform/PHY_DESCRIPTION`
-
 The physical characteristics of a person, place, or thing.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.DSCR`  | An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute. | 1--248 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   .`[INDI]`.`[DSCR]`
+
+Description
+:   An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### EDUC   {#EDUC}
 
-`http://terms.fhiso.org/legacy/longform/EDUCATION`
-
 Indicator of a level of education attained.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.EDUC`  | A description of a scholastic or educational achievement or pursuit. | 1--248 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   .`[INDI]`.`[EDUC]`
+
+Description
+:   A description of a scholastic or educational achievement or pursuit.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### EMAIL   {#EMAIL}
 
 An electronic mail address.
 
-{.note} This tag was introduced in GEDCOM 5.5.1.  The spec is inconsistent in its short form name: Appendix A lists it as `EMAI` but the grammar uses `EMAIL` instead.
-
 Contexts
-:   `ADDR.EMAIL` 
+:   `[ADDR]`.`[EMAIL]`
 
 Description
 :    An electronic address that can be used for contact such as an email address.  
 
 Payload
-:    5--120 characters 
+:    A string. It is RECOMMENDED that implementations support payloads of at least 120 characters. 
 
 Substructures
 :    None
 
+{.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `ADDR.EMAI` as synonymous with `ADDR.EMAIL`.
+
 
 ### EMIG   {#EMIG}
 
-`http://terms.fhiso.org/legacy/longform/EMIGRATION`
-
 An event of leaving one's homeland with the intent of residing elsewhere.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.EMIG`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   .`[INDI]`.`[EMIG]`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None, as described under `[IndividualEvent]`
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### ENGA   {#ENGA}
 
-`http://terms.fhiso.org/legacy/longform/ENGAGEMENT`
-
 An event of recording or announcing an agreement between two people to become married.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.ENGA`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   .`[FAM]`.`[ENGA]`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None, as described under `[FamilyEvent]`
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### EVEN   {#EVEN}
@@ -1518,45 +1593,109 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A noteworthy happening related to an individual, a group, or an organization.
 
-The EVEN tag is for recording general events or attributes that are not other known subtypes of `[Event]`.
-The general event or attribute type is declared by using a subordinate `[TYPE]` tag to show what event or attribute is recorded.
+Contexts
+:   .`[INDI]`.`[EVEN]`
+:   .`[FAM]`.`[EVEN]`
+:   .`[SOUR]`.`[DATA]`.`[EVEN]`
+:   `[SOUR]`.`[EVEN]`
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.EVEN`  | see above | None | `[IndividualEvent]` | [*inherited*](#IndividualEvent), `[TYPE]`!
-`.FAM.EVEN`   | see above | None | `[FamilyEvent]` | [*inherited*](#FamilyEvent), `[TYPE]`!
-`SOUR.EVEN` |  A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be BIRT regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.  | 1--15 characters; one of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`} | None | `[ROLE]`
-`.SOUR.DATA.EVEN` |  An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be BIRT, DEAT, MARR. | 1--90 characters forming a comma-separated list of {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`} | None | `[DATE]`?, `[PLAC]`?
+#### Context .`[INDI]`.`[EVEN]` and .`[FAM]`.`[EVEN]`
 
-{.note} despite the above text describing the use of EVEN tags for attributes, they are not a known subtype of `[IndividualAttribute]` and are not known to carry a payload.  Use of EVEN for attributes is thus under-defined.
+Description
+:   The `EVEN` tag is for recording general events or attributes that are not other known subtypes of `[Event]`.
+    The general event or attribute type is declared by using a subordinate `[TYPE]` tag to show what event or attribute is recorded.
 
-{.note} Uncharacteristically for enumerated values, `SOUR.EVEN` is listed to be up to 15 characters even though the longest known value is 4 characters long.
+Payload
+:   Either `Y` or None, as described under `[IndividualEvent]` and `[FamilyEvent]`, respectively.
+
+Supertype
+:   `[IndividualEvent]` and `[FamilyEvent]`, respectively.
+
+Sunstructures
+:   inherited from the supertypes
+:   `[TYPE]`!
+
+{.ednote} Should these two be separated into context-specific subsections?
+
+
+#### Context .`[SOUR]`.`[DATA]`.`[EVEN]`
+
+Description
+:   An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be `BIRT`, `DEAT`, `MARR`.
+
+Payload
+:   A string, formatted as a comma-separated list of tokens.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    Known tokens include {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`}
+
+Substructures
+:   `[DATE]`?
+:   `[PLAC]`?
+
+#### Context `[SOUR]`.`[EVEN]`
+
+Description
+:   A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be `BIRT` regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 15 characters.
+    
+    Known values include {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`}
+
+Substructures
+:   `[ROLE]`
 
 
 ### FACT   {#FACT}
 
-`http://terms.fhiso.org/legacy/longform/FACT`
-
 Pertaining to a noteworthy attribute or fact concerning an individual, a group, or an organization. A `FACT` structure is usually qualified or classified by a subordinate use of the `TYPE` tag.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.FACT`  | Text describing a particular characteristic or attribute assigned to an individual. | 1--90 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute), `[TYPE]`!
+Contexts
+:   .`[INDI]`.`[FACT]`
+
+Description
+:   Text describing a particular characteristic or attribute assigned to an individual.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
+:   `[TYPE]`!
 
 
 ### FAM   {#FAM}
 
-`http://terms.fhiso.org/legacy/longform/FAMILY`
-
 Identifies a legal, common law, or other customary relationship of man and woman and their children, if any, or a family created by virtue of the birth of a child to its biological father and mother.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.FAM` | The FAM record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one HUSB/father and one WIFE/mother listed in each FAM. If, for example, a man participated in more than one family union, then he would appear in more than one FAM. The family record structure assumes that the HUSB/father is male and WIFE/mother is female. | None | `[FamilyEvent]`\*, `[HUSB]`? `[WIFE]`?, `[CHIL]`\*, `[NCHI]`?, `[SUBM]`\*, `[SOUR]`\*, `[OBJE]`\*, `[NOTE]`\*, `[REFN]`\*, `[RIN]`?, `[CHAN]`?, `[RESN]`?
+Contexts
+:   `.FAM`
 
-The preferred order of the `[CHIL]` substructures within a FAM structure is chronological by birth.
+Description
+:   The `FAM` record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one `HUSB`/father and one `WIFE`/mother listed in each `FAM`. If, for example, a man participated in more than one family union, then he would appear in more than one `FAM`. The family record structure assumes that the `HUSB`/father is male and `WIFE`/mother is female.
 
-See also `[SLGS]` in the [LDS-specific tags] section.
+Payload
+:   None
+
+Substructures
+:   (`[FamilyEvent]`)\*
+:   `[HUSB]`?
+:   `[WIFE]`?
+:   `[CHIL]`\* -- The preferred order of the `[CHIL]` substructures within a `[FAM]` structure is chronological by birth.
+:   `[NCHI]`?
+:   `[SUBM]`\*
+:   `[SOUR]`\*
+:   `[OBJE]`\*
+:   `[NOTE]`\*
+:   `[REFN]`\*
+:   `[RIN]`?
+:   `[CHAN]`?
+:   `[RESN]`?
+
 
 
 ### FAMC   {#FAMC}
@@ -1565,14 +1704,31 @@ See also `[SLGS]` in the [LDS-specific tags] section.
 
 Identifies the family in which an individual appears as a child.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.FAMC`  | | Pointer to a `[FAM]` | `[PEDI]`?, `[NOTE]`\*, `[STAT]`?
-`BIRT.FAMC`   | | Pointer to a `[FAM]` | None
-`CHR.FAMC`    | | Pointer to a `[FAM]` | None
-`.INDI.ADOP.FAMC` | | Pointer to a `[FAM]` | `[ADOP]`
+Contexts
+:   `[BIRT]`.`[FAMC]`
+:   `[CHR]`.`[FAMC]`
+:   .`[INDI]`.`[FAMC]`
+:   .`[INDI]`.`[ADOP]`.`[FAMC]`
 
-See also `[SLGC]` in the [LDS-specific tags] section.
+Payload
+:   Pointer to a `[FAM]`
+
+Substructures
+:   `[BIRT]`.`[FAMC]` and `[CHR]`.`[FAMC]` have None;
+    others listed below.
+
+#### Context .`[INDI]`.`[FAMC]`
+
+Substructures
+:   `[PEDI]`?
+:   `[NOTE]`\*
+:   `[STAT]`?
+
+#### Context .`[INDI]`.`[ADOP]`.`[FAMC]`
+
+Substructures
+:   `[ADOP]`?
+
 
 
 ### FAMS   {#FAMS}
@@ -1580,10 +1736,7 @@ See also `[SLGC]` in the [LDS-specific tags] section.
 Identifies the family in which an individual appears as a spouse.
 
 Contexts
-:   `.INDI.FAMS`  
-
-Description
-:    
+:   .`[INDI]`.`[FAMS]`  
 
 Payload
 :    Pointer to a `[FAM]` 
@@ -1599,13 +1752,13 @@ Electronic facimilie transmission.
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
 Contexts
-:   `ADDR.EMAIL` 
+:   `[ADDR]`.`[FAX]` 
 
 Description
 :    A FAX telephone number appropriate for sending data facsimiles.  
 
 Payload
-:    5--60 characters 
+:    A string. It is RECOMMENDED that implementations support payloads of at least 60 characters. 
 
 Substructures
 :    None
@@ -1613,13 +1766,26 @@ Substructures
 
 ### FCOM   {#FCOM}
 
-`http://terms.fhiso.org/legacy/longform/FIRST_COMMUNION`
-
 A religious rite, the first act of sharing in the Lord's supper as part of church worship.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.FCOM`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   .`[INDI]`.`[FCOM]`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None, as described under `[IndividualEvent]`
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
+
+
+{.ednote} Continue reformatting from here
+
 
 
 ### FILE   {#FILE}
@@ -1630,21 +1796,45 @@ An information storage place that is ordered and arranged for preservation and r
 
 #### GEDCOM 5.5-compatible version
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`OBJE.FILE` |  A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained. | 1--30 characters | None
+Contexts
+:   `OBJE.FILE`
+
+Description
+:   A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Substructures
+:   None
 
 #### GEDCOM 5.5.1-compatible version
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`OBJE.FILE` |  A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained. | 1--30 characters | `[FORM]`!, `[TITL]`?
+Contexts
+:   `OBJE.FILE`
+
+Description
+:   A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Substructures
+:   `[FORM]`!, `[TITL]`?
 
 #### Common information
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.FILE` |  The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext). | 1--90 characters | None
+Contexts
+:   `.HEAD.FILE`
+
+Description
+:   The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext).
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+
+Substructures
+:   None
 
 
 ### FONE   {#FONE}
@@ -1678,15 +1868,31 @@ Known Context | Meaning | Payload | Substructures
 
 #### GEDCOM 5.5-compatible version
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`OBJE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
+Contexts
+:   `OBJE.FORM`
+
+Description
+:   Indicates the format of the multimedia data with this tag.
+
+Payload
+:   one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`}
+
+Substructures
+:   None
 
 #### GEDCOM 5.5.1-compatible version
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`FILE.FORM` | Indicates the format of the multimedia data with this tag. | one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`} | None
+Contexts
+:   `FILE.FORM`
+
+Description
+:   Indicates the format of the multimedia data with this tag.
+
+Payload
+:   one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`}
+
+Substructures
+:   None
 
 
 ### GEDC   {#GEDC}
@@ -1717,7 +1923,9 @@ Description
 :     Given name or earned name. Different given names are separated by a comma. 
 
 Payload
-:    1--120 characters, with 1--90 characters between each comma 
+:    A string.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    It is RECOMMENDED that implementations support at least 90 characters between each comma.
 
 Substructures
 :    None
@@ -1729,9 +1937,20 @@ Substructures
 
 An event of awarding educational diplomas or degrees to individuals.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.GRAD`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.GRAD`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### HEAD   {#HEAD}
@@ -1771,9 +1990,20 @@ A number assigned to identify a person within some significant external system.
 
 See also `[SSN]`
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.IDNO`  | A nationally-controlled number assigned to an individual. | 1--30 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute), `[TYPE]`!
+Contexts
+:   `.INDI.IDNO`
+
+Description
+:   A nationally-controlled number assigned to an individual.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute), `[TYPE]`!
 
 {.note} Although called a "number", the payload of an `IDNO` is *not* restricted to numeric values.
 
@@ -1784,9 +2014,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 An event of entering into a new locality with the intent of residing there.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.IMMI`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.IMMI`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### INDI   {#INDI}
@@ -1795,9 +2036,17 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A person.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI` | The individual record is a compilation of facts, known or discovered, about an individual. Sometimes these facts are from different sources. This form allows documentation of the source where each of the facts were discovered. | None | `[RESN]`?, `[NAME]`\*, `[SEX]`?, `[IndividualEvent]`, `[IndividualAttribute]`, `[FAMC]`\*, `[FAMS]`\*, `[SUBM]`\*, `[ASSO]`\*, `[ALIA]`\*, `[ANCI]`\*, `[DESI]`\*, `[SOUR]`\*, `[OBJE]`\*, `[NOTE]`\*, `[RFN]`?, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
+Contexts
+:   `.INDI`
+
+Description
+:   The individual record is a compilation of facts, known or discovered, about an individual. Sometimes these facts are from different sources. This form allows documentation of the source where each of the facts were discovered.
+
+Payload
+:   None
+
+Substructures
+:   `[RESN]`?, `[NAME]`\*, `[SEX]`?, `[IndividualEvent]`, `[IndividualAttribute]`, `[FAMC]`\*, `[FAMS]`\*, `[SUBM]`\*, `[ASSO]`\*, `[ALIA]`\*, `[ANCI]`\*, `[DESI]`\*, `[SOUR]`\*, `[OBJE]`\*, `[NOTE]`\*, `[RFN]`?, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
 
 See also [LDS-specific tags]
 
@@ -1861,9 +2110,17 @@ This sum becomes the fractional part of the degree's value.
 
 {.ednote} The example in the GEDCOM spec uses 11 characters, while restricting it to 8.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`MAP.LONG` | The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate. |  5--8 characters | None
+Contexts
+:   `MAP.LONG`
+
+Description
+:   The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 8 characters.
+
+Substructures
+:   None
 
 
 ### MAP   {#MAP}
@@ -1885,9 +2142,20 @@ Known Context | Meaning | Payload | Substructures
 
 An event of an official public notice given that two people intend to marry.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.MARB`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   `.FAM.MARB`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### MARC   {#MARC}
@@ -1896,9 +2164,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 An event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.MARC`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   `.FAM.MARC`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### MARL   {#MARL}
@@ -1907,9 +2186,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 An event of obtaining a legal license to marry.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.MARL`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   `.FAM.MARL`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### MARR   {#MARR}
@@ -1918,9 +2208,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.MARR`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   `.FAM.MARR`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### MARS   {#MARS}
@@ -1929,9 +2230,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 An event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.FAM.MARS`   | *see `[FamilyEvent]`* | Either `Y` or None | `[FamilyEvent]` | [*inherited*](#FamilyEvent)
+Contexts
+:   `.FAM.MARS`
+
+Description
+:   *see `[FamilyEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[FamilyEvent]`
+
+Substructures
+:   [*inherited*](#FamilyEvent)
 
 
 ### MEDI   {#MEDI}
@@ -1940,9 +2252,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 Identifies information about the media or having to do with the medium in which information is stored.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.SOUR.REPO.CALN.MEDI` |  A code, selected from one of the media classifications choices above, that indicates the type of material in which the referenced source is stored.  | 1--15 characters, one of {`audio`, `book`, `card`, `electronic`, `fiche`, `film`, `magazine`, `manuscript`, `map`, `newspaper`, `photo`, `tombstone`, `video`} | None
+Contexts
+:   `.SOUR.REPO.CALN.MEDI`
+
+Description
+:   A code, selected from one of the media classifications choices above, that indicates the type of material in which the referenced source is stored.
+
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 15 characters.
+    
+    The following are known values for the payload: {`audio`, `book`, `card`, `electronic`, `fiche`, `film`, `magazine`, `manuscript`, `map`, `newspaper`, `photo`, `tombstone`, `video`}
+
+Substructures
+:   None
 
 
 ### NAME   {#NAME}
@@ -1965,9 +2288,20 @@ Known Context | Meaning | Payload | Substructures
 
 The national heritage of an individual.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.NATI`  | The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth. | 1--120 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   `.INDI.NATI`
+
+Description
+:   The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### NATU   {#NATU}
@@ -1976,9 +2310,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 The event of obtaining citizenship.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.NATU`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.NATU`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### NCHI   {#NCHI}
@@ -1989,7 +2334,7 @@ The number of children that this person is known to be the parent of (all marria
 
 Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
-`.INDI.NCHI`  | The known number of children of this individual from all marriages. | 1--3 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+`.INDI.NCHI`  | The known number of children of this individual from all marriages. | 1--3 characters | `[IndividualAttribute]` | [*inherited*](#IndividualAttribute)
 `.FAM.NCHI`   | The reported number of children known to belong to this family, regardless of whether the associated children are represented in the corresponding structure. | 1--3 characters | None | None
 
 {.ednote} Presumably this is supposed to be a base-10 integer?
@@ -2001,9 +2346,17 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A descriptive or familiar that is used instead of, or in addition to, one's proper name.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.NICK` | A descriptive or familiar name used in connection with one's proper name. | 1--30 characters | None
+Contexts
+:   `.INDI.NAME.NICK`
+
+Description
+:   A descriptive or familiar name used in connection with one's proper name.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Substructures
+:   None
 
 {.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is not descriptive text describing the meaning of the commas.
 
@@ -2014,9 +2367,20 @@ Known Context | Meaning | Payload | Substructures
 
 The number of times this person has participated in a family as a spouse or parent.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.NMR`   | The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset. | 1--3 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   `.INDI.NMR`
+
+Description
+:   The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 3 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 {.ednote} Presumably this is supposed to be a base-10 integer?
 
@@ -2057,9 +2421,17 @@ Text which appears on a name line before the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
 In this example `Lt. Cmndr.` is considered as the name prefix portion.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.NPFX` | Non indexing name piece that appears preceding the given name and surname parts. Different name prefix parts are separated by a comma. | 1--30 characters | None
+Contexts
+:   `.INDI.NAME.NPFX`
+
+Description
+:   Non indexing name piece that appears preceding the given name and surname parts. Different name prefix parts are separated by a comma.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Substructures
+:   None
 
 
 ### NSFX   {#NSFX}
@@ -2070,9 +2442,17 @@ Text which appears on a name line after or behind the given and surname parts of
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
 In this example `jr.` is considered as the name suffix portion.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.NSFX` | Non-indexing name piece that appears after the given name and surname parts. Different name suffix parts are separated by a comma. | 1--30 characters | None
+Contexts
+:   `.INDI.NAME.NSFX`
+
+Description
+:   Non-indexing name piece that appears after the given name and surname parts. Different name suffix parts are separated by a comma.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Substructures
+:   None
 
 
 ### OBJE   {#OBJE}
@@ -2127,9 +2507,20 @@ The both unanchored forms of `OBJE` are known to exist in the following contexts
 
 The type of work or profession of an individual.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.OCCU`  | The kind of activity that an individual does for a job, profession, or principal activity. | 1--90 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   `.INDI.OCCU`
+
+Description
+:   The kind of activity that an individual does for a job, profession, or principal activity.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### ORDN   {#ORDN}
@@ -2138,9 +2529,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A religious event of receiving authority to act in religious matters.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.ORDN`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.ORDN`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### PAGE   {#PAGE}
@@ -2149,9 +2551,17 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A number or description to identify where information can be found in a referenced work.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`SOUR.PAGE`   | Specific location with in the information referenced. For a published work, this could include the volume of a multi-volume work and the page number(s). For a periodical, it could include volume, issue, and page numbers. For a newspaper, it could include a column number and page number. For an unpublished source, this could be a sheet number, page number, frame number, etc. A census record might have a line number or dwelling and family numbers in addition to the page number. | 1--248 characters | None
+Contexts
+:   `SOUR.PAGE`
+
+Description
+:   Specific location with in the information referenced. For a published work, this could include the volume of a multi-volume work and the page number(s). For a periodical, it could include volume, issue, and page numbers. For a newspaper, it could include a column number and page number. For an unpublished source, this could be a sheet number, page number, frame number, etc. A census record might have a line number or dwelling and family numbers in addition to the page number.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+
+Substructures
+:   None
 
 
 ### PEDI   {#PEDI}
@@ -2160,9 +2570,17 @@ Known Context | Meaning | Payload | Substructures
 
 Information pertaining to an individual to parent lineage chart.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.FAMC.PEDI` | A code used to indicate the child to family relationship for pedigree navigation purposes. | one of {`adopted`, `birth`, `foster`} | None
+Contexts
+:   `.INDI.FAMC.PEDI`
+
+Description
+:   A code used to indicate the child to family relationship for pedigree navigation purposes.
+
+Payload
+:   one of {`adopted`, `birth`, `foster`}
+
+Substructures
+:   None
 
 `adopted`
 :   indicates adoptive parents.
@@ -2212,9 +2630,17 @@ Known Context | Meaning | Payload | Substructures
 
 A code used by a postal service to identify an area to facilitate mail handling.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`ADDR.POST`   | The ZIP or postal code used by the various localities in handling of mail. Isolated for sorting or indexing. | 1--10 characters | None
+Contexts
+:   `ADDR.POST`
+
+Description
+:   The ZIP or postal code used by the various localities in handling of mail. Isolated for sorting or indexing.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 10 characters.
+
+Substructures
+:   None
 
 
 ### PROB   {#PROB}
@@ -2223,9 +2649,20 @@ Known Context | Meaning | Payload | Substructures
 
 An event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.PROB`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.PROB`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### PROP   {#PROP}
@@ -2234,9 +2671,20 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 Pertaining to possessions such as real estate or other property of interest.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.ORDN`  | A list of possessions (real estate or other property) belonging to this individual. | 1--248 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   `.INDI.ORDN`
+
+Description
+:   A list of possessions (real estate or other property) belonging to this individual.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### PUBL   {#PUBL}
@@ -2249,9 +2697,17 @@ When and where the record was created. For published works, this includes inform
 
 For an unpublished work, it includes the date the record was created and the place where it was created. For example, the county and state of residence of a person making a declaration for a pension or the city and state of residence of the writer of a letter.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.SOUR.PUBL` | see above | 248 or more characters | None
+Contexts
+:   `.SOUR.PUBL`
+
+Description
+:   see above
+
+Payload
+:   248 or more characters
+
+Substructures
+:   None
 
 {.ednote} It is almost certainly an error in GEDCOM that asserts that every `PUBL` payload must be *at least* 248 characters and *cannot* have a newline in the first 248 characters.
 
@@ -2276,9 +2732,17 @@ The QUAY tag's value conveys the submitter's quantitative evaluation of the cred
 3
 :   Direct and primary evidence used, or by dominance of the evidence
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`SOUR.QUAY` | see above | one of {`0`, `1`, `2`, `3`} | None
+Contexts
+:   `SOUR.QUAY`
+
+Description
+:   see above
+
+Payload
+:   one of {`0`, `1`, `2`, `3`}
+
+Substructures
+:   None
 
 
 ### REFN   {#REFN}
@@ -2287,9 +2751,17 @@ Known Context | Meaning | Payload | Substructures
 
 A description or number used to identify an item for filing, storage, or other reference purposes.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`REFN` | A user-defined number or text that the submitter uses to identify this record. For instance, it may be a record number within the submitter's automated or manual system, or it may be a page and position number on a pedigree chart. | 1--20 characters | `[TYPE]`?
+Contexts
+:   `REFN`
+
+Description
+:   A user-defined number or text that the submitter uses to identify this record. For instance, it may be a record number within the submitter's automated or manual system, or it may be a page and position number on a pedigree chart.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+Substructures
+:   `[TYPE]`?
 
 `REFN` is known to be a substructure of .`[FAM]`, .`[INDI]`, .`[NOTE]`, .`[OBJE]`, .`[REPO]`, and .`[SOUR]`.
 
@@ -2299,9 +2771,17 @@ Known Context | Meaning | Payload | Substructures
 
 A relationship value between the indicated contexts.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`ASSO.RELA` | A word or phrase that states object 1's relation is object 2. | 1--25 characters | None
+Contexts
+:   `ASSO.RELA`
+
+Description
+:   A word or phrase that states object 1's relation is object 2.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+
+Substructures
+:   None
 
 Example:
 You would read the following as "Joe Jacob's great grandson is the person described by the record with id "jim":
@@ -2324,7 +2804,7 @@ A religious denomination to which a person is affiliated or for which a record a
 
 Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
-`.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+`.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | `[IndividualAttribute]` | [*inherited*](#IndividualAttribute)
 `[Event]``.RELI` | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | None | None
 
 {.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of `[SOUR]` and `[Event]`, the specification only lists it as an individual attribute.
@@ -2350,7 +2830,7 @@ The act of dwelling at an address for a period of time.
 
 Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
-`.INDI.RESI`  |  | None | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+`.INDI.RESI`  |  | None | `[IndividualAttribute]` | [*inherited*](#IndividualAttribute)
 
 {.note} The `RESI` is the only known `[IndividualAttribute]` that does not have a payload.
 
@@ -2387,9 +2867,20 @@ Known Context | Meaning | Payload | Substructures
 
 An event of exiting an occupational relationship with an employer after a qualifying time period.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.RETI`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.RETI`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### RFN   {#RFN}
@@ -2420,9 +2911,17 @@ An individual `RFN`
 
 A number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`RIN` | A unique record identification number assigned to the record by the source system. This number is intended to serve as a more sure means of identification of a record between two interfacing systems. | 1--12 characters | None
+Contexts
+:   `RIN`
+
+Description
+:   A unique record identification number assigned to the record by the source system. This number is intended to serve as a more sure means of identification of a record between two interfacing systems.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 12 characters.
+
+Substructures
+:   None
 
 `RIN` is known to be a substructure of all records *except* `[HEAD]` and `[TRLR]`.
 
@@ -2433,9 +2932,17 @@ Known Context | Meaning | Payload | Substructures
 
 A name given to a role played by an individual in connection with an event.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`SOUR.EVEN.ROLE` | Either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record. | 1--25 characters | None
+Contexts
+:   `SOUR.EVEN.ROLE`
+
+Description
+:   Either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+
+Substructures
+:   None
 
 
 ### ROMN   {#ROMN}
@@ -2460,9 +2967,17 @@ Known Context | Meaning | Payload | Substructures
 
 Indicates the sex of an individual---male or female.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.SEX` | A code that indicates the sex of the individual | 1--7 characters, which is one of {`M`, `F`} | None
+Contexts
+:   `.INDI.SEX`
+
+Description
+:   A code that indicates the sex of the individual
+
+Payload
+:   1--7 characters, which is one of {`M`, `F`}
+
+Substructures
+:   None
 
 
 ### SOUR   {#SOUR}
@@ -2491,9 +3006,17 @@ Both unanchored `SOUR` are known to be substructures of .`[FAM]`, .`[INDI]`, .`[
 
 A name piece used as a non-indexing pre-part of a surname.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.SPFX` | Surname prefix or article used in a family name. Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la". | 1--30 characters | None
+Contexts
+:   `.INDI.NAME.SPFX`
+
+Description
+:   Surname prefix or article used in a family name. Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la".
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+Substructures
+:   None
 
 
 ### SSN   {#SSN}
@@ -2504,9 +3027,20 @@ A number assigned by the United States Social Security Administration. Used for 
 
 See also `[IDNO]`
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.SSN`  | A number assigned to a person in the United States for identification purposes. | 9--11 characters | `[IndividualAttribute]` | [*inherited*](#individualattribute)
+Contexts
+:   `.INDI.SSN`
+
+Description
+:   A number assigned to a person in the United States for identification purposes.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 11 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### STAE   {#STAE}
@@ -2515,9 +3049,17 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 A geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`ADDR.STAE` | The name of the state used in the address. Isolated for sorting or indexing. | 1--60 characters | None
+Contexts
+:   `ADDR.STAE`
+
+Description
+:   The name of the state used in the address. Isolated for sorting or indexing.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+
+Substructures
+:   None
 
 
 ### STAT   {#STAT}
@@ -2540,9 +3082,17 @@ proven
 :   There has been a claim by some that this child does not belongs to this family, but the linkage has been proven.
 
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.FAMC.STAT` | A status code that allows passing on the users opinion of the status of a child to family link. | 1--15 characters; one of `challenged`, `disproven`, or `proven` | None
+Contexts
+:   `.INDI.FAMC.STAT`
+
+Description
+:   A status code that allows passing on the users opinion of the status of a child to family link.
+
+Payload
+:   1--15 characters; one of `challenged`, `disproven`, or `proven`
+
+Substructures
+:   None
 
 
 
@@ -2579,9 +3129,17 @@ Known Context | Meaning | Payload | Substructures
 
 A family name passed on or used by members of a family.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.SURN` | Surname or family name. Different surnames are separated by a comma. | 1--120 characters | None
+Contexts
+:   `.INDI.NAME.SURN`
+
+Description
+:   Surname or family name. Different surnames are separated by a comma.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   None
 
 
 ### TEXT   {#TEXT}
@@ -2631,9 +3189,17 @@ Known Context | Meaning | Payload | Supertype | Substructures
 
 At level 0, specifies the end of a GEDCOM transmission.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.TRLR` | End of dataset | None | None
+Contexts
+:   `.TRLR`
+
+Description
+:   End of dataset
+
+Payload
+:   None
+
+Substructures
+:   None
 
 When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
 
@@ -2686,9 +3252,20 @@ Known Context | Meaning | Payload | Substructures
 
 A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also `[PROB]`ate.)
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.WILL`  | *see `[IndividualEvent]`* | Either `Y` or None | `[IndividualEvent]` | [*inherited*](#IndividualEvent)
+Contexts
+:   `.INDI.WILL`
+
+Description
+:   *see `[IndividualEvent]`*
+
+Payload
+:   Either `Y` or None
+
+Supertype
+:   `[IndividualEvent]`
+
+Substructures
+:   [*inherited*](#IndividualEvent)
 
 
 ### WWW   {#WWW}
@@ -2699,6 +3276,14 @@ World Wide Web home page.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`ADDR.WWW` | The world wide web page address. | 5--120 characters | None
+Contexts
+:   `ADDR.WWW`
+
+Description
+:   The world wide web page address.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   None
