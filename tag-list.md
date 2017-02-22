@@ -1206,6 +1206,8 @@ Known calender identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROM
 If not calender escape is given, `GREGORIAN` is assumed.
 After the optional escape is the content of the date, which takes a format dependent on the calender.
 
+{.note} Some `[DATE]` payloads may have multiple Date values; it is not known if current implementations can handle situations where the dates are from different calenders, nor if they assume an uncalendered date paired with a calendered date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calender be used for both Dates in such payloads.
+
 The `ROMAN` and `UNKNOWN` calenders's date formats are not defined in this specification.
 
 `GREGORIAN`, `FRENCH R`, `HEBREW`, and `JULIAN` dates all have the format "day month year", separated by spaces; the day may be omitted; if the day is omitted, the month may be omitted as well.
@@ -1234,7 +1236,7 @@ month
 year
 :   A decimal number.
     
-    For `GREGORIAN` (only), the number may be optionally followed by either or both of
+    For `GREGORIAN` (only), the number may be optionally followed by either or both of the following year suffixes:
     
     Alternate Year
     :   Represented as a `/` and two additional decimal digits, with no spaces.
