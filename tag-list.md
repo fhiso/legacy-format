@@ -1181,51 +1181,202 @@ Substructures
 :   `[TEXT]`\*
 
 
+### DATE   {#DATE}
+
+The time of an event in a calendar format.
+
+Contexts
+:   `[CHAN]`.`[DATE]`
+:   ([Event]).`[DATE]`
+:   .`[HEAD]`.`[DATE]`
+:   .`[HEAD]`.`[SOUR]`.`[DATA]`.`[DATE]`
+:   .`[SOUR]`.`[DATA]`.`[EVEN]`.`[DATE]`
+:   `[SOUR]`.`[DATA]`.`[DATE]`
+
+
+#### DATE Payload Formatting
+
+Dates are represented using a somewhat involved syntax, which shares a common subformat and has three entry points, documented below.
+
+##### Date {#date-format}
+
+At the core of the date syntax is a calendared date.
+This consists of an optional *calender escape*, which is a substring beginning `@#D` and ending `@`, between which is a calender identifier.
+Known calender identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
+If not calender escape is given, `GREGORIAN` is assumed.
+After the optional escape is the content of the date, which takes a format dependent on the calender.
+
+The `ROMAN` and `UNKNOWN` calenders's date formats are not defined in this specification.
+
+`GREGORIAN`, `FRENCH R`, `HEBREW`, and `JULIAN` dates all have the format "day month year", separated by spaces; the day may be omitted; if the day is omitted, the month may be omitted as well.
+The three pieces are formatted as follows:
+    
+day
+:   A decimal number of one or two digits.
+    This SHOULD NOT be zero or greater than the number of days in the appropriate month.
+    This specification does not specify whether single-digit days should begin with a zero or not.
+
+month
+:   Each calender has a set of strings that may be used.
+    
+    `GREGORIAN` or `JULIAN`
+    :   One of the following three-character strings:
+        `JAN`, `FEB`, `MAR`, `APR`, `M‌AY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`
+    
+    `FRENCH R`
+    :   One of the following four-character strings:
+        `VEND`, `BRUM`, `FRIM`, `NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER`, `FRUC`, `COMP`
+    
+    `HEBREW`
+    :   One of the following three-character strings:
+        `TSH`, `CSH`, `KSL`, `TVT`, `SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`
+
+year
+:   A decimal number.
+    
+    For `GREGORIAN` (only), the number may be optionally followed by either or both of
+    
+    Alternate Year
+    :   Represented as a `/` and two additional decimal digits, with no spaces.
+        Shows the possible date alternatives for pre-1752 date brought about by a changing the beginning of the year from MAR to JAN in the English calendar change of 1752, for example, `15 APR 1699/00`.
+        
+        The `/` MUST NOT have a space on either side.
+    
+    BCE
+    :   Represented as `(B.C.)`, which SHOULD be preceded by a space.
+        Indicates a date before the birth of Christ.
+    
+    If both suffixes are present, `(B.C.)` comes last.
+
+##### Exact Date {#exact-date}
+
+Some `[DATE]` payloads are restricted to *exact dates*,
+meaning `GREGORIAN` [Date](#date-format)s with the following constraints:
+
+-   They MUST NOT include a *calender escape*
+-   They MUST include the day and month
+-   They MUST NOT have either year suffix
+
+##### Date Period {#date-period}
+
+Some `[DATE]` payloads are restricted to *date periods*,
+meaning one of the following three forms:
+
+-   `FROM` [Date](#date-format)
+-   `TO` [Date](#date-format)
+-   `FROM` [Date](#date-format) `TO` [Date](#date-format)
+
+##### Date Value {#date-value}
+
+Many `[DATE]` payloads, referred to below *date values*, may have any of a variety of formats:
+
+-   [Date](#date-format)
+-   [Date Period](#date-period)
+-   `BEF` [Date](#date-format)
+    
+    Meaning: before the given date.
+-   `AFT` [Date](#date-format)
+    
+    Meaning: after the given date.
+-   `BET` [Date](#date-format) `AND` [Date](#date-format) 
+    
+    Meaning: between the given dates.
+
+    The first date SHOULD be earlier than the second date.
+-   `ABT` [Date](#date-format)
+    
+    Meaning: about; the given date is not exact.
+-   `CAL` [Date](#date-format)
+    
+    Meaning: calculated mathematically, for example, from an event date and age.
+-   `EST` [Date](#date-format)
+
+    Meaning: estimated based on some other event date.
+-   `INT` [Date](#date-format) `(`arbitrary text`)`
+
+    Meaning: interpreted from knowledge about the associated date phrase included in parentheses.
+-   `(`arbitrary text`)`
+    
+    The text gives information about when an event occurred but is not recognizable to a date parser.
+
+#### Context `[CHAN]`.`[DATE]`
+
+Description
+:   The date that this data was changed.
+
+Payload
+:   A string matching the [Exact Date](#exact-date) syntax above.
+
+Substructures
+:   `[TIME]`?
+
+
+#### Context ([Event]).`[DATE]`
+
+Description
+:   The date of an activity, attribute, or event.
+
+Payload
+:   A string matching the [Date Value](#date-value) syntax above.
+
+Substructures
+:   None
+
+
+#### Context .`[HEAD]`.`[DATE]`
+
+Description
+:   The date that this transmission was created.
+
+Payload
+:   A string matching the [Exact Date](#exact-date) syntax above.
+
+Substructures
+:   `[TIME]`?
+
+
+
+#### Context .`[HEAD]`.`[SOUR]`.`[DATA]`.`[DATE]`
+
+Description
+:   The date this source was published or created.
+
+Payload
+:   A string matching the [Exact Date](#exact-date) syntax above.
+
+Substructures
+:   None
+
+
+#### Context .`[SOUR]`.`[DATA]`.`[EVEN]`.`[DATE]`
+
+Description
+:   The date that this event data was entered into the original source document.
+
+Payload
+:   A string matching the [Date Period](#date-period) syntax above.
+
+Substructures
+:   None
+
+#### Context `[SOUR]`.`[DATA]`.`[DATE]`
+
+Description
+:   The date that this event data was entered into the original source document.
+
+Payload
+:   A string matching the [Date Value](#date-value) syntax above.
+
+Substructures
+:   None
+
 ---
 
 {.ednote} Resume reformatting here
 
 ---
 
-### DATE   {#DATE}
 
-`http://terms.fhiso.org/legacy/longform/DATE`
-
-The time of an event in a calendar format.
-
-{.ednote} The date following pseudo-syntax is ugly and leaves out meaning... update it
-
-VALUE ::= DATE | PERIOD | RANGE | APPROXIMATED | `INT` DATE `(` 1--35 characters `)` | `(` 1--35 characters `)`
-
-RANGE ::= `BEF` DATE | `AFT` DATE | `BET` DATE `AND` DATE
-
-PERIOD ::= `FROM` DATE | `TO` DATE | `FROM` DATE `TO` DATE
-
-APPROXIMATED ::= ( `ABT` | `CAL` | `EST` ) DATE
-
-DATE ::= GREG | JULN | HEBR | FREN
-
-GREG ::= escape(`DGREGORIAN`)? `(([0-3]?[0-9])? (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))? [0-9]+/([0-9][0-9])?`
-
-EXACT ::= `[0-3]?[0-9] (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC) [0-9]+`
-
-FREN ::= escape(`DFRENCH R`) `(([0-3]?[0-9])? (VEND|BRUM|FRIM|NIVO|PLUV|VENT|GERM|FLOR|PRAI|MESS|THER|FRUC|COMP))? [0-9]+`
-
-HEBR ::= escape(`DHEBREW`) `(([0-3]?[0-9])? (TSH|CSH|KSL|TVT|SHV|ADR|ADS|NSN|IYR|SVN|TMZ|AAV|ELL))? [0-9]+`
-
-JULN ::= escape(`DJULIAN`) `(([0-3]?[0-9])? (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))? [0-9]+`
-
-{.ednote} There is a documented escape(`DROMAN`) and escape(`DUNKNOWN`) but there is no documentation of what, if anything, may follow those escapes.
-
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-[*Event*](#Event)`.DATE` | The DATE_VALUE represents the date of an activity, attribute, or event where: INT = Interpreted from knowledge about the associated date phrase included in parentheses. | see VALUE above | None
-[*LDS*](#lds)`.DATE` | | see EXACT above | None
-`.HEAD.DATE` | The date that this transmission was created. | see EXACT above| `[TIME]`?
-`CHAN.DATE` | The date that this data was changed. | see EXACT above | `[TIME]`?
-`SOUR.DATA.DATE` |  The date that this event data was entered into the original source document. | see VALUE above | None
-`.HEAD.SOUR.DATA.DATE` | The date this source was published or created. | see EXACT above | None
-`.SOUR.DATA.EVEN.DATE` | | see PERIOD above | None
 
 ### DEAT   {#DEAT}
 
