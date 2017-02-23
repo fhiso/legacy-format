@@ -1681,6 +1681,9 @@ Description
 Payload
 :   None
 
+Supertype
+:   `[Record]`
+
 Substructures
 :   (`[FamilyEvent]`)\*
 :   `[HUSB]`?
@@ -1784,20 +1787,24 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-{.ednote} Continue reformatting from here
-
-
-
 ### FILE   {#FILE}
 
 `http://terms.fhiso.org/legacy/longform/FILE`
 
 An information storage place that is ordered and arranged for preservation and reference.
 
-#### GEDCOM 5.5-compatible version
-
 Contexts
-:   `OBJE.FILE`
+:   `[OBJE]`.`[FILE]`
+:   .`[HEAD]`.`[FILE]`
+
+#### Context `[OBJE]`.`[FILE]`
+
+The substructures of the FILE tag were changed between GEDCOM 5.5 and GEDCOM 5.5.1.
+In particular, the substructures listed here were placed under `[FILE]` in 5.5.1;
+prior to that they appeared under `[OBJE]` instead.
+
+Implementations SHOULD support importing data using both formats;
+it is RECOMMENDED that they export data only in the 5.5.1 format with `[OBJE]`.`[FILE]`.`[FORM]` instead of `[OBJE]`.`[FORM]`.
 
 Description
 :   A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained.
@@ -1806,26 +1813,11 @@ Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
 Substructures
-:   None
+:   `[FORM]`! -- this MAY be omitted, but if so then it MUST appear in the containing `[OBJE]`
+:   `[TITL]`? -- if `[FORM]` is omitted from `[FILE]`, or if there is an `[OBJE]`.`[TITL]` inthe containing `[OBJE]`, then `[TITL]` SHOULD NOT be included as a substructure of `[FILE]`.
 
-#### GEDCOM 5.5.1-compatible version
 
-Contexts
-:   `OBJE.FILE`
-
-Description
-:   A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained.
-
-Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
-
-Substructures
-:   `[FORM]`!, `[TITL]`?
-
-#### Common information
-
-Contexts
-:   `.HEAD.FILE`
+#### Context .`[HEAD]`.`[FILE]`
 
 Description
 :   The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext).
@@ -1839,37 +1831,96 @@ Substructures
 
 ### FONE   {#FONE}
 
-`http://terms.fhiso.org/legacy/longform/PHONETIC`
-
 A phonetic variation of a superior text string.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
 The method of phonetic writing is indicated by the subordinate `TYPE` value; for example if hiragana was used to provide a reading of a name written in kanji, then the `TYPE` value would indicate `kana`.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.FONE` | The phonetic variation of the name in the same form as the was the name used in the superior primitive.  | 1--120 characters | `[TYPE]`!, `[NPFX]`?, `[GIVN]`?, `[NICK]`?, `[SPFX]`?, `[SURN]`?, `[NSFX]`?, `[NOTE]`\*, `[SOUR]`\*
-`[Event]``.PLAC.FONE` | The phonetic variation of the place name in the same form as the was the name used in the superior primitive. | `[TYPE]`!
+Contexts
+:   .`[INDI]`.`[NAME]`.`[FONE]`
+:   (`[Event]`).`[PLAC]`.`[FONE]`
+
+Description
+:   The phonetic variation of the name in the same form as the was the name used in its superstructure
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+#### Context .`[INDI]`.`[NAME]`.`[FONE]`
+
+Substructures
+:   `[TYPE]`!
+:   `[NPFX]`?
+:   `[GIVN]`?
+:   `[NICK]`?
+:   `[SPFX]`?
+:   `[SURN]`?
+:   `[NSFX]`?
+:   `[NOTE]`\*
+:   `[SOUR]`\*
+
+Generally, `[NAME]`.`[FONE]`'s substructures should mirror those of the superstructure, but represent the payloads phonetically 
+
+#### Context (`[Event]`).`[PLAC]`.`[FONE]`
+
+Substructures
+:   `[TYPE]`!
+
 
 
 ### FORM   {#FORM}
 
-`http://terms.fhiso.org/legacy/longform/FORMAT`
-
 An assigned name given to a consistent format in which information can be conveyed.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.PLAC.FORM` | Implies that all place names follow this jurisdictional format and each jurisdiction is accounted for by a comma, whether the name is known or not. May be overridden by `[Event]``.PLAC.FORM`. | 1--120 characters | None
-`[Event]``.PLAC.FORM` | Jurisdictional entities that are named in a sequence from the lowest to the highest jurisdiction. The jurisdictions are separated by commas, and any jurisdiction's name that is missing is still accounted for by a comma. | 1--120 characters | None
-`.HEAD.GEDC.FORM` | The GEDCOM form used to construct this transmission. | 14--20 characters, specifically `LINEAGE_LINKED` | None
-
-
-#### GEDCOM 5.5-compatible version
 
 Contexts
-:   `OBJE.FORM`
+:   .`[HEAD]`.`[GEDC]`.`[FORM]`
+:   .`[HEAD]`.`[PLAC]`.`[FORM]`
+:   (`[Event]`).`[PLAC]`.`[FORM]`
+:   `[OBJE]`.`[FORM]`
+:   `[OBJE]`.`[FILE]`.`[FORM]`
+
+#### Context .`[HEAD]`.`[GEDC]`.`[FORM]`
+
+Description
+:   The GEDCOM form used to construct this transmission.
+    
+Payload
+:   A string, specifically `LINEAGE_LINKED`.
+    Implementations capable of parsing multiple formats may accept other values for this string.
+
+Substructures
+:   None
+
+
+#### Context .`[HEAD]`.`[PLAC]`.`[FORM]`
+
+Description
+:   Implies that all place names follow this jurisdictional format and each jurisdiction is accounted for by a comma, whether the name is known or not. May be overridden by (`[Event]`).`[PLAC]`.`[FORM]`.
+    
+Payload
+:   A string containing an ordered list of jurisdictional entities, separated by commas.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   None
+
+#### Context (`[Event]`).`[PLAC]`.`[FORM]`
+
+Description
+:   Jurisdictional entities that are named in a sequence from the lowest to the highest jurisdiction.
+    The jurisdictions are separated by commas, and any jurisdiction's name that is missing is still accounted for by a comma.
+    
+Payload
+:   A string containing an ordered list of jurisdictional entities, separated by commas.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   None
+
+
+#### Contexts `[OBJE]`.`[FORM]` and `[OBJE]`.`[FILE]`.`[FORM]`
 
 Description
 :   Indicates the format of the multimedia data with this tag.
@@ -1880,19 +1931,7 @@ Payload
 Substructures
 :   None
 
-#### GEDCOM 5.5.1-compatible version
-
-Contexts
-:   `FILE.FORM`
-
-Description
-:   Indicates the format of the multimedia data with this tag.
-
-Payload
-:   one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`}
-
-Substructures
-:   None
+{.note} These two contexts differ primarily in the GEDCOM version in which they were introduced.  For more, see the discussion under `[OBJE]`
 
 
 ### GEDC   {#GEDC}
@@ -1900,16 +1939,14 @@ Substructures
 Information about the use of GEDCOM in a transmission.
 
 Contexts
-:   `.HEAD.GEDC`  
-
-Description
-:            
+:   .`[HEAD]`.`[GEDC]`  
 
 Payload
 :    None    
 
 Substructures
-:    `[VERS]`!, `[FORM]`!
+:   `[VERS]`!
+:   `[FORM]`!
 
 
 ### GIVN   {#GIVN}
@@ -1917,13 +1954,13 @@ Substructures
 A given or earned name used for official identification of a person.
 
 Contexts
-:   `.INDI.NAME.GIVN`   
+:   .`[INDI]`.`[NAME]`.`[GIVN]`   
 
 Description
-:     Given name or earned name. Different given names are separated by a comma. 
+:     Given name or earned name.
 
 Payload
-:    A string.
+:   A string containing a comma-separated list of names.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
     It is RECOMMENDED that implementations support at least 90 characters between each comma.
 
@@ -1933,18 +1970,16 @@ Substructures
 
 ### GRAD   {#GRAD}
 
-`http://terms.fhiso.org/legacy/longform/GRADUATION`
-
 An event of awarding educational diplomas or degrees to individuals.
 
 Contexts
-:   `.INDI.GRAD`
+:   .`[INDI]`.`[GRAD]`
 
 Description
 :   *see `[IndividualEvent]`*
 
 Payload
-:   Either `Y` or None
+:   Either `Y` or None, as described under `[IndividualEvent]`
 
 Supertype
 :   `[IndividualEvent]`
@@ -1958,16 +1993,30 @@ Substructures
 Identifies information pertaining to an entire GEDCOM transmission.
 
 Contexts
-:   `.HEAD`       
-
-Description
-:            
+:   .`[HEAD]`
 
 Payload
 :    None    
 
+Supertype
+:   `[TopLevel]`
+
 Substructures
-:    `[SOUR]`!, `[DEST]`?, `[DATE]`?, `[SUBM]`!, `[SUBN]`?, `[FILE]`?, `[COPR]`?, `[GEDC]`!, `[CHAR]`!, `[LANG]`?, `[PLAC]`?, `[NOTE]`?
+:   `[SOUR]`!
+:   `[DEST]`?
+:   `[DATE]`?
+:   `[SUBM]`!
+:   `[SUBN]`?
+:   `[FILE]`?
+:   `[COPR]`?
+:   `[GEDC]`!
+:   `[CHAR]`!
+:   `[LANG]`?
+:   `[PLAC]`?
+:   `[NOTE]`?
+
+
+{.ednote} continue reformatting from here
 
 
 ### HUSB   {#HUSB}
