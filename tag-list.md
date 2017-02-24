@@ -2016,31 +2016,41 @@ Substructures
 :   `[NOTE]`?
 
 
-{.ednote} continue reformatting from here
-
-
 ### HUSB   {#HUSB}
-
-`http://terms.fhiso.org/legacy/longform/HUSBAND`
 
 An individual in the family role of a married man or father.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.FAM.``[FamilyEvent]``.HUSB` | | None | `[AGE]`!
-`.FAM.HUSB`   |         | pointer to an `[INDI]` | None
+Contexts
+:   .`[FAM]`.(`[FamilyEvent]`).`[HUSB]`
+:   .`[FAM]`.`[HUSB]`
+
+#### Context .`[FAM]`.(`[FamilyEvent]`).`[HUSB]`
+
+Payload
+:   None
+
+Substructures
+:   `[AGE]`!
+
+#### Context .`[FAM]`.`[HUSB]`
+
+Payload
+:   pointer to an `[INDI]`
+
+Substructures
+:   None
 
 
 ### IDNO   {#IDNO}
 
-`http://terms.fhiso.org/legacy/longform/IDENT_NUMBER`
-
 A number assigned to identify a person within some significant external system.
+
+{.note} Although called a "number", the payload of an `[IDNO]` is *not* restricted to numeric values.
 
 See also `[SSN]`
 
 Contexts
-:   `.INDI.IDNO`
+:   .`[INDI]`.`[IDNO]`
 
 Description
 :   A nationally-controlled number assigned to an individual.
@@ -2052,25 +2062,22 @@ Supertype
 :   `[IndividualAttribute]`
 
 Substructures
-:   [*inherited*](#IndividualAttribute), `[TYPE]`!
-
-{.note} Although called a "number", the payload of an `IDNO` is *not* restricted to numeric values.
+:   [*inherited*](#IndividualAttribute)
+:   `[TYPE]`!
 
 
 ### IMMI   {#IMMI}
 
-`http://terms.fhiso.org/legacy/longform/IMMIGRATION`
-
 An event of entering into a new locality with the intent of residing there.
 
 Contexts
-:   `.INDI.IMMI`
+:   .`[INDI]`.`[IMMI]`
 
 Description
 :   *see `[IndividualEvent]`*
 
 Payload
-:   Either `Y` or None
+:   Either `Y` or None, as described under `[IndividualEvent]`
 
 Supertype
 :   `[IndividualEvent]`
@@ -2080,8 +2087,6 @@ Substructures
 
 
 ### INDI   {#INDI}
-
-`http://terms.fhiso.org/legacy/longform/INDIVIDUAL`
 
 A person.
 
@@ -2095,9 +2100,29 @@ Payload
 :   None
 
 Substructures
-:   `[RESN]`?, `[NAME]`\*, `[SEX]`?, `[IndividualEvent]`, `[IndividualAttribute]`, `[FAMC]`\*, `[FAMS]`\*, `[SUBM]`\*, `[ASSO]`\*, `[ALIA]`\*, `[ANCI]`\*, `[DESI]`\*, `[SOUR]`\*, `[OBJE]`\*, `[NOTE]`\*, `[RFN]`?, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
+:   `[RESN]`?
+:   `[NAME]`\*
+:   `[SEX]`?
+:   (`[IndividualEvent]`)\*, 
+:   (`[IndividualAttribute]`)\*
+:   `[FAMC]`\*
+:   `[FAMS]`\*
+:   `[SUBM]`\*
+:   `[ASSO]`\*
+:   `[ALIA]`\*
+:   `[ANCI]`\*
+:   `[DESI]`\*
+:   `[SOUR]`\*
+:   `[OBJE]`\*
+:   `[NOTE]`\*
+:   `[RFN]`?
+:   `[REFN]`\*
+:   `[RIN]`?
+:   `[CHAN]`?
 
-See also [LDS-specific tags]
+
+{.ednote} continue reformatting from here
+
 
 
 ### LANG   {#LANG}
