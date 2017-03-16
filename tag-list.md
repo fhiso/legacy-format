@@ -2121,24 +2121,34 @@ Substructures
 :   `[CHAN]`?
 
 
-{.ednote} continue reformatting from here
-
-
-
 ### LANG   {#LANG}
 
 `http://terms.fhiso.org/legacy/longform/LANGUAGE`
 
 The name of the language used in a communication or transmission of information.
 
-The set of known language payload value is {`Afrikaans`, `Albanian`, `Anglo-Saxon`, `Catalan`, `Catalan_Spn`, `Czech`, `Danish`, `Dutch`, `English`, `Esperanto`, `Estonian`, `Faroese`, `Finnish`, `French`, `German`, `Hawaiian`, `Hungarian`, `Icelandic`, `Indonesian`, `Italian`, `Latvian`, `Lithuanian`, `Navaho`, `Norwegian`, `Polish`, `Portuguese`, `Romanian`, `Serbo_Croa`, `Slovak`, `Slovene`, `Spanish`, `Swedish`, `Turkish`, `Wendic`, `Amharic`, `Arabic`, `Armenian`, `Assamese`, `Belorusian`, `Bengali`, `Braj`, `Bulgarian`, `Burmese`, `Cantonese`, `Church-Slavic`, `Dogri`, `Georgian`, `Greek`, `Gujarati`, `Hebrew`, `Hindi`, `Japanese`, `Kannada`, `Khmer`, `Konkani`, `Korean`, `Lahnda`, `Lao`, `Macedonian`, `Maithili`, `Malayalam`, `Mandrin`, `Manipuri`, `Marathi`, `Mewari`, `Nepali`, `Oriya`, `Pahari`, `Pali`, `Panjabi`, `Persian`, `Prakrit`, `Pusto`, `Rajasthani`, `Russian`, `Sanskrit`, `Serb`, `Tagalog`, `Tamil`, `Telugu`, `Thai`, `Tibetan`, `Ukrainian`, `Urdu`, `Vietnamese`, `Yiddish`}
+Contexts
+:   .`[HEAD]`.`[LANG]`
+:   .`[SUBM]`.`[LANG]`
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.LANG` | The human language in which the data in the transmission is normally read or written. | 1--15 characters; see above | None
-`.SUBM.LANG` | The language in which a person prefers to communicate. Multiple language preference is shown by using multiple occurrences in order of priority. | 1--90 characters; see above | None
+Description
+:   Refers to a human language.
+    
+    Within a `[HEAD]`, indicates the human language in which the data in the transmission is normally read or written.
+    
+    Within a `[SUBM]`, indicates a language in which a person prefers to communicate.
+    Multiple language preference is shown by using multiple occurrences in order of priority.
 
-{.note} There is no obvious reason why the two contexts in which `LANG` appear have the same set of values but different character lengths.
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 15 characters.
+    It is RECOMMENDED that implementations use one of the following known language payloads:
+    {`Afrikaans`, `Albanian`, `Amharic`, `Anglo-Saxon`, `Arabic`, `Armenian`, `Assamese`, `Belorusian`, `Bengali`, `Braj`, `Bulgarian`, `Burmese`, `Cantonese`, `Catalan`, `Catalan_Spn`, `Church-Slavic`, `Czech`, `Danish`, `Dogri`, `Dutch`, `English`, `Esperanto`, `Estonian`, `Faroese`, `Finnish`, `French`, `Georgian`, `German`, `Greek`, `Gujarati`, `Hawaiian`, `Hebrew`, `Hindi`, `Hungarian`, `Icelandic`, `Indonesian`, `Italian`, `Japanese`, `Kannada`, `Khmer`, `Konkani`, `Korean`, `Lahnda`, `Lao`, `Latvian`, `Lithuanian`, `Macedonian`, `Maithili`, `Malayalam`, `Mandrin`, `Manipuri`, `Marathi`, `Mewari`, `Navaho`, `Nepali`, `Norwegian`, `Oriya`, `Pahari`, `Pali`, `Panjabi`, `Persian`, `Polish`, `Portuguese`, `Prakrit`, `Pusto`, `Rajasthani`, `Romanian`, `Russian`, `Sanskrit`, `Serb`, `Serbo_Croa`, `Slovak`, `Slovene`, `Spanish`, `Swedish`, `Tagalog`, `Tamil`, `Telugu`, `Thai`, `Tibetan`, `Turkish`, `Ukrainian`, `Urdu`, `Vietnamese`, `Wendic`, `Yiddish`}
+
+Substructures
+:   None
+
+
 
 ### LEGA   {#LEGA}
 
@@ -2146,7 +2156,15 @@ Known Context | Meaning | Payload | Substructures
 
 A role of an individual acting as a person receiving a bequest or legal devise.
 
-This tag does not appear in any known context.
+In the GEDCOM standard, this tag is documented as existing but does not appear in any known context.
+
+{.ednote} Should we guess that this is an [IndividualEvent] or remove it from our documentation?
+
+
+
+
+{.ednote} continue reformatting from here
+
 
 
 ### LATI   {#LATI}
