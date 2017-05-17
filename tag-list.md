@@ -2127,8 +2127,6 @@ Substructures
 
 ### LANG   {#LANG}
 
-`http://terms.fhiso.org/legacy/longform/LANGUAGE`
-
 The name of the language used in a communication or transmission of information.
 
 Contexts
@@ -2156,8 +2154,6 @@ Substructures
 
 ### LEGA   {#LEGA}
 
-`http://terms.fhiso.org/legacy/longform/LEGATEE`
-
 A role of an individual acting as a person receiving a bequest or legal devise.
 
 In the GEDCOM standard, this tag is documented as existing but does not appear in any known context.
@@ -2166,14 +2162,7 @@ In the GEDCOM standard, this tag is documented as existing but does not appear i
 
 
 
-
-{.ednote} continue reformatting from here
-
-
-
 ### LATI   {#LATI}
-
-`http://terms.fhiso.org/legacy/longform/LATITUDE`
 
 A value indicating a coordinate position on a line, plane, or space.
 
@@ -2183,13 +2172,25 @@ For example:  18 degrees, 9 minutes, and 3.4 seconds North would be formatted as
 Minutes and seconds are converted by dividing the minutes value by 60 and the seconds value by 3600 and adding the results together.
 This sum becomes the fractional part of the degree's value.
 
-{.ednote} The example in the GEDCOM spec uses 10 characters, while restricting it to 8.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`MAP.LATI` | The value specifying the latitudinal coordinate of the place name. The latitude coordinate is the
-direction North or South from the equator in degrees and fraction of degrees carried out to give the
-desired accuracy. | 5--8 characters | None
+Contexts
+:   `[MAP]`.`[LATI]`
+
+Description
+:   The value specifying the latitudinal coordinate of the place name. The latitude coordinate is the direction North or South from the equator in degrees and fraction of degrees carried out to give the desired accuracy.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 10 characters.
+
+    The string should match the regular expression 
+
+    > `[NS]\d+(\.\d+)?`
+
+    {.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 10 characters.
+
+Substructures
+:   None
+
 
 
 ### LONG   {#LONG}
@@ -2207,39 +2208,49 @@ This sum becomes the fractional part of the degree's value.
 {.ednote} The example in the GEDCOM spec uses 11 characters, while restricting it to 8.
 
 Contexts
-:   `MAP.LONG`
+:   `[MAP].[LONG]`
 
 Description
 :   The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 8 characters.
+:   A string. It is RECOMMENDED that implementations support payloads of at least 11 characters.
+
+    The string should match the regular expression 
+
+    > `[EW]\d+(\.\d+)?`
+
+    {.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 11 characters.
 
 Substructures
 :   None
 
 
-### MAP   {#MAP}
 
-`http://terms.fhiso.org/legacy/longform/MAP`
+### MAP   {#MAP}
 
 Pertains to a representation of measurements usually presented in a graphical form.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`[Event]``.PLAC.MAP` | | None | `[LATI]`!, `[LONG]`!
+Contexts
+:   (`[Event]`).`[MAP]`
+
+Payload
+:   None
+
+Substructures
+:   `[LATI]`!
+:   `[LONG]`!
+
 
 
 ### MARB   {#MARB}
 
-`http://terms.fhiso.org/legacy/longform/MARRIAGE_BANN`
-
 An event of an official public notice given that two people intend to marry.
 
 Contexts
-:   `.FAM.MARB`
+:   .`[FAM]`.`[MARB]`
 
 Description
 :   *see `[FamilyEvent]`*
@@ -2256,12 +2267,10 @@ Substructures
 
 ### MARC   {#MARC}
 
-`http://terms.fhiso.org/legacy/longform/MARR_CONTRACT`
-
 An event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
 
 Contexts
-:   `.FAM.MARC`
+:   .`[FAM]`.`[MARC]`
 
 Description
 :   *see `[FamilyEvent]`*
@@ -2278,12 +2287,10 @@ Substructures
 
 ### MARL   {#MARL}
 
-`http://terms.fhiso.org/legacy/longform/MARR_LICENSE`
-
 An event of obtaining a legal license to marry.
 
 Contexts
-:   `.FAM.MARL`
+:   .`[FAM]`.`[MARL]`
 
 Description
 :   *see `[FamilyEvent]`*
@@ -2300,12 +2307,10 @@ Substructures
 
 ### MARR   {#MARR}
 
-`http://terms.fhiso.org/legacy/longform/MARRIAGE`
-
 A legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
 
 Contexts
-:   `.FAM.MARR`
+:   .`[FAM]`.`[MARR]`
 
 Description
 :   *see `[FamilyEvent]`*
@@ -2322,12 +2327,10 @@ Substructures
 
 ### MARS   {#MARS}
 
-`http://terms.fhiso.org/legacy/longform/MARR_SETTLEMENT`
-
 An event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
 
 Contexts
-:   `.FAM.MARS`
+:   .`[FAM]`.`[MARS]`
 
 Description
 :   *see `[FamilyEvent]`*
@@ -2342,6 +2345,8 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
+
+
 ### MEDI   {#MEDI}
 
 `http://terms.fhiso.org/legacy/longform/MEDIA`
@@ -2349,10 +2354,10 @@ Substructures
 Identifies information about the media or having to do with the medium in which information is stored.
 
 Contexts
-:   `.SOUR.REPO.CALN.MEDI`
+:   .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`
 
 Description
-:   A code, selected from one of the media classifications choices above, that indicates the type of material in which the referenced source is stored.
+:   A code, selected from one of the media classifications choices listed under *Payload*, that indicates the type of material in which the referenced source is stored.
 
 Payload
 :   A string.
@@ -2366,26 +2371,86 @@ Substructures
 
 ### NAME   {#NAME}
 
-`http://terms.fhiso.org/legacy/longform/NAME`
-
 A word or combination of words used to help identify an individual, title, or other item. More than one NAME line should be used for people who were known by multiple names.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.SOUR.NAME` | The name of the software product that produced this transmission. | 1--90 characters | None
-`.REPO.NAME` | The official name of the archive in which the stated source material is stored. | 1--90 characters | None
-`.SUBM.NAME` | The name of the submitter formatted for display and address generation. | 1--60 characters | None
-`.INDI.NAME` | The name value is formed in the manner the name is normally spoken, with the given name and family name (surname) separated by slashes `/`. | 1--120 characters, optionally with a substring offset by `/`, optionally with portions elided with `...` | `[NPFX]`?, `[GIVN]`?, `[NICK]`?, `[SPFX]`?, `[SURN]`?, `[NSFX]`?, `[SOUR]`\*, `[NOTE]`\*, `[FONE]`\*, `[ROMN]`\*
+
+Contexts
+:   .`[HEAD]`.`[SOUR]`.`[NAME]`
+:   .`[REPO]`.`[NAME]`
+:   .`[SUBM]`.`[NAME]`
+:   .`[INDI]`.`[NAME]`
+
+#### Context .`[HEAD]`.`[SOUR]`.`[NAME]`
+
+Description
+:   The name of the software product that produced this transmission.
+
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+Substructures
+:   None
+
+#### Context .`[REPO]`.`[NAME]`
+
+Description
+:   The official name of the archive in which the stated source material is stored.
+
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+Substructures
+:   None
+
+#### Context .`[SUBM]`.`[NAME]`
+
+Description
+:   The name of the submitter formatted for display and address generation.
+
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 60 characters.
+    
+Substructures
+:   None
+
+
+#### Context .`[INDI]`.`[NAME]`
+
+Description
+:   The name value is formed in the manner the name is normally spoken.
+
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    The family name (surname) SHOULD be surrounded by U+002F SOLIDUS `/`.
+    If the family name is unknown, a pair of soliduses with nothing between them SHOULD be included.
+    If the given name is unknown, the entire payload should be surrounded by soliduses.
+    
+    Portions of the name may be elided and replaced by three  U+002E FULL STOP `...`.
+    
+Substructures
+:   `[NPFX]`?
+:   `[GIVN]`?
+:   `[NICK]`?
+:   `[SPFX]`?
+:   `[SURN]`?
+:   `[NSFX]`?
+:   `[SOUR]`\*
+:   `[NOTE]`\*
+:   `[FONE]`\*
+:   `[ROMN]`\*
 
 
 ### NATI   {#NATI}
 
-`http://terms.fhiso.org/legacy/longform/NATIONALITY`
-
 The national heritage of an individual.
 
 Contexts
-:   `.INDI.NATI`
+:   .`[INDI]`.`[NATI]`
 
 Description
 :   The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth.
@@ -2402,12 +2467,10 @@ Substructures
 
 ### NATU   {#NATU}
 
-`http://terms.fhiso.org/legacy/longform/NATURALIZATION`
-
 The event of obtaining citizenship.
 
 Contexts
-:   `.INDI.NATU`
+:   .`[INDI]`.`[NATU]`
 
 Description
 :   *see `[IndividualEvent]`*
@@ -2424,26 +2487,49 @@ Substructures
 
 ### NCHI   {#NCHI}
 
-`http://terms.fhiso.org/legacy/longform/CHILDREN_COUNT`
+The number of children that this person is known to be the parent of (all marriages) when specified for an `[INDI]`, or that belong to this family when specified for an `[FAM]`.
 
-The number of children that this person is known to be the parent of (all marriages) when subordinate to an individual, or that belong to this family when subordinate to a FAM_RECORD.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.NCHI`  | The known number of children of this individual from all marriages. | 1--3 characters | `[IndividualAttribute]` | [*inherited*](#IndividualAttribute)
-`.FAM.NCHI`   | The reported number of children known to belong to this family, regardless of whether the associated children are represented in the corresponding structure. | 1--3 characters | None | None
+Contexts
+:   .`[INDI]`.`[NCHI]`
+:   .`[FAM]`.`[NCHI]`
 
-{.ednote} Presumably this is supposed to be a base-10 integer?
+Payload
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 3 characters.
+    
+    {.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
+
+#### Context .`[INDI]`.`[NCHI]`
+
+Description
+:   The known number of children of this individual from all marriages.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
+
+
+#### Context .`[FAM]`.`[NCHI]`
+
+Description
+:   The reported number of children known to belong to this family, regardless of whether the associated children are represented in the corresponding structure.
+
+Supertype
+:   None
+
+Substructures
+:   None
 
 
 ### NICK   {#NICK}
 
-`http://terms.fhiso.org/legacy/longform/NICKNAME`
-
 A descriptive or familiar that is used instead of, or in addition to, one's proper name.
 
 Contexts
-:   `.INDI.NAME.NICK`
+:   .`[INDI]`.`[NAME]`.`[NICK]`
 
 Description
 :   A descriptive or familiar name used in connection with one's proper name.
@@ -2451,26 +2537,26 @@ Description
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
+    {.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is no descriptive text specifying the meaning of the commas.
+
 Substructures
 :   None
-
-{.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is not descriptive text describing the meaning of the commas.
 
 
 ### NMR   {#NMR}
 
-`http://terms.fhiso.org/legacy/longform/MARRIAGE_COUNT`
-
 The number of times this person has participated in a family as a spouse or parent.
 
 Contexts
-:   `.INDI.NMR`
+:   .`[INDI]`.`[NMR]`
 
 Description
 :   The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset.
 
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 3 characters.
+
+    {.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -2483,42 +2569,70 @@ Substructures
 
 ### NOTE   {#NOTE}
 
-`http://terms.fhiso.org/legacy/longform/NOTE`
-
 Additional information provided by the submitter for understanding the enclosing data.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.NOTE` | Comments or opinions from the submitter. | `[SOUR]`\*, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
-`.HEAD.NOTE` | A note that a user enters to describe the contents of the lineage-linked file in terms of "ancestors or descendants of" so that the person receiving the data knows what genealogical information the transmission contains. | arbitrary-length text | None
-`NOTE` | Comments or opinions from the submitter. | pointer to a `NOTE` | `[SOUR]`\*
-`NOTE` | Comments or opinions from the submitter. | arbitrary-length text | `[SOUR]`\*
+Contexts
+:   .`[NOTE]`
+:   .`[HEAD]`.`[NOTE]`
+:   `[NOTE]`
 
-Every structures that is known to have substructures is known to admit an arbitrary number of the unanchored `[NOTE]` substructures, except:
+#### Context .`[NOTE]`
+
+Description
+:   Comments or opinions from the submitter.
+
+Payload
+:   None
+
+Substructures
+:   `[SOUR]`\*
+:   `[REFN]`\*
+:   `[RIN]`?
+:   `[CHAN]`?
+
+#### Context .`[HEAD]`.`[NOTE]`
+
+Description
+:   A note that a user enters to describe the contents of the lineage-linked file in terms of "ancestors or descendants of" so that the person receiving the data knows what genealogical information the transmission contains.
+
+Payload
+:   String of arbitrary length.
+
+Substructures
+:   None
+
+#### Context `[NOTE]`
+
+Every structures that is known to have any substructures is known to admit an arbitrary number of the unanchored `[NOTE]` substructures, except:
 
 -   `[ADDR]`
 -   `[ADOP]`.`[FAMC]`
 -   `[CALN]`
 -   `[DATE]`
--   `[FamilyEvent]``.``[HUSB]` and `[FamilyEvent]``.``[WIFE]`
+-   (`[FamilyEvent]`).`[HUSB]` and (`[FamilyEvent]`).`[WIFE]`
 -   .`[HEAD]` and its nested substructures
 -   `[NOTE]` itself (recursive notes are not known to be permitted)
 -   `[REFN]`
--   `[SOUR]`.`[DATA]`
--   `[SOUR]`.`[DATA]`.`[EVEN]`
--   `[SOUR]`.`[EVEN]`
+-   `[SOUR]`.`[DATA]`, `[SOUR]`.`[DATA]`.`[EVEN]`, and `[SOUR]`.`[EVEN]`
+
+Description
+:   Comments or opinions from the submitter.
+
+Payload
+:   *Either* String of arbitrary length *or* pointer to a `[NOTE]`.
+
+Substructures
+:   `[SOUR]`\*
 
 
 ### NPFX   {#NPFX}
-
-`http://terms.fhiso.org/legacy/longform/NAME_PREFIX`
 
 Text which appears on a name line before the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
 In this example `Lt. Cmndr.` is considered as the name prefix portion.
 
 Contexts
-:   `.INDI.NAME.NPFX`
+:   .`[INDI]`.`[NAME]`.`[NPFX]`
 
 Description
 :   Non indexing name piece that appears preceding the given name and surname parts. Different name prefix parts are separated by a comma.
@@ -2532,14 +2646,12 @@ Substructures
 
 ### NSFX   {#NSFX}
 
-`http://terms.fhiso.org/legacy/longform/NAME_SUFFIX`
-
 Text which appears on a name line after or behind the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
 In this example `jr.` is considered as the name suffix portion.
 
 Contexts
-:   `.INDI.NAME.NSFX`
+:   .`[INDI]`.`[NAME]`.`[NSFX]`
 
 Description
 :   Non-indexing name piece that appears after the given name and surname parts. Different name suffix parts are separated by a comma.
@@ -2551,9 +2663,14 @@ Substructures
 :   None
 
 
-### OBJE   {#OBJE}
 
-`http://terms.fhiso.org/legacy/longform/OBJECT`
+
+{.ednote} continue reformatting from here
+
+
+
+
+### OBJE   {#OBJE}
 
 Pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
 
