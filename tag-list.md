@@ -614,7 +614,9 @@ Substructures
 
 ### ANCI   {#ANCI}
 
-Indicates an interest in additional research for ancestors of this individual. (See also `[DESI]`.)
+Indicates an interest in additional research for ancestors of this individual. 
+
+See also `[DESI]`
 
 Contexts
 :   .`[INDI]`.`[ANCI]`
@@ -1418,7 +1420,9 @@ Substructures
 
 ### DESI   {#DESI}
 
-Indicates an interest in research to identify additional descendants of this individual. (See also `[ANCI]`.)
+Indicates an interest in research to identify additional descendants of this individual.
+
+See also `[ANCI]`
 
 Contexts
 :   .`[INDI]`.`[DESI]`
@@ -3250,7 +3254,9 @@ Known Context | Meaning | Payload | Substructures
 
 `http://terms.fhiso.org/legacy/longform/WILL`
 
-A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. (See also `[PROB]`ate.)
+A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. 
+
+See also `[PROB]`
 
 Contexts
 :   `.INDI.WILL`
