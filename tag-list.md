@@ -47,10 +47,10 @@ The **context** of a structure specifies where it appears.  The following notati
 -   `TAGNAME` matches any structure or pointer with that tag, anywhere it appears
 -   `.TAGNAME` matches any record with that tag, but not substructures
 -   *context specifier*`..TAGNAME` matches any structure or pointer with that tag, provided it is nested under a structure specified by the *context specifier*
-
-    {.ednote} we do not currently use the `..` syntax in this document
 -   *context specifier*`.TAGNAME` matches any structure or pointer with that tag, provided it is a substructure of a structure specified by the *context specifier*
 -   `(TAGNAME)` refers to any structure with that tag name or any tag inherited from it.
+
+{.ednote} we do not currently use the `..` syntax in this document
 
 {.ednote} We might also want to define `@TAGNAME` to refer to any structure with that tag name that has, as its payload, a pointer; and `#TAGNAME` to refer to any structure with that tag name that does not have, as its payload, a pointer; these might be necessary to discuss different kinds of `OBJE` and `SOUR` tags that cannot be distinguished from context alone.
 
@@ -2186,7 +2186,7 @@ Payload
 
     > `[NS]\d+(\.\d+)?`
 
-    {.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 10 characters.
+{.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 10 characters.
 
 Substructures
 :   None
@@ -2220,7 +2220,7 @@ Payload
 
     > `[EW]\d+(\.\d+)?`
 
-    {.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 11 characters.
+{.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 11 characters.
 
 Substructures
 :   None
@@ -2498,7 +2498,7 @@ Payload
 :   A string.
     It is RECOMMENDED that implementations support payloads of at least 3 characters.
     
-    {.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
+{.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
 
 #### Context .`[INDI]`.`[NCHI]`
 
@@ -2537,7 +2537,7 @@ Description
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
-    {.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is no descriptive text specifying the meaning of the commas.
+{.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlikes other parts of the name there is no descriptive text specifying the meaning of the commas.
 
 Substructures
 :   None
@@ -2556,7 +2556,7 @@ Description
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 3 characters.
 
-    {.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
+{.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -2603,7 +2603,7 @@ Substructures
 
 #### Context `[NOTE]`
 
-Every structures that is known to have any substructures is known to admit an arbitrary number of the unanchored `[NOTE]` substructures, except:
+Every structures that is known to have any substructures is known to admit an arbitrary number of the unanchored `[NOTE]` substructures *except*:
 
 -   `[ADDR]`
 -   `[ADOP]`.`[FAMC]`
@@ -2663,65 +2663,81 @@ Substructures
 :   None
 
 
-
-
-{.ednote} continue reformatting from here
-
-
-
-
 ### OBJE   {#OBJE}
 
 Pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
 
-The meaning and use of OBJE changed significantly between GEDCOM 5.5 and GEDCOM 5.5.1
+The meaning and use of OBJE changed significantly between GEDCOM 5.5 and GEDCOM 5.5.1; it is RECOMMEND that implementations be able to handle parsing both.
 
-#### GEDCOM 5.5-compatible version
+Contexts
+:   .`[OBJE]`
+:   .`[OBJE]`.`[OBJE]` -- GEDCOM 5.5 only (not 5.5.1)
+:   `[OBJE]`
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.OBJE` | | None | `[FORM]`!, `[TITL]`?, `[NOTE]`\*, `[SOUR]`\*, `[BLOB]`!, `[OBJE]`?, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
-`.OBJE.OBJE` | chain to continued object | pointer to an `.OBJE` | None
-`OBJE` | linked form | pointer to an `.OBJE` | None
-`OBJE` | embedded form | None | `[FORM]`!, `[TITL]`?, `[FILE]`!, `[NOTE]`\*
-
-#### GEDCOM 5.5.1-compatible version
-
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.OBJE` | | None | `[FILE]`+, `[REFN]`\*, `[RIN]`?, `[NOTE]`\*, `[SOUR]`\*, `[CHAN]`?
-`OBJE` | linked form | pointer to an `.OBJE` | None
-`OBJE` | embedded form | None | `[FILE]`+, `[TITL]`?
-
-#### Shared Information
-
-The both unanchored forms of `OBJE` are known to exist in the following contexts:
-
--   .`[FAM]``.OBJE`
--   .`[FAM]`.`[SOUR]``.OBJE`
--   .`[INDI]``.OBJE`
--   .`[SOUR]``.OBJE`
--   .`[SUBM]``.OBJE`
--   `[Event]``.OBJE`
--   `[Event]`.`[SOUR]``.OBJE`
--   `[NAME]`.`[SOUR]``.OBJE`
--   `[SOUR]``.OBJE` if the payload of the `[SOUR]` is a pointer, not text
+    In particular, the unanchored `[OBJE]` appears in the following contexts:
+    
+    -   (`[Event]`).`[OBJE]`
+    -   (`[Event]`).`[SOUR]`.`[OBJE]`
+    -   .`[FAM]`.`[OBJE]`
+    -   .`[FAM]`.`[SOUR]`.`[OBJE]`
+    -   .`[INDI]`.`[OBJE]`
+    -   `[NAME]`.`[SOUR]`.`[OBJE]`
+    -   .`[SOUR]`.`[OBJE]`
+    -   `[SOUR]`.`[OBJE]` (but only if the payload of the `[SOUR]` is a pointer, not a string)
+    -   .`[SUBM]`.`[OBJE]`
 
 {.note} The reason for the inconsistent presence/absence of `SOUR.OBJE` is not understood by the author of this document
 
-{.ednote} The "if the payload is a pointer" distinction in where `OBJE` is known to occur is annoying in that the context specifier alone cannot describe this, but is embedded in the table for `[SOUR]` using just context specifiers so it isn't itself sufficient reason to revise the context specifier language
+#### Context .`[OBJE]`
 
-#### Common
+Payload
+:   None
+
+Substructures
+:   `[NOTE]`\*
+:   `[SOUR]`\*
+:   `[REFN]`\*
+:   `[RIN]`?
+:   `[CHAN]`?
+:   `[FORM]`! -- GEDCOM 5.5 only
+:   `[TITL]`? -- GEDCOM 5.5 only
+:   `[BLOB]`! -- GEDCOM 5.5 only
+:   `[OBJE]`? -- GEDCOM 5.5 only
+:   `[FILE]`+ -- GEDCOM 5.5.1 only
+
+#### Context .`[OBJE]`.`[OBJE]`
+
+GEDCOM 5.5 only
+
+Description
+:   chain to continued object
+
+Payload
+:   Pointer to an .`[OBJE]`
+
+Substructures
+:   None
+
+#### Context `[OBJE]`
+
+Payload
+:   *Either* pointer to an .`[OBJE]` *or* None
+
+Substructures
+:   *Either* None (if payload is a pointer) *or*
+:   `[FORM]`! -- GEDCOM 5.5 only (not present in GEDCOM 5.5.1)
+:   `[TITL]`?
+:   `[FILE]`! (GEDCOM 5.5) or `[FILE]`+ (GEDCOM 5.5.1)
+:   `[NOTE]`\* -- GEDCOM 5.5 only (not present in GEDCOM 5.5.1)
 
 
 ### OCCU   {#OCCU}
 
-`http://terms.fhiso.org/legacy/longform/OCCUPATION`
 
 The type of work or profession of an individual.
 
 Contexts
-:   `.INDI.OCCU`
+:   .`[INDI]`.`[OCCU]`
 
 Description
 :   The kind of activity that an individual does for a job, profession, or principal activity.
@@ -2738,12 +2754,10 @@ Substructures
 
 ### ORDN   {#ORDN}
 
-`http://terms.fhiso.org/legacy/longform/ORDINATION`
-
 A religious event of receiving authority to act in religious matters.
 
 Contexts
-:   `.INDI.ORDN`
+:   .`[INDI]`.`[ORDN]`
 
 Description
 :   *see `[IndividualEvent]`*
@@ -2760,12 +2774,10 @@ Substructures
 
 ### PAGE   {#PAGE}
 
-`http://terms.fhiso.org/legacy/longform/PAGE`
-
 A number or description to identify where information can be found in a referenced work.
 
 Contexts
-:   `SOUR.PAGE`
+:   `[SOUR]`.`[PAGE]`
 
 Description
 :   Specific location with in the information referenced. For a published work, this could include the volume of a multi-volume work and the page number(s). For a periodical, it could include volume, issue, and page numbers. For a newspaper, it could include a column number and page number. For an unpublished source, this could be a sheet number, page number, frame number, etc. A census record might have a line number or dwelling and family numbers in addition to the page number.
@@ -2779,12 +2791,10 @@ Substructures
 
 ### PEDI   {#PEDI}
 
-`http://terms.fhiso.org/legacy/longform/PEDIGREE`
-
 Information pertaining to an individual to parent lineage chart.
 
 Contexts
-:   `.INDI.FAMC.PEDI`
+:   .`[INDI]`.`[FAMC]`.`[PEDI]`
 
 Description
 :   A code used to indicate the child to family relationship for pedigree navigation purposes.
@@ -2792,59 +2802,92 @@ Description
 Payload
 :   one of {`adopted`, `birth`, `foster`}
 
+    `adopted`
+    :   indicates adoptive parents.
+
+    `birth`
+    :   indicates birth parents.
+
+    `foster`
+    :   indicates child was included in a foster or guardian family.
+
 Substructures
 :   None
 
-`adopted`
-:   indicates adoptive parents.
-
-`birth`
-:   indicates birth parents.
-
-`foster`
-:   indicates child was included in a foster or guardian family.
 
 ### PHON   {#PHON}
 
-`http://terms.fhiso.org/legacy/longform/PHONE`
-
 A unique number assigned to access a specific telephone.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.SOUR.CORP.PHON` || 1--25 characters | None
-`.REPO.PHON`  |         | 1--25 characters | None
-`.SUBM.PHON`  |         | 1--25 characters | None
-`ADDR.PHON`   |         | 1--25 characters | None
+Contexts
+:   .`[HEAD]`.`[SOUR]`.`[CORP]`.`[PHON]`
+:   .`[REPO]`.`[PHON]`
+:   .`[SUBM]`.`[PHON]`
+:   `[ADDR]`.`[PHON]`
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+
+Substructures
+:   None
 
 
 ### PLAC   {#PLAC}
-
-`http://terms.fhiso.org/legacy/longform/PLACE`
 
 A jurisdictional name to identify the place or location of an event.
 
 Places are often represented by a **place hierarchy**.
 This is a comma-separated list of place names, each subsumed by the place to its right.
-No accommodation for place names that include commas is made by this structure.
+No accommodation for place names that themselves include commas is made by this structure.
 
 See also `[FORM]` for the interpretation of the elements of a place hierarchy list.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.PLAC`  | see `[FORM]` | None | `[FORM]`!
-`.SOUR.DATa.EVEN.PLAC` | The name of the lowest jurisdiction that encompasses all lower-level places named in this source. For example, "Oneida, Idaho" would be used as a source jurisdiction place for events occurring in the various towns within Oneida County. "Idaho" would be the source jurisdiction place if the events recorded took place in other counties as well as Oneida County. | 1--120 characters formatted as a *place hierarchy* | None
-`[Event]``.PLAC` | | 1--120 characters formatted as a *place hierarchy* | `[FORM]`?, `[SOUR]`\*, `[NOTE]`\*
+Contexts
+:   .`[HEAD]`.`[PLAC]`
+:   .`[SOUR]`.`[DATA]`.`[EVEN]`.`[PLAC]`
+:   (`[Event]`).`[PLAC]`
+
+#### Context .`[HEAD]`.`[PLAC]`
+
+Description
+:   see `[FORM]`
+
+Payload
+:   None
+
+Substructures
+:   `[FORM]`!
+
+#### Context .`[SOUR]`.`[DATA]`.`[EVEN]`.`[PLAC]`
+
+Description
+:   The name of the lowest jurisdiction that encompasses all lower-level places named in this source. For example, "Oneida, Idaho" would be used as a source jurisdiction place for events occurring in the various towns within Oneida County. "Idaho" would be the source jurisdiction place if the events recorded took place in other counties as well as Oneida County.
+
+Payload
+:   A string formatted as a *place hierarchy*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   None
+
+#### Context (`[Event]`).`[PLAC]`
+
+Payload
+:   A string formatted as a *place hierarchy*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   `[FORM]`?
+:   `[SOUR]`\*
+:   `[NOTE]`\*
 
 
 ### POST   {#POST}
 
-`http://terms.fhiso.org/legacy/longform/POSTAL_CODE`
-
 A code used by a postal service to identify an area to facilitate mail handling.
 
 Contexts
-:   `ADDR.POST`
+:   `[ADDR]`.`[POST]`
 
 Description
 :   The ZIP or postal code used by the various localities in handling of mail. Isolated for sorting or indexing.
@@ -2858,12 +2901,10 @@ Substructures
 
 ### PROB   {#PROB}
 
-`http://terms.fhiso.org/legacy/longform/PROBATE`
-
 An event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
 
 Contexts
-:   `.INDI.PROB`
+:   .`[INDI]`.`[PROB]`
 
 Description
 :   *see `[IndividualEvent]`*
@@ -2880,12 +2921,10 @@ Substructures
 
 ### PROP   {#PROP}
 
-`http://terms.fhiso.org/legacy/longform/PROPERTY`
-
 Pertaining to possessions such as real estate or other property of interest.
 
 Contexts
-:   `.INDI.ORDN`
+:   .`[INDI]`.`[ORDN]`
 
 Description
 :   A list of possessions (real estate or other property) belonging to this individual.
@@ -2902,57 +2941,52 @@ Substructures
 
 ### PUBL   {#PUBL}
 
-`http://terms.fhiso.org/legacy/longform/PUBLICATION`
-
 Refers to when and/or were a work was published or created.
 
-When and where the record was created. For published works, this includes information such as the city of publication, name of the publisher, and year of publication.
-
-For an unpublished work, it includes the date the record was created and the place where it was created. For example, the county and state of residence of a person making a declaration for a pension or the city and state of residence of the writer of a letter.
-
 Contexts
-:   `.SOUR.PUBL`
+:   .`[SOUR]`.`[PUBL]`
 
 Description
-:   see above
+:   When and where the record was created.
+    
+    For published works, this includes information such as the city of publication, name of the publisher, and year of publication.
+
+    For an unpublished work, it includes the date the record was created and the place where it was created. For example, the county and state of residence of a person making a declaration for a pension or the city and state of residence of the writer of a letter.
 
 Payload
-:   248 or more characters
+:   A string of arbitrary length.
 
 Substructures
 :   None
 
-{.ednote} It is almost certainly an error in GEDCOM that asserts that every `PUBL` payload must be *at least* 248 characters and *cannot* have a newline in the first 248 characters.
+{.ednote} GEDCOM asserts that every `PUBL` payload must be *at least* 248 characters and *cannot* have a newline in the first 248 characters; this is almost certainly an error and not reflected in this specification.
 
 
 ### QUAY   {#QUAY}
 
-`http://terms.fhiso.org/legacy/longform/QUALITY_OF_DATA`
-
 An assessment of the certainty of the evidence to support the conclusion drawn from evidence.
 
-The QUAY tag's value conveys the submitter's quantitative evaluation of the credibility of a piece of information, based upon its supporting evidence. Some systems use this feature to rank multiple conflicting opinions for display of most likely information first. It is not intended to eliminate the receiver's need to evaluate the evidence for themselves.
-
-0
-:   Unreliable evidence or estimated data
-
-1
-:   Questionable reliability of evidence (interviews, census, oral genealogies, or potential for bias for example, an autobiography)
-
-2
-:   Secondary evidence, data officially recorded sometime after event
-
-3
-:   Direct and primary evidence used, or by dominance of the evidence
-
 Contexts
-:   `SOUR.QUAY`
+:   `[SOUR]`.`[QUAY]`
 
 Description
-:   see above
+:   The QUAY tag's value conveys the submitter's quantitative evaluation of the credibility of a piece of information, based upon its supporting evidence. Some systems use this feature to rank multiple conflicting opinions for display of most likely information first. It is not intended to eliminate the receiver's need to evaluate the evidence for themselves.
 
 Payload
 :   one of {`0`, `1`, `2`, `3`}
+
+    0
+    :   Unreliable evidence or estimated data
+
+    1
+    :   Questionable reliability of evidence (interviews, census, oral genealogies, or potential for bias for example, an autobiography)
+
+    2
+    :   Secondary evidence, data officially recorded sometime after event
+
+    3
+    :   Direct and primary evidence used, or by dominance of the evidence
+
 
 Substructures
 :   None
@@ -2960,12 +2994,15 @@ Substructures
 
 ### REFN   {#REFN}
 
-`http://terms.fhiso.org/legacy/longform/REFERENCE`
-
 A description or number used to identify an item for filing, storage, or other reference purposes.
 
 Contexts
-:   `REFN`
+:   .`[FAM]`.`[REFN]`
+:   .`[INDI]`.`[REFN]`
+:   .`[NOTE]`.`[REFN]`
+:   .`[OBJE]`.`[REFN]`
+:   .`[REPO]`.`[REFN]`
+:   .`[SOUR]`.`[REFN]`
 
 Description
 :   A user-defined number or text that the submitter uses to identify this record. For instance, it may be a record number within the submitter's automated or manual system, or it may be a page and position number on a pedigree chart.
@@ -2976,16 +3013,13 @@ Payload
 Substructures
 :   `[TYPE]`?
 
-`REFN` is known to be a substructure of .`[FAM]`, .`[INDI]`, .`[NOTE]`, .`[OBJE]`, .`[REPO]`, and .`[SOUR]`.
 
 ### RELA   {#RELA}
-
-`http://terms.fhiso.org/legacy/longform/RELATIONSHIP`
 
 A relationship value between the indicated contexts.
 
 Contexts
-:   `ASSO.RELA`
+:   `[ASSO]`.`[RELA]`
 
 Description
 :   A word or phrase that states object 1's relation is object 2.
@@ -2996,87 +3030,137 @@ Payload
 Substructures
 :   None
 
-Example:
+**Example:**
 You would read the following as "Joe Jacob's great grandson is the person described by the record with id "jim":
 
 ````gedcom
-0 INDI
+0 @joe@ INDI
   1 NAME Joe /Jacob/
   1 ASSO @jim@
     2 RELA great grandson
 ````
 
-{.ednote} This example, does not have an ID for Joe; that is also true of the example in the GEDCOM specification, despite that specification not allowing `0 INDI` without an ID.
-
 
 ### RELI   {#RELI}
 
-`http://terms.fhiso.org/legacy/longform/RELIGION`
-
 A religious denomination to which a person is affiliated or for which a record applies.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.RELI`  | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | `[IndividualAttribute]` | [*inherited*](#IndividualAttribute)
-`[Event]``.RELI` | A name of the religion with which this person, event, or record was affiliated. | 1--90 characters | None | None
+Contexts
+:   .`[INDI]`.`[RELI]`
+:   (`[Event]`).`[RELI]`
 
-{.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of `[SOUR]` and `[Event]`, the specification only lists it as an individual attribute.
+{.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of `[SOUR]`, the specification does not list it in that context.
+
+#### Context .`[INDI]`.`[RELI]`
+
+Description
+:   A name of the religion with which this person, event, or record was affiliated.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
+
+#### Context (`[Event]`).`[RELI]`
+
+Description
+:   A name of the religion with which this person, event, or record was affiliated.
+
+Payload
+:   None
+
+Substructures
+:   None
 
 
 ### REPO   {#REPO}
 
-`http://terms.fhiso.org/legacy/longform/REPOSITORY`
-
 An institution or person that has the specified item as part of their collection(s).
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.REPO` | | None | `[NAME]`?, `[ADDR]`?, `[NOTE]`\*, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
-`.SOUR.REPO` | This structure is used within a source record to point to a name and address record of the holder of the source document. | pointer to `.REPO` | `[NOTE]`\*, `[CALN]`\*
+Contexts
+:   .`[REPO]`
+:   .`[SOUR]`.`[REPO]`
+
+#### Context .`[REPO]`
+
+Payload
+:   None
+
+Substructures
+:   `[NAME]`?
+:   `[ADDR]`?
+:   `[NOTE]`\*
+:   `[REFN]`\*
+:   `[RIN]`?
+:   `[CHAN]`?
+
+#### Context .`[SOUR]`.`[REPO]`
+
+Description
+:   This structure is used within a source record to point to a name and address record of the holder of the source document.
+
+Payload
+:   Pointer to a .`[REPO]`
+
+Substructures
+:   `[NOTE]`\*
+:   `[CALN]`\*
 
 
 ### RESI   {#RESI}
 
-`http://terms.fhiso.org/legacy/longform/RESIDENCE`
-
 The act of dwelling at an address for a period of time.
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`.INDI.RESI`  |  | None | `[IndividualAttribute]` | [*inherited*](#IndividualAttribute)
+Contexts
+:   .`[INDI]`.`[RESI]`
+
+Payload
+:   None
 
 {.note} The `RESI` is the only known `[IndividualAttribute]` that does not have a payload.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
 
 
 ### RESN   {#RESN}
 
-`http://terms.fhiso.org/legacy/longform/RESTRICTION`
-
 A processing indicator signifying access to information has been denied or otherwise restricted.
 
-`confidential`
-:   This data was marked as confidential by the user.  In some systems data marked as confidential will be treated differently, for example, there might be an option that would stop confidential data from appearing on printed reports or would prevent that information from being exported.
+Contexts
+:   .`[INDI]`.`[RESN]`
+:   .`[FAM]`.`[RESN]`
+:   .(`[Event]`).`[RESN]`
 
-`locked`
-:   Some records in Ancestral File have been satisfactorily proven by evidence, but because of source conflicts or incorrect traditions, there are repeated attempts to change this record. By arrangement, the Ancestral File Custodian can lock a record so that it cannot be changed without an agreement from the person assigned as the steward of such a record. The assigned steward is either the submitter listed for the record or Family History Support when no submitter is listed.
+Description
+:   The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data.
 
-`privacy`
-:   Information concerning this record is not present due to rights of or an approved request for privacy.
+Payload
+:   one of `confidential`, `locked`, or `privacy` (`confidential` was added in GEDCOM 5.5.1).
 
-{.note} `confidential` was added in GEDCOM 5.5.1.
+    `confidential`
+    :   This data was marked as confidential by the user.  In some systems data marked as confidential will be treated differently, for example, there might be an option that would stop confidential data from appearing on printed reports or would prevent that information from being exported.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `confidential`, `locked`, or `privacy` | None
-`.FAM.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `confidential`, `locked`, or `privacy` | None
-`[Event]``.RESN` | The restriction notice is defined for Ancestral File usage. Ancestral File download GEDCOM files may contain this data. | one of `confidential`, `locked`, or `privacy` | None
+    `locked`
+    :   Some records in Ancestral File have been satisfactorily proven by evidence, but because of source conflicts or incorrect traditions, there are repeated attempts to change this record. By arrangement, the Ancestral File Custodian can lock a record so that it cannot be changed without an agreement from the person assigned as the steward of such a record. The assigned steward is either the submitter listed for the record or Family History Support when no submitter is listed.
 
-{.ednote} I have not put this in the LDS section because, although it says "Ancestral File", I surmise it might be used for the same purpose by other data providers.
+    `privacy`
+    :   Information concerning this record is not present due to rights of or an approved request for privacy.
+
+Substructures
+:   None
+
+{.ednote} Although the GEDCOM spec says "Ancestral File", we included this assuming it might be used for the same purpose by other data providers.
 
 
 ### RETI   {#RETI}
-
-`http://terms.fhiso.org/legacy/longform/RETIREMENT`
 
 An event of exiting an occupational relationship with an employer after a qualifying time period.
 
@@ -3098,34 +3182,37 @@ Substructures
 
 ### RFN   {#RFN}
 
-`http://terms.fhiso.org/legacy/longform/REC_FILE_NUMBER`
-
 A permanent number assigned to a record that uniquely identifies it within a known file.
 
+Contexts
+:   .`[INDI]`.`[RFN]`
+:   .`[SUBM]`.`[RFN]`
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.RFN`   | see below | 1--90 characters | None
-`.SUBM.RFN`   | A registered number of a submitter of Ancestral File data. This number is used in subsequent submissions or inquiries by the submitter for identification purposes. | 1--90 characters | None
+Description
+:   A .`[SUBM]`.`[RFN]` is a registered number of a submitter of Ancestral File data. This number is used in subsequent submissions or inquiries by the submitter for identification purposes.
+    
+    An .`[INDI]`.`[RFN]`
 
-An individual `RFN`
+    -   uniquely identifies this record within a registered network resource.
+    -   is usable as a cross-reference pointer.
+    -   may contain a colon (`:`) in which case the portion preceding the colon is an identifier assigned to a resource database that is available through access to a network and the portion following the colon is an an identification number assigned to each record within a specific database; or it may omit a colon and refer to a record within the current dataset.
+    -   marked in GEDCOM 5.5 as being "for future use".
 
--   uniquely identifies this record within a registered network resource.
--   is usable as a cross-reference pointer.
--   may contain a colon (`:`) in which case the portion preceding the colon is an identifier assigned to a resource database that is available through access to a network and the portion following the colon is an an identification number assigned to each record within a specific database; or it may omit a colon and refer to a record within the current dataset.
--   marked in GEDCOM 5.5 as being "for future use".
+{.ednote} It is not clear to me if either RFN is used or ought to be part of ELF.
 
-{.ednote} It is not clear what benefit a `.INDI.RFN` has over an ID.
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+
+Substructures
+:   None
 
 
 ### RIN   {#RIN}
 
-`http://terms.fhiso.org/legacy/longform/REC_ID_NUMBER`
-
 A number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
 Contexts
-:   `RIN`
+:   .(`[Record]`).`[RIN]` -- but *not* .`[HEAD]`.`[RIN]` or .`[TRLR]`.`[RIN]`.
 
 Description
 :   A unique record identification number assigned to the record by the source system. This number is intended to serve as a more sure means of identification of a record between two interfacing systems.
@@ -3136,23 +3223,19 @@ Payload
 Substructures
 :   None
 
-`RIN` is known to be a substructure of all records *except* `[HEAD]` and `[TRLR]`.
-
 
 ### ROLE   {#ROLE}
-
-`http://terms.fhiso.org/legacy/longform/ROLE`
 
 A name given to a role played by an individual in connection with an event.
 
 Contexts
-:   `SOUR.EVEN.ROLE`
+:   `[SOUR]`.`[EVEN]`.`[ROLE]`
 
-Description
-:   Either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record.
 
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+
+    The payload SHOULD be either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record.
 
 Substructures
 :   None
@@ -3160,34 +3243,56 @@ Substructures
 
 ### ROMN   {#ROMN}
 
-`http://terms.fhiso.org/legacy/longform/ROMANIZED`
+{.note} This tag was introduced in GEDCOM 5.5.1.
 
 A romanized variation of a superior text string.
 
-{.note} This tag was introduced in GEDCOM 5.5.1.
-
 The method used to romanize the name is indicated by the subordinate `TYPE`; for example if romaji was used to provide a reading of a name written in kanji, then the `TYPE` subordinate to the `ROMN` tag would indicate `romaji`.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.INDI.NAME.ROMN` | The romanized variation of the name in the same form as the was the name used in the superior primitive.  | 1--120 characters | `[TYPE]`!, `[NPFX]`?, `[GIVN]`?, `[NICK]`?, `[SPFX]`?, `[SURN]`?, `[NSFX]`?, `[NOTE]`\*, `[SOUR]`\*
-`[Event]``.PLAC.ROMN` | The romanized variation of the place name in the same form as the was the name used in the superior primitive. | `[TYPE]`!
+Contexts
+:   .`[INDI]`.`[NAME]`.`[ROMN]`
+:   (`[Event]`).`[PLAC]`.`[ROMN]`
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+#### Context .`[INDI]`.`[NAME]`.`[ROMN]`
+
+Description
+:   The romanized variation of the name in the same form as the was the name used in the superior primitive.
+
+Substructures
+:   `[TYPE]`!
+:   `[NPFX]`?
+:   `[GIVN]`?
+:   `[NICK]`?
+:   `[SPFX]`?
+:   `[SURN]`?
+:   `[NSFX]`?
+:   `[NOTE]`\*
+:   `[SOUR]`\*
+
+#### Context (`[Event]`).`[PLAC]`.`[ROMN]`
+
+Description
+:   The romanized variation of the place name in the same form as the was the name used in the superior primitive.
+
+Substructures
+:   `[TYPE]`!
 
 
 ### SEX   {#SEX}
 
-`http://terms.fhiso.org/legacy/longform/SEX`
-
 Indicates the sex of an individual---male or female.
 
 Contexts
-:   `.INDI.SEX`
+:   .`[INDI]`.`[SEX]`
 
 Description
 :   A code that indicates the sex of the individual
 
 Payload
-:   1--7 characters, which is one of {`M`, `F`}
+:   one of {`M`, `F`}
 
 Substructures
 :   None
@@ -3195,38 +3300,101 @@ Substructures
 
 ### SOUR   {#SOUR}
 
-`http://terms.fhiso.org/legacy/longform/SOURCE`
-
 The initial or original material from which information was obtained.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.SOUR` |  A system identification name which was obtained through the GEDCOM registration process. This name must be unique from any other product. Spaces within the name must be substituted with a 0x5F (underscore `_`) so as to create one word. | 1--20 characters | `[VERS]`?, `[NAME]`?, `[CORP]`?, `[DATA]`?
-`.SOUR` | Source records are used to provide a bibliographic description of the source cited. | None | `[DATA]`?, `[AUTH]`?, `[TITL]`?, `[ABBR]`?, `[PUBL]`?, `[TEXT]`?, `[REPO]`?, `[OBJE]`\*, `[NOTE]`\*, `[REFN]`\*, `[RIN]`?, `[CHAN]`?
-`SOUR` | pointer to source record | pointer to `.SOUR` | `[PAGE]`?, `[EVEN]`?, `[DATA]`?, `[QUAY]`?, `[OBJE]`\*, `[NOTE]`\*
-`SOUR` | for systems not using source records | unlimited numbers of characters | `[TEXT]`\*, `[NOTE]`\*
+Contexts
+:   .`[HEAD]`.`[SOUR]`
+:   .`[SOUR]`
+:   `[SOUR]`
 
-The non-pointer unanchored `SOUR` is described as follows:
+    In particular, the unanchored `[SOUR]` appears in the following contexts:
+    
+    -   (`[Event]`).`[SOUR]`
+    -   .`[FAM]`.`[SOUR]`
+    -   .`[INDI]`.`[SOUR]`
+    -   .`[NOTE]`.`[SOUR]`
+    -   `[ASSO]`.`[SOUR]`
+    -   `[NAME]`.`[SOUR]`
+    -   `[PLAC]`.`[SOUR]`
 
-> A free form text block used to describe the source from which information was obtained. This text block is used by those systems which cannot use a pointer to a source record. It must contain a descriptive title, who created the work, where and when it was created, and where is source data stored. The developer should encourage users to use an appropriate style for forming this free form bibliographic reference. Developers are encouraged to support the `.SOUR` method of reporting bibliographic reference descriptions.
+#### Context .`[HEAD]`.`[SOUR]`
 
-Both unanchored `SOUR` are known to be substructures of .`[FAM]`, .`[INDI]`, .`[OBJE]`, .`[NOTE]`, `[ASSO]`, `[Event]`, `[NAME]`, and `[PLAC]`.
+Description
+:    A system identification name which was obtained through the GEDCOM registration process. This name must be unique from any other product. Spaces within the name must be substituted with a U+005F (underscore `_`) so as to create one word.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+Substructures
+:   `[VERS]`?
+:   `[NAME]`?
+:   `[CORP]`?
+:   `[DATA]`?
+
+#### Context .`[SOUR]`
+
+Description
+:   Source records are used to provide a bibliographic description of the source cited.
+
+Payload
+:   None
+
+Substructures
+:   `[DATA]`?
+:   `[AUTH]`?
+:   `[TITL]`?
+:   `[ABBR]`?
+:   `[PUBL]`?
+:   `[TEXT]`?
+:   `[REPO]`?
+:   `[OBJE]`\*
+:   `[NOTE]`\*
+:   `[REFN]`\*
+:   `[RIN]`?
+:   `[CHAN]`?
+
+#### Context `[SOUR]`, pointer version
+
+Payload
+:   Pointer to a .`[SOUR]`
+
+Substructures
+:   `[PAGE]`?
+:   `[EVEN]`?
+:   `[DATA]`?
+:   `[QUAY]`?
+:   `[OBJE]`\*
+:   `[NOTE]`\*
+
+#### Context `[SOUR]`, text block version
+
+It is RECOMMENDED that this version not be generated by software.
+
+Description
+:   A free form text block used to describe the source from which information was obtained. This text block is used by those systems which cannot use a pointer to a source record. It must contain a descriptive title, who created the work, where and when it was created, and where is source data stored. The developer should encourage users to use an appropriate style for forming this free form bibliographic reference.
+
+Payload
+:   A string of arbitrary length
+
+Substructures
+:   `[TEXT]`\*
+:   `[NOTE]`\*
 
 
 ### SPFX   {#SPFX}
 
-`http://terms.fhiso.org/legacy/longform/SURN_PREFIX`
-
 A name piece used as a non-indexing pre-part of a surname.
 
 Contexts
-:   `.INDI.NAME.SPFX`
+:   .`[INDI]`.`[NAME]`.`[SPFX]`
 
 Description
-:   Surname prefix or article used in a family name. Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la".
+:   Surname prefix or article used in a family name.
 
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+    Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la".
 
 Substructures
 :   None
@@ -3234,14 +3402,12 @@ Substructures
 
 ### SSN   {#SSN}
 
-`http://terms.fhiso.org/legacy/longform/SOC_SEC_NUMBER`
-
 A number assigned by the United States Social Security Administration. Used for tax identification purposes.
 
 See also `[IDNO]`
 
 Contexts
-:   `.INDI.SSN`
+:   .`[INDI]`.`[SSN]`
 
 Description
 :   A number assigned to a person in the United States for identification purposes.
@@ -3258,12 +3424,10 @@ Substructures
 
 ### STAE   {#STAE}
 
-`http://terms.fhiso.org/legacy/longform/STATE`
-
 A geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
 Contexts
-:   `ADDR.STAE`
+:   `[ADDR].[STAE]`
 
 Description
 :   The name of the state used in the address. Isolated for sorting or indexing.
@@ -3277,23 +3441,9 @@ Substructures
 
 ### STAT   {#STAT}
 
-`http://terms.fhiso.org/legacy/longform/STATUS`
-
 An assessment of the state or condition of something.
 
-{.note} Most uses of this tag are [LDS-specific tags].  The one documented here was introduced in GEDCOM 5.5.1.
-
-Payload meanings are defined as
-
-challenged
-:   Linking this child to this family is suspect, but the linkage has been neither proven nor disproven.
-
-disproven
-:   There has been a claim by some that this child belongs to this family, but the linkage has been disproven.
-
-proven
-:   There has been a claim by some that this child does not belongs to this family, but the linkage has been proven.
-
+{.note} Most uses of this tag in GEDCOM are LDS-specific and excluded from this specification.  The one documented here was introduced in GEDCOM 5.5.1.
 
 Contexts
 :   `.INDI.FAMC.STAT`
@@ -3304,46 +3454,93 @@ Description
 Payload
 :   1--15 characters; one of `challenged`, `disproven`, or `proven`
 
+    challenged
+    :   Linking this child to this family is suspect, but the linkage has been neither proven nor disproven.
+
+    disproven
+    :   There has been a claim by some that this child belongs to this family, but the linkage has been disproven.
+
+    proven
+    :   There has been a claim by some that this child does not belongs to this family, but the linkage has been proven.
+
 Substructures
 :   None
 
 
-
 ### SUBM   {#SUBM}
-
-`http://terms.fhiso.org/legacy/longform/SUBMITTER`
 
 An individual or organization who contributes genealogical data to a file or transfers it to someone else.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.SUBM`       | The submitter record identifies an individual or organization that contributed information contained in the dataset. | None | `[NAME]`!, `[ADDR]`?, `[OBJE]`\*, `[LANG]`\*, `[RFN]`?, `[RIN]`?, `[CHAN]`?
-`.HEAD.SUBM`  |         | pointer to `.SUBM` | None
-`.FAM.SUBM`   |         | pointer to `.SUBM` | None
-`.INDI.SUBM`  |         | pointer to `.SUBM` | None
-`.SUBN.SUBM`  |         | pointer to `.SUBM` | None
+Contexts
+:   .`[SUBM]`
+:   .`[HEAD]`.`[SUBM]`
+:   .`[FAM]`.`[SUBM]`
+:   .`[INDI]`.`[SUBM]`
+:   .`[SUBN]`.`[SUBM]`
+
+Description
+:   The submitter record identifies an individual or organization that contributed information contained in the dataset.
+
+#### Context .`[SUBM]`
+
+Payload
+:   None
+
+Substructures
+:   `[NAME]`!
+:   `[ADDR]`?
+:   `[OBJE]`\*
+:   `[LANG]`\*
+:   `[RFN]`?
+:   `[RIN]`?
+:   `[CHAN]`?
+
+#### Context (`[Record]`).`[SUBM]`
+
+Payload
+:   pointer to .`[SUBM]`
+
+Substructures
+:   None
 
 
 ### SUBN   {#SUBN}
 
-`http://terms.fhiso.org/legacy/longform/SUBMISSION`
-
 Pertains to a collection of data issued for processing.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.SUBN` | The sending system uses a submission record to send instructions and information to the receiving system. | None | `[SUBM]`?, `[ANCE]`?, `[DESC]`?, `[RIN]`?; also various [LDS-specific tags]
-`.HEAD.SUBN` | | pointer to a `.SUBN` | None
+Contexts
+:   .`[SUBN]`
+:   .`[HEAD]`.`[SUBN]`
+
+#### Context .`[SUBN]`
+
+Description
+:   The sending system uses a submission record to send instructions and information to the receiving system.
+
+Payload
+:   None
+
+Substructures
+:   `[SUBM]`?
+:   `[ANCE]`?
+:   `[DESC]`?
+:   `[RIN]`?
+
+#### Context .`[HEAD]`.`[SUBN]`
+
+Payload
+:   Pointer to a .`[SUBN]`
+
+Substructures
+:   None
 
 
 ### SURN   {#SURN}
 
-`http://terms.fhiso.org/legacy/longform/SURNAME`
-
 A family name passed on or used by members of a family.
 
 Contexts
-:   `.INDI.NAME.SURN`
+:   .`[INDI]`.`[NAME]`.`[SURN]`
 
 Description
 :   Surname or family name. Different surnames are separated by a comma.
@@ -3361,22 +3558,58 @@ Substructures
 
 The exact wording found in an original source document.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`SOUR.TEXT`   | A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source. | arbitrary-length string | None
-`SOUR.DATA.TEXT` | A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source. | arbitrary-length string | None
+Contexts
+:   `[SOUR]`.`[TEXT]`
+:   `[SOUR]`.`[DATA]`.`[TEXT]`
+
+Description
+:   A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source.
+
+Payload
+:   A string of arbitrary length
+
+Substructures
+:   None
 
 
 ### TIME   {#TIME}
 
-`http://terms.fhiso.org/legacy/longform/TIME`
+A time value in a 24-hour clock format, including hours, minutes, and optional seconds, separated by a colon (`:`). Fractions of seconds are shown in decimal notation.
 
-A time value in a 24-hour clock format, including hours, minutes, and optional seconds, separated by a colon (:). Fractions of seconds are shown in decimal notation.
+Contexts
+:   .`[HEAD]`.`[DATE]`.`[TIME]`
+:   .`[CHAN]`.`[DATE]`.`[TIME]`
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.DATE.TIME` | The time of a specific event, usually a computer-timed event. | 1--12 characters matching `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9][0-9]?)?)?` | None
-`CHAN.DATE.TIME` | The time of a specific event, usually a computer-timed event. | 1--12 characters matching `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9]+)?)?` | None
+Description
+:   The time of a specific event, usually a computer-timed event.
+
+Payload
+:   A string.  It is RECOMMENDED that implementations support payloads of at least 12 characters.
+    
+    The string should match the regular expression 
+
+    > `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9][0-9]?)?)?`
+
+Substructures
+:   None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{.ednote} continue reformatting from here
+
 
 
 ### TITL   {#TITL}
@@ -3384,6 +3617,8 @@ Known Context | Meaning | Payload | Substructures
 `http://terms.fhiso.org/legacy/longform/TITLE`
 
 A description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
+
+
 
 Known Context | Meaning | Payload | Supertype | Substructures
 --------------|---------|---------|-----------|--------------
