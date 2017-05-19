@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Lineage-Linked Form
-date: 17 February 2017
+date: 18 May 2017
 numbersections: true
 ...
 This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.
@@ -3594,51 +3594,64 @@ Substructures
 :   None
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{.ednote} continue reformatting from here
-
-
-
 ### TITL   {#TITL}
-
-`http://terms.fhiso.org/legacy/longform/TITLE`
 
 A description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
 
+Contexts
+:   .`[INDI]`.`[TITL]`
+:   .`[OBJE]`.`[FILE]`.`[TITL]` -- in GEDCOM 5.5 but not 5.5.1
+:   .`[OBJE]`.`[TITL]` -- in GEDCOM 5.5 but not 5.5.1
+:   `[OBJE]`.`[TITL]`
+:   .`[SOUR]`.`[TITL]`
 
 
-Known Context | Meaning | Payload | Supertype | Substructures
---------------|---------|---------|-----------|--------------
-`OBJE.TITL` | The title of a work, record, item, or object. | 1--248 characters | None | None
-`.SOUR.TITL` | The title of the work, record, or item and, when appropriate, the title of the larger work or series of which it is a part. | arbtrary-length string | None | None
-`.INDI.TITL` | The title given to or used by a person, especially of royalty or other noble class within a locality. | 1--120 characters | `[IndividualAttribute]` | [inherited](Event)
-`.OBJE.FILE.TITL` | The title of a work, record, item, or object. | 1--248 characters | None | None
+#### Context .`[INDI]`.`[TITL]`
 
-{.note} In GEDCOM 5.5, `OBJE.TITL` can appear in both record and substructure `OBJE`; in 5.5.1 it may only appear in substructure `OBJE`.  In GEDCOM 5.5, `.OBJE.FILE.TITL` is not supported; in 5.5.1 it is.
+Description
+:   The title given to or used by a person, especially of royalty or other noble class within a locality.
 
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Supertype
+:   `[IndividualAttribute]`
+
+Substructures
+:   [*inherited*](#IndividualAttribute)
+
+#### Contexts .`[OBJE]`.`[FILE]`.`[TITL]` and `[OBJE]`.`[TITL]`
+
+Description
+:   The title of a work, record, item, or object.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+
+Substructures
+:   None
+
+
+#### Context .`[SOUR]`.`[TITL]`
+
+Description
+:   The title of the work, record, or item and, when appropriate, the title of the larger work or series of which it is a part.
+
+Payload
+:   A string of arbitrary length.
+
+Substructures
+:   None
 
 
 ### TRLR   {#TRLR}
 
-`http://terms.fhiso.org/legacy/longform/TRAILER`
+Specifies the end of a GEDCOM transmission.
 
-At level 0, specifies the end of a GEDCOM transmission.
+When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
 
 Contexts
-:   `.TRLR`
+:   .`[TRLR]`
 
 Description
 :   End of dataset
@@ -3646,64 +3659,120 @@ Description
 Payload
 :   None
 
+Supertype
+:   `[TopLevel]`
+
 Substructures
 :   None
-
-When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
 
 
 ### TYPE   {#TYPE}
 
-`http://terms.fhiso.org/legacy/longform/TYPE`
-
 A further qualification to the meaning of the associated superior tag. The value does not have any computer processing reliability. It is more in the form of a short one or two word note that should be displayed any time the associated data is displayed.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`REFN.TYPE` | A user-defined definition of the `[REFN]`. | 1--40 characters | None
-`[EVENT]``.TYPE` | A descriptor that should be used whenever the EVEN tag is used to define the event being cited. The event descriptor should use the same word or phrase and in the same language, when possible, as was used by the recorder of the event. | 1--90 characters | None
-`FONE.TYPE` | Indicates the method used in transforming the text to the phonetic variation. | 5--30 characters (may be `hangul`, `kana`, or other) | None
-`ROMN.TYPE` | Indicates the method used in transforming the text to a romanized variation. | 5--30 characters (may be `pinyin`, `romanji`, `wadegiles`, or other) | None
+Context
+:   `[REFN]`.`[TYPE]`
+:   (`[Event]`).`[TYPE]`
+:   `[FONE]`.`[TYPE]`
+:   `[ROMN]`.`[TYPE]`
+
+Substructures
+:   None
+
+#### Context `[REFN]`.`[TYPE]`
+
+Description
+:   A user-defined definition of the `[REFN]`.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 40 characters.
+
+
+#### Context (`[Event]`).`[TYPE]`
+
+Description
+:   A descriptor that should be used whenever the `[EVEN]` tag is used to define the event being cited. The event descriptor should use the same word or phrase and in the same language, when possible, as was used by the recorder of the event.
+
+{.ednote} The description text from GEDCOM suggests `[EVEN]`.`[TYPE]`, but it is a known to appear as a substructure of all (`[Event]`)s.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+
+
+#### Context `[FONE]`.`[TYPE]`
+
+Description
+:   Indicates the method used in transforming the text to the phonetic variation.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+    Known values include, but are not limited to, `hangul` and `kana`.
+
+
+#### Context `[ROMN]`.`[TYPE]`
+
+Description
+:   Indicates the method used in transforming the text to the romanized variation.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+    Known values include, but are not limited to, `pinyin`, `romanji`, and `wadegiles`.
 
 
 ### VERS   {#VERS}
 
-`http://terms.fhiso.org/legacy/longform/VERSION`
-
 Indicates which version of a product, item, or publication is being used or referenced.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.HEAD.SOUR.VERS` | An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product. | 1--15 characters | None
-`.HEAD.GEDC.VERS` | An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product. | 1--15 characters | None
-`.HEAD.CHAR.VERS` | An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product. | 1--15 characters | None
+Contexts
+:   .`[HEAD]`.`[SOUR]`.`[VERS]`
+:   .`[HEAD]`.`[GEDC]`.`[VERS]`
+:   .`[HEAD]`.`[CHAR]`.`[VERS]`
 
-{.note} This draft is based off of a specification for which `.HEAD.GEDC.VERS` would typically be `5.5`, though depending on the specific features used other version strings might be appropriate too.
+Description
+:   An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 15 characters.
+    
+{.note} This draft is based off of a specification for which `.HEAD.GEDC.VERS` would typically be `5.5.1`, though depending on the specific features used other version strings might be appropriate too.
+
+Substructures
+:   None
 
 
 ### WIFE   {#WIFE}
 
-`http://terms.fhiso.org/legacy/longform/WIFE`
-
 An individual in the role as a mother and/or married woman.
 
-Known Context | Meaning | Payload | Substructures
---------------|---------|---------|--------------
-`.FAM.WIFE` | | pointer to a `[INDI]` | None
-`[FamilyEvent]``.WIFE` | | None | `[AGE]`!
+Contexts
+:   .`[FAM]`.(`[FamilyEvent]`).`[WIFE]`
+:   .`[FAM]`.`[WIFE]`
 
+#### Context .`[FAM]`.(`[FamilyEvent]`).`[WIFE]`
+
+Payload
+:   None
+
+Substructures
+:   `[AGE]`!
+
+#### Context .`[FAM]`.`[WIFE]`
+
+Payload
+:   pointer to an .`[INDI]`
+
+Substructures
+:   None
 
 
 ### WILL   {#WILL}
-
-`http://terms.fhiso.org/legacy/longform/WILL`
 
 A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. 
 
 See also `[PROB]`
 
 Contexts
-:   `.INDI.WILL`
+:   .`[INDI]`.`[WILL]`
 
 Description
 :   *see `[IndividualEvent]`*
@@ -3720,14 +3789,12 @@ Substructures
 
 ### WWW   {#WWW}
 
-`http://terms.fhiso.org/legacy/longform/WEB`
-
 World Wide Web home page.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
 Contexts
-:   `ADDR.WWW`
+:   `[ADDR]`.`[WWW]`
 
 Description
 :   The world wide web page address.
