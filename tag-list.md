@@ -1593,8 +1593,6 @@ Substructures
 
 ### EVEN   {#EVEN}
 
-`http://terms.fhiso.org/legacy/longform/EVENT`
-
 A noteworthy happening related to an individual, a group, or an organization.
 
 Contexts
@@ -1707,8 +1705,6 @@ Substructures
 
 ### FAMC   {#FAMC}
 
-`http://terms.fhiso.org/legacy/longform/FAMILY_CHILD`
-
 Identifies the family in which an individual appears as a child.
 
 Contexts
@@ -1792,8 +1788,6 @@ Substructures
 
 
 ### FILE   {#FILE}
-
-`http://terms.fhiso.org/legacy/longform/FILE`
 
 An information storage place that is ordered and arranged for preservation and reference.
 
@@ -2195,8 +2189,6 @@ Substructures
 
 ### LONG   {#LONG}
 
-`http://terms.fhiso.org/legacy/longform/LONGITUDE`
-
 A value indicating a coordinate position on a line, plane, or space.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
@@ -2348,8 +2340,6 @@ Substructures
 
 
 ### MEDI   {#MEDI}
-
-`http://terms.fhiso.org/legacy/longform/MEDIA`
 
 Identifies information about the media or having to do with the medium in which information is stored.
 
@@ -3553,8 +3543,6 @@ Substructures
 
 
 ### TEXT   {#TEXT}
-
-`http://terms.fhiso.org/legacy/longform/TEXT`
 
 The exact wording found in an original source document.
 
