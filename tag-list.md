@@ -58,8 +58,17 @@ The **cardinality** of a substructure specifies with what plurality it appears w
 
 - `!` means "required": there must be one and only one of these.
 - `?` means "optional": there must be either zero or one of these.
-- `*` means "set-valued": there may be zero or more of these.  Some implementations may provide a maximum number for some or all set-valued substructures.
-- `+` means "non-empty set-valued": there must be one and may be more than one of these. In the current spec, `+` only appears for the .`[OBJE]`.`[FILE]`.
+- `*` means "list-valued": there may be zero or more of these.  Some implementations may provide a maximum number for some or all set-valued substructures.
+- `+` means "non-empty list-valued": there must be one and may be more than one of these. In the current spec, `+` only appears for the .`[OBJE]`.`[FILE]`.
+
+The order of list-valued substructures sharing a single tag is significant; unless otherwise specified, the order is interpreted as the submitter's preference, with the most preferred value first and subsequent elements listed in decreasing order of preference. The exact meaning of "preference" is not defined by this specification.
+
+{.example} A researcher unsure when a person was born would include two `BIRT` substructures within the `INDI`, with the one the researcher deems more probably true first.
+
+{.example} A researcher documenting an individual with several names could include the *researcher-preferred* name first; or could include the name the individual preferred at some point first; etc.
+
+{.example} Although an `INDI` is listed as having substructure (`[IndividualEvent]`)\*, the order of substructure `ADOP` and `CENS` are *not* significant because they differ in tag name.
+
 
 # Supertypes
 
@@ -2345,6 +2354,8 @@ Identifies information about the media or having to do with the medium in which 
 
 Contexts
 :   .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`
+
+{.note} Due to an example in the GEDCOM specification that is inconsistent with the grammar, it is RECOMMENDED that implementations parse a .`[SOUR]`.`[REPO]`.`[MEDI]` (i.e., coordinate with instead of subordinate to `CALN`) as if they were .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`.
 
 Description
 :   A code, selected from one of the media classifications choices listed under *Payload*, that indicates the type of material in which the referenced source is stored.

@@ -18,7 +18,14 @@ It will likely change significantly prior to being released.
 
 ----
 
-# Lines
+# Encoding
+
+This document presents a particular method of converting structures into a stream of characters.
+It does not specify the *character* encoding needed to convert those characters into an octet stream suitable for network transfer or file saving.
+
+
+
+## Lines     {#Line}
 
 A ELF-file consists of a set of lines.
 Each line consists of several elements.
@@ -46,9 +53,12 @@ The elements of each line (in order) are
 {.note} Although the above locations of delimiters is specified in both GEDCOM 5.5 and GEDCOM 5.5.1, those specifications also suggest that some implementations may produce multi-space delimiters and that parsers should support those files.  It is RECOMMENDED that parsers accept malformed files that would be correctly formatted if additional spaces were permitted within lines.
 
 
-# Encoding a structure
+## Encoding a structure
+
+A structure is encoded as a [Line] (or possibly several [Lines](#Line), as described in [Multi-line strings] and [Line Splitting]), immediately followed by the encoding of all of its substructures.
 
 Each structure is encoded as one (or in some cases, several consecutive) line(s).
+It is immediately followed by all of its substructures.
 
 1.  The *level* of a [TopLevel](tag-list.html#TopLevel) is `0`.
     The *level* of a substructure is 1 greater than the *level* of its superstructure.
@@ -84,7 +94,15 @@ It is RECOMMENDED that parsers accept files that are not strictly compliant with
 
 {.ednote} Although the GEDCOM specification never provides permission for whitespace stripping or multi-space delimiters, its Appendix A states that such occurs in the description of the CONC tag: "many GEDCOM values are trimmed of trailing spaces and some systems look for the first non-space starting after the tag to determine the beginning of the value."
 
-## Payload String Encoding {#Payload Encoding}
+
+### Substructures
+
+The [line(s)](#line) encoding a structure's *tag*, *identifier*, and *payload* is followed immediately by an encoding of each of its substructures.
+The order of substructures of different tags is arbitrary, but the order of substructures with the same tag MUST be preserved.
+
+
+
+### Payload String Encoding
 
 Payload strings must be encoded specially based on the following constraints:
 
@@ -97,25 +115,10 @@ Payload strings must be encoded specially based on the following constraints:
 
 {.note} GEDCOM listed the 255-character limit on line length as REQUIRED, not RECOMMENDED.
 
-### Multi-line strings
-
-A multi-line string is encoded as follows:
-
--   The first line of the string is encoded as the *payload line* of its structure's line.
--   The remaining lines of the string are encoded in order immediately following the structure's line as lines with the `CONT` tag.
-    -   Each `CONT` line has a *level* one larger than the *level* of the structure.
-    -   `CONT` lines never have an *xref_id*.
-
-For example, if the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes\nsupported."`, the `NOTE` would be encoded as
-
-````gedcom
-1 NOTE Example:
-2 CONT multi-line notes
-2 CONT supported.
-````
+{.ednote} I propose relaxing the line length limit to RECOMMENDED as it no longer appears to be important given the size of computer memory.
 
 
-### Using U+0040 `@`
+#### Using U+0040 `@`
 
 {.ednote} GEDCOM allows several aspects of "escapes" that are not represented here, such as the ability to at-signs as part of the escape text.  So far as the authors of this specification know, the omitted details have never been used in any GEDCOM-producing or GEDCOM-consuming tool.
 
@@ -127,18 +130,44 @@ a `@` in a *payload* becomes a `@@` in a *payload line*.
 The `@@` MUST NOT be split into multiple lines as part of [Line splitting].
 
 
-### Line Splitting {#Line splitting}
+#### Multi-line strings
+
+A multi-line string is encoded as follows:
+
+-   The first line of the string is encoded as the *payload line* of its structure's line.
+-   The remaining lines of the string are encoded in order immediately following the structure's line as lines with the `CONT` tag.
+    -   Each `CONT` line has a *level* one larger than the *level* of the structure.
+    -   `CONT` lines never have an *xref_id*.
+
+{.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes\nsupported."`, the `NOTE` would be encoded as
+
+````gedcom
+1 NOTE Example:
+2 CONT multi-line notes
+2 CONT supported.
+````
+{/}
+
+
+#### Line Splitting
 
 Any string may be split into several lines; such splits may occur between any two characters, except they may not occur between matched `@` characters. It is RECOMMENDED that they occur between non-whitespace characters.
 
-{.ednote} The non-whitespace recommendation is a compromise between the GEDCOM specification (which does not mention this constraint at all) and the specification's Appendix A (which states "Values that are split for a CONC tag must always be split at a non-space. If the value is split on a space the space will be lost when concatenation takes place.").
+{.ednote ...} The non-whitespace recommendation is a compromise between the GEDCOM specification, which does not mention this constraint at all, and the specification's Appendix A, which states 
+
+> Values that are split for a CONC tag must always be split at a non-space. If the value is split on a space the space will be lost when concatenation takes place.
+{/}
 
 When split, the substring before the split remains as the *payload line* of the existing line; the substring after the split is encoded immediately following that line as lines with the `CONC` tag.
 
-    -   Each `CONC` line has a *level* one larger than the *level* of the structure.
-    -   `CONC` lines never have an *xref_id*.
+-   Each `CONC` line has a *level* one larger than the *level* of the structure.
+-   `CONC` lines never have an *xref_id*.
 
-This process may be repeated as many times as desired.  For example, if the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example: some text to split up."`, the `NOTE` could be encoded as 
+{.note} The *level* of a `CONC` is based on the *structure*, not and preceeding `CONC` or `CONT` line.
+
+This process may be repeated as many times as desired, and may be applied to any line of a multi-line string.
+
+{.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example: some text to split up."`, the `NOTE` could be encoded as 
 
 ````gedcom
 1 NOTE Example: some text to split up.
@@ -153,3 +182,26 @@ or
 ````
 
 or with any other combination of splits.
+{/}
+
+
+{.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example: multi-line\ntext to split."`, the `NOTE` could be encoded as 
+
+````gedcom
+1 NOTE Example: multi-line
+2 CONT text to split.
+````
+
+or
+
+````gedcom
+1 NOTE Exampl
+2 CONC e: multi-line
+2 CONT text t
+2 CONC o sp
+2 CONC lit.
+````
+
+or with any other combination of splits.
+{/}
+
