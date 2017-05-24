@@ -57,8 +57,8 @@ The **context** of a structure specifies where it appears.  The following notati
 The **cardinality** of a substructure specifies with what plurality it appears within its containing structure.  Cardinality is specified by adding one of the following suffixes to a tag name:
 
 - `!` means "required": there must be one and only one of these.
-- `?` means "optional": there may be one and no more than one of these.
-- `*` means "set-valued": there may be zero or more of these.  Some implementations may provide a maximum number for some or all set-values substructures.
+- `?` means "optional": there must be either zero or one of these.
+- `*` means "set-valued": there may be zero or more of these.  Some implementations may provide a maximum number for some or all set-valued substructures.
 - `+` means "non-empty set-valued": there must be one and may be more than one of these. In the current spec, `+` only appears for the .`[OBJE]`.`[FILE]`.
 
 # Supertypes
