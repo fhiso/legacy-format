@@ -4,6 +4,8 @@ subtitle: Serialization Format
 date: 24 May 2017
 numbersections: true
 ...
+# ELF Serialization Format
+
 This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.
 
 The GEDCOM specification described a document model, a set of tags, and a serialization format.
@@ -18,14 +20,14 @@ It will likely change significantly prior to being released.
 
 ----
 
-# Encoding
+## Encoding
 
 This document presents a particular method of converting structures into a stream of characters.
 It does not specify the *character* encoding needed to convert those characters into an octet stream suitable for network transfer or file saving.
 
 
 
-## Lines     {#Line}
+### Lines     {#Line}
 
 A ELF-file consists of a set of lines.
 Each line consists of several elements.
@@ -53,7 +55,7 @@ The elements of each line (in order) are
 {.note} Although the above locations of delimiters is specified in both GEDCOM 5.5 and GEDCOM 5.5.1, those specifications also suggest that some implementations may produce multi-space delimiters and that parsers should support those files.  It is RECOMMENDED that parsers accept malformed files that would be correctly formatted if additional spaces were permitted within lines.
 
 
-## Encoding a structure
+### Encoding a structure
 
 A structure is encoded as a [Line] (or possibly several [Lines](#Line), as described in [Multi-line strings] and [Line Splitting]), immediately followed by the encoding of all of its substructures.
 
@@ -95,14 +97,14 @@ It is RECOMMENDED that parsers accept files that are not strictly compliant with
 {.ednote} Although the GEDCOM specification never provides permission for whitespace stripping or multi-space delimiters, its Appendix A states that such occurs in the description of the CONC tag: "many GEDCOM values are trimmed of trailing spaces and some systems look for the first non-space starting after the tag to determine the beginning of the value."
 
 
-### Substructures
+#### Substructures
 
 The [line(s)](#line) encoding a structure's *tag*, *identifier*, and *payload* is followed immediately by an encoding of each of its substructures.
 The order of substructures of different tags is arbitrary, but the order of substructures with the same tag MUST be preserved.
 
 
 
-### Payload String Encoding
+#### Payload String Encoding
 
 Payload strings must be encoded specially based on the following constraints:
 
@@ -118,7 +120,7 @@ Payload strings must be encoded specially based on the following constraints:
 {.ednote} I propose relaxing the line length limit to RECOMMENDED as it no longer appears to be important given the size of computer memory.
 
 
-#### Using U+0040 `@`
+##### Using U+0040 `@`
 
 {.ednote} GEDCOM allows several aspects of "escapes" that are not represented here, such as the ability to at-signs as part of the escape text.  So far as the authors of this specification know, the omitted details have never been used in any GEDCOM-producing or GEDCOM-consuming tool.
 
@@ -149,7 +151,7 @@ A multi-line string is encoded as follows:
 {/}
 
 
-#### Line Splitting
+##### Line Splitting
 
 Any string may be split into several lines; such splits may occur between any two characters, except they may not occur between matched `@` characters. It is RECOMMENDED that they occur between non-whitespace characters.
 
@@ -205,3 +207,8 @@ or
 or with any other combination of splits.
 {/}
 
+
+
+## Decoding
+
+{.ednote} Do we (1) write this section, (2) rework the [Encoding] section to be less procedural, or (3) assume people can infer decoding based on encoding?
