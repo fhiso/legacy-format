@@ -151,7 +151,7 @@ Contexts
 :   .(`[TopLevel]`)
 
 
-#### Record   {#Record}
+### Record   {#Record}
 
 The *Record* type serves as an abstract supertype for those [TopLevel] types that describe the principle contents of the data set (as opposed to other [TopLevel] subtypes, which are metadata).
 
@@ -171,7 +171,7 @@ Supertype
 :   `[TopLevel]`
 
 
-#### InnerStructure   {#InnerStructure}
+### InnerStructure   {#InnerStructure}
 
 The *InnerStructure* type serves as an abstract supertype for all non-`[TopLevel]` structures.
 
@@ -179,7 +179,7 @@ Contexts
 :   anything *except* .(`[InnerStructure]`)
 
 
-#### Event   {#Event}
+### Event   {#Event}
 
 The *Event* type serves as an abstract supertype for other events and attributes.
 
@@ -210,7 +210,7 @@ Substructures
 
 {.note} GEDCOM 5.5 also includes `[AGE]` as a substructure of `[Event]`, but GEDCOM 5.5.1 moves that to `[IndividualEvent]` and `[IndividualAttribute]` instead.
 
-#### IndividualEvent   {#IndividualEvent}
+### IndividualEvent   {#IndividualEvent}
 
 The *IndividualEvent* type serves as an abstract supertype for events that pertain to a particular individual.
 
@@ -267,7 +267,7 @@ Substructures
 
 
 
-#### FamilyEvent   {#FamilyEvent}
+### FamilyEvent   {#FamilyEvent}
 
 The *FamilyEvent* type serves as an abstract supertype for events that pertain to a couple or nuclear family.
 
@@ -315,7 +315,7 @@ Substructures
 {.note} Prior to GEDCOM 5.5.1, `[AGE]`? was listed as a substructure of all (`[Event]`)s, including (`[FamilyEvent]`).  The semantics of a (`[FamilyEvent]`).`[AGE]` was not defined in any GEDCOM specification and it was removed from 5.5.1 without notice; this specification does not define what a (`[FamilyEvent]`).`[AGE]` might mean if present.
 
 
-#### IndividualAttribute   {#IndividualAttribute}
+### IndividualAttribute   {#IndividualAttribute}
 
 The *IndividualAttribute* type serves as an abstract supertype for attributes of an individual.
 
@@ -373,14 +373,14 @@ Substructures
 The following is a list of known structure types, organized by tag name.
 Note that a single tag name may be used by several types in different contexts.
 
-{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints and contains several tags specific to that context, such as 
+{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints and contains several types specific to that church, such as 
 
 -   BAPL (a `[BAPM]` performed by the Church of Jesus Christ of Latter-Day Saints)
 -   AFN (like a `[RFN]` specific to one particular database owned by the Church of Jesus Christ of Latter-Day Saints)
--   a set of structures to define LDS temple rites
+-   a set of structures to define various aspects of LDS temple rites
 -   etc.
 
-Those tags have been omitted from this specification
+The LDS-specific types have been omitted from this specification
 and are thus defined by this specification to be [Extension Types](#Extensions).
 {/}
 
@@ -2206,7 +2206,7 @@ Minutes and seconds are converted by dividing the minutes value by 60 and the se
 This sum becomes the fractional part of the degree's value.
 
 Contexts
-:   `[MAP].[LONG]`
+:   `[MAP]`.`[LONG]`
 
 Description
 :   The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate.
@@ -3423,7 +3423,7 @@ Substructures
 A geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
 Contexts
-:   `[ADDR].[STAE]`
+:   `[ADDR]`.`[STAE]`
 
 Description
 :   The name of the state used in the address. Isolated for sorting or indexing.
@@ -3442,7 +3442,7 @@ An assessment of the state or condition of something.
 {.note} Most uses of this tag in GEDCOM are LDS-specific and excluded from this specification.  The one documented here was introduced in GEDCOM 5.5.1.
 
 Contexts
-:   `.INDI.FAMC.STAT`
+:   .`[INDI]`.`[FAMC]`.`[STAT]`
 
 Description
 :   A status code that allows passing on the users opinion of the status of a child to family link.
