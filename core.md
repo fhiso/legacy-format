@@ -32,13 +32,22 @@ Every ELF dataset consists of the following, in order:
 
 Each structure consists of the following parts:
 
-Name       | Required? | Notes
------------|-----------|------
-Tag        | Required  | short identifiers describing structure meaning, of three kinds
-Identifier | Forbidden for [HEAD] and [TRLR], required for all other *records*, optional otherwise | short identifiers allowing pointers to point to structure
-Payload    | Required, Optional, or Forbidden (varies by Tag) | EITHER string content OR pointer (but never both)
-Substructures | Required or Optional (varies by Tag) | structured content
+-------------------------------------------------------------------------------------------
+Name            Required?                               Notes
+-------------   -------------------------------------   -----------------------------------
+Tag             Required                                short identifiers
+                                                        describing structure
 
+Identifier      Forbidden for [HEAD] and [TRLR],        short identifiers allowing
+                required for all *records*,             pointers to point to structure
+                optional otherwise
+
+Payload         Required, Optional, or Forbidden        EITHER string content OR pointer
+                (varies by Tag)                         (but never both)
+
+Substructures   Required or Optional                    structured content
+                (varies by Tag)
+-------------------------------------------------------------------------------------------
 
 A structure is called a *record* if it is not contained within another structure.
 If a structure is contained within another structure, it is called a *substructure* and its containing structure is called its *superstructure*.
