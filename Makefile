@@ -1,2 +1,2 @@
-SOURCES := core.md tag-list.md serialization.md
+SOURCES := combined.md serialization.md
 include ../website/run-pandoc.mk
