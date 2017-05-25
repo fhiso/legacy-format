@@ -120,7 +120,7 @@ The order of list-valued substructures sharing the same tag is significant; unle
 {.example} Although an `[INDI]` is listed as having substructure "(`[IndividualEvent]`)\*", the order of the substructure `[ADOP]` and `[CENS]` are *not* significant because they differ in tag name.
 
 
-## Type Hierarchy   {#Hierarchy}
+## Abstract Types   {#Hierarchy}
 
 A limited type hierarchy is known to exist;
 the types with subtypes are
@@ -134,14 +134,12 @@ the types with subtypes are
             -   `[FamilyEvent]`
             -   `[IndividualAttribute]`
 
-### Abstract Types
+These types are have no tag and cannot be directly instantiated;
+they serve only as abstract supertypes for other data types.
 
-The following tags are not encountered directly, but are instead present only as abstract supertypes from which other tags derive.
+### TopLevel   {#TopLevel}
 
-#### TopLevel   {#TopLevel}
-
-The *TopLevel* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for those types that may exist at the top level of a data set.
+The *TopLevel* type serves as an abstract supertype for those types that may exist at the top level of a data set.
 
 Known subtypes
 :   `[HEAD]`
@@ -155,8 +153,7 @@ Contexts
 
 #### Record   {#Record}
 
-The *Record* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for those [TopLevel] types that describe the principle contents of the data set (as opposed to other [TopLevel] subtypes, which are metadata).
+The *Record* type serves as an abstract supertype for those [TopLevel] types that describe the principle contents of the data set (as opposed to other [TopLevel] subtypes, which are metadata).
 
 Known subtypes
 :   `[FAM]`
@@ -176,10 +173,7 @@ Supertype
 
 #### InnerStructure   {#InnerStructure}
 
-The *InnerStructure* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for other events and attributes.
-
-Unless otherwise specified, all structure types are direct subtypes of `[InnerStructure]`.
+The *InnerStructure* type serves as an abstract supertype for all non-`[TopLevel]` structures.
 
 Contexts
 :   anything *except* .(`[InnerStructure]`)
@@ -187,8 +181,7 @@ Contexts
 
 #### Event   {#Event}
 
-The *Event* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for other events and attributes.
+The *Event* type serves as an abstract supertype for other events and attributes.
 
 Supertype
 :   `[InnerStructure]`
@@ -219,8 +212,7 @@ Substructures
 
 #### IndividualEvent   {#IndividualEvent}
 
-The *IndividualEvent* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for other events and attributes.
+The *IndividualEvent* type serves as an abstract supertype for events that pertain to a particular individual.
 
 Supertype
 :   `[Event]`
@@ -277,8 +269,7 @@ Substructures
 
 #### FamilyEvent   {#FamilyEvent}
 
-The *FamilyEvent* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for other events and attributes.
+The *FamilyEvent* type serves as an abstract supertype for events that pertain to a couple or nuclear family.
 
 Supertype
 :   `[Event]`
@@ -326,8 +317,7 @@ Substructures
 
 #### IndividualAttribute   {#IndividualAttribute}
 
-The *IndividualAttribute* type has no tag name and cannot be directly instantiated.
-It serves as an abstract supertype for other events and attributes.
+The *IndividualAttribute* type serves as an abstract supertype for attributes of an individual.
 
 Represents attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
@@ -394,6 +384,7 @@ Those tags have been omitted from this specification
 and are thus defined by this specification to be [Extension Types](#Extensions).
 {/}
 
+Unless otherwise specified, all types listed here are direct subtypes of `[InnerStructure]`.
 
 ### ABBR  {#ABBR}
 
