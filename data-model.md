@@ -960,10 +960,10 @@ Description
 Payload
 :   one of `ANSEL`, `UNICODE`, or `ASCII`
 
+{.ednote} ANSEL is documented as part of the GEDCOM standard; do we need to replicate that documentation as part of ELF?
+
 Substructures
 :   `[VERS]`?
-
-{.ednote} ANSEL is documented as part of the GEDCOM standard; do we need to replicate that documentation as part of ELF?
 
 ### CHIL   {#CHIL}
 
