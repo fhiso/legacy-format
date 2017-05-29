@@ -57,7 +57,7 @@ The elements of each line (in order) are
 
 ### Encoding a structure
 
-A structure is encoded as a [Line] (or possibly several [Lines](#Line), as described in [Multi-line strings] and [Line Splitting]), immediately followed by the encoding of all of its substructures.
+A structure is encoded as a [Line](#Line) (or possibly several [Lines](#Line), as described in [Multi-line Strings] and [Line Splitting]), immediately followed by the encoding of all of its substructures.
 
 Each structure is encoded as one (or in some cases, several consecutive) line(s).
 It is immediately followed by all of its substructures.
@@ -132,7 +132,7 @@ a `@` in a *payload* becomes a `@@` in a *payload line*.
 The `@@` MUST NOT be split into multiple lines as part of [Line splitting].
 
 
-#### Multi-line strings
+#### Multi-line Strings
 
 A multi-line string is encoded as follows:
 
