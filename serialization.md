@@ -102,7 +102,48 @@ It is RECOMMENDED that parsers accept files that are not strictly compliant with
 The [line(s)](#line) encoding a structure's *tag*, *identifier*, and *payload* is followed immediately by an encoding of each of its substructures.
 The order of substructures of different tags is arbitrary, but the order of substructures with the same tag MUST be preserved.
 
+{.example ...}
+The following are all equivalent:
 
+````gedcom
+0 @jane@ SUBM
+1 NAME Jane Doe
+1 LANG Gujarati
+1 LANG English
+````
+
+````gedcom
+0 @jane@ SUBM
+1 LANG Gujarati
+1 LANG English
+1 NAME Jane Doe
+````
+
+````gedcom
+0 @jane@ SUBM
+1 LANG Gujarati
+1 LANG English
+1 NAME Jane Doe
+````
+
+But the following is *not* equivalent to any of the above:
+
+````gedcom
+0 @jane@ SUBM
+1 NAME Jane Doe
+1 LANG English
+1 LANG Gujarati
+````
+{/}
+
+{.example ...} It is the *tag name* that determines if order must be preserved; thus, the order of the two notes in the following must be preserved even though one has a pointer as its payload and the other has a string:
+
+````gedcom
+1 NAME Jno. /Banks/
+2 NOTE @N34@
+2 NOTE This is probably an abbreviation for John
+````
+{/}
 
 #### Payload String Encoding
 
@@ -122,7 +163,7 @@ Payload strings must be encoded specially based on the following constraints:
 
 ##### Using U+0040 `@`
 
-{.ednote} GEDCOM allows several aspects of "escapes" that are not represented here, such as the ability to at-signs as part of the escape text.  So far as the authors of this specification know, the omitted details have never been used in any GEDCOM-producing or GEDCOM-consuming tool.
+{.ednote} GEDCOM allows several aspects of "escapes" that are not represented here, such as the ability to encode at-signs as part of the escape text.  So far as the authors of this specification know, the omitted details have never been used in any GEDCOM-producing or GEDCOM-consuming tool.
 
 Some tags may utilize a special "escape" of the form `@#[^@]*@`; the `DATE` tag is one example.
 Such escapes should be preserved as-is during encoding, and MUST NOT be split into multiple lines as part of [Line splitting].
@@ -165,7 +206,7 @@ When split, the substring before the split remains as the *payload line* of the 
 -   Each `CONC` line has a *level* one larger than the *level* of the structure.
 -   `CONC` lines never have an *xref_id*.
 
-{.note} The *level* of a `CONC` is based on the *structure*, not and preceeding `CONC` or `CONT` line.
+{.note} The *level* of a `CONC` is based on the *structure*, not any preceeding `CONC` or `CONT` line.
 
 This process may be repeated as many times as desired, and may be applied to any line of a multi-line string.
 
