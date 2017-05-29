@@ -6,13 +6,14 @@ numbersections: true
 ...
 # FHISO Extended Legacy Format
 
-{.ednote ...} This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.
+{.ednote ...} This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.1.
 Goals include 
 
 -   Clarifying ambiguities
 -   Updating presentation
 -   Providing extension mechanisms suitable for anticipated FHISO extensions
--   Creating a archival standard, as GEDCOM 5.5 is no longer available from its authoring corporation.
+-   Creating a archival standard, as GEDCOM 5.5.1 is no longer available from its authoring corporation.
+-   Documenting GEDCOM as it exists in practice
 
 The working title of this draft proposed standard is the FHISO Extended Legacy Format, or ELF.
 
@@ -214,7 +215,8 @@ Known Subtypes
 :   `[IndividualAttribute]`
 
 Contexts
-:   `[INDI]`.(`[Event]`)
+:   .`[INDI]`.(`[Event]`)
+:   .`[FAM]`.(`[Event]`)
 
 Substructures
 :   `[ADDR]`?
@@ -842,7 +844,7 @@ Burial: the event of the proper disposing of the mortal remains of a deceased pe
 -   GEDCOM is asserting that CREM is an improper method of disposal.
 -   Anything "proper" is BURI, and anything fire-based is CREM; thus
     -   a proper disposal by fire is both a BURI and a CREM
-    -   being burned at the stake or dying in a house file is CREM but not BURI
+    -   being burned at the stake or dying in a house fire is CREM but not BURI
 
 I'd like to adjust wording to be less ambiguous, but it may be too late to do so...
 {/}
