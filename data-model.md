@@ -131,7 +131,7 @@ Structures MAY contain more substructures than are listed
 (either of additional types or in greater cardinality than are listed)
 but the meaning of extra substructures is not defined by this specification.
 Implementations MAY ignore unexpected substructures; if only part of a list is ignored, the first part of the list SHOULD be preserved.
-Structures MAY NOT omit having substructures annotated with `!` or `+`.
+Structures MUST NOT omit having substructures annotated with `!` or `+`.
 
 The order of list-valued substructures sharing the same tag is significant; unless otherwise specified, the order is interpreted as the submitter's preference, with the most preferred value first and subsequent elements listed in decreasing order of preference. The exact meaning of "preference" is not defined by this specification.
 
