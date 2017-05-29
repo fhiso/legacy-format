@@ -88,17 +88,18 @@ Substructures
 
 ## Spaces in Formatted Payloads
 
+{.ednote} This topic appears nowhere in the GEDCOM specification; it attempts to document a solution to implementation inconsistencies.
+
 Some structure subtypes offer constraints on payload format, as for example requiring a base-ten integer, a comma-separated list of strings, or a specifically formatted date string.
 
 Unless otherwise specified within the description of a particular format, excess spaces before and/or after a token within a formatted payload MAY be included and have no semantic meaning.
 
-{.example ...} The following payloads of a `[GIVN]` tag are semantically equivalent:
+{.example ...} The following payloads of a `[GIVN]` tag (with quotes added to show leading and trailing spaces) are semantically equivalent:
+
 -   `"Jack,Clive"`
 -   `"Jack, Clive"`
 -   `" Jack , Clive "`
 {/}
-
-{.ednote} This space topic appears nowhere in the GEDCOM specification, but existing implementations appear to be inconsistent in the use of spaces in formated payloads so adding it seemed appropriate.
 
 ## Notation
 
@@ -925,8 +926,6 @@ Payload
 Substructures
 :   [*inherited from IndividualEvent*](#IndividualEvent) or [*inherited from FamilyEvent*](#FamilyEvent)
 
-{.ednote} Should this tag have context-specific subsections like `[ADOP]`?  Not much varies based on context...
-
 
 ### CHAN   {#CHAN}
 
@@ -1545,6 +1544,8 @@ Substructures
 
 An electronic mail address.
 
+{.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `EMAI` as synonymous with `EMAIL`.
+
 Contexts
 :   `[ADDR]`.`[EMAIL]`
 
@@ -1556,8 +1557,6 @@ Payload
 
 Substructures
 :    None
-
-{.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `ADDR.EMAI` as synonymous with `ADDR.EMAIL`.
 
 
 ### EMIG   {#EMIG}
@@ -1625,8 +1624,6 @@ Supertype
 Sunstructures
 :   inherited from the supertypes
 :   `[TYPE]`!
-
-{.ednote} Should these two be separated into context-specific subsections?
 
 
 #### Context .`[SOUR]`.`[DATA]`.`[EVEN]`
@@ -2195,8 +2192,6 @@ Payload
 
     > `[NS]\d+(\.\d+)?`
 
-{.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 10 characters.
-
 Substructures
 :   None
 
@@ -2224,8 +2219,6 @@ Payload
     The string should match the regular expression 
 
     > `[EW]\d+(\.\d+)?`
-
-{.ednote} In the GEDCOM 5.5.1 specification, the payload is specified as being no more than 8 characters but the example given therein 11 characters.
 
 Substructures
 :   None
@@ -2437,6 +2430,8 @@ Payload
     
     Portions of the name may be elided and replaced by three  U+002E FULL STOP `...`.
     
+    In the event that this payload disagrees with the substructures of this structure, the payload SHOULD be taken as more correct.
+    
 Substructures
 :   `[NPFX]`?
 :   `[GIVN]`?
@@ -2502,8 +2497,9 @@ Contexts
 Payload
 :   A string.
     It is RECOMMENDED that implementations support payloads of at least 3 characters.
+    It is RECOMMENDED that this string represent a base-10 integer.
     
-{.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
+{.ednote} GEDCOM does not require an integer, but appears to assume one. However, it is possible that some GEDCOM file will have some payload like "at least 5", hence the recommended rather than required status.
 
 #### Context .`[INDI]`.`[NCHI]`
 
@@ -2540,9 +2536,10 @@ Description
 :   A descriptive or familiar name used in connection with one's proper name.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A string containing a comma-separated list of names.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
-{.ednote} The `NICK` grammar in GEDCOM is for a comma-separated list, but unlike other parts of the name there is no descriptive text specifying the meaning of the commas.
+{.note} While the `NICK` grammar in GEDCOM is for a comma-separated list, there is no descriptive text specifying the meaning of the commas.  In particular, it is not clear if multiple nicknames derived from the same given name should be listed in a single comma-separated `NICK` under that `[NAME]` or as several distinct `[NAME]`s.
 
 Substructures
 :   None
@@ -2559,9 +2556,11 @@ Description
 :   The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 3 characters.
-
-{.ednote} Although not specified in GEDCOM, this string should represent a base-10 integer.
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 3 characters.
+    It is RECOMMENDED that this string represent a base-10 integer.
+    
+{.ednote} GEDCOM does not require an integer, but appears to assume one. However, it is possible that some GEDCOM file will have some payload like "at least 2", hence the recommended rather than required status.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -3161,7 +3160,7 @@ Payload
 Substructures
 :   None
 
-{.ednote} Although the GEDCOM spec says "Ancestral File", we included this assuming it might be used for the same purpose by other data providers.
+{.ednote} Although the GEDCOM spec refers repeatedly to "Ancestral File", we included this assuming it might be used for the same purpose by other data providers.
 
 
 ### RETI   {#RETI}
@@ -3188,6 +3187,8 @@ Substructures
 
 Record file number: a permanent number assigned to a record that uniquely identifies it within a known file.
 
+{.ednote} This tag is marked in GEDCOM as being "for future use;" should we include it or omit it in this specification?
+
 Contexts
 :   .`[INDI]`.`[RFN]`
 :   .`[SUBM]`.`[RFN]`
@@ -3201,8 +3202,6 @@ Description
     -   is usable as a cross-reference pointer.
     -   may contain a colon (`:`) in which case the portion preceding the colon is an identifier assigned to a resource database that is available through access to a network and the portion following the colon is an an identification number assigned to each record within a specific database; or it may omit a colon and refer to a record within the current dataset.
     -   marked in GEDCOM 5.5 as being "for future use".
-
-{.ednote} It is not clear to me if either RFN is used or ought to be part of ELF.
 
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
