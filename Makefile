@@ -1,2 +1,2 @@
-SOURCES := combined.md serialization.md
+SOURCES := data-model.md serialization.md
 include ../website/run-pandoc.mk

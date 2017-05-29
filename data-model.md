@@ -27,7 +27,7 @@ This document presents the data model; the serialization format is presented in 
 ## Overview
 
 Every Extended Legacy Format (ELF) dataset is an ordered sequence of *structure*s.
-Structures conform to a limited type hierarchy; the top of this hierarchy is as follows:
+Structures conform to a type hierarchy; the top of this hierarchy is as follows:
 
 - `[Structure]`
     - `[TopLevel]`
@@ -35,7 +35,9 @@ Structures conform to a limited type hierarchy; the top of this hierarchy is as 
         -   `[SUBN]`
         -   `[TRLR]`
         -   `[Record]`
+            -   ...
     - `[InnerStructure]`
+        -   ...
 
 Each ELF dataset consists of the following structures, in the following order:
 
@@ -52,7 +54,8 @@ Each ELF dataset consists of the following structures, in the following order:
 Every structures consists of the following components:
 
 Tag
-:   A string defining the structure's subtype, which is a string matching the regular expression `[A-Za-z0-9_]+`.
+:   A string defining the structure's subtype.
+    The tag MUST match the regular expression `[A-Za-z0-9_]+`.
     
     Every structure has a tag.
     It is RECOMMENDED that tags either be taken from tags listed in [Concrete Types](#ConcreteTypes) or contain at least one underscore (U+005F, `_`).
@@ -62,23 +65,40 @@ Tag
 {.note} A structure's tag is not always sufficient to fully define its type; the same tag may have different meanings in different [contexts](#Context).
 
 Identifier
-:   A string uniquely identifying this structure within this ELF dataset,
-    which is a string of non-control ASCII characters matching the regular expression `[0-9A-Z_a-z][^@]*`.
+:   A string uniquely identifying this structure within this ELF dataset.
+    If present, the identifier MUST contain only non-control ASCII characters
+    and match the regular expression `[0-9A-Z_a-z][^@]*`.
 
     Every `[SUBN]` and `[Record]` has an identifier.
-    `[Substructure]`s MAY (but are NOT RECOMMENDED to) have an identifier.
-    Each `[TopLevel]` within a dataset that has an identifier MUST have a unique one within the dataset.
+    `[InnerStructure]`s MAY (but are NOT RECOMMENDED to) have an identifier.
+    Each `[TopLevel]` within a dataset that has an identifier MUST have a unique identifier within the dataset.
     
 Payload
 :   If present, a payload is either a pointer or a string.
-    Each structure type defines if it has a payload and if so which kind or kinds it may have.
+    Each structure subtype defines if it has a payload and if so which kind(s) it may have.
     
     Each pointer payload MUST point to a `[TopLevel]` within the dataset.
 
+{.ednote} GEDCOM had provisions for pointers to `[InnerStructure]`s as well as `[TopLevel]`s, but we are unaware of any system that produced GEDCOM files making use of that provision.
+
 Substructures
 :   Structures may contain zero or more `[InnerStructure]`s, which are called the structure's **substructures**.
-    There are no limitations to the types of `[InnerStructure]`s that may be contained,
+    There are no limitations to the types of `[InnerStructure]`s that may be contained within a structure,
     but each structure type may recommend particular substructures and/or have a set of required substructures.
+
+## Spaces in Formatted Payloads
+
+Some structure subtypes offer constraints on payload format, as for example requiring a base-ten integer, a comma-separated list of strings, or a specifically formatted date string.
+
+Unless otherwise specified within the description of a particular format, excess spaces before and/or after a token within a formatted payload MAY be included and have no semantic meaning.
+
+{.example ...} The following payloads of a `[GIVN]` tag are semantically equivalent:
+-   `"Jack,Clive"`
+-   `"Jack, Clive"`
+-   `" Jack , Clive "`
+{/}
+
+{.ednote} This space topic appears nowhere in the GEDCOM specification, but existing implementations appear to be inconsistent in the use of spaces in formated payloads so adding it seemed appropriate.
 
 ## Notation
 
@@ -88,16 +108,15 @@ The **context** of a structure specifies where it appears.
 The following notation is used to define structure contexts:
 
 -   `TAGNAME` matches any `[Structure]` with that tag, anywhere it appears
--   .`TAGNAME` matches any `[Record]` with that tag, but not an `[InnerStructure]`
+-   .`TAGNAME` matches any `[TopLevel]` with that tag, but not an `[InnerStructure]`
 -   *context specifier*.`TAGNAME` matches any `[InnerStructure]` with that tag, provided it is a substructure of a structure specified by the *context specifier*
 -   (`TAGNAME`) refers to any structure with that tag name or any tag inherited from it.
-
-The **cardinality** of a substructure specifies with what plurality it appears within its containing structure.  Cardinality is specified by adding one of the following suffixes to a tag name:
 
 
 ### Cardinality
 
-The set of required and recommended substructures of each structure are demoted by the following suffixes.
+The **cardinality** of a substructure specifies with what plurality it appears within its containing structure.
+The cardinality of required and recommended substructures of each structure are denoted by the following suffixes:
 
 - `!` means "required": there must be one and only one of these.
 - `?` means "optional": there must be either zero or one of these.
@@ -107,8 +126,9 @@ The set of required and recommended substructures of each structure are demoted 
 {.ednote} In the current spec, `+` only appears for the .`[OBJE]`.`[FILE]`.
 
 Structures MAY contain more substructures than are listed
-(either other type or more of the listed types than are listed)
+(either of additional types or in greater cardinality than are listed)
 but the meaning of extra substructures is not defined by this specification.
+Implementations MAY ignore unexpected substructures; if only part of a list is ignored, the first part of the list SHOULD be preserved.
 Structures MAY NOT omit having substructures annotated with `!` or `+`.
 
 The order of list-valued substructures sharing the same tag is significant; unless otherwise specified, the order is interpreted as the submitter's preference, with the most preferred value first and subsequent elements listed in decreasing order of preference. The exact meaning of "preference" is not defined by this specification.
@@ -122,8 +142,7 @@ The order of list-valued substructures sharing the same tag is significant; unle
 
 ## Abstract Types   {#Hierarchy}
 
-A limited type hierarchy is known to exist;
-the types with subtypes are
+A type hierarchy is known to exist; the known types with subtypes are
 
 - `[Structure]`
     - `[TopLevel]`
@@ -134,8 +153,7 @@ the types with subtypes are
             -   `[FamilyEvent]`
             -   `[IndividualAttribute]`
 
-These types are have no tag and cannot be directly instantiated;
-they serve only as abstract supertypes for other data types.
+These types serve only as abstract supertypes for other data types.
 
 ### TopLevel   {#TopLevel}
 
@@ -245,9 +263,6 @@ Known Subtypes
 Contexts
 :   .`[INDI]`.(`[IndividualEvent]`)
 
-Description
-:   Varies by subtype
-
 Payload
 :   Either the string `Y` or not present.
     If any of the following are true
@@ -290,9 +305,6 @@ Known Subtypes
 Contexts
 :   .`[FAM]`.(`[FamilyEvent]`)
 
-Description
-:   Varies by subtype
-
 Payload
 :   Either the string `Y` or not present.
     If any of the following are true
@@ -312,14 +324,14 @@ Substructures
 :   `[WIFE]`?
 
 
-{.note} Prior to GEDCOM 5.5.1, `[AGE]`? was listed as a substructure of all (`[Event]`)s, including (`[FamilyEvent]`).  The semantics of a (`[FamilyEvent]`).`[AGE]` was not defined in any GEDCOM specification and it was removed from 5.5.1 without notice; this specification does not define what a (`[FamilyEvent]`).`[AGE]` might mean if present.
+{.note} Prior to GEDCOM 5.5.1, `[AGE]`? was listed as a substructure of all (`[Event]`)s, including (`[FamilyEvent]`).  The semantics of a (`[FamilyEvent]`).`[AGE]` was not defined in any GEDCOM specification and it was removed from 5.5.1; this specification does not define what a (`[FamilyEvent]`).`[AGE]` might mean if present.
 
 
 ### IndividualAttribute   {#IndividualAttribute}
 
 The *IndividualAttribute* type serves as an abstract supertype for attributes of an individual.
 
-Represents attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
+Attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
 However, they are often described like events because they were observed at a particular time and/or place.
 
@@ -348,12 +360,6 @@ Known Subtypes
 Contexts
 :   .`[INDI]`.(`[IndividualAttribute]`)
 
-Description
-:   Varies by subtype
-
-Payload
-:   Varies by subtype
-
 Substructures
 :   Those inherited from `[Event]`
 :   `[AGE]`?
@@ -375,7 +381,7 @@ Note that a single tag name may be used by several types in different contexts.
 
 {.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints and contains several types specific to that church, such as 
 
--   BAPL (a `[BAPM]` performed by the Church of Jesus Christ of Latter-Day Saints)
+-   BAPL (a `[BAPM]` performed by the Church of Jesus Christ of Latter-Day Saints, possibly posthumously by proxy)
 -   AFN (like a `[RFN]` specific to one particular database owned by the Church of Jesus Christ of Latter-Day Saints)
 -   a set of structures to define various aspects of LDS temple rites
 -   etc.
@@ -388,7 +394,7 @@ Unless otherwise specified, all types listed here are direct subtypes of `[Inner
 
 ### ABBR  {#ABBR}
 
-A short name of a title, description, or name.
+Abbreviation: a short name of a title, description, or name.
 
 Contexts
 :   `[SOUR]`.`[ABBR]`
@@ -405,7 +411,7 @@ Substructures
 
 ### ADDR  {#ADDR}
 
-The contemporary place, usually required for postal purposes, of an individual, a submitter of information, a repository, a business, a school, or a company.
+Address: the contemporary place, usually required for postal purposes, of an individual, a submitter of information, a repository, a business, a school, or a company.
 
 Contexts
 :   .`[HEAD]`.`[SOUR]`.`[CORP]`.`[ADDR]`
@@ -426,8 +432,8 @@ Substructures
 :   `[POST]`?
 :   `[CTRY]`?
 :   `[PHON]`\* -- GEDCOM limited this to no more than three `ADDR.PHON` per `ADDR`
-:   `[EMAIL]`\* -- GEDCOM limited this to no more than three `ADDR.FAX` per `ADDR`
-:   `[FAX]`\* -- GEDCOM limited this to no more than three `ADDR.EMAIL` per `ADDR`
+:   `[EMAIL]`\* -- GEDCOM limited this to no more than three `ADDR.EMAIL` per `ADDR`
+:   `[FAX]`\* -- GEDCOM limited this to no more than three `ADDR.FAX` per `ADDR`
 :   `[WWW]`\* -- GEDCOM limited this to no more than three `ADDR.WWW` per `ADDR`
 
 {.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `ADDR.EMAI` as synonymous with `ADDR.EMAIL`.
@@ -472,7 +478,7 @@ Substructures
 
 ### ADOP   {#ADOP}
 
-Pertaining to creation of a child-parent relationship that does not exist biologically.
+Adoption: pertaining to creation of a child-parent relationship that does not exist biologically.
 
 Contexts
 :   .`[INDI]`.`[ADOP]`
@@ -508,7 +514,7 @@ Substructures
 
 The age of the individual at the time an event occurred, or the age listed in the document.
 
-{.note} GEDCOM 5.5 the existence of (`[FamilyEvent]`).`AGE`, but 5.5.1 does not.  This document follows 5.5.1 because the meaning of a (`[FamilyEvent]`).`AGE` is not obvious.
+{.note} GEDCOM 5.5 permits (`[FamilyEvent]`).`AGE`, but 5.5.1 does not.  This document follows 5.5.1 because the meaning of a (`[FamilyEvent]`).`AGE` is not obvious.
 
 Contexts
 :   (`[FamilyEvent]`).`[HUSB]`.`[AGE]`
@@ -549,7 +555,7 @@ Substructures
 
 ### AGNC   {#AGNC}
 
-The institution or individual having authority and/or responsibility to manage or govern.
+Agency: the institution or individual having authority and/or responsibility to manage or govern.
 
 Contexts
 :   .`[SOUR]`.`[DATA]`.`[AGNC]`
@@ -581,7 +587,7 @@ Substructures
 
 ### ALIA   {#ALIA}
 
-An indicator to link different record descriptions of a person who may be the same person.
+Alias: an indicator to link different record descriptions of a person who may be the same person.
 
 Contexts
 :   .`[INDI]`.`[ALIA]`
@@ -595,7 +601,7 @@ Substructures
 
 ### ANCE   {#ANCE}
 
-Pertaining to forbearers of an individual.
+Ancestors: pertaining to forbearers of an individual.
 
 See also `[DESC]`
 
@@ -616,7 +622,7 @@ Substructures
 
 ### ANCI   {#ANCI}
 
-Indicates an interest in additional research for ancestors of this individual. 
+Ancestor interest: indicates an interest in additional research for ancestors of this individual. 
 
 See also `[DESI]`
 
@@ -632,7 +638,7 @@ Substructures
 
 ### ANUL  {#ANUL}
 
-Declaring a marriage void from the beginning (never existed).
+Annulment: declaring a marriage void from the beginning (never existed).
 
 Contexts
 :   .`[FAM]`.`[ANUL]`
@@ -652,7 +658,7 @@ Substructures
 
 ### ASSO   {#ASSO}
 
-An indicator to link friends, neighbors, relatives, or associates of an individual.
+Associates: an indicator to link friends, neighbors, relatives, or associates of an individual.
 
 Contexts
 :   .`[INDI]`.`[ASSO]`
@@ -668,7 +674,7 @@ Substructures
 
 ### AUTH   {#AUTH}
 
-The name of the individual who created or compiled information.
+Author: the name of the individual who created or compiled information.
 
 Contexts
 :   .`[SOUR]`.`[AUTH]`
@@ -685,7 +691,7 @@ Substructures
 
 ### BAPM   {#BAPM}
 
-The event of baptism, performed in infancy or later.
+Baptism: the event of baptism, performed in infancy or later.
 
 See also `[BAPL]` and `[CHR]`
 
@@ -707,7 +713,7 @@ Substructures
 
 ### BARM   {#BARM}
 
-The ceremonial event held when a Jewish boy reaches age 13.
+Bar Mitzvah: the ceremonial event held when a Jewish boy reaches age 13.
 
 Contexts
 :   .`[INDI]`.`[BARM]`
@@ -727,7 +733,7 @@ Substructures
 
 ### BASM   {#BASM}
 
-The ceremonial event held when a Jewish girl reaches age 13, also known as "Bat Mitzvah."
+Bas Mitzvah: the ceremonial event held when a Jewish girl reaches age 13, also known as "Bat Mitzvah."
 
 Contexts
 :   .`[INDI]`.`[BASM]`
@@ -747,7 +753,7 @@ Substructures
 
 ### BIRT   {#BIRT}
 
-The event of entering into life.
+Birth: the event of entering into life.
 
 Contexts
 :   .`[INDI]`.`[BIRT]`
@@ -768,7 +774,7 @@ Substructures
 
 ### BLES   {#BLES}
 
-A religious event of bestowing divine care or intercession. Sometimes given in connection with a naming ceremony.
+Blessing: a religious event of bestowing divine care or intercession. Sometimes given in connection with a naming ceremony.
 
 Contexts
 :   .`[INDI]`.`[BLES]`
@@ -788,11 +794,11 @@ Substructures
 
 ### BLOB   {#BLOB}
 
-A grouping of data used as input to a multimedia system that processes binary data to represent images, sound, and video.
+Binary object: a grouping of data used as input to a multimedia system that processes binary data to represent images, sound, and video.
 
 {.note} This tag was present in GEDCOM 5.5 but was **removed** from GEDCOM 5.5.1.  It is RECOMMENDED that `BLOB` not be used in new data streams.  See `[OBJE]` for more.
 
-When multiple blobs are present in the same structure, their contents are concatenated in order.
+When multiple blobs are present in the same structure, their payloads are concatenated in order.
 
 Contexts:
 :   .`[OBJE]`.`[BLOB]`
@@ -809,7 +815,7 @@ Payload
     First, it uses byte 0xFF as padding instead of the more common U+003D (EQUALS SIGN `=`)
     (how to represent the padding when byte 0xFF is not a legal character in the encoding is not defined by this specification).
 
-    Second, it maps bytes to code points as follows:
+    Second, it maps six-bit values to code points as follows:
 
     | Byte range | Code point mapping |
     |------------|--------------------|
@@ -824,9 +830,9 @@ Substructures
 
 ### BURI   {#BURI}
 
-The event of the proper disposing of the mortal remains of a deceased person.
+Burial: the event of the proper disposing of the mortal remains of a deceased person.
 
-{.ednote} GEDCOM calls burial "proper disposing" sans discussion of method, but cremation "disposal […] by fire" sans proper?  Why?
+{.ednote} GEDCOM calls burial "proper disposing" sans discussion of method, but cremation "disposal […] by fire" sans proper. I've avoided altering the descriptive text, but this seems potentially worth changing.
 
 See also `[CREM]`
 
@@ -848,7 +854,7 @@ Substructures
 
 ### CALN   {#CALN}
 
-The number used by a repository to identify the specific items in its collections.
+Call number: the number used by a repository to identify the specific items in its collections.
 
 Contexts
 :   .`[SOUR]`.`[REPO]`.`[CALN]`
@@ -867,9 +873,7 @@ Substructures
 
 ### CAST   {#CAST}
 
-The name of an individual's rank or status in society, based
-on racial or religious differences, or differences in wealth, inherited
-rank, profession, occupation, etc.
+Caste: the name of an individual's rank or status in society, based on racial or religious differences, or differences in wealth, inherited rank, profession, occupation, etc.
 
 Contexts
 :   .`[INDI]`.`[CAST]`
@@ -889,7 +893,7 @@ Substructures
 
 ### CAUS   {#CAUS}
 
-A description of the cause of the associated event or fact, such as the cause of death.
+Cause: a description of the cause of the associated event or fact, such as the cause of death.
 
 Contexts
 :   ([Event]).`[CAUS]`
@@ -903,7 +907,7 @@ Substructures
 
 ### CENS  {#CENS}
 
-The event of the periodic count of the population for a designated locality, such as a national or state Census.
+Census: the event of the periodic count of the population for a designated locality, such as a national or state Census.
 
 Contexts
 :   .`[INDI]`.`[CENS]`
@@ -926,7 +930,7 @@ Substructures
 
 ### CHAN   {#CHAN}
 
-Indicates a change, correction, or modification. Typically used in connection with a `[DATE]` to specify when a change in information occurred.
+Change: indicates a change, correction, or modification. Typically used in connection with a `[DATE]` to specify when a change in information occurred.
 
 Contexts
 :   (`[Record]`).`[CHAN]`
@@ -944,7 +948,7 @@ Substructures
 
 ### CHAR   {#CHAR}
 
-An indicator of the character set used in writing this automated information.
+Character: an indicator of the character set used in writing this automated information.
 
 {.ednote} To do: I have not yet checked to see if this changed in 5.5.1
 
@@ -952,7 +956,7 @@ Contexts
 :   .`[HEAD]`.`[CHAN]`
 
 Description
-:   A code value that represents the character set to be used to interpret this data. The default character set is ANSEL, which includes ASCII as a subset. UNICODE is not widely supported by most operating systems; therefore, GEDCOM produced using the UNICODE character set will be limited in acceptance for some time. See Chapter 3. ASCII contains the character set from 0x0 to 0x7F.
+:   A code value that represents the character set to be used to interpret this data.
 
 Payload
 :   one of `ANSEL`, `UNICODE`, or `ASCII`
@@ -960,10 +964,11 @@ Payload
 Substructures
 :   `[VERS]`?
 
+{.ednote} ANSEL is documented as part of the GEDCOM standard; do we need to replicate that documentation as part of ELF?
 
 ### CHIL   {#CHIL}
 
-The natural, adopted, or sealed (LDS) child of a father and a mother.
+Child: the natural, adopted, or otherwise recognized child of a father and a mother.
 
 Contexts
 :   .`[FAM]`.`[CHIL]`
@@ -980,7 +985,7 @@ Substructures
 
 ### CHR   {#CHR}
 
-The religious event (not LDS) of baptizing and/or naming a child.
+Christening: the religious event of baptizing and/or naming a child.
 
 Contexts
 :   .`[INDI]`.`[CHR]`
@@ -1000,7 +1005,7 @@ Substructures
 
 ### CHRA   {#CHRA}
 
-The religious event (not LDS) of baptizing and/or naming an adult person.
+Adult christening: the religious event of baptizing and/or naming an adult person.
 
 Contexts
 :   .`[INDI]`.`[CHRA]`
@@ -1037,7 +1042,7 @@ Substructures
 
 ### CONF   {#CONF}
 
-The religious event (not LDS) of conferring the gift of the Holy Ghost and, among protestants, full church membership.
+Confirmation: the religious event of conferring the gift of the Holy Ghost and, among protestants, full church membership.
 
 {.ednote} Is this the right definition of a confirmation?
 
@@ -1060,7 +1065,7 @@ Substructures
 
 ### COPR   {#COPR}
 
-A statement that accompanies data to protect it from unlawful duplication and distribution.
+Copyright: a statement that accompanies data to protect it from unlawful duplication and distribution.
 
 Contexts
 :   .`[HEAD]`.`[COPR]`
@@ -1092,7 +1097,7 @@ Substructures
 
 ### CORP   {#CORP}
 
-A name of an institution, agency, corporation, or company.
+Corporate: a name of an institution, agency, corporation, or company.
 
 Contexts
 :   `.HEAD.SOUR.CORP`
@@ -1110,7 +1115,7 @@ Substructures
 
 ### CREM   {#CREM}
 
-Disposal of the remains of a person's body by fire.
+Cremation: disposal of the remains of a person's body by fire.
 
 See also `[BURI]`
 
@@ -1132,7 +1137,7 @@ Substructures
 
 ### CTRY   {#CTRY}
 
-The name or code of the country.
+Country: the name or code of the country.
 
 Contexts
 :   `ADDR.CTRY`
@@ -1208,10 +1213,10 @@ Dates are represented using a somewhat involved syntax, which shares a common su
 ##### Date {#date-format}
 
 At the core of the date syntax is a calendared date.
-This consists of an optional *calender escape*, which is a substring beginning `@#D` and ending `@`, between which is a calender identifier.
-Known calender identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
-If not calender escape is given, `GREGORIAN` is assumed.
-After the optional escape is the content of the date, which takes a format dependent on the calender.
+This consists of an optional *calender escape* followed by the content of the date.
+
+The *calender escape* is a substring beginning `@#D` and ending `@`, between which is a calender identifier; known calender identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
+If no calender escape is given, `GREGORIAN` is assumed.
 
 {.note} Some `[DATE]` payloads may have multiple Date values; it is not known if current implementations can handle situations where the dates are from different calenders, nor if they assume an uncalendered date paired with a calendered date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calender be used for both Dates in such payloads.
 
@@ -1383,8 +1388,7 @@ Substructures
 
 ### DEAT   {#DEAT}
 
-The event when mortal life terminates.
-
+Death: the event when mortal life terminates.
 
 Contexts
 :   .`[INDI]`.`[DEAT]`
@@ -1404,7 +1408,7 @@ Substructures
 
 ### DESC   {#DESC}
 
-Pertaining to offspring of an individual.
+Descendants: pertaining to offspring of an individual.
 
 See also `[ANCE]`
 
@@ -1425,7 +1429,7 @@ Substructures
 
 ### DESI   {#DESI}
 
-Indicates an interest in research to identify additional descendants of this individual.
+Descendant interest: indicates an interest in research to identify additional descendants of this individual.
 
 See also `[ANCI]`
 
@@ -1441,7 +1445,7 @@ Substructures
 
 ### DEST   {#DEST}
 
-A system receiving data.
+Destination: a system receiving data.
 
 Contexts
 :   .`[HEAD]`.`[DEST]`
@@ -1459,7 +1463,7 @@ Substructures
 
 ### DIV   {#DIV}
 
-An event of dissolving a marriage through civil action.
+Divorce: an event of dissolving a marriage through civil action.
 
 Contexts
 :   .`[FAM]`.`[DIV]`
@@ -1479,7 +1483,7 @@ Substructures
 
 ### DIVF   {#DIVF}
 
-An event of filing for a divorce by a spouse.
+Divorce filed: an event of filing for a divorce by a spouse.
 
 Contexts
 :   .`[FAM]`.`[DIVF]`
@@ -1499,7 +1503,7 @@ Substructures
 
 ### DSCR   {#DSCR}
 
-The physical characteristics of a person, place, or thing.
+Physical description: the physical characteristics of a person, place, or thing.
 
 Contexts
 :   .`[INDI]`.`[DSCR]`
@@ -1519,7 +1523,7 @@ Substructures
 
 ### EDUC   {#EDUC}
 
-Indicator of a level of education attained.
+Education: indicator of a level of education attained.
 
 Contexts
 :   .`[INDI]`.`[EDUC]`
@@ -1558,7 +1562,7 @@ Substructures
 
 ### EMIG   {#EMIG}
 
-An event of leaving one's homeland with the intent of residing elsewhere.
+Emigration: an event of leaving one's homeland with the intent of residing elsewhere.
 
 Contexts
 :   .`[INDI]`.`[EMIG]`
@@ -1578,7 +1582,7 @@ Substructures
 
 ### ENGA   {#ENGA}
 
-An event of recording or announcing an agreement between two people to become married.
+Engagement: An event of recording or announcing an agreement between two people to become married.
 
 Contexts
 :   .`[FAM]`.`[ENGA]`
@@ -1598,7 +1602,7 @@ Substructures
 
 ### EVEN   {#EVEN}
 
-A noteworthy happening related to an individual, a group, or an organization.
+Event: a noteworthy happening related to an individual, a group, or an organization.
 
 Contexts
 :   .`[INDI]`.`[EVEN]`
@@ -1677,13 +1681,13 @@ Substructures
 
 ### FAM   {#FAM}
 
-Identifies a legal, common law, or other customary relationship of man and woman and their children, if any, or a family created by virtue of the birth of a child to its biological father and mother.
+Family: identifies a legal, common law, or other customary relationship of man and woman and their children, if any, or a family created by virtue of the birth of a child to its biological father and mother.
 
 Contexts
 :   `.FAM`
 
 Description
-:   The `FAM` record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one `HUSB`/father and one `WIFE`/mother listed in each `FAM`. If, for example, a man participated in more than one family union, then he would appear in more than one `FAM`. The family record structure assumes that the `HUSB`/father is male and `WIFE`/mother is female.
+:   The `FAM` record is used to record marriages, common law marriages, and family unions caused by two people becoming the parents of a child. There can be no more than one `HUSB`/father and one `WIFE`/mother listed in each `FAM`. If, for example, a man participated in more than one family union, then he would appear in more than one `FAM`. The `FAM` assumes that the `HUSB`/father is male and `WIFE`/mother is female.
 
 Payload
 :   None
@@ -1710,7 +1714,7 @@ Substructures
 
 ### FAMC   {#FAMC}
 
-Identifies the family in which an individual appears as a child.
+Family child: identifies the family in which an individual appears as a child.
 
 Contexts
 :   `[BIRT]`.`[FAMC]`
@@ -1741,7 +1745,7 @@ Substructures
 
 ### FAMS   {#FAMS}
 
-Identifies the family in which an individual appears as a spouse.
+Family spouse: identifies the family in which an individual appears as a spouse.
 
 Contexts
 :   .`[INDI]`.`[FAMS]`  
@@ -1774,7 +1778,7 @@ Substructures
 
 ### FCOM   {#FCOM}
 
-A religious rite, the first act of sharing in the Lord's supper as part of church worship.
+First communion: a religious rite, the first act of sharing in the Lord's supper as part of church worship.
 
 Contexts
 :   .`[INDI]`.`[FCOM]`
@@ -1834,7 +1838,7 @@ Substructures
 
 ### FONE   {#FONE}
 
-A phonetic variation of a superior text string.
+Phonetic: a phonetic variation of a superior text string.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
@@ -1874,7 +1878,7 @@ Substructures
 
 ### FORM   {#FORM}
 
-An assigned name given to a consistent format in which information can be conveyed.
+Format: an assigned name given to a consistent format in which information can be conveyed.
 
 
 Contexts
@@ -1929,7 +1933,10 @@ Description
 :   Indicates the format of the multimedia data with this tag.
 
 Payload
-:   one of {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`}
+:   A string.
+    It is RECOMMENDED that implementations support payloads of at least 4 characters.
+    
+    The following are known values for the payload: {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`}
 
 Substructures
 :   None
@@ -1939,7 +1946,7 @@ Substructures
 
 ### GEDC   {#GEDC}
 
-Information about the use of GEDCOM in a transmission.
+GEDCOM: Information about the use of GEDCOM in a transmission.
 
 Contexts
 :   .`[HEAD]`.`[GEDC]`  
@@ -1954,7 +1961,7 @@ Substructures
 
 ### GIVN   {#GIVN}
 
-A given or earned name used for official identification of a person.
+Given name: a given or earned name used for official identification of a person.
 
 Contexts
 :   .`[INDI]`.`[NAME]`.`[GIVN]`   
@@ -1973,7 +1980,7 @@ Substructures
 
 ### GRAD   {#GRAD}
 
-An event of awarding educational diplomas or degrees to individuals.
+Graduation: an event of awarding educational diplomas or degrees to individuals.
 
 Contexts
 :   .`[INDI]`.`[GRAD]`
@@ -1993,7 +2000,7 @@ Substructures
 
 ### HEAD   {#HEAD}
 
-Identifies information pertaining to an entire GEDCOM transmission.
+Header: identifies information pertaining to an entire GEDCOM transmission.
 
 Contexts
 :   .`[HEAD]`
@@ -2021,7 +2028,7 @@ Substructures
 
 ### HUSB   {#HUSB}
 
-An individual in the family role of a married man or father.
+Husband: an individual in the family role of a married man or father.
 
 Contexts
 :   .`[FAM]`.(`[FamilyEvent]`).`[HUSB]`
@@ -2046,7 +2053,7 @@ Substructures
 
 ### IDNO   {#IDNO}
 
-A number assigned to identify a person within some significant external system.
+Identification number: a number assigned to identify a person within some external system.
 
 {.note} Although called a "number", the payload of an `[IDNO]` is *not* restricted to numeric values.
 
@@ -2071,7 +2078,7 @@ Substructures
 
 ### IMMI   {#IMMI}
 
-An event of entering into a new locality with the intent of residing there.
+Immigration: an event of entering into a new locality with the intent of residing there.
 
 Contexts
 :   .`[INDI]`.`[IMMI]`
@@ -2091,7 +2098,7 @@ Substructures
 
 ### INDI   {#INDI}
 
-A person.
+Individual: a person.
 
 Contexts
 :   `.INDI`
@@ -2129,7 +2136,7 @@ Substructures
 
 ### LANG   {#LANG}
 
-The name of the language used in a communication or transmission of information.
+Language: the name of the language used in a communication or transmission of information.
 
 Contexts
 :   .`[HEAD]`.`[LANG]`
@@ -2156,7 +2163,7 @@ Substructures
 
 ### LEGA   {#LEGA}
 
-A role of an individual acting as a person receiving a bequest or legal devise.
+Legatee: a role of an individual acting as a person receiving a bequest or legal devise.
 
 In the GEDCOM standard, this tag is documented as existing but does not appear in any known context.
 
@@ -2166,7 +2173,7 @@ In the GEDCOM standard, this tag is documented as existing but does not appear i
 
 ### LATI   {#LATI}
 
-A value indicating a coordinate position on a line, plane, or space.
+Latitude: a value indicating a coordinate position on a line, plane, or space.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
@@ -2197,7 +2204,7 @@ Substructures
 
 ### LONG   {#LONG}
 
-A value indicating a coordinate position on a line, plane, or space.
+Longitude: a value indicating a coordinate position on a line, plane, or space.
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
@@ -2245,7 +2252,7 @@ Substructures
 
 ### MARB   {#MARB}
 
-An event of an official public notice given that two people intend to marry.
+Marriage bann: an event of an official public notice given that two people intend to marry.
 
 Contexts
 :   .`[FAM]`.`[MARB]`
@@ -2265,7 +2272,7 @@ Substructures
 
 ### MARC   {#MARC}
 
-An event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
+Marriage contract: an event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
 
 Contexts
 :   .`[FAM]`.`[MARC]`
@@ -2285,7 +2292,7 @@ Substructures
 
 ### MARL   {#MARL}
 
-An event of obtaining a legal license to marry.
+Marriage License: an event of obtaining a legal license to marry.
 
 Contexts
 :   .`[FAM]`.`[MARL]`
@@ -2305,7 +2312,7 @@ Substructures
 
 ### MARR   {#MARR}
 
-A legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
+Marriage: a legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
 
 Contexts
 :   .`[FAM]`.`[MARR]`
@@ -2325,7 +2332,7 @@ Substructures
 
 ### MARS   {#MARS}
 
-An event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
+Marriage settlement: an event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
 
 Contexts
 :   .`[FAM]`.`[MARS]`
@@ -2347,7 +2354,7 @@ Substructures
 
 ### MEDI   {#MEDI}
 
-Identifies information about the media or having to do with the medium in which information is stored.
+Media: identifies information about the media or having to do with the medium in which information is stored.
 
 Contexts
 :   .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`
@@ -2445,7 +2452,7 @@ Substructures
 
 ### NATI   {#NATI}
 
-The national heritage of an individual.
+Nationality: the national heritage of an individual.
 
 Contexts
 :   .`[INDI]`.`[NATI]`
@@ -2465,7 +2472,7 @@ Substructures
 
 ### NATU   {#NATU}
 
-The event of obtaining citizenship.
+Naturalization: the event of obtaining citizenship.
 
 Contexts
 :   .`[INDI]`.`[NATU]`
@@ -2485,7 +2492,7 @@ Substructures
 
 ### NCHI   {#NCHI}
 
-The number of children that this person is known to be the parent of (all marriages) when specified for an `[INDI]`, or that belong to this family when specified for an `[FAM]`.
+Children count: the number of children that this person is known to be the parent of (all marriages) when specified for an `[INDI]`, or that belong to this family when specified for an `[FAM]`.
 
 
 Contexts
@@ -2524,7 +2531,7 @@ Substructures
 
 ### NICK   {#NICK}
 
-A descriptive or familiar that is used instead of, or in addition to, one's proper name.
+Nickname: a descriptive or familiar that is used instead of, or in addition to, one's proper name.
 
 Contexts
 :   .`[INDI]`.`[NAME]`.`[NICK]`
@@ -2543,7 +2550,7 @@ Substructures
 
 ### NMR   {#NMR}
 
-The number of times this person has participated in a family as a spouse or parent.
+Marriage count: the number of times this person has participated in a family as a spouse or parent.
 
 Contexts
 :   .`[INDI]`.`[NMR]`
@@ -2623,7 +2630,7 @@ Substructures
 
 ### NPFX   {#NPFX}
 
-Text which appears on a name line before the given and surname parts of a name.
+Name prefix: text which appears on a name line before the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
 In this example `Lt. Cmndr.` is considered as the name prefix portion.
 
@@ -2642,7 +2649,7 @@ Substructures
 
 ### NSFX   {#NSFX}
 
-Text which appears on a name line after or behind the given and surname parts of a name.
+Name suffix: text which appears on a name line after or behind the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
 In this example `jr.` is considered as the name suffix portion.
 
@@ -2661,7 +2668,7 @@ Substructures
 
 ### OBJE   {#OBJE}
 
-Pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
+Object: pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
 
 The meaning and use of OBJE changed significantly between GEDCOM 5.5 and GEDCOM 5.5.1; it is RECOMMEND that implementations be able to handle parsing both.
 
@@ -2729,8 +2736,7 @@ Substructures
 
 ### OCCU   {#OCCU}
 
-
-The type of work or profession of an individual.
+Occupation: the type of work or profession of an individual.
 
 Contexts
 :   .`[INDI]`.`[OCCU]`
@@ -2750,7 +2756,7 @@ Substructures
 
 ### ORDN   {#ORDN}
 
-A religious event of receiving authority to act in religious matters.
+Ordinance: a religious event of receiving authority to act in religious matters.
 
 Contexts
 :   .`[INDI]`.`[ORDN]`
@@ -2787,7 +2793,7 @@ Substructures
 
 ### PEDI   {#PEDI}
 
-Information pertaining to an individual to parent lineage chart.
+Pedigree: information pertaining to an individual to parent lineage chart.
 
 Contexts
 :   .`[INDI]`.`[FAMC]`.`[PEDI]`
@@ -2813,7 +2819,7 @@ Substructures
 
 ### PHON   {#PHON}
 
-A unique number assigned to access a specific telephone.
+Phone: a unique number assigned to access a specific telephone.
 
 Contexts
 :   .`[HEAD]`.`[SOUR]`.`[CORP]`.`[PHON]`
@@ -2830,7 +2836,7 @@ Substructures
 
 ### PLAC   {#PLAC}
 
-A jurisdictional name to identify the place or location of an event.
+Place: a jurisdictional name to identify the place or location of an event.
 
 Places are often represented by a **place hierarchy**.
 This is a comma-separated list of place names, each subsumed by the place to its right.
@@ -2880,7 +2886,7 @@ Substructures
 
 ### POST   {#POST}
 
-A code used by a postal service to identify an area to facilitate mail handling.
+Postal code: a code used by a postal service to identify an area to facilitate mail handling.
 
 Contexts
 :   `[ADDR]`.`[POST]`
@@ -2897,7 +2903,7 @@ Substructures
 
 ### PROB   {#PROB}
 
-An event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
+Probate: an event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
 
 Contexts
 :   .`[INDI]`.`[PROB]`
@@ -2917,7 +2923,7 @@ Substructures
 
 ### PROP   {#PROP}
 
-Pertaining to possessions such as real estate or other property of interest.
+Property: pertaining to possessions such as real estate or other property of interest.
 
 Contexts
 :   .`[INDI]`.`[ORDN]`
@@ -2937,7 +2943,7 @@ Substructures
 
 ### PUBL   {#PUBL}
 
-Refers to when and/or were a work was published or created.
+Publication: refers to when and/or were a work was published or created.
 
 Contexts
 :   .`[SOUR]`.`[PUBL]`
@@ -2960,7 +2966,7 @@ Substructures
 
 ### QUAY   {#QUAY}
 
-An assessment of the certainty of the evidence to support the conclusion drawn from evidence.
+Quality of data: an assessment of the certainty of the evidence to support the conclusion drawn from evidence.
 
 Contexts
 :   `[SOUR]`.`[QUAY]`
@@ -2990,7 +2996,7 @@ Substructures
 
 ### REFN   {#REFN}
 
-A description or number used to identify an item for filing, storage, or other reference purposes.
+Reference: a description or number used to identify an item for filing, storage, or other reference purposes.
 
 Contexts
 :   .`[FAM]`.`[REFN]`
@@ -3012,7 +3018,7 @@ Substructures
 
 ### RELA   {#RELA}
 
-A relationship value between the indicated contexts.
+Relationship: a relationship value between the indicated contexts.
 
 Contexts
 :   `[ASSO]`.`[RELA]`
@@ -3039,7 +3045,7 @@ You would read the following as "Joe Jacob's great grandson is the person descri
 
 ### RELI   {#RELI}
 
-A religious denomination to which a person is affiliated or for which a record applies.
+Religion: a religious denomination to which a person is affiliated or for which a record applies.
 
 Contexts
 :   .`[INDI]`.`[RELI]`
@@ -3075,7 +3081,7 @@ Substructures
 
 ### REPO   {#REPO}
 
-An institution or person that has the specified item as part of their collection(s).
+Repository: an institution or person that has the specified item as part of their collection(s).
 
 Contexts
 :   .`[REPO]`
@@ -3106,10 +3112,12 @@ Substructures
 :   `[NOTE]`\*
 :   `[CALN]`\*
 
+{.note} Due to an example in the GEDCOM specification that is inconsistent with the grammar, it is RECOMMENDED that implementations parse a .`[SOUR]`.`[REPO]`.`[MEDI]` (i.e., coordinate with instead of subordinate to `CALN`) as if they were .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`.
+
 
 ### RESI   {#RESI}
 
-The act of dwelling at an address for a period of time.
+Residence: the act of dwelling at an address for a period of time.
 
 Contexts
 :   .`[INDI]`.`[RESI]`
@@ -3128,7 +3136,7 @@ Substructures
 
 ### RESN   {#RESN}
 
-A processing indicator signifying access to information has been denied or otherwise restricted.
+Restriction: a processing indicator signifying access to information has been denied or otherwise restricted.
 
 Contexts
 :   .`[INDI]`.`[RESN]`
@@ -3158,7 +3166,7 @@ Substructures
 
 ### RETI   {#RETI}
 
-An event of exiting an occupational relationship with an employer after a qualifying time period.
+Retirement: an event of exiting an occupational relationship with an employer after a qualifying time period.
 
 Contexts
 :   `.INDI.RETI`
@@ -3178,7 +3186,7 @@ Substructures
 
 ### RFN   {#RFN}
 
-A permanent number assigned to a record that uniquely identifies it within a known file.
+Record file number: a permanent number assigned to a record that uniquely identifies it within a known file.
 
 Contexts
 :   .`[INDI]`.`[RFN]`
@@ -3205,7 +3213,7 @@ Substructures
 
 ### RIN   {#RIN}
 
-A number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
+Record identification number: a number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
 Contexts
 :   .(`[Record]`).`[RIN]` -- but *not* .`[HEAD]`.`[RIN]` or .`[TRLR]`.`[RIN]`.
@@ -3241,7 +3249,7 @@ Substructures
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
-A romanized variation of a superior text string.
+Roman: a romanized variation of a superior text string.
 
 The method used to romanize the name is indicated by the subordinate `TYPE`; for example if romaji was used to provide a reading of a name written in kanji, then the `TYPE` subordinate to the `ROMN` tag would indicate `romaji`.
 
@@ -3296,7 +3304,7 @@ Substructures
 
 ### SOUR   {#SOUR}
 
-The initial or original material from which information was obtained.
+Source: the initial or original material from which information was obtained.
 
 Contexts
 :   .`[HEAD]`.`[SOUR]`
@@ -3379,7 +3387,7 @@ Substructures
 
 ### SPFX   {#SPFX}
 
-A name piece used as a non-indexing pre-part of a surname.
+Surname prefix: a name piece used as a non-indexing pre-part of a surname.
 
 Contexts
 :   .`[INDI]`.`[NAME]`.`[SPFX]`
@@ -3398,7 +3406,7 @@ Substructures
 
 ### SSN   {#SSN}
 
-A number assigned by the United States Social Security Administration. Used for tax identification purposes.
+Social security number: a number assigned by the United States Social Security Administration. Used for tax identification purposes.
 
 See also `[IDNO]`
 
@@ -3420,7 +3428,7 @@ Substructures
 
 ### STAE   {#STAE}
 
-A geographical division of a larger jurisdictional area, such as a State within the United States of America.
+State: a geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
 Contexts
 :   `[ADDR]`.`[STAE]`
@@ -3437,7 +3445,7 @@ Substructures
 
 ### STAT   {#STAT}
 
-An assessment of the state or condition of something.
+Status: an assessment of the state or condition of something.
 
 {.note} Most uses of this tag in GEDCOM are LDS-specific and excluded from this specification.  The one documented here was introduced in GEDCOM 5.5.1.
 
@@ -3465,7 +3473,7 @@ Substructures
 
 ### SUBM   {#SUBM}
 
-An individual or organization who contributes genealogical data to a file or transfers it to someone else.
+Submitter: an individual or organization who contributes genealogical data to a file or transfers it to someone else.
 
 Contexts
 :   .`[SUBM]`
@@ -3502,7 +3510,7 @@ Substructures
 
 ### SUBN   {#SUBN}
 
-Pertains to a collection of data issued for processing.
+Submission: pertains to a collection of data issued for processing.
 
 Contexts
 :   .`[SUBN]`
@@ -3533,7 +3541,7 @@ Substructures
 
 ### SURN   {#SURN}
 
-A family name passed on or used by members of a family.
+Surname: a family name passed on or used by members of a family.
 
 Contexts
 :   .`[INDI]`.`[NAME]`.`[SURN]`
@@ -3590,7 +3598,7 @@ Substructures
 
 ### TITL   {#TITL}
 
-A description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
+Title: a description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
 
 Contexts
 :   .`[INDI]`.`[TITL]`
@@ -3640,7 +3648,7 @@ Substructures
 
 ### TRLR   {#TRLR}
 
-Specifies the end of a GEDCOM transmission.
+Trailer: specifies the end of a GEDCOM transmission.
 
 When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
 
@@ -3715,7 +3723,7 @@ Payload
 
 ### VERS   {#VERS}
 
-Indicates which version of a product, item, or publication is being used or referenced.
+Version: indicates which version of a product, item, or publication is being used or referenced.
 
 Contexts
 :   .`[HEAD]`.`[SOUR]`.`[VERS]`
