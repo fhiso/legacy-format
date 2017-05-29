@@ -58,9 +58,8 @@ Tag
     The tag MUST match the regular expression `[A-Za-z0-9_]+`.
     
     Every structure has a tag.
-    It is RECOMMENDED that tags either be taken from tags listed in [Concrete Types](#ConcreteTypes) or contain at least one underscore (U+005F, `_`).
-
-{.ednote} It is expected that the meaning of a tag that contains but does not begin with an underscore will be specified in a future FHISO extension to this specification.
+    It is RECOMMENDED that tags either be taken from tags listed in [Concrete Types](#ConcreteTypes)
+    or follow the naming guidelines explained under [Extension Types](#Extensions).
 
 {.note} A structure's tag is not always sufficient to fully define its type; the same tag may have different meanings in different [contexts](#Context).
 
@@ -79,7 +78,7 @@ Payload
     
     Each pointer payload MUST point to a `[TopLevel]` within the dataset.
 
-{.ednote} GEDCOM had provisions for pointers to `[InnerStructure]`s as well as `[TopLevel]`s, but we are unaware of any system that produced GEDCOM files making use of that provision.
+{.ednote} GEDCOM had provisions for pointers to `[InnerStructure]`s as well as `[TopLevel]`s, bot documented no use case for them. We omit them because we are unaware of systems that implemented those provisions.
 
 Substructures
 :   Structures may contain zero or more `[InnerStructure]`s, which are called the structure's **substructures**.
@@ -116,6 +115,8 @@ The following notation is used to define structure contexts:
 
 ### Cardinality
 
+{.ednote} While GEDCOM had the semantics described here, our notation and terminology are original to this specification.
+
 The **cardinality** of a substructure specifies with what plurality it appears within its containing structure.
 The cardinality of required and recommended substructures of each structure are denoted by the following suffixes:
 
@@ -142,6 +143,8 @@ The order of list-valued substructures sharing the same tag is significant; unle
 
 
 ## Abstract Types   {#Hierarchy}
+
+{.ednote} While GEDCOM had an implicit type hierarchy, it did not make it explicit. Hence, the terminology used to describe the type hierarchy is original to this specification.
 
 A type hierarchy is known to exist; the known types with subtypes are
 
@@ -337,8 +340,6 @@ These are not generally thought of as events.
 However, they are often described like events because they were observed at a particular time and/or place.
 
 
-{.note} Prior to GEDCOM 5.5.1, there was no `[FACT]` attribute and `[EVEN]` was sometimes used in its place.
-
 Supertype
 :   `[Event]`
 
@@ -357,6 +358,8 @@ Known Subtypes
 :   `[SSN]`
 :   `[TITL]`
 :   `[FACT]`
+
+{.note} Prior to GEDCOM 5.5.1, there was no `[FACT]` attribute and `[EVEN]` was sometimes used in its place.
 
 Contexts
 :   .`[INDI]`.(`[IndividualAttribute]`)
@@ -380,14 +383,13 @@ Substructures
 The following is a list of known structure types, organized by tag name.
 Note that a single tag name may be used by several types in different contexts.
 
-{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints and contains several types specific to that church, such as 
+{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints and contains several types specific to that church, including
 
--   BAPL (a `[BAPM]` performed by the Church of Jesus Christ of Latter-Day Saints, possibly posthumously by proxy)
--   AFN (like a `[RFN]` specific to one particular database owned by the Church of Jesus Christ of Latter-Day Saints)
--   a set of structures to define various aspects of LDS temple rites
--   etc.
+-   AFN and FAMF, which are specific to former FamilySearch products
+-   BAPL and CONL, which are LDS-specific versions of `[BAPM]` and `[CONF]`
+-   ENDL, SLGC, SLGS, TEMP, and ORDI, which are specific to LDS temples
 
-The LDS-specific types have been omitted from this specification
+These LDS-specific types have been omitted from this specification
 and are thus defined by this specification to be [Extension Types](#Extensions).
 {/}
 
@@ -833,7 +835,17 @@ Substructures
 
 Burial: the event of the proper disposing of the mortal remains of a deceased person.
 
-{.ednote} GEDCOM calls burial "proper disposing" sans discussion of method, but cremation "disposal […] by fire" sans proper. I've avoided altering the descriptive text, but this seems potentially worth changing.
+{.ednote ...} The definitions of `[BURI]` and `[CREM]` are confusing in GEDCOM.  The following are all possible meanings:
+
+-   BURI should have been defined as "the event of the disposing of the mortal remains of a deceased person by burial or interment."
+-   BURI should have been defined as "the event of the disposing of the intact mortal remains of a deceased person", thus including "burial at sea" and the like.
+-   GEDCOM is asserting that CREM is an improper method of disposal.
+-   Anything "proper" is BURI, and anything fire-based is CREM; thus
+    -   a proper disposal by fire is both a BURI and a CREM
+    -   being burned at the stake or dying in a house file is CREM but not BURI
+
+I'd like to adjust wording to be less ambiguous, but it may be too late to do so...
+{/}
 
 See also `[CREM]`
 
@@ -3050,7 +3062,7 @@ Contexts
 :   .`[INDI]`.`[RELI]`
 :   (`[Event]`).`[RELI]`
 
-{.ednote} Although the text from the GEDCOM specification suggests `RELI` can be a substructure of `[SOUR]`, the specification does not list it in that context.
+{.ednote} Although descriptive text in the GEDCOM specification suggests `RELI` can be a substructure of `[SOUR]`, the specification does not list it in that context.
 
 #### Context .`[INDI]`.`[RELI]`
 
@@ -3160,7 +3172,7 @@ Payload
 Substructures
 :   None
 
-{.ednote} Although the GEDCOM spec refers repeatedly to "Ancestral File", we included this assuming it might be used for the same purpose by other data providers.
+{.ednote} Although the GEDCOM spec defines `RESN` in terms of the specific product *Ancestral File*, we assume other systems might use `RESN` for same purpose.
 
 
 ### RETI   {#RETI}
