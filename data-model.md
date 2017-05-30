@@ -64,6 +64,12 @@ Tag
 
 {.note} A structure's tag is not always sufficient to fully define its type; the same tag may have different meanings in different [contexts](#Context).
 
+{.ednote ...} Once `[PRFX]` is stable, we probably want to re-work tags into one of the following formats:
+
+-   Every structure has a URI, not a tag; tags are created as part of the serialization format
+-   If a tag name maps to a URI, then the the URI, not the tag name, defines the structure type
+{/}
+
 Identifier
 :   A string uniquely identifying this structure within this ELF dataset.
     If present, the identifier MUST contain only non-control ASCII characters
@@ -2934,17 +2940,21 @@ Payload
     
     Payloads MUST NOT contain more than a single line and MUST be in one of the following three forms:
     
-    1.  An Absolute IRI, as defined in [[RFC 3987](http://tools.ietf.org/html/rfc3987)].
-        Any tag not matched by a `[PRFX]` with one of the other two forms is converted to an IRI by appending the tag name to this IRI.
-    
-    2.  A string matching `[A-Za-z]+_` followed by a single space (U+0020) and an absolute IRI.
+    1.  A string matching `(,[A-Za-z0-9_]+)+` followed by a single space (U+0020) and an absolute IRI.
+        The initial comma is a marker to disambiguate this case from the previous case and has no other meaning.
+        The remainder of the initial token is a comma-separated list of tag names.
+        Any tag name in this list is converted to an IRI by appending the tag name to this IRI.
+
+    1.  A string matching `[A-Za-z]*_` followed by a single space (U+0020) and an absolute IRI.
         The token preceding the IRI is called the *prefix identifier*.
         Any tag beginning with the prefix identifier is converted to an IRI by replacing the prefix identifier with this IRI.
     
-    3.  A string matching `_(,[A-Za-z0-9_]+)+` followed by a single space (U+0020) and an absolute IRI.
-        The initial underscore is a marker to disambiguate this case from the previous case and has no other meaning.
-        The remainder of the initial token is a comma-separated list of tag names.
-        Any tag name in this list is converted to an IRI by appending the tag name to this IRI.
+    1.  An Absolute IRI, as defined in [[RFC 3987](http://tools.ietf.org/html/rfc3987)].
+        Any tag not matched by a `[PRFX]` with one of the other two forms is converted to an IRI by appending the tag name to this IRI.
+    
+    These shall be resolved in the above order: if multiple prefix types apply, the earliest on this list is used.
+
+{.ednote} A case can be made for not having the third payload form, instead having a fixed known prefix in these cases (such as `http://terms.fhiso.org/elf/`) and requiring all exceptions be handled using underscores (form 1) or individual cases (form 2).
 
 Substructures
 :   None
@@ -2952,21 +2962,47 @@ Substructures
 {.example ...}
 If three `[PRFX]` structures exist in a dataset's `[HEAD]` structure with the following payloads:
 
--   http://terms.fhiso.org/elf/
--   EX_ http://example.com/extension-tags.html#
--   _,BAPL,CONL,ENDL,SLGC,SLGS,TEMP,ORDI http://example.com/lds-tags.html#
+-   `http://terms.fhiso.org/elf/`
+-   `EX_ http://example.com/extension-tags.html#`
+-   `_ http://example.com/old-style-extensions.html#_`
+-   `,BAPL,CONL,ENDL,SLGC,SLGS,TEMP,ORDI http://example.com/lds-tags.html#`
+-   `,`
 
 then the following tags would translate to the following IRIs:
 
 Tag         IRI
--------     ------------------------------------------
-HEAD        http://terms.fhiso.org/elf/HEAD
-EX_FOO      http://example.com/extension-tags.html#FOO
-ENDL        http://example.com/lds-tags.html#ENDL
-_UUID       http://terms.fhiso.org/elf/_UUID
-_           http://terms.fhiso.org/elf/_
+--------    --------------------------------------------
+`HEAD`      `http://terms.fhiso.org/elf/HEAD`
+`EX_FOO`    `http://example.com/extension-tags.html#FOO`
+`_UID`      `http://example.com/old-extensions.html#_UID`
+`ENDL`      `http://example.com/lds-tags.html#ENDL`
 {/}
 
+{.ednote ...} <http://tech.fhiso.org/cfps/files/cfps37.pdf> proposed a different version of this tag:
+
+-   CFPS 37 suggested splitting tags names into three types:
+    -   `[A-Za-z0-9]+` which always use a specific FHISO QName prefix
+    -   `_[A-Za-z0-9_]+` which all share a single `PRFX`
+    -   `[A-Za-z0-9]+_[A-Za-z0-9_]+` which have one `PRFX` per pre-`_` portion
+-   This draft proposes instead a more flexible (but arguably more complicated) prefix-matching technique
+
+CFPS 37's example
+
+````gedcom
+1 PRFX http://example.com/gedcom-el/
+1 PRFX GEO http://example.com/geospatial/
+````
+
+with the example standard tag prefix `http://fhiso.org/gedcom-tags/` would be written under this draft as
+
+````gedcom
+1 PRFX http://fhiso.org/gedcom-tags/
+1 PRFX _ http://example.com/gedcom-el/_
+1 PRFX GEO_ http://example.com/geospatial/
+````
+{/}
+
+{.ednote} This draft allows redefinition of the URIs of core tags.  Such redefinition is necessary to document new contexts of existing tags (e.g., a "not `[ALIA]`" .`[INDI]`.`[EX_DISTINCT]`.`[INDI]` requires a new context for `[INDI]`), but it may also open the door for a single `[PRFX]` redefining the meaning of the entire dataset.
 
 ### PROB   {#PROB}
 
@@ -3889,14 +3925,18 @@ Extension types are subject to the following limitations
     between the .`[HEAD]` and the .`[SUBN]` (if there is a .`[SUBN]`), or 
     after the .`[TRLR]`.
 
--   Extensions tag names SHOULD 
-    *either* be an existing tag name but in a different context
-    *or* begin with an underscore (U+005F, `_`).
-    Extension tag names that do not contain an underscore are NOT RECOMMENDED.
-    
-    Extension tag names that contain but do not begin with an underscore are expected to have defined semantics in a future FHISO standard and SHOULD NOT be used except as defined therein.
+-   Extension types SHOULD resolve to a URI using a `[PRFX]`;
+    if interpreted as a URL, this URI should reference a website describing the meaning of the tag.
 
-{.ednote} The future FHISO standard mentioned was proposed in <http://tech.fhiso.org/cfps/files/cfps37.pdf> sections 6 and 7.  It has not yet been discussed or developed beyond that proposal.
+{.ednote} the above bullet is rather vague... clarify what "describing the meaning of the tag" means.
+
+-   Extensions tag names SHOULD fit one of the following
+
+    -   begin with a prefix `[A-Za-z0-9]+_` which is matched by a type-2 `[PRFX]` payload
+    -   begin with an underscore (U+005F, `_`)
+    -   an existing tag name but in a different context
+    
+    The first of these three options is RECOMMENDED.
 
 Implementations encountering an unknown extension tag MAY ignore the structure and its substructures.
 It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
