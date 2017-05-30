@@ -2035,7 +2035,9 @@ Substructures
 :   `[LANG]`?
 :   `[PLAC]`?
 :   `[NOTE]`?
+:   `[PRFX]`*
 
+{.ednote} .`[HEAD]`.`[PRFX]` is a proposed extension, not present in GEDCOM
 
 ### HUSB   {#HUSB}
 
@@ -2912,6 +2914,58 @@ Payload
 
 Substructures
 :   None
+
+
+
+### PRFX   {#PRFX}
+
+{.ednote} It has been proposed that the core tag set of GEDCOM be extended by a single tag `[PRFX]` (hence the name *Extended* Legacy Format), which will be used to translate all other tags into URIs.
+
+Prefix: a string that, when prepended on tag names, results in a valid URI identifier for the described tagged structure's type.
+
+Contexts
+:   .`[HEAD]`.`[PRFX]`
+
+Description
+:   A URI prefix for some or all tags in this dataset.
+
+Payload
+:   A string. It is RECOMMENDED that implementations support payloads of at least 80 characters.
+    
+    Payloads MUST NOT contain more than a single line and MUST be in one of the following three forms:
+    
+    1.  An Absolute IRI, as defined in [[RFC 3987](http://tools.ietf.org/html/rfc3987)].
+        Any tag not matched by a `[PRFX]` with one of the other two forms is converted to an IRI by appending the tag name to this IRI.
+    
+    2.  A string matching `[A-Za-z]+_` followed by a single space (U+0020) and an absolute IRI.
+        The token preceding the IRI is called the *prefix identifier*.
+        Any tag beginning with the prefix identifier is converted to an IRI by replacing the prefix identifier with this IRI.
+    
+    3.  A string matching `_(,[A-Za-z0-9_]+)+` followed by a single space (U+0020) and an absolute IRI.
+        The initial underscore is a marker to disambiguate this case from the previous case and has no other meaning.
+        The remainder of the initial token is a comma-separated list of tag names.
+        Any tag name in this list is converted to an IRI by appending the tag name to this IRI.
+
+Substructures
+:   None
+
+{.example ...}
+If three `[PRFX]` structures exist in a dataset's `[HEAD]` structure with the following payloads:
+
+-   http://terms.fhiso.org/elf/
+-   EX_ http://example.com/extension-tags.html#
+-   _,BAPL,CONL,ENDL,SLGC,SLGS,TEMP,ORDI http://example.com/lds-tags.html#
+
+then the following tags would translate to the following IRIs:
+
+Tag         IRI
+-------     ------------------------------------------
+HEAD        http://terms.fhiso.org/elf/HEAD
+EX_FOO      http://example.com/extension-tags.html#FOO
+ENDL        http://example.com/lds-tags.html#ENDL
+_UUID       http://terms.fhiso.org/elf/_UUID
+_           http://terms.fhiso.org/elf/_
+{/}
 
 
 ### PROB   {#PROB}
@@ -3841,6 +3895,8 @@ Extension types are subject to the following limitations
     Extension tag names that do not contain an underscore are NOT RECOMMENDED.
     
     Extension tag names that contain but do not begin with an underscore are expected to have defined semantics in a future FHISO standard and SHOULD NOT be used except as defined therein.
+
+{.ednote} The future FHISO standard mentioned was proposed in <http://tech.fhiso.org/cfps/files/cfps37.pdf> sections 6 and 7.  It has not yet been discussed or developed beyond that proposal.
 
 Implementations encountering an unknown extension tag MAY ignore the structure and its substructures.
 It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
