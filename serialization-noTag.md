@@ -211,8 +211,9 @@ It is RECOMMENDED that parsers accept files that are not strictly compliant with
 
 #### Substructures
 
-The [line(s)](#line) encoding a structure's *tag*, *identifier*, and *payload* is followed immediately by an encoding of each of its substructures.
+The [line(s)](#Line) encoding a structure's *tag*, *identifier*, and *payload* is followed immediately by an encoding of each of its substructures.
 The order of substructures of different IRIs is arbitrary, but the order of substructures with the same IRI MUST be preserved.
+It is RECOMMENDED that all substructures with the same IRI be placed adjacent to one another.
 
 {.example ...}
 The following are all equivalent:
@@ -227,8 +228,8 @@ The following are all equivalent:
 ````gedcom
 0 @jane@ SUBM
 1 LANG Gujarati
-1 LANG English
 1 NAME Jane Doe
+1 LANG English
 ````
 
 ````gedcom
@@ -238,7 +239,8 @@ The following are all equivalent:
 1 NAME Jane Doe
 ````
 
-But the following is *not* equivalent to any of the above:
+... though the second ordering places a `NAME` between two `LANG`s and is thus not recommended.
+The following is *not* equivalent to any of the above:
 
 ````gedcom
 0 @jane@ SUBM
