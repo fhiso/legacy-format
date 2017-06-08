@@ -44,7 +44,7 @@ The elements of each line (in order) are
 
     If the *xref_id* is present, a single space (U+0020) MUST follow it, delimiting it from the next element.
 
-3.  A **tag**: a string (generally [mapping to a URI](#URIs-and-Tags)) matching the regular expression `[0-9a-zA-Z_]+`
+3.  A **tag**: a string (generally [mapping to a IRI](#IRIs-and-Tags)) matching the regular expression `[0-9a-zA-Z_]+`
 
 4.  Optionally, a **payload line**: a string matching the regular expression `([^@]|@#[^@]*@)*`
 
@@ -61,16 +61,16 @@ However, lines with three tags do not correspond to a structure:
 
 -   `CONT` is used to encode line breaks; see [Multi-line Strings](#CONT)
 -   `CONC` may be used to break long payloads into multiple lines; see [Line Splitting](#CONC)
--   `PRFX` is used to define the tag-name/URI mapping; see [Prefix dictionary encoding](#PRFX)
+-   `PRFX` is used to define the tag-name/IRI mapping; see [Prefix dictionary encoding](#PRFX)
 
-These are the *only* tags that do not map to a URI, being part of the serialization format rather than part of the underlying data model being serialized.
+These are the *only* tags that do not map to a IRI, being part of the serialization format rather than part of the underlying data model being serialized.
 
 
-### URIs and Tags {#URIs-and-Tags}
+### IRIs and Tags {#IRIs-and-Tags}
 
 {.ednote} This entire section documents material that is not part of GEDCOM
 
-All structure-type identifying URIs in a dataset are mapped to tags as part of this serialization format.
+All structure-type identifying IRIs in a dataset are mapped to tags as part of this serialization format.
 This is done by creating a *prefix dictionary*.
 
 #### Prefix Dictionary Format
@@ -83,21 +83,21 @@ Each key must be unique, and each must match at least one of the following cases
 -   a string ending in an underscore (i.e., matching `[0-9a-zA-Z]*_`)
 -   an entire tag name as it appears in the dataset
 
-#### Tag → URI {#tag2uri}
+#### Tag → IRI {#tag2iri}
 
-To convert a tag to a URI, the following checks are performed in order; the first one that matches is used.
+To convert a tag to a IRI, the following checks are performed in order; the first one that matches is used.
 
-1.  If that tag is a key in the prefix dictionary, the value associated with that key is the structure's URI.
+1.  If that tag is a key in the prefix dictionary, the value associated with that key is the structure's IRI.
 
-1.  Otherwise, if the tag contains one or more underscores, let *p* be the substring of the tag up to and including the first underscore and *s* be the substring after the first underscore.  If *p* is a key in the prefix dictionary, the structure's URI is the value associated with *p* concatenated with *s*.
+1.  Otherwise, if the tag contains one or more underscores, let *p* be the substring of the tag up to and including the first underscore and *s* be the substring after the first underscore.  If *p* is a key in the prefix dictionary, the structure's IRI is the value associated with *p* concatenated with *s*.
 
-1.  Otherwise, the structure's URI is `http://terms.fhiso.org/elf/` concatenated with the tag.
+1.  Otherwise, the structure's IRI is `http://terms.fhiso.org/elf/` concatenated with the tag.
 
 {.ednote ...} We could make this more flexible by not having a hard-coded default namespace; we'd allow empty-string keys and replacing the last rule above with 
 
-1.  Otherwise, if there is an empty string key, the structure's URI is the value associated with the empty string concatenated with the tag
+1.  Otherwise, if there is an empty string key, the structure's IRI is the value associated with the empty string concatenated with the tag
 
-1.  Otherwise, the structure's URI is `_:` concatenated with the tag.\
+1.  Otherwise, the structure's IRI is `_:` concatenated with the tag.\
 
 It is this author's opinion that such flexibility is not needed.
 {/}
@@ -110,9 +110,9 @@ Key     Value
 `_`     `http://example.com/old_extensions.html#`
 `_UID`  `http://example.com/UUID`
 
-The following tags represent to the following URIs:
+The following tags represent to the following IRIs:
 
-Tag         URI
+Tag         IRI
 ----------  ------------------------------------------------
 `HEAD`      `http://terms.fhiso.org/elf/HEAD`
 `X_LAT`     `http://example.com/xtensions/LAT`
@@ -122,11 +122,11 @@ Tag         URI
 {/}
 
 
-#### URI → Tag {#uri2tag}
+#### IRI → Tag {#iri2tag}
 
-Every structure type URI MUST be replaced by a tag as part of serialization,
+Every structure type IRI MUST be replaced by a tag as part of serialization,
 and every such replacement MUST be reversible via an entry in the prefix dictionary.
-The simplest technique to accomplish this is to create a key-value pair for every URI with a unique key for each.
+The simplest technique to accomplish this is to create a key-value pair for every IRI with a unique key for each.
 However, it is RECOMMENDED that a more compact prefix dictionary be used;
 in particular, implementations SHOULD
 
@@ -145,7 +145,7 @@ Each is entry encoded on a single [Line] with
 1.  the payload is
     1.  the key
     1.  a space character
-    1.  the value URI
+    1.  the value IRI
 
 It is RECOMMENDED that the entire prefix dictionary be encoded immediately following the `0 HEAD` line before any of the `HEAD` structure's substructures.
 The order of the `PRFX` lines is not important.
@@ -183,7 +183,7 @@ A structure is encoded as a [Line](#Line) (or possibly several [Lines](#Line), a
     
     For example, the *xref_id* of a structure with *identifier* "S23" is `@S23@`.
 
-3.  The *tag* is the a sting which will map to the structures URI using the [prefix dictionary](#tag2uri).  Tags are case-sensitive.
+3.  The *tag* is the a sting which will map to the structures IRI using the [prefix dictionary](#tag2iri).  Tags are case-sensitive.
 
     For example, the *tag* of an `http://terms.fhiso.org/elf/ADDR` structure is `ADDR`.
 
@@ -212,7 +212,7 @@ It is RECOMMENDED that parsers accept files that are not strictly compliant with
 #### Substructures
 
 The [line(s)](#line) encoding a structure's *tag*, *identifier*, and *payload* is followed immediately by an encoding of each of its substructures.
-The order of substructures of different URIs is arbitrary, but the order of substructures with the same URI MUST be preserved.
+The order of substructures of different IRIs is arbitrary, but the order of substructures with the same IRI MUST be preserved.
 
 {.example ...}
 The following are all equivalent:
@@ -248,7 +248,7 @@ But the following is *not* equivalent to any of the above:
 ````
 {/}
 
-{.example ...} It is the URI that determines if order must be preserved; thus, the order of the two notes in the following must be preserved even though one has a pointer as its payload and the other has a string:
+{.example ...} It is the IRI that determines if order must be preserved; thus, the order of the two notes in the following must be preserved even though one has a pointer as its payload and the other has a string:
 
 ````gedcom
 1 NAME Jno. /Banks/
