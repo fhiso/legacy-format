@@ -54,15 +54,15 @@ Each ELF dataset consists of the following structures, in the following order:
 
 Every structures consists of the following components:
 
-Type URI
-:   Every structure has a URI identifying its subtype.
-    It is RECOMMENDED that URIs either be taken from those listed in [Concrete Types](#ConcreteTypes);
+Type IRI
+:   Every structure has a IRI identifying its subtype.
+    It is RECOMMENDED that IRIs either be taken from those listed in [Concrete Types](#ConcreteTypes);
     however, [Extension Types](#Extensions) are also permitted.
     
-    All URIs in this specification begin with the prefix `http://tech.fhiso.org/elf/`.
+    All IRIs in this specification begin with the prefix `http://tech.fhiso.org/elf/`.
     For readability, that prefix is omitted in most cases within this document.
 
-{.note} A structure's URI is not always sufficient to fully define its type; the same URI may have different meanings in different [contexts](#Context).
+{.note} A structure's IRI is not always sufficient to fully define its type; the same IRI may have different meanings in different [contexts](#Context).
 
 Identifier
 :   A string uniquely identifying this structure within this ELF dataset.
@@ -108,10 +108,10 @@ Unless otherwise specified within the description of a particular format, excess
 The **context** of a structure specifies where it appears.
 The following notation is used to define structure contexts:
 
--   `URI` matches any `[Structure]` with that URI, anywhere it appears
--   .`URI` matches any `[TopLevel]` with that URI, but not an `[InnerStructure]`
--   *context specifier*.`URI` matches any `[InnerStructure]` with that URI, provided it is a substructure of a structure specified by the *context specifier*
--   (`URI`) refers to any structure with that URI or any structure inherited from it.
+-   `IRI` matches any `[Structure]` with that IRI, anywhere it appears
+-   .`IRI` matches any `[TopLevel]` with that IRI, but not an `[InnerStructure]`
+-   *context specifier*.`IRI` matches any `[InnerStructure]` with that IRI, provided it is a substructure of a structure specified by the *context specifier*
+-   (`IRI`) refers to any structure with that IRI or any structure inherited from it.
 
 ### Cardinality
 
@@ -133,13 +133,13 @@ but the meaning of extra substructures is not defined by this specification.
 Implementations MAY ignore unexpected substructures; if only part of a list is ignored, the first part of the list SHOULD be preserved.
 Structures MUST NOT omit having substructures annotated with `!` or `+`.
 
-The order of list-valued substructures sharing the same URI is significant; unless otherwise specified, the order is interpreted as the submitter's preference, with the most preferred value first and subsequent elements listed in decreasing order of preference. The exact meaning of "preference" is not defined by this specification.
+The order of list-valued substructures sharing the same IRI is significant; unless otherwise specified, the order is interpreted as the submitter's preference, with the most preferred value first and subsequent elements listed in decreasing order of preference. The exact meaning of "preference" is not defined by this specification.
 
 {.example} A researcher unsure when a person was born could include two `[BIRT]` substructures within the `[INDI]`, with the one the researcher deems more probably true first.
 
 {.example} A researcher documenting an individual with several names could include the *researcher-preferred* name first; or could include the name the individual preferred at some point first; etc.
 
-{.example} Although an `[INDI]` is listed as having substructure "(`[IndividualEvent]`)\*", the order of the substructure `[ADOP]` and `[CENS]` (both subtypes of `[IndividualEvent]`) are *not* significant because they differ in URI.
+{.example} Although an `[INDI]` is listed as having substructure "(`[IndividualEvent]`)\*", the order of the substructure `[ADOP]` and `[CENS]` (both subtypes of `[IndividualEvent]`) are *not* significant because they differ in IRI.
 
 
 ## Abstract Types   {#Hierarchy}
@@ -162,7 +162,7 @@ These types serve only as abstract supertypes for other data types.
 ### `http://terms.fhiso.org/elf/TopLevel`  {#TopLevel}
 
 The `http://terms.fhiso.org/elf/TopLevel` type serves as an abstract supertype for those types that may exist at the top level of a data set.
-No structures with URI `http://terms.fhiso.org/elf/TopLevel` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/TopLevel` should appear in an ELF dataset.
 
 Known subtypes
 :   `[HEAD]`
@@ -177,7 +177,7 @@ Contexts
 ### `http://terms.fhiso.org/elf/Record`  {#Record}
 
 The `http://terms.fhiso.org/elf/Record` type serves as an abstract supertype for those [TopLevel] types that describe the principle contents of the data set (as opposed to other [TopLevel] subtypes, which are metadata).
-No structures with URI `http://terms.fhiso.org/elf/TopLevel` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/TopLevel` should appear in an ELF dataset.
 
 
 Known subtypes
@@ -199,7 +199,7 @@ Supertype
 ### `http://terms.fhiso.org/elf/InnerStructure`  {#InnerStructure}
 
 The `http://terms.fhiso.org/elf/InnerStructure` type serves as an abstract supertype for all non-`[TopLevel]` structures.
-No structures with URI `http://terms.fhiso.org/elf/InnerStructure` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/InnerStructure` should appear in an ELF dataset.
 
 Contexts
 :   anything *except* .(`[InnerStructure]`)
@@ -208,7 +208,7 @@ Contexts
 ### `http://terms.fhiso.org/elf/Event`  {#Event}
 
 The `http://terms.fhiso.org/elf/Event` type serves as an abstract supertype for other events and attributes.
-No structures with URI `http://terms.fhiso.org/elf/Event` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/Event` should appear in an ELF dataset.
 
 Supertype
 :   `[InnerStructure]`
@@ -241,7 +241,7 @@ Substructures
 ### `http://terms.fhiso.org/elf/IndividualEvent`  {#IndividualEvent}
 
 The `http://terms.fhiso.org/elf/IndividualEvent` type serves as an abstract supertype for events that pertain to a particular individual.
-No structures with URI `http://terms.fhiso.org/elf/IndividualEvent` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/IndividualEvent` should appear in an ELF dataset.
 
 
 Supertype
@@ -297,7 +297,7 @@ Substructures
 ### `http://terms.fhiso.org/elf/FamilyEvent`  {#FamilyEvent}
 
 The `http://terms.fhiso.org/elf/FamilyEvent` type serves as an abstract supertype for events that pertain to a couple or nuclear family.
-No structures with URI `http://terms.fhiso.org/elf/FamilyEvent` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/FamilyEvent` should appear in an ELF dataset.
 
 Supertype
 :   `[Event]`
@@ -343,7 +343,7 @@ Substructures
 ### `http://terms.fhiso.org/elf/IndividualAttribute`  {#IndividualAttribute}
 
 The `http://terms.fhiso.org/elf/IndividualAttribute` type serves as an abstract supertype for attributes of an individual.
-No structures with URI `http://terms.fhiso.org/elf/IndividualAttribute` should appear in an ELF dataset.
+No structures with IRI `http://terms.fhiso.org/elf/IndividualAttribute` should appear in an ELF dataset.
 
 Attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
@@ -390,8 +390,8 @@ Substructures
 
 ## Concrete Types   {#ConcreteTypes}
 
-The following is a list of known structure types, organized by URI.
-Note that a single URI may be used by several types in different contexts.
+The following is a list of known structure types, organized by IRI.
+Note that a single IRI may be used by several types in different contexts.
 
 {.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints and contains several types specific to that church, including
 
@@ -3845,11 +3845,11 @@ Extension types are subject to the following limitations
     between the .`[HEAD]` and the .`[SUBN]` (if there is a .`[SUBN]`), or 
     after the .`[TRLR]`.
 
--   Extensions' URIs SHOULD 
-    *either* be an existing URI but in a different context
-    *or* be a URI that is owned by the extension author.
+-   Extensions' IRIs SHOULD 
+    *either* be an existing IRI but in a different context
+    *or* be a IRI that is owned by the extension author.
     
-    It is RECOMMENDED that extension URIs be URLs that resolve to a web page describing the meaning of the extension.
+    It is RECOMMENDED that extension IRIs be URLs that resolve to a web page describing the meaning of the extension.
     
 Implementations encountering an unknown extension structures MAY ignore the structure and its substructures.
 It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
