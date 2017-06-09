@@ -57,37 +57,56 @@ The elements of each line (in order) are
 #### Non-structure Lines
 
 Most lines correspond one-to-one with structures in the dataset.
-However, lines with three tags do not correspond to a structure:
+However, lines with the following tags do not correspond to a structure:
 
 -   `CONT` is used to encode line breaks; see [Multi-line Strings](#CONT)
 -   `CONC` may be used to break long payloads into multiple lines; see [Line Splitting](#CONC)
--   `PRFX` is used to define the tag-name/IRI mapping; see [Prefix dictionary encoding](#PRFX)
+-   `PRFX` is used to define a set of tag-name/IRI mappings via a namespace prefix; see [IRI dictionary encoding](#IRI)
+-   `DEFN` is used to define a single tag-name/IRI mapping; see [IRI dictionary encoding](#IRI)
 
 These are the *only* tags that do not map to a IRI, being part of the serialization format rather than part of the underlying data model being serialized.
 
 
-### IRIs and Tags {#IRIs-and-Tags}
+### IRIs and tags {#IRIs-and-Tags}
 
 {.ednote} This entire section documents material that is not part of GEDCOM
 
 All structure-type identifying IRIs in a dataset are mapped to tags as part of this serialization format.
-This is done by creating a *prefix dictionary*.
+This is done by creating an *IRI dictionary*.
+The IRI dictionary may also be used to define a set of alternate IRIs for a tag.
 
-#### Prefix Dictionary Format
+{.note} The intent of the set of alternate IRIs is to aid implementations in handling unknown extensions without the overhead of a full discovery mechanism.
 
-A prefix dictionary is a set of key ↦ value pairs.
-The keys are valid tag names ore prefixes thereto, matching `[0-9a-zA-Z_]*`.
-The values are absolute IRIs.
-Each key must be unique, and each must match at least one of the following cases:
+{.example ...} Suppose that `http://terms.fhiso.org/sources/authorName` is a subtype of `http://terms.fhiso.org/elf/AUTH` that provides additional structural information within the payload.  An implementation might create the mapping 
 
--   a string ending in an underscore (i.e., matching `[0-9a-zA-Z]*_`)
--   an entire tag name as it appears in the dataset
+> `AUTH`: `http://terms.fhiso.org/sources/authorName`, `http://terms.fhiso.org/elf/AUTH`
+
+to inform implementations that lines tagged `AUTH` are `http://terms.fhiso.org/sources/authorName`s, but can be treated like an `http://terms.fhiso.org/elf/AUTH` if full `http://terms.fhiso.org/sources/authorName` semantics are not understood.
+{/}
+
+
+#### IRI dictionary format
+
+The IRI dictionary contains both
+
+-   a set of *namespace definitions* and
+-   a set of *individual tag mappings*, each mapping a single tag to its IRI and optionally to a portion of its' inheritance hierarchy.
+
+Each *namespace definition* maps a key matching `[0-9a-zA-Z]*_` to an absolute IRI.
+No two *namespace definition* keys within a single dataset may share a tag.
+It is RECOMMENDED that each key appear as a prefix substring of the *tag* of at least one line in the dataset.
+
+Each *individual tag mapping* maps a key matching `[0-9a-zA-Z_]+` to an ordered sequence of absolute IRIs.
+No two *individual tag mapping* keys within a single dataset may share a key.
+It is RECOMMENDED that each key appear as the *tag* of at least one line in the dataset.
+
 
 #### Tag → IRI {#tag2iri}
 
 To convert a tag to a IRI, the following checks are performed in order; the first one that matches is used.
 
-1.  If that tag is a key in the prefix dictionary, the value associated with that key is the structure's IRI.
+1.  If that tag is a key of an *individual tag mapping*, the IRI associated with that tag is the first IRI in the IRI sequence of that mapping.
+    Additional IRIs in that sequence provide *hints* to implementations that structures with this IRI MAY be treated like structures with other IRIs in the sequence, with a *preference* for the first usable IRI.
 
 1.  Otherwise, if the tag contains one or more underscores, let *p* be the substring of the tag up to and including the first underscore and *s* be the substring after the first underscore.  If *p* is a key in the prefix dictionary, the structure's IRI is the value associated with *p* concatenated with *s*.
 
@@ -102,42 +121,51 @@ To convert a tag to a IRI, the following checks are performed in order; the firs
 It is this author's opinion that such flexibility is not needed.
 {/}
 
-{.example ...} Given the following prefix dictionary entries:
+{.example ...} Given the following namespace mappings dictionary entries:
 
 Key     Value
-------  -------------------------------------------------
-`X_`    `http://example.com/xtensions/`
+------  ---------------------------------------------------------------
+`X_`    `http://example.com/extensions/`
 `_`     `http://example.com/old_extensions.html#`
-`_UID`  `http://example.com/UUID`
 
-The following tags represent to the following IRIs:
+and the following individual tag mapping:
+
+Key     Value
+------  ---------------------------------------------------------------
+`_UID`  `http://example.com/UUID` `http://purl.org/dc/terms/identifier`
+
+the following tags represent to the following IRIs:
 
 Tag         IRI
 ----------  ------------------------------------------------
 `HEAD`      `http://terms.fhiso.org/elf/HEAD`
-`X_LAT`     `http://example.com/xtensions/LAT`
+`X_LAT`     `http://example.com/extensions/LAT`
 `_LOC`      `http://example.com/old_extensions.html#LOC`
 `_UID`      `http://example.com/UUID`
 
+Note that `http://purl.org/dc/terms/identifier` is *not* the IRI of `_UID`:
+even if an implementation does not understand `http://example.com/UUID`, the first element in the IRI sequence is always the IRI of a tag, the others being instead *hints* about how to treat that type.
 {/}
 
 
 #### IRI → Tag {#iri2tag}
 
 Every structure type IRI MUST be replaced by a tag as part of serialization,
-and every such replacement MUST be reversible via an entry in the prefix dictionary.
-The simplest technique to accomplish this is to create a key-value pair for every IRI with a unique key for each.
-However, it is RECOMMENDED that a more compact prefix dictionary be used;
+and every such replacement MUST be reversible via the IRI dictionary.
+The simplest technique to accomplish this is to create an *individual tag mapping* for every IRI with a unique key for each.
+However, it is RECOMMENDED that more compact *namespace definition*s be used;
 in particular, implementations SHOULD
 
 -   use the default prefix for all structure types documented in the [Elf Data Model](#data-model.html).
--   use one entry for each [namespace](http://tech.fhiso.org/policies/vocabularies), with a key of two or more characters.
--   use full-tag keys or just-underscore keys only for compatibility communication with GEDCOM extensions that expect particular tag names.
+-   use one *namespace definition* for each [namespace](http://tech.fhiso.org/policies/vocabularies), with a key of two or more characters.
+-   use full-tag keys or just-underscore keys only for compatibility communication with implementations that expect particular tag names.
+-   provide additional IRIs for extensions that extend structure types documented in the [Elf Data Model](#data-model.html).
 
-#### Prefix dictionary encoding {#PRFX}
+#### IRI dictionary encoding {#IRI}
 
-The prefix dictionary is encoded as a set of lines after the line beginning `0 HEAD` and before the next `TopLevel`.
-Each is entry encoded on a single [Line] with
+The IRI dictionary is encoded as a set of lines after the line beginning `0 HEAD` and before the next `TopLevel`.
+
+Each *namespace definition* is encoded on a single [Line] with
 
 1.  level `1`
 1.  no *xref_id*
@@ -147,24 +175,49 @@ Each is entry encoded on a single [Line] with
     1.  a space character
     1.  the value IRI
 
-It is RECOMMENDED that the entire prefix dictionary be encoded immediately following the `0 HEAD` line before any of the `HEAD` structure's substructures.
-The order of the `PRFX` lines is not important.
+Each *individual tag mapping* is encoded on one ore more [Line]s. The first line contains
 
-{.example ...} Given the following prefix dictionary entries:
+1.  level `1`
+1.  no *xref_id*
+1.  tag `DEFN`
+1.  the payload is
+    1.  the key
+    1.  the first IRI of the sequence
+
+If there are additional IRIs in the sequence, they are each encoded on its own line in order, with each line containing
+
+1.  level `2`
+1.  no *xref_id*
+1.  tag `CONT`
+1.  the payload is the next IRI of the sequence
+
+{.ednote} We could also introduce a new tag for subsequent IRIs, or say they are space-separated on a single line, but this seemed simpler, making use of the already-defined `CONT` tag and avoiding potential line length problems.
+
+
+It is RECOMMENDED that the entire IRI dictionary be encoded immediately following the `0 HEAD` line before any of the `HEAD` structure's substructures.
+The order of the `PRFX` and `DEFN` lines is not important.
+
+{.example ...} Given the following namespace mappings dictionary entries:
 
 Key     Value
-------  -------------------------------------------------
-`X_`    `http://example.com/xtensions/`
+------  ---------------------------------------------------------------
+`X_`    `http://example.com/extensions/`
 `_`     `http://example.com/old_extensions.html#`
-`_UID`  `http://example.com/UUID`
 
-The serialization would begin
+and the following individual tag mapping:
+
+Key     Value
+------  ---------------------------------------------------------------
+`_UID`  `http://example.com/UUID` `http://purl.org/dc/terms/identifier`
+
+the serialization would begin
 
 ````gedcom
 0 HEAD
 1 PRFX X_ http://example.com/xtensions/
 1 PRFX _ http://example.com/old_extensions.html#
-1 PRFX _UID http://example.com/UUID
+1 DEFN _UID http://example.com/UUID
+2 CONT http://purl.org/dc/terms/identifier
 ````
 {/}
 
@@ -172,7 +225,7 @@ The serialization would begin
 
 ### Encoding a structure
 
-A structure is encoded as a [Line](#Line) (or possibly several [Lines](#Line), as described in [Multi-line Strings] and [Line Splitting]), immediately followed by the encoding of all of its substructures.
+A structure is encoded as a [Line](#Line) (or possibly several [Lines](#Line), as described in [Multi-line Strings](#CONT) and [Line Splitting](#CONC)), immediately followed by the encoding of all of its substructures.
 
 1.  The *level* of a [TopLevel](tag-list.html#TopLevel) is `0`.
     The *level* of a substructure is 1 greater than the *level* of its superstructure.
@@ -183,7 +236,7 @@ A structure is encoded as a [Line](#Line) (or possibly several [Lines](#Line), a
     
     For example, the *xref_id* of a structure with *identifier* "S23" is `@S23@`.
 
-3.  The *tag* is the a sting which will map to the structures IRI using the [prefix dictionary](#tag2iri).  Tags are case-sensitive.
+3.  The *tag* is the a sting which will map to the structures IRI using the [IRI dictionary](#tag2iri).  Tags are case-sensitive.
 
     For example, the *tag* of an `http://terms.fhiso.org/elf/ADDR` structure is `ADDR`.
 

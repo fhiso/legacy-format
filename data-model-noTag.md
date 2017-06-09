@@ -3854,4 +3854,18 @@ Extension types are subject to the following limitations
 Implementations encountering an unknown extension structures MAY ignore the structure and its substructures.
 It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
 though doing so is NOT REQUIRED.
+Implementations SHOULD NOT create, modify, move, or duplicate structures with extensions unknown to the implementation.
+
+{.example} Suppose an implementation not understanding the `http://example.com/WEALTH` extension type is processing a dataset containing two .`[INDI]`s, one of which has a .`[INDI]`.`http://example.com/WEALTH` with payload "34K/A".
+
+-   The implementation may choose to ignore the `http://example.com/WEALTH` or to display it in some default fashion.
+-   If the dataset is modified and exported
+    -   If the `[INDI]` with that `http://example.com/WEALTH` still exists in the dataset, the `http://example.com/WEALTH` structure should be preserved, but it may be omitted.
+    -   No additional `http://example.com/WEALTH` structure should have been created.
+    -   The payload of the existing `http://example.com/WEALTH` structure should not have been modified.
+
+If the implementation discovers the meaning of `http://example.com/WEALTH`, it is welcome to create and modify `http://example.com/WEALTH` structures as it sees fit (subject to any constraints specific to that structure type).
+{/}
+
+
 
