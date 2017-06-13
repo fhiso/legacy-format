@@ -1,12 +1,12 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Serialization Format
-date: 24 May 2017
+date: 13 June 2017
 numbersections: true
 ...
 # ELF Serialization Format
 
-This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.
+This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.1.
 
 The GEDCOM specification described a document model, a set of tags, and a serialization format.
 This document describes the serialization format portion of that specification.
@@ -20,12 +20,23 @@ It will likely change significantly prior to being released.
 
 ----
 
+{.ednote ...} To do:
+
+-   combine this file with `charset.md`, including <https://www.tamurajones.net/GEDCOMMagicValues.xhtml>'s extra encodings
+-   discuss `[ ]*(\n\r?|\r\n?)` → `[CONT]`
+-   say something about limited encoding (e.g., U+12345 in ANSEL)
+-   add a .note about %20 not U+000A
+-   Re-do with EBNF not regular expressions
+-   Add *delimiter* production instead of refering to spaces explicitly
+-   Assert that whitespace stripping is REQUIRED and adjust the definition of `[CONC]` accordingly
+{/}
+
 ## Encoding
 
 This document presents a particular method of converting structures into a stream of characters.
 It does not specify the *character* encoding needed to convert those characters into an octet stream suitable for network transfer or file saving.
 
-
+{.ednote} combine this file with `charset.md`
 
 ### Lines     {#Line}
 
@@ -63,9 +74,45 @@ However, lines with the following tags do not correspond to a structure:
 -   `CONC` may be used to break long payloads into multiple lines; see [Line Splitting](#CONC)
 -   `PRFX` is used to define a set of tag-name/IRI mappings via a namespace prefix; see [IRI dictionary encoding](#IRI)
 -   `DEFN` is used to define a single tag-name/IRI mapping; see [IRI dictionary encoding](#IRI)
+-   `TRLR` is used to identify the end of the serialized dataset
 
 These are the *only* tags that do not map to a IRI, being part of the serialization format rather than part of the underlying data model being serialized.
 
+### ELF-file 
+
+Every ELF-file includes the encoding of the following elements, in order:
+
+1.  A [`HEAD`] structure, which (in addition to its substructures), is followed by
+    -   A `[CHAR]` structure. It is RECOMMENDED that this be serialized as the second line of the ELF-file, immediately following `0 HEAD`
+    -   An encoding of the [IRI dictionary](#IRI) (encompassing zero or more lines with `PRFX` and/or `DEFN` tags)
+1.  Zero or more [`Record`s], in any order
+1.  A "trailer", encoded as
+    1.  level `0`
+    1.  no *xref_id*
+    1.  tag `TRLR`
+    1.  no payload
+
+By definition, anything within an octet stream before `0 HEAD` or after `0 TRLR` is not part of the ELF-file.
+
+### `CHAR`-tagged line  {#CHAR}
+
+The line with the tag `CHAR` indicates the character set used to encode codepoints into octets in this ELF-file.
+This is encoded exactly as a structure, including the potential for a substructure.
+
+Contexts
+:   .`[HEAD]`.`[CHAN]`
+
+Description
+:   A code value that represents the character set to be used to interpret this data.
+
+Payload
+:   one of `ANSEL`, `UNICODE`, or `ASCII`
+
+Substructures
+:   `[VERS]`?
+
+
+####   {#CHAR}
 
 ### IRIs and tags {#IRIs-and-Tags}
 
@@ -87,10 +134,13 @@ to inform implementations that lines tagged `AUTH` are `http://terms.fhiso.org/s
 
 #### IRI dictionary format
 
-The IRI dictionary contains both
+The IRI dictionary contains any mix of
 
--   a set of *namespace definitions* and
--   a set of *individual tag mappings*, each mapping a single tag to its IRI and optionally to a portion of its' inheritance hierarchy.
+-   zero or one *default namespace definition*,
+-   zero or more *namespace definitions*, and
+-   zero or more *individual tag mappings*, each mapping a single tag to its IRI and optionally to a portion of its' inheritance hierarchy.
+
+The *default namespace definition* specifies an absolute IRI.
 
 Each *namespace definition* maps a key matching `[0-9a-zA-Z]*_` to an absolute IRI.
 No two *namespace definition* keys within a single dataset may share a tag.
@@ -110,16 +160,9 @@ To convert a tag to a IRI, the following checks are performed in order; the firs
 
 1.  Otherwise, if the tag contains one or more underscores, let *p* be the substring of the tag up to and including the first underscore and *s* be the substring after the first underscore.  If *p* is a key in the prefix dictionary, the structure's IRI is the value associated with *p* concatenated with *s*.
 
+1.  Otherwise, if there is a *default namespace definition*, the structure's IRI is the IRI of the *default namespace definition* concatenated with the tag
+
 1.  Otherwise, the structure's IRI is `http://terms.fhiso.org/elf/` concatenated with the tag.
-
-{.ednote ...} We could make this more flexible by not having a hard-coded default namespace; we'd allow empty-string keys and replacing the last rule above with 
-
-1.  Otherwise, if there is an empty string key, the structure's IRI is the value associated with the empty string concatenated with the tag
-
-1.  Otherwise, the structure's IRI is `_:` concatenated with the tag.\
-
-It is this author's opinion that such flexibility is not needed.
-{/}
 
 {.example ...} Given the following namespace mappings dictionary entries:
 
@@ -332,10 +375,10 @@ Payload strings must be encoded specially based on the following constraints:
 
 {.ednote} GEDCOM allows several aspects of "escapes" that are not represented here, such as the ability to encode at-signs as part of the escape text.  So far as the authors of this specification know, the omitted details have never been used in any GEDCOM-producing or GEDCOM-consuming tool.
 
-Some structure's payloads utilize a special "escape" of the form `@#[^@]*@`; the `http://terms.fhiso.org/elf/DATE` structure is one example.
+Some structure's payloads utilize a special "escape" of the form `@#[^@\n\r]*@`; the `http://terms.fhiso.org/elf/DATE` structure is one example.
 Such escapes should be preserved as-is during encoding, and MUST NOT be split into multiple lines as part of [Line splitting].
 
-All other (literal) at signs MUST be encoded by doubling them:
+All other U+0040 characters MUST be encoded by doubling them:
 a `@` in a *payload* becomes a `@@` in a *payload line*.
 The `@@` MUST NOT be split into multiple lines as part of [Line splitting].
 
@@ -373,7 +416,7 @@ When split, the substring before the split remains as the *payload line* of the 
 -   Each `CONC` line has a *level* one larger than the *level* of the structure.
 -   `CONC` lines never have an *xref_id*.
 
-{.note} The *level* of a `CONC` is based on the *structure*, not any preceeding `CONC` or `CONT` line.
+{.note} The *level* of a `CONC` is based on the *structure*, not any preceding `CONC` or `CONT` line.
 
 This process may be repeated as many times as desired, and may be applied to any line of a multi-line string.
 
