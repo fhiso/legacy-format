@@ -26,8 +26,10 @@ It will likely change significantly prior to being released.
 -   discuss `[ ]*(\n\r?|\r\n?)` → `[CONT]`
 -   say something about limited encoding (e.g., U+12345 in ANSEL)
 -   add a .note about %20 not U+000A
--   Add *delimiter* production instead of refering to spaces explicitly
+-   Add *delimiter* production instead of referring to spaces explicitly
 -   Assert that whitespace stripping is REQUIRED and adjust the definition of `[CONC]` accordingly
+-   require that `HEAD` and all non-structure line's tags  *must not* be referenced via a prefix or an alias.
+-   require that `CONC`, `CONT`, `DEFN`, `PRFX`, and `TRLR` not be mapped from or to except by default mapping
 {/}
 
 ## Encoding
