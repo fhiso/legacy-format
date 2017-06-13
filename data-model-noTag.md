@@ -43,7 +43,10 @@ Indented text in grey or coloured boxes, such as preceding paragraph, does not f
 they will be resolved and removed for the final standard.
 Examples and notes will be retained in the standard.
 
-{.ednote} TO DO: add appropriate reference to PCRE regular expressions
+The grammar given here uses the form of EBNF notation defined in §6 of [[XML](https://www.w3.org/TR/xml11/)],
+except that no significance is attached to the capitalisation of grammar symbols.
+*Conforming* applications MUST NOT generate data not conforming to the syntax given here,
+but non-conforming syntax MAY be accepted and processed by a *conforming* application in an implementation-defined manner.
 
 
 ### Characters and strings
@@ -53,30 +56,47 @@ In this standard, *characters* may be identified in this standard by their hexad
 
 {.note} The character encoding is a property of the serialisation, and not defined in this standard.  Non-Unicode encodings are not precluded, so long as it is defined how characters in that encoding corresponds to Unicode characters.
 
-*Characters* MUST match the regular expression `[^\0\x{D800}-\x{DFFF}\x{FFFE}\x{FFFF}]`.
-All regular expressions throughout this specification are limited by this constraint (e.g., `[^@]` means 
-`[^@\0\x{D800}-\x{DFFF}\x{FFFE}\x{FFFF}]`).
 
-{.note} This includes all valid unicode *code points* except ASCII control characters
-and the code points reserved for UTF-16 surrogates and the invalid character U+FFFE and U+FFFF.
+*Characters* MUST match the `Char` production from [[XML](https://www.w3.org/TR/xml11/)].
+
+    Char  ::=  [#1-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+
+{.note} This includes all valid unicode *code points* except
+the null character,
+surrogates (which are reserved for encodings such as UTF-16 and not characters in their own right),
+and the invalid characters U+FFFE and U+FFFF.
 
 A **string** is a sequence of zero or more *characters*.
+
+    String  ::= Char*
 
 Applications MAY convert any *string* into Unicode Normalization Form C,
 as defined in any version of Unicode Standard Annex #15 [[UAX 15](//unicode.org/reports/tr15/)].
 
-{.note} This allows applications to store *strings* internally in either Normalization Form C or Normalization Form D for ease of searching, sorting and comparison, without also retaining the original, unnormalised form.
+{.note} This allows applications to store *strings* internally
+in either Normalization Form C or Normalization Form D
+for ease of searching, sorting and comparison,
+without also retaining the original, unnormalised form.
 
-Applications MAY perform *newline normalization*, selecting one newline sequence (`\n`, `\r`, `\r\n`, or `\n\r`) and replacing all sequences matching `[ ]*(\r\n?|\n\r?)` with the chosen sequence.
-Applications MUST NOT give significance to the newline type present or the presence or absence of spaces preceding a newline.
+A **line break** is defined to be any maximal-length substring of a *string* that matches the following production:
 
-{.ednote} check to see if newline normalization has been defined in some other spec more concretely than this...
+    LineBreak  ::= #x20 lineEnd
+    lineEnd    ::= #xA #xD? | #xD #xA?
+
+Applications MAY perform *line break normalization*, selecting one string matching the production `lineEnd` above and replacing all *line break*s with the chosen sequence.
+Applications MUST NOT give significance to the newline type present.
+
+{.ednote} Is "maximal-length" defined?  My intent is to preclude treating `"\r\n"` as two `LineBreak`s or leaving trailing spaces
+
 
 {.note} This allows applications to store *strings* internally with any line ending.
 It also removes the need to discuss lines within payloads in the data model, as it was in GEDCOM.
 
 *Characters* matching the `RestrictedChar` production from [[XML](//www.w3.org/TR/xml11/)]
-(i.e., `[\x1-\x8\xB\xC\xE-\x1F\x7F-\x84\x86-\x9F]`)
+
+    RestrictedChar  ::=  [#x1-#x8] | [#xB-#xC] | [#xE-#x1F]
+                           | [#x7F-#x84] | [#x86-#x9F]
+
 SHOULD NOT appear in *strings*,
 and applications MAY process such characters in an implementation-defined manner or reject *strings* containing them.
 
@@ -84,9 +104,9 @@ and applications MAY process such characters in an implementation-defined manner
 
 **Whitespace** is defined as a sequence of one or more space *characters*,
 carriage returns, line feeds, or tabs.
-It matches the production `S` from [[XML](//www.w3.org/TR/xml11/)] (i.e., `[ \r\n\t]+`).
+It matches the production `S` from [[XML](//www.w3.org/TR/xml11/)]:
 
-{.note}  The definition of *whitespace normalisation* is identical to that in [[XML](//www.w3.org/TR/xml11/)].
+    S  ::=  (#x20 | #x9 | #xD | #xA)+
 
 In the event of a difference between the definitions of the `Char`, `RestrictedChar` and `S` productions given here and those in [[XML](//www.w3.org/TR/xml11/)], the definitions in the latest edition of XML 1.1 specification are definitive.
 
@@ -184,7 +204,9 @@ the same identifier may be used for different types of structures in different [
 Identifier
 :   A string uniquely identifying this structure within this ELF dataset.
     If present, the identifier MUST contain only non-control ASCII characters
-    and match the regular expression `[0-9A-Z_a-z][^@]*`.
+    and match the production ID:
+        
+        ID  ::= [0-9A-Z_a-z] [^@]*
 
     Every `[SUBN]` and `[Record]` has an identifier.
     `[InnerStructure]`s MAY (but are NOT RECOMMENDED to) have an identifier.
@@ -217,7 +239,7 @@ Substructures
     There are no limitations to the types of `[InnerStructure]`s that may be contained within a structure,
     but each structure type may recommend particular substructures and/or have a set of required substructures.
 
-## Spaces in Formatted Payloads
+## Spaces in Formatted Payloads  {#extra-spaces}
 
 {.ednote} This topic appears nowhere in the GEDCOM specification; it attempts to document a solution to implementation inconsistencies.
 
@@ -298,7 +320,6 @@ No structures with *structure type identifier* `http://terms.fhiso.org/elf/TopLe
 Known subtypes
 :   `[HEAD]`
 :   `[SUBN]`
-:   `[TRLR]`
 :   `[Record]`
 
 Contexts
@@ -675,31 +696,30 @@ Description
 :   A number that indicates the age in years, months, and days that the principal was at the time of the associated event.
 
 Payload
-:   A string, which uses an age-specification microformat.
-    The microformat supports three special values (`CHILD`, `INFANT`, and `STILLBORN`)
-    as well as any text matching the regular expression
+:   A string, which uses an age-specification microformat matching the production `Age`:
 
-    > `([<>] ?)?(\d+y ?)?(\d+m ?)?(\d+d ?)?`
+        Age  ::= [<>]? ([0-9]+ "y")? ([0-9]+ "m")? ([0-9]+ "d")? 
+                | CHILD | INFANT | STILLBORN
 
     The component pieces of the microformat have the following meanings:
 
-    | Symbol | Meaning |
-    |--------|---------|
-    | `>`    | greater than indicated age |
-    | `<`    | less than indicated age |
-    | `\d+y` | a number of years |
-    | `\d+m` | a number of months |
-    | `\d+d` | a number of days |
-    | `CHILD`| `<8y`   |
-    | `INFANT`| `<1y`  |
-    | `STILLBORN`| just prior, at, or near birth; or `0y` |
+    | Symbol    | Meaning                                |
+    |-----------|----------------------------------------|
+    | `>`       | greater than indicated age             |
+    | `<`       | less than indicated age                |
+    | `[0-9]+y` | a number of years                      |
+    | `[0-9]+m` | a number of months                     |
+    | `[0-9]+d` | a number of days                       |
+    | `CHILD`   | `<8y`                                  |
+    | `INFANT`  | `<1y`                                  |
+    |`STILLBORN`| just prior, at, or near birth; or `0y` |
 
 
 Substructures
 :   None
 
 
-{.note} The GEDCOM specifications were unclear as to the use of spaces in the age-specification microformat.  To maximize compatibility, it is RECOMMENDED that implementations be able to _parse_ any string matching the regular expression above but _generate_ no spaces when producing age strings.
+{.note} Recall that additional whitespaces are permitted in these productions, as documented in [Spaces in Formatted Payloads](#extra-spaces).
 
 
 ### `http://terms.fhiso.org/elf/AGNC`  {#AGNC}
@@ -1367,6 +1387,45 @@ Contexts
 
 Dates are represented using a somewhat involved syntax, which shares a common subformat and has three entry points, documented below.
 
+{.ednote ...} The following is the EBNF for date payloads, but it lacks semantics
+
+    Date    ::= greg | juln | hebr | fren | future
+
+    Exact   ::= [1-9] [0-9]? month year_g
+
+    Value   ::= Date | Period | range | approx
+                | ( "INT" Date )? "(" String ")"
+
+    Period  ::= "FROM" Date ( "TO" Date )? | "TO" Date
+
+    approx  ::= ( "ABT" | "CAL" | "EST" ) Date
+    range   ::= ( "BEF" | "AFT" ) Date | "BET" Date "AND" Date
+    
+    greg    ::= "@#DGREGORIAN@"? d_greg
+    juln    ::= "@#DJULIAN@" d_juln
+    hebr    ::= "@#DHEBREW@" d_hebr
+    fren    ::= "@#DFRENCH R@" d_fren
+    future  ::= "@#D" ( "ROMAN" | "UNKNOWN" ) "@" String
+    
+    d_fren  ::= ( ( [1-9] [0-9]? )? month_f )? year
+    d_greg  ::= ( ( [1-9] [0-9]? )? month )? year_g
+    d_hebr  ::= ( ( [1-9] [0-9]? )? month_h )? year
+    d_juln  ::= ( ( [1-9] [0-9]? )? month )? year
+    
+    year_g  ::= [1-9] [0-9]* ( "/" [0-9] [0-9] )? "(B.C.)"?
+    year    ::= [1-9] [0-9]* "(B.C.)"?
+    
+    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "MAY" | "JUN"
+                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+
+    month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
+                | "FLOR" | "PRAI" | "MESS" | "THER" | "FRUC" | "COMP"
+
+    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
+                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
+    
+{/}
+
 ##### Date {#date-format}
 
 At the core of the date syntax is a calendared date.
@@ -1469,6 +1528,7 @@ Many `[DATE]` payloads, referred to below *date values*, may have any of a varie
 -   `(`arbitrary text`)`
     
     The text gives information about when an event occurred but is not recognizable to a date parser.
+
 
 #### Context `[CHAN]`.`[DATE]`
 
@@ -2348,9 +2408,9 @@ Description
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 10 characters.
 
-    The string should match the regular expression 
-
-    > `[NS]\d+(\.\d+)?`
+    The string should match the production `Latitude`:
+    
+        Latitude  ::= [NS] [0-9]+ ( "." [0-9]+ )?
 
 Substructures
 :   None
@@ -2376,9 +2436,10 @@ Description
 Payload
 :   A string. It is RECOMMENDED that implementations support payloads of at least 11 characters.
 
-    The string should match the regular expression 
+    The string should match the production `Longitude`:
+    
+        Longitude  ::= [EW] [0-9]+ ( "." [0-9]+ )?
 
-    > `[EW]\d+(\.\d+)?`
 
 Substructures
 :   None
@@ -3375,7 +3436,7 @@ Substructures
 Record identification number: a number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
 Contexts
-:   .(`[Record]`).`[RIN]` -- but *not* .`[HEAD]`.`[RIN]` or .`[TRLR]`.`[RIN]`.
+:   .(`[Record]`).`[RIN]`
 
 Description
 :   A unique record identification number assigned to the record by the source system. This number is intended to serve as a more sure means of identification of a record between two interfacing systems.
@@ -3807,28 +3868,6 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/TRLR`  {#TRLR}
-
-Trailer: specifies the end of a GEDCOM transmission.
-
-When encountering a `TRLR`, applications may cease parsing before even looking for a payload or substructures; it should thus always be the very last record in the dataset.  Additionally, it should never have an ID; some implementations may fail to parse it correctly if it does.
-
-Contexts
-:   .`[TRLR]`
-
-Description
-:   End of dataset
-
-Payload
-:   None
-
-Supertype
-:   `[TopLevel]`
-
-Substructures
-:   None
-
-
 ### `http://terms.fhiso.org/elf/TYPE`  {#TYPE}
 
 A further qualification to the meaning of the associated superior structure. The value does not have any computer processing reliability. It is more in the form of a short one or two word note that should be displayed any time the associated data is displayed.
@@ -3981,9 +4020,8 @@ Extension types are subject to the following limitations
 -   Extensions MUST be subtypes of either `[TopLevel]` or `[InnerStructure]` (or their subtypes).
 
 -   Extension [TopLevel]s MUST NOT appear 
-    before the .`[HEAD]`, 
-    between the .`[HEAD]` and the .`[SUBN]` (if there is a .`[SUBN]`), or 
-    after the .`[TRLR]`.
+    before the .`[HEAD]` or
+    between the .`[HEAD]` and the .`[SUBN]` (if there is a .`[SUBN]`).
 
 -   Extensions' *structure type identifier*s SHOULD be one of
     -   an IRI with an authority component owned by the extension author, as documented in [IRIs]
