@@ -26,7 +26,6 @@ It will likely change significantly prior to being released.
 -   discuss `[ ]*(\n\r?|\r\n?)` → `[CONT]`
 -   say something about limited encoding (e.g., U+12345 in ANSEL)
 -   add a .note about %20 not U+000A
--   Re-do with EBNF not regular expressions
 -   Add *delimiter* production instead of refering to spaces explicitly
 -   Assert that whitespace stripping is REQUIRED and adjust the definition of `[CONC]` accordingly
 {/}
@@ -47,21 +46,29 @@ Line MUST NOT contain any control characters (U+0000 through U+0017, U+007F) *ex
 
 The elements of each line (in order) are
 
-1.  The **level**: a base-ten integer matching the regular expression `0|[1-9][0-9]*`
+1.  The **level**: a base-ten integer matching the production `Number`:
+    
+        Number  ::= "0" | [1-9] [0-9]*
 
     A single space (U+0020) MUST follow the *level*, delimiting it from the next element.
 
-2.  Optionally, a **xref_id**: an identifier surrounded by at-signs, matching the regular expression `@[a-zA-Z0-9_][^@]*@`
+2.  Optionally, a **xref_id**: an identifier surrounded by at-signs, matching the production `Xref`:
+    
+        Xref  ::= "@" [a-zA-Z0-9_] [^@]* "@"
 
     If the *xref_id* is present, a single space (U+0020) MUST follow it, delimiting it from the next element.
 
-3.  A **tag**: a string (generally [mapping to a IRI](#IRIs-and-Tags)) matching the regular expression `[0-9a-zA-Z_]+`
+3.  A **tag**: a string (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
+    
+        Tag  ::= [0-9a-zA-Z_]+
 
-4.  Optionally, a **payload line**: a string matching the regular expression `([^@]|@#[^@]*@)*`
+4.  Optionally, a **payload line**: a string matching the production `Pline`:
+    
+        Pline  ::= ( [^@] | "@#" [^@x#Ax#D]* "@" )*
 
     If the *payload line* is present, a single space (U+0020) MUST precede it, delimiting it from the previous element.
 
-5.  A **terminator**: Either U+000A or U+000D or both (in either order; i.e., `\n\r?|\r\n?`).
+5.  A **terminator**: Either U+000A or U+000D or both (in either order).
 
 {.note} Although the above locations of delimiters is specified in both GEDCOM 5.5 and GEDCOM 5.5.1, those specifications also suggest that some implementations may produce multi-space delimiters and that parsers should support those files.  It is RECOMMENDED that parsers accept malformed files that would be correctly formatted if additional spaces were permitted within lines.
 
@@ -142,11 +149,14 @@ The IRI dictionary contains any mix of
 
 The *default namespace definition* specifies an absolute IRI.
 
-Each *namespace definition* maps a key matching `[0-9a-zA-Z]*_` to an absolute IRI.
+Each *namespace definition* maps a key matching the production `Prefix` to an absolute IRI.
 No two *namespace definition* keys within a single dataset may share a tag.
 It is RECOMMENDED that each key appear as a prefix substring of the *tag* of at least one line in the dataset.
 
-Each *individual tag mapping* maps a key matching `[0-9a-zA-Z_]+` to an ordered sequence of absolute IRIs.
+    Prefix  ::= [0-9A-Za-z]* "_"
+
+
+Each *individual tag mapping* maps a key matching the production `Tag` to an ordered sequence of absolute IRIs.
 No two *individual tag mapping* keys within a single dataset may share a key.
 It is RECOMMENDED that each key appear as the *tag* of at least one line in the dataset.
 
@@ -404,7 +414,7 @@ A multi-line string is encoded as follows:
 
 ##### Line Splitting {#CONC}
 
-Any string may be split into several lines; such splits may occur between any two characters, except they may not occur between matched `@` characters. It is RECOMMENDED that they occur between non-whitespace characters.
+Any string may be split into several lines; such splits may occur between any two characters, except they may not occur between paired `@` characters. It is RECOMMENDED that they occur between non-whitespace characters.
 
 {.ednote ...} The non-whitespace recommendation is a compromise between the GEDCOM specification, which does not mention this constraint at all, and the specification's Appendix A, which states 
 
