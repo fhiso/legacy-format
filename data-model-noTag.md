@@ -4007,3 +4007,69 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 
 
 
+
+
+## References
+
+### Normative references
+
+[ISO 10646]
+:   ISO (International Organization for Standardization).
+    *ISO/IEC 10646:2014.
+    Information technology &mdash; Universal Coded Character Set (UCS).*
+    2014.
+
+[RFC 2119]
+:   IETF (Internet Engineering Task Force).
+    *RFC 2119:
+    Key words for use in RFCs to Indicate Requirement Levels.*
+    Scott Bradner, 1997.
+    (See <http://tools.ietf.org/html/rfc2119>.)
+
+[RFC 3987]
+:   IETF (Internet Engineering Task Force).
+    *RFC 3987:
+    Internationalized Resource Identifiers (IRIs).*
+    Martin Duerst and Michel Suignard, 2005.
+    (See <http://tools.ietf.org/html/rfc3987>.)
+
+[RFC 7230]
+:   IETF (Internet Engineering Task Force).
+    *RFC 7230:
+    Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing.*
+    Roy Fieldind and Julian Reschke, eds., 2014.
+    (See <http://tools.ietf.org/html/rfc7230>.)
+
+[RFC 7231]
+:   IETF (Internet Engineering Task Force).
+    *RFC 7231:
+    Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content.*
+    Roy Fieldind and Julian Reschke, eds., 2014.
+    (See <http://tools.ietf.org/html/rfc7231>.)
+
+[UAX 15]
+:   The Unicode Consortium.
+    "Unicode Standard Annex 15: Unicode Normalization Forms"
+    in *The Unicode Standard, Version 8.0.0.*
+    Mark Davis and Ken Whistler, eds., 2015.
+    (See <http://unicode.org/reports/tr15/>.)
+
+[XML]
+:   W3C (World Wide Web Consortium).
+    *Extensible Markup Language (XML) 1.1*, 2nd edition.
+    Tim Bray, Jean Paoli, C. M. Sperberg-McQueen, Eve Maler, François Yergeau, and John Cowan eds., 2006.
+    W3C Recommendation.
+    (See <https://www.w3.org/TR/xml11/>.)
+
+### Other references
+
+[XML Names]
+:   W3 (World Wide Web Consortium).
+    *Namespaces in XML 1.1*, 2nd edition.
+    Tim Bray, Dave Hollander, Andrew Layman and Richard Tobin, eds., 2006.
+    W3C Recommendation.
+    See <https://www.w3.org/TR/xml-names11/>.
+
+[ELF-File]
+:   FHISO (Family History Information Standards Organisation)
+    *Extended Legacy Format (ELF): Serialization Format.*
