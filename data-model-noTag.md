@@ -3810,9 +3810,12 @@ Description
 Payload
 :   A string.  It is RECOMMENDED that implementations support payloads of at least 12 characters.
     
-    The string should match the regular expression 
-
-    > `[0-2][0-9]:[0-5][0-9](:[0-5][0-9](\.[0-9][0-9]?)?)?`
+    The string should match the `Time` production:
+    
+        Time    ::= hour ":" minute ( ":" second )?
+        hour    ::= [01] [0-9] | "2" [0-3]
+        minute  ::= [0-5] [0-9]
+        second  ::=  [0-5] [0-9] ( "." [0-9]+ )?
 
 Substructures
 :   None
