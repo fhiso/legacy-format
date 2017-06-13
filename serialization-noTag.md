@@ -42,7 +42,7 @@ It does not specify the *character* encoding needed to convert those characters 
 A ELF-file consists of a set of lines.
 Each line consists of several elements.
 Lines MUST NOT begin with a space.
-Line MUST NOT contain any control characters (U+0000 through U+0017, U+007F) *except* the *terminator* described below; all regular expressions provided assume this constraint (e.g., `[^@]` means `[^@\u0000-\u001f\u007f]`).
+Line MUST NOT contain any control characters (U+0000 through U+001F, U+007F) *except* the *terminator* described below.
 
 The elements of each line (in order) are
 
