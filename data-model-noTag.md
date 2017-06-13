@@ -67,8 +67,8 @@ as defined in any version of Unicode Standard Annex #15 [[UAX 15](//unicode.org/
 
 {.note} This allows applications to store *strings* internally in either Normalization Form C or Normalization Form D for ease of searching, sorting and comparison, without also retaining the original, unnormalised form.
 
-Applications MAY perform *newline normalization*, selecting one newline sequence (`\n`, `\r`, `\r\n`, or `\n\r`) and replacing all sequences matching `\r\n?|\n\r?` with the chosen sequence.
-Applications MUST NOT give significance to the newline type present.
+Applications MAY perform *newline normalization*, selecting one newline sequence (`\n`, `\r`, `\r\n`, or `\n\r`) and replacing all sequences matching `[ ]*(\r\n?|\n\r?)` with the chosen sequence.
+Applications MUST NOT give significance to the newline type present or the presence or absence of spaces preceding a newline.
 
 {.ednote} check to see if newline normalization has been defined in some other spec more concretely than this...
 
