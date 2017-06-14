@@ -141,6 +141,11 @@ and applications MAY process such characters in an implementation-defined manner
 
 {.note} This includes all C0 and C1 control characters except tab (U+0009), line feed (U+000A), carriage return (U+000D) and next line (U+0085).
 
+A **delimiter** is defined as zero or more adjacent space *characters* or tabs.
+It matches the production `Delim`:
+
+    Delim  ::=  (#x20 | #x9)+
+
 A **linebreak** is defined as either an adjacent carriage return and line feed (in either order), or a single carriage return or line feed.
 It matches the production `LB`:
 
@@ -165,6 +170,84 @@ specified in §3.1 of [[RFC 3987](//tools.ietf.org/html/rfc3987)],
 and back to a IRI again using the algorithm
 specified in §3.2 of [[RFC 3987](//tools.ietf.org/html/rfc3987)],
 to yield the original IRI.
+
+
+
+
+
+## Structures and pseudo-structures
+
+A dataset consists of structures; as part of encoding as a string, these are augmented by a set of pseudo-structures, structure-like constructs that are not part of the data model.
+
+Every dataset contains exactly one `[HEAD]` structure, which contains substructures;
+the dataset may also contain any number of other structures.
+
+
+### Structures   {#Structure}
+
+Every structures consists of the following components:
+
+Structure Type Identifier
+:   Every structure has a *structure type identifier*, which is always an IRI.
+
+Identifier
+:   A string uniquely identifying this structure within this ELF dataset.
+    If present, the identifier MUST match the production ID:
+        
+        ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
+
+Payload
+:   If present, a payload is either a pointer to a structure or a string.
+    Each pointed-to structure MUST have a unique identifier within the dataset.
+
+Substructures
+:   Structures may contain zero or more other Structures, which are called the structure's **substructures**.
+
+    The order of substructures that have distinct *structure type identifiers* is not significant,
+    but the order of substructures with the same *structure type identifier* must be preserved.
+
+
+### Pseudo-structures
+
+A pseudo-structure consists of the following components:
+
+Tag
+:   Every pseudo-structure has a *tag*, specified in this document.
+
+Payload
+:   If present, a string.
+
+Substructures
+:   Pseudo-structures may contain zero or more  Structures,
+    which are called the pseudo-structure's **substructures**.
+
+This specification documents five specific pseudo-structures:
+
+-   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) payload strings.
+    As such, they may appear as pseudo-substructures of any structure with a string payload.
+    The order of `[CONT]` and `[CONC]` pseudo-structures MUST be preserved.
+    Any `[CONT]` and `[CONC]` pseudo-substructures MUST appear 
+    before any other substructures or pseudo-substructures
+    within any serialization.
+
+-   `[PRFX]` and `[DEFN]` are used to encode the [IRI Dictionary].
+    They appear only as pseudo-substructures of the `[HEAD]` structure.
+
+-   `[TRLR]` is always the last element of a serialized dataset.
+
+
+
+
+
+
+## String ←→ Octets
+
+
+
+## IRI ←→ Tag
+
+## Structure ←→ String
+
 
 
 
