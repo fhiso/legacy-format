@@ -1,7 +1,7 @@
 ---
 title: "FHISO Extended Legacy Format (ELF)"
 subtitle: Data Model
-date: 13 June 2017
+date: 14 June 2017
 numbersections: true
 ...
 # FHISO Extended Legacy Format
@@ -78,17 +78,6 @@ in either Normalization Form C or Normalization Form D
 for ease of searching, sorting and comparison,
 without also retaining the original, unnormalised form.
 
-A **line break** is defined to be any maximal-length substring of a *string* that matches the following production:
-
-    LineBreak  ::= #x20 lineEnd
-    lineEnd    ::= #xA #xD? | #xD #xA?
-
-Applications MAY perform *line break normalization*, selecting one string matching the production `lineEnd` above and replacing all *line break*s with the chosen sequence.
-Applications MUST NOT give significance to the newline type present.
-
-{.ednote} Is "maximal-length" defined?  My intent is to preclude treating `"\r\n"` as two `LineBreak`s or leaving trailing spaces
-
-
 {.note} This allows applications to store *strings* internally with any line ending.
 It also removes the need to discuss lines within payloads in the data model, as it was in GEDCOM.
 
@@ -108,6 +97,31 @@ It matches the production `S` from [[XML](//www.w3.org/TR/xml11/)]:
 
     S  ::=  (#x20 | #x9 | #xD | #xA)+
 
+**Whitespace normalisation** is the process of discarding any leading or trailing *whitespace*,
+and replacing other *whitespace* with a single space (U+0020) *character*.
+
+{.note}  The definition of *whitespace normalisation* is identical to that in [[XML](https://www.w3.org/TR/xml11/)]. 
+
+A **line string** is a *string* that SHALL be *whitespace-normalised* before being processed:
+and in such elements the production `S` collapses to a single space (U+0020).
+
+A **linebreak** is defined as either an adjacent carriage return and line feed (in either order), or a single carriage return or line feed.
+It matches the production `LB`:
+
+    LB  ::=  #xD #xA? | #xA #xD?
+
+A **padded linebreak** is defined as a *linebreak* preceded and followed by zero or more space *characters* or tabs.
+It matches the production `PLB`:
+
+    PLB  ::=  (#x20 | #x9)* LB (#x20 | #x9)*
+
+**Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant.
+
+A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed:
+and in such elements the production `PLB` collapses to an implementation-defined choice of a string matching production `LB`.
+
+{.ednote} linebreak normalization is defined within the datamodel because the associated serialization avoid performing linebreak normalization, but other serializations are anticipated in the future.
+
 In the event of a difference between the definitions of the `Char`, `RestrictedChar` and `S` productions given here and those in [[XML](//www.w3.org/TR/xml11/)], the definitions in the latest edition of XML 1.1 specification are definitive.
 
 ### IRIs  {#IRIs}
@@ -116,8 +130,7 @@ The **structure type identifier**s used in this specification are *strings*
 that SHALL take the form of an IRI matching the `IRI` production
 in §2.2 of [[RFC 3987](//tools.ietf.org/html/rfc3987)].
 
-The *structure type identifiers* defined in this standard
-all have *citation element names* that begin `http://terms.fhiso.org/elf/`.
+The *structure type identifiers* defined in this standard all begin `http://terms.fhiso.org/elf/`.
 It is RECOMMENDED that any *extension structure type identifiers*
 also use the `http` IRI scheme defined in §2.7.1 of [[RFC 7230](//tools.ietf.org/html/rfc7230)],
 and an authority component consisting of just a domain name (or subdomain)
@@ -159,27 +172,16 @@ to yield the original IRI.
 ## ELF Datasets
 
 Every Extended Legacy Format (ELF) dataset is an ordered sequence of *structure*s.
-Structures conform to a type hierarchy; the top of this hierarchy is as follows:
+Structures conform to a type hierarchy; a portion of this hierarchy is as follows:
 
 - `[Structure]`
-    - `[TopLevel]`
-        -   `[HEAD]`
-        -   `[SUBN]`
-        -   `[Record]`
-            -   ...
-    - `[InnerStructure]`
-        -   ...
+    -   `[HEAD]`
+    -   `[Record]`
 
-{.ednote} We might want to remove `[SUBN]`, reclassifying it as an extension element,
-or reclassify it as a record.
+Each ELF dataset consists of a single `[HEAD]` structure and any number of `[Record]`s.
 
-Each ELF dataset consists of the following *structure*s, in the following order:
-
-1.  One `[HEAD]` structure
-2.  Zero or one `[SUBN]` structure
-3.  Zero or more `[Record]`s
-
-{.ednote} Or, "Each ELF dataset consists of a single `[HEAD]` structure and any number of `[Record]`s
+{.note} `[Structure]`s that are not `[Record]`s or `[HEAD]` are found within datasets,
+but only nested within other `[Structures]`.
 
 
 ## Structures   {#Structure}
@@ -203,15 +205,24 @@ the same identifier may be used for different types of structures in different [
 
 Identifier
 :   A string uniquely identifying this structure within this ELF dataset.
-    If present, the identifier MUST contain only non-control ASCII characters
-    and match the production ID:
+    If present, the identifier MUST match the production ID:
         
-        ID  ::= [0-9A-Z_a-z] [^@]*
+        ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
 
-    Every `[SUBN]` and `[Record]` has an identifier.
-    `[InnerStructure]`s MAY (but are NOT RECOMMENDED to) have an identifier.
-    Each `[TopLevel]` within a dataset that has an identifier MUST have a unique identifier within the dataset.
+    Every `[Record]` has an identifier.
+    A `[HEAD]` MUST NOT have an identifier.
+    Other `[Structure]`s MAY (but are NOT RECOMMENDED to) have an identifier.
     
+    Each `[Record]` within a dataset that has an identifier MUST have a unique identifier within the dataset.
+    The content of the identifier has no semantic meaning.
+
+{.note} The production `ID` is an alphanum followed by any number of non-control non-`@` 7-bit ASCII characters.  This is more limited than GEDCOM (which also allows the non-ASCII characters in ANSEL), but I am unaware of any GEDCOM implementation that uses those extra characters.
+
+{.ednote ...} Should we say something like GEDCOM X's wording about per-media-type constraints?
+
+> The *identifier* is to be used as a "fragment identifier" as defined by [RFC 3986, Section 3.5](http://tools.ietf.org/html/rfc3986#section-3.5). As such, the constraints of the *identifier* are provided in the definition of the media type (e.g. XML, JSON) of the data structure.
+{/}
+
 {.note ...} Some software have traditionally made additional assumptions of identifiers, such as
  
 -   identifier strings are durable, expressing historical identity
@@ -219,7 +230,7 @@ Identifier
 -   using a specific custom identifier for the `[INDI]` representing the user
 
 ... and so on.
-Implementations MUST NOT rely on any such patterns or rules.
+Because identifier contents have not semantic meaning, implementations can't rely on any such patterns or rules.
 {/}
 
 {.ednote} Do we want to encourage durability of identifiers (i.e., not changing the identifier of a record where leaving it the same is possible)?
@@ -228,15 +239,15 @@ Payload
 :   If present, a payload is either a pointer or a string.
     Each structure subtype defines if it has a payload and if so which kind(s) it may have.
     
-    Each pointer payload MUST point to a `[TopLevel]` within the dataset.
+    Each pointer payload MUST point to a `[Record]` within the dataset.
 
-{.ednote} GEDCOM had provisions for pointers to `[InnerStructure]`s as well as `[TopLevel]`s,
+{.ednote} GEDCOM had provisions for pointers to non-`[Record]` structures,
 but documented no use case for them.
 We omit them because we are unaware of systems that implemented those provisions.
 
 Substructures
-:   Structures may contain zero or more `[InnerStructure]`s, which are called the structure's **substructures**.
-    There are no limitations to the types of `[InnerStructure]`s that may be contained within a structure,
+:   Structures may contain zero or more `[Structure]`s, which are called the structure's **substructures**.
+    There are no limitations to the types of `[Structure]`s that may be contained within a structure,
     but each structure type may recommend particular substructures and/or have a set of required substructures.
 
 ## Spaces in Formatted Payloads  {#extra-spaces}
@@ -259,11 +270,11 @@ Unless otherwise specified within the description of a particular format, excess
 ### Structure Context {#Context}
 
 The **context** of a structure specifies where it appears.
-The following notation is used to define structure contexts:
+The following **context specifier** notation is used to define structure contexts:
 
 -   `IRI` matches any `[Structure]` with that *structure type identifier*, anywhere it appears
--   .`IRI` matches any `[TopLevel]` with that *structure type identifier*, but not an `[InnerStructure]`
--   *context specifier*.`IRI` matches any `[InnerStructure]` with that *structure type identifier*, provided it is a substructure of a structure specified by the *context specifier*
+-   .`IRI` matches any `[HEAD]` or `[Record]` with that *structure type identifier*
+-   *context specifier*.`IRI` matches any `[Structure]` with that *structure type identifier*, provided it is a substructure of a structure specified by the *context specifier*
 -   (`IRI`) refers to any structure with that *structure type identifier* or any structure inherited from it.
 
 ### Cardinality
@@ -302,35 +313,21 @@ The order of list-valued substructures sharing the same *structure type identifi
 A type hierarchy is known to exist; the known types with subtypes are
 
 - `[Structure]`
-    - `[TopLevel]`
-        -   `[Record]`
-    - `[InnerStructure]`
-        - `[Event]`
-            -   `[IndividualEvent]`
-            -   `[FamilyEvent]`
-            -   `[IndividualAttribute]`
+    - `[Record]`
+    - `[Event]`
+        -   `[IndividualEvent]`
+        -   `[FamilyEvent]`
+        -   `[IndividualAttribute]`
 
 These types serve only as abstract supertypes for other data types.
 
-### `http://terms.fhiso.org/elf/TopLevel`  {#TopLevel}
-
-The `http://terms.fhiso.org/elf/TopLevel` type serves as an abstract supertype for those types that may exist at the top level of a data set.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/TopLevel` should appear in an ELF dataset.
-
-Known subtypes
-:   `[HEAD]`
-:   `[SUBN]`
-:   `[Record]`
-
-Contexts
-:   .(`[TopLevel]`)
-
-
 ### `http://terms.fhiso.org/elf/Record`  {#Record}
 
-The `http://terms.fhiso.org/elf/Record` type serves as an abstract supertype for those [TopLevel] types that describe the principle contents of the data set (as opposed to other [TopLevel] subtypes, which are metadata).
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/TopLevel` should appear in an ELF dataset.
+The `http://terms.fhiso.org/elf/Record` type serves as an abstract supertype for those `[Structure]` types that are directly included in the dataset and describe the principle contents of the data set.
+No structures with *structure type identifier* `http://terms.fhiso.org/elf/Record` should appear in an ELF dataset.
 
+Supertype
+:   `[Structure]`
 
 Known subtypes
 :   `[FAM]`
@@ -344,17 +341,8 @@ Known subtypes
 Contexts
 :   .(`[Record]`)
 
-Supertype
-:   `[TopLevel]`
-
-
-### `http://terms.fhiso.org/elf/InnerStructure`  {#InnerStructure}
-
-The `http://terms.fhiso.org/elf/InnerStructure` type serves as an abstract supertype for all non-`[TopLevel]` structures.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/InnerStructure` should appear in an ELF dataset.
-
-Contexts
-:   anything *except* .(`[InnerStructure]`)
+Substructures
+:   `[CHAN]`?
 
 
 ### `http://terms.fhiso.org/elf/Event`  {#Event}
@@ -363,7 +351,7 @@ The `http://terms.fhiso.org/elf/Event` type serves as an abstract supertype for 
 No structures with *structure type identifier* `http://terms.fhiso.org/elf/Event` should appear in an ELF dataset.
 
 Supertype
-:   `[InnerStructure]`
+:   `[Structure]`
 
 Known Subtypes
 :   `[IndividualEvent]`
@@ -383,10 +371,10 @@ Substructures
 :   `[OBJE]`\*
 :   `[PHON]`\*
 :   `[PLAC]`?
+:   `[RELI]`?
+:   `[RESN]`?
 :   `[SOUR]`\*
 :   `[TYPE]`?
-:   `[RESN]`?
-:   `[RELI]`?
 
 {.note} GEDCOM 5.5 also includes `[AGE]` as a substructure of `[Event]`, but GEDCOM 5.5.1 moves that to `[IndividualEvent]` and `[IndividualAttribute]` instead.
 
@@ -414,6 +402,7 @@ Known Subtypes
 :   `[CREM]`
 :   `[DEAT]`
 :   `[EMIG]`
+:   `[EVEN]`
 :   `[FCOM]`
 :   `[GRAD]`
 :   `[IMMI]`
@@ -422,13 +411,12 @@ Known Subtypes
 :   `[PROB]`
 :   `[RETI]`
 :   `[WILL]`
-:   `[EVEN]`
 
 Contexts
 :   .`[INDI]`.(`[IndividualEvent]`)
 
 Payload
-:   Either the string `Y` or not present.
+:   Either the *line string* `Y` or not present.
     If any of the following are true
 
     - the payload is `Y`
@@ -460,18 +448,18 @@ Known Subtypes
 :   `[DIV]`
 :   `[DIVF]`
 :   `[ENGA]`
-:   `[MARR]`
+:   `[EVEN]`
 :   `[MARB]`
 :   `[MARC]`
 :   `[MARL]`
+:   `[MARR]`
 :   `[MARS]`
-:   `[EVEN]`
 
 Contexts
 :   .`[FAM]`.(`[FamilyEvent]`)
 
 Payload
-:   Either the string `Y` or not present.
+:   Either the *line string* `Y` or not present.
     If any of the following are true
 
     - the payload is `Y`
@@ -509,6 +497,7 @@ Known Subtypes
 :   `[CAST]`
 :   `[DSCR]`
 :   `[EDUC]`
+:   `[FACT]`
 :   `[IDNO]`
 :   `[NATI]`
 :   `[NCHI]`
@@ -519,7 +508,6 @@ Known Subtypes
 :   `[RESI]`
 :   `[SSN]`
 :   `[TITL]`
-:   `[FACT]`
 
 {.note} Prior to GEDCOM 5.5.1, there was no `[FACT]` attribute and `[EVEN]` was sometimes used in its place.
 
@@ -545,7 +533,7 @@ Substructures
 The following is a list of known structure types, organized by *structure type identifier*.
 Note that a single *structure type identifier* may be used by several types in different contexts.
 
-{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints (LDS) and contains several types specific to that church and its genealogical products and corporations, either in definition or in practice, including
+{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints (LDS) and contains several types specific to that church and its genealogical products, including
 
 -   AFN and FAMF, which are defined in terms of former LDS genealogical products
 -   BAPL and CONL, which are LDS-specific versions of `[BAPM]` and `[CONF]`
@@ -555,12 +543,7 @@ These LDS-specific types have been omitted from this specification
 and are thus defined by this specification to be [Extension Types](#Extensions).
 {/}
 
-{.ednote ...} Perhaps add the following to the preceding list:
-
--   SUBN, ANCE, and DESC, which appear to have been used in practice only for communication with former LDS genealogical products
-{/}
-
-Unless otherwise specified, all types listed here are direct subtypes of `[InnerStructure]`.
+Unless otherwise specified, all types listed here are direct subtypes of `[Structure]`.
 
 ### `http://terms.fhiso.org/elf/ABBR`  {#ABBR}
 
@@ -573,7 +556,7 @@ Description
 :   A short title used for sorting, filing, and retrieving source records.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters.
 
 Substructures
 :   None
@@ -592,18 +575,18 @@ Description
 :   Address information that, when combined with NAME substructure, meets requirements for sending communications through the mail.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support at least three lines of at least 60 characters each.
+:   A *block string*. It is RECOMMENDED that implementations support at least three lines of at least 60 characters each.
 
 Substructures
 :   `[ADR1]`?
 :   `[ADR2]`?
 :   `[CITY]`?
-:   `[STAE]`?
-:   `[POST]`?
 :   `[CTRY]`?
-:   `[PHON]`\* -- GEDCOM limited this to no more than three `ADDR.PHON` per `ADDR`
 :   `[EMAIL]`\* -- GEDCOM limited this to no more than three `ADDR.EMAIL` per `ADDR`
 :   `[FAX]`\* -- GEDCOM limited this to no more than three `ADDR.FAX` per `ADDR`
+:   `[PHON]`\* -- GEDCOM limited this to no more than three `ADDR.PHON` per `ADDR`
+:   `[POST]`?
+:   `[STAE]`?
 :   `[WWW]`\* -- GEDCOM limited this to no more than three `ADDR.WWW` per `ADDR`
 
 {.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tag names: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `ADDR.EMAI` as synonymous with `ADDR.EMAIL`.
@@ -623,7 +606,7 @@ Description
     This SHOULD correspond to the first line of the superstructure's payload.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters.
 
 Substructures
 :   None
@@ -640,7 +623,7 @@ Description
     This SHOULD correspond to the second line of the superstructure's payload.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters.
 
 Substructures
 :   None
@@ -674,7 +657,7 @@ Description
 :   Which parent(s) adopted
 
 Payload
-:   A string, which SHOULD be from the set {`HUSB`, `WIFE`, `BOTH`}
+:   A *line string*, which SHOULD be from the set {`HUSB`, `WIFE`, `BOTH`}
 
 Substructures
 :   None
@@ -696,23 +679,23 @@ Description
 :   A number that indicates the age in years, months, and days that the principal was at the time of the associated event.
 
 Payload
-:   A string, which uses an age-specification microformat matching the production `Age`:
+:   A *line string*, which uses an age-specification microformat matching the production `Age`:
 
         Age  ::= [<>]? ([0-9]+ "y")? ([0-9]+ "m")? ([0-9]+ "d")? 
                 | CHILD | INFANT | STILLBORN
 
     The component pieces of the microformat have the following meanings:
 
-    | Symbol    | Meaning                                |
-    |-----------|----------------------------------------|
-    | `>`       | greater than indicated age             |
-    | `<`       | less than indicated age                |
-    | `[0-9]+y` | a number of years                      |
-    | `[0-9]+m` | a number of months                     |
-    | `[0-9]+d` | a number of days                       |
-    | `CHILD`   | `<8y`                                  |
-    | `INFANT`  | `<1y`                                  |
-    |`STILLBORN`| just prior, at, or near birth; or `0y` |
+    | Symbol       | Meaning                                |
+    |--------------|----------------------------------------|
+    | `>`          | greater than indicated age             |
+    | `<`          | less than indicated age                |
+    | `[0-9]+ "y"` | a number of years                      |
+    | `[0-9]+ "m"` | a number of months                     |
+    | `[0-9]+ "d"` | a number of days                       |
+    | `CHILD`      | `<8y`                                  |
+    | `INFANT`     | `<1y`                                  |
+    | `STILLBORN`  | just prior, at, or near birth; or `0y` |
 
 
 Substructures
@@ -730,27 +713,22 @@ Contexts
 :   .`[SOUR]`.`[DATA]`.`[AGNC]`
 :   (`[Event]`).`[AGNC]`
 
+Payload
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+Substructures
+:   None
+
 ####  Context .`[SOUR]`.`[DATA]`.`[AGNC]`
 
 Description
 :   The organization, institution, corporation, person, or other entity that has authority or control interests in the associated context. For example, an organization responsible for creating and/or archiving records.
-
-Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
-
-Substructures
-:   None
 
 #### Context (`[Event]`).`[AGNC]`
 
 Description
 :   The organization, institution, corporation, person, or other entity that has authority or control interests in the associated context. For example, an employer of a person of an associated occupation, or a church that administered rites or event.
 
-Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
-
-Substructures
-:   None
 
 
 
@@ -769,8 +747,6 @@ Substructures
 
 
 ### `http://terms.fhiso.org/elf/ANCE`  {#ANCE}
-
-{.ednote} Should this be omitted as LDS-specific?
 
 Ancestors: pertaining to forbearers of an individual.
 
@@ -854,7 +830,7 @@ Description
 :   The person, agency, or entity who created the record. For a published work, this could be the author, compiler, transcriber, abstractor, or editor. For an unpublished source, this may be an individual, a government agency, church organization, or private organization, etc.
 
 Payload
-:   String of arbitrary length
+:   *Block string* of arbitrary length
 
 Substructures
 :   None
@@ -1044,7 +1020,7 @@ Description
 :   An identification or reference description used to file and retrieve items from the holdings of a repository.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Substructures
 :   `[MEDI]`?
@@ -1066,7 +1042,7 @@ Supertype
 :   `[IndividualAttribute]`
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
 :   [*inherited*](#IndividualAttribute)
@@ -1124,24 +1100,6 @@ Substructures
 :   `[DATE]`!
 :   `[NOTE]`\*
 
-
-### `http://terms.fhiso.org/elf/CHAR`  {#CHAR}
-
-Character: an indicator of the character set used in writing this automated information.
-
-Contexts
-:   .`[HEAD]`.`[CHAN]`
-
-Description
-:   A code value that represents the character set to be used to interpret this data.
-
-Payload
-:   A string representing a character set.
-    Implementations SHOULD support `ANSEL`, `UNICODE`, `ASCII`, and `UTF-8`;
-    they are RECOMMENDED to also support `IMBPC`, `MSDOS`, `ANSII`, and `MACINTOSH`.
-
-Substructures
-:   `[VERS]`?
 
 ### `http://terms.fhiso.org/elf/CHIL`  {#CHIL}
 
@@ -1211,7 +1169,7 @@ Description
 :   The name of the city used in the address. Isolated for sorting or indexing.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters.
 
 Substructures
 :   None
@@ -1254,7 +1212,7 @@ Description
 :   A copyright statement needed to protect the copyrights of the submitter of this GEDCOM file.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
 :   None
@@ -1265,7 +1223,7 @@ Description
 :   A copyright statement required by the owner of data from which this information was downloaded. For example, when a GEDCOM download is requested from the Ancestral File, this would be the copyright statement to indicate that the data came from a copyrighted source.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support multi-line payloads of arbitrary size.
+:   A *block string* of arbitrary length.
 
 Substructures
 :   None
@@ -1283,7 +1241,7 @@ Description
 :   Name of the business, corporation, or person that produced or commissioned the product.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
 :   `[ADDR]`?
@@ -1323,7 +1281,7 @@ Description
 :   The name of the country that pertains to the associated address. Isolated by some systems for sorting or indexing. Used in most cases to facilitate automatic sorting of mail.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters.
 
 Substructures
 :   None
@@ -1344,11 +1302,11 @@ Description
 :   The name of the electronic data source that was used to obtain the data in this transmission. For example, the data may have been obtained from a CD-ROM disc that was named "U.S. 1880 CENSUS CD-ROM vol. 13."
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
-:   `[DATE]`?
 :   `[COPR]`?
+:   `[DATE]`?
 
 #### Context .`[SOUR]`.`[DATA]`
 
@@ -1356,8 +1314,8 @@ Payload
 :   None
 
 Substructures
-:   `[EVEN]`\*
 :   `[AGNC]`?
+:   `[EVEN]`\*
 :   `[NOTE]`\*
 
 #### Context `[SOUR]`.`[DATA]`
@@ -1415,7 +1373,7 @@ Dates are represented using a somewhat involved syntax, which shares a common su
     year_g  ::= [1-9] [0-9]* ( "/" [0-9] [0-9] )? "(B.C.)"?
     year    ::= [1-9] [0-9]* "(B.C.)"?
     
-    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "MAY" | "JUN"
+    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
                 | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
 
     month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
@@ -1625,8 +1583,6 @@ Substructures
 
 ### `http://terms.fhiso.org/elf/DESC`  {#DESC}
 
-{.ednote} Should this be omitted as LDS-specific?
-
 Descendants: pertaining to offspring of an individual.
 
 See also `[ANCE]`
@@ -1673,7 +1629,7 @@ Description
 :   The name of the system expected to process the transmission.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 20 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 20 characters.
 
 Substructures
 :   None
@@ -1731,7 +1687,8 @@ Description
 :   An unstructured list of the attributes that describe the physical characteristics of a person, place, or object. Commas separate each attribute.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+:   A *line string*, formatted as a comma-separated list of tokens.
+    It is RECOMMENDED that implementations support payloads of at least 248 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -1751,7 +1708,7 @@ Description
 :   A description of a scholastic or educational achievement or pursuit.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 248 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -1773,7 +1730,7 @@ Description
 :    An electronic address that can be used for contact such as an email address.  
 
 Payload
-:    A string. It is RECOMMENDED that implementations support payloads of at least 120 characters. 
+:    A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters. 
 
 Substructures
 :    None
@@ -1852,14 +1809,16 @@ Description
 :   An enumeration of the different kinds of events that were recorded in a particular source. Each enumeration is separated by a comma. Such as a parish register of births, deaths, and marriages would be `BIRT`, `DEAT`, `MARR`.
 
 Payload
-:   A string, formatted as a comma-separated list of tokens.
+:   A *line string*, formatted as a comma-separated list of tokens.
     It is RECOMMENDED that implementations support payloads of at least 90 characters.
     
-    Known tokens include {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`}
+    Known values include {`ADOP`, `ANUL`, `BAPM`, `BARM`, `BASM`, `BIRT`, `BLES`, `BURI`, `CAST`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `DIV`, `DIVF`, `EDUC`, `EMIG`, `ENGA`, `EVEN`, `FACT`, `FCOM`, `GRAD`, `IMMI`, `MARB`, `MARC`, `MARL`, `MARR`, `MARS`, `NATI`, `NATU`, `OCCU`, `ORDN`, `PROB`, `PROP`, `RELI`, `RESI`, `RETI`, `TITL`, `WILL`}
 
 Substructures
 :   `[DATE]`?
 :   `[PLAC]`?
+
+{.ednote} We could say the payload is a set of *structure type identifier*s, abbreviated to tags in the serialization stage, but doing so will complicate serialization's description.
 
 #### Context `[SOUR]`.`[EVEN]`
 
@@ -1867,12 +1826,14 @@ Description
 :   A code that indicates the type of event which was responsible for the source entry being recorded. For example, if the entry was created to record a birth of a child, then the type would be `BIRT` regardless of the assertions made from that record, such as the mother's name or mother's birth date. This will allow a prioritized best view choice and a determination of the certainty associated with the source used in asserting the cited fact.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 15 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 15 characters.
     
-    Known values include {`ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`, `EVEN`, `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`, `ORDN`, `RETI`, `PROB`, `WILL`, `EVEN`, `CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`}
+    Known values include {`ADOP`, `ANUL`, `BAPM`, `BARM`, `BASM`, `BIRT`, `BLES`, `BURI`, `CAST`, `CENS`, `CHR`, `CHRA`, `CONF`, `CREM`, `DEAT`, `DIV`, `DIVF`, `EDUC`, `EMIG`, `ENGA`, `EVEN`, `FACT`, `FCOM`, `GRAD`, `IMMI`, `MARB`, `MARC`, `MARL`, `MARR`, `MARS`, `NATI`, `NATU`, `OCCU`, `ORDN`, `PROB`, `PROP`, `RELI`, `RESI`, `RETI`, `TITL`, `WILL`}
 
 Substructures
 :   `[ROLE]`
+
+{.ednote} We could say the payload is a set of *structure type identifier*s, abbreviated to tags in the serialization stage, but doing so will complicate serialization's description.
 
 
 ### `http://terms.fhiso.org/elf/FACT`  {#FACT}
@@ -1886,7 +1847,7 @@ Description
 :   Text describing a particular characteristic or attribute assigned to an individual.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -1914,18 +1875,18 @@ Supertype
 
 Substructures
 :   (`[FamilyEvent]`)\*
-:   `[HUSB]`?
-:   `[WIFE]`?
-:   `[CHIL]`\* -- The preferred order of the `[CHIL]` substructures within a `[FAM]` structure is chronological by birth.
-:   `[NCHI]`?
-:   `[SUBM]`\*
-:   `[SOUR]`\*
-:   `[OBJE]`\*
-:   `[NOTE]`\*
-:   `[REFN]`\*
-:   `[RIN]`?
 :   `[CHAN]`?
+:   `[CHIL]`\* -- The preferred order of the `[CHIL]` substructures within a `[FAM]` structure is chronological by birth.
+:   `[HUSB]`?
+:   `[NCHI]`?
+:   `[NOTE]`\*
+:   `[OBJE]`\*
+:   `[REFN]`\*
 :   `[RESN]`?
+:   `[RIN]`?
+:   `[SOUR]`\*
+:   `[SUBM]`\*
+:   `[WIFE]`?
 
 
 
@@ -1949,8 +1910,8 @@ Substructures
 #### Context .`[INDI]`.`[FAMC]`
 
 Substructures
-:   `[PEDI]`?
 :   `[NOTE]`\*
+:   `[PEDI]`?
 :   `[STAT]`?
 
 #### Context .`[INDI]`.`[ADOP]`.`[FAMC]`
@@ -1987,7 +1948,7 @@ Description
 :    A FAX telephone number appropriate for sending data facsimiles.  
 
 Payload
-:    A string. It is RECOMMENDED that implementations support payloads of at least 60 characters. 
+:    A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters. 
 
 Substructures
 :    None
@@ -2034,7 +1995,7 @@ Description
 :   A complete local or remote file reference to the auxiliary data to be linked to the GEDCOM context. Remote reference would include a network address where the multimedia data may be obtained.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
 Substructures
 :   `[FORM]`! -- this MAY be omitted, but if so then it MUST appear in the containing `[OBJE]`
@@ -2047,7 +2008,7 @@ Description
 :   The name of the GEDCOM transmission file. If the file name includes a file extension it must be shown in the form (filename.ext).
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
 :   None
@@ -2069,20 +2030,20 @@ Description
 :   The phonetic variation of the name in the same form as the was the name used in its superstructure
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 #### Context .`[INDI]`.`[NAME]`.`[FONE]`
 
 Substructures
 :   `[TYPE]`!
-:   `[NPFX]`?
 :   `[GIVN]`?
 :   `[NICK]`?
+:   `[NOTE]`\*
+:   `[NPFX]`?
+:   `[NSFX]`?
+:   `[SOUR]`\*
 :   `[SPFX]`?
 :   `[SURN]`?
-:   `[NSFX]`?
-:   `[NOTE]`\*
-:   `[SOUR]`\*
 
 Generally, `[NAME]`.`[FONE]`'s substructures should mirror those of the superstructure, but represent the payloads phonetically 
 
@@ -2105,18 +2066,17 @@ Contexts
 :   `[OBJE]`.`[FORM]`
 :   `[OBJE]`.`[FILE]`.`[FORM]`
 
+Substructures
+:   None
+
 #### Context .`[HEAD]`.`[GEDC]`.`[FORM]`
 
 Description
 :   The GEDCOM form used to construct this transmission.
     
 Payload
-:   A string, specifically `LINEAGE_LINKED`.
+:   A *line string*, specifically `LINEAGE_LINKED`.
     Implementations capable of parsing multiple formats may accept other values for this string.
-
-Substructures
-:   None
-
 
 #### Context .`[HEAD]`.`[PLAC]`.`[FORM]`
 
@@ -2124,11 +2084,8 @@ Description
 :   Implies that all place names follow this jurisdictional format and each jurisdiction is accounted for by a comma, whether the name is known or not. May be overridden by (`[Event]`).`[PLAC]`.`[FORM]`.
     
 Payload
-:   A string containing an ordered list of jurisdictional entities, separated by commas.
+:   A *line string* containing an ordered list of jurisdictional entities, separated by commas.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
-
-Substructures
-:   None
 
 #### Context (`[Event]`).`[PLAC]`.`[FORM]`
 
@@ -2137,11 +2094,8 @@ Description
     The jurisdictions are separated by commas, and any jurisdiction's name that is missing is still accounted for by a comma.
     
 Payload
-:   A string containing an ordered list of jurisdictional entities, separated by commas.
+:   A *line string* containing an ordered list of jurisdictional entities, separated by commas.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
-
-Substructures
-:   None
 
 
 #### Contexts `[OBJE]`.`[FORM]` and `[OBJE]`.`[FILE]`.`[FORM]`
@@ -2150,13 +2104,10 @@ Description
 :   Indicates the format of the multimedia data.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 4 characters.
     
     The following are known values for the payload: {`bmp`, `gif`, `jpeg`, `ole`, `pcx`, `tiff`, `wav`}
-
-Substructures
-:   None
 
 {.note} These two contexts differ primarily in the GEDCOM version in which they were introduced.  For more, see the discussion under `[OBJE]`
 
@@ -2172,8 +2123,8 @@ Payload
 :    None    
 
 Substructures
-:   `[VERS]`!
 :   `[FORM]`!
+:   `[VERS]`!
 
 
 ### `http://terms.fhiso.org/elf/GIVN`  {#GIVN}
@@ -2187,7 +2138,7 @@ Description
 :     Given name or earned name.
 
 Payload
-:   A string containing a comma-separated list of names.
+:   A *line string* containing a comma-separated list of names.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
     It is RECOMMENDED that implementations support at least 90 characters between each comma.
 
@@ -2226,21 +2177,20 @@ Payload
 :    None    
 
 Supertype
-:   `[TopLevel]`
+:   `[Structure]`
 
 Substructures
-:   `[SOUR]`!
-:   `[DEST]`?
-:   `[DATE]`?
-:   `[SUBM]`!
-:   `[SUBN]`?
-:   `[FILE]`?
-:   `[COPR]`?
 :   `[GEDC]`!
-:   `[CHAR]`!
+:   `[SOUR]`!
+:   `[SUBM]`!
+:   `[COPR]`?
+:   `[DATE]`?
+:   `[DEST]`?
+:   `[FILE]`?
 :   `[LANG]`?
-:   `[PLAC]`?
 :   `[NOTE]`?
+:   `[PLAC]`?
+:   `[SUBN]`?
 
 
 ### `http://terms.fhiso.org/elf/HUSB`  {#HUSB}
@@ -2283,7 +2233,7 @@ Description
 :   A nationally-controlled number assigned to an individual.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -2327,28 +2277,28 @@ Payload
 :   None
 
 Supertype
-:   (`[Record]`)
+:   `[Record]`
 
 Substructures
-:   `[RESN]`?
-:   `[NAME]`\*
-:   `[SEX]`?
 :   (`[IndividualEvent]`)\*, 
 :   (`[IndividualAttribute]`)\*
-:   `[FAMC]`\*
-:   `[FAMS]`\*
-:   `[SUBM]`\*
-:   `[ASSO]`\*
 :   `[ALIA]`\*
 :   `[ANCI]`\*
-:   `[DESI]`\*
-:   `[SOUR]`\*
-:   `[OBJE]`\*
-:   `[NOTE]`\*
-:   `[RFN]`?
-:   `[REFN]`\*
-:   `[RIN]`?
+:   `[ASSO]`\*
 :   `[CHAN]`?
+:   `[DESI]`\*
+:   `[FAMC]`\*
+:   `[FAMS]`\*
+:   `[NAME]`\*
+:   `[NOTE]`\*
+:   `[OBJE]`\*
+:   `[REFN]`\*
+:   `[RESN]`?
+:   `[RFN]`?
+:   `[RIN]`?
+:   `[SEX]`?
+:   `[SOUR]`\*
+:   `[SUBM]`\*
 
 
 ### `http://terms.fhiso.org/elf/LANG`  {#LANG}
@@ -2368,7 +2318,7 @@ Description
     Multiple language preference is shown by using multiple occurrences in order of priority.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 15 characters.
     It is RECOMMENDED that implementations use one of the following known language payloads:
     {`Afrikaans`, `Albanian`, `Amharic`, `Anglo-Saxon`, `Arabic`, `Armenian`, `Assamese`, `Belorusian`, `Bengali`, `Braj`, `Bulgarian`, `Burmese`, `Cantonese`, `Catalan`, `Catalan_Spn`, `Church-Slavic`, `Czech`, `Danish`, `Dogri`, `Dutch`, `English`, `Esperanto`, `Estonian`, `Faroese`, `Finnish`, `French`, `Georgian`, `German`, `Greek`, `Gujarati`, `Hawaiian`, `Hebrew`, `Hindi`, `Hungarian`, `Icelandic`, `Indonesian`, `Italian`, `Japanese`, `Kannada`, `Khmer`, `Konkani`, `Korean`, `Lahnda`, `Lao`, `Latvian`, `Lithuanian`, `Macedonian`, `Maithili`, `Malayalam`, `Mandrin`, `Manipuri`, `Marathi`, `Mewari`, `Navaho`, `Nepali`, `Norwegian`, `Oriya`, `Pahari`, `Pali`, `Panjabi`, `Persian`, `Polish`, `Portuguese`, `Prakrit`, `Pusto`, `Rajasthani`, `Romanian`, `Russian`, `Sanskrit`, `Serb`, `Serbo_Croa`, `Slovak`, `Slovene`, `Spanish`, `Swedish`, `Tagalog`, `Tamil`, `Telugu`, `Thai`, `Tibetan`, `Turkish`, `Ukrainian`, `Urdu`, `Vietnamese`, `Wendic`, `Yiddish`}
@@ -2406,9 +2356,9 @@ Description
 :   The value specifying the latitudinal coordinate of the place name. The latitude coordinate is the direction North or South from the equator in degrees and fraction of degrees carried out to give the desired accuracy.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 10 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 10 characters.
 
-    The string should match the production `Latitude`:
+    The string MUST match the production `Latitude`:
     
         Latitude  ::= [NS] [0-9]+ ( "." [0-9]+ )?
 
@@ -2434,9 +2384,9 @@ Description
 :   The value specifying the longitudinal coordinate of the place name. The longitude coordinate is Degrees and fraction of degrees east or west of the zero or base meridian coordinate.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 11 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 11 characters.
 
-    The string should match the production `Longitude`:
+    The string MUST match the production `Longitude`:
     
         Longitude  ::= [EW] [0-9]+ ( "." [0-9]+ )?
 
@@ -2579,7 +2529,7 @@ Description
 :   A code, selected from one of the media classifications choices listed under *Payload*, that indicates the type of material in which the referenced source is stored.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 15 characters.
     
     The following are known values for the payload: {`audio`, `book`, `card`, `electronic`, `fiche`, `film`, `magazine`, `manuscript`, `map`, `newspaper`, `photo`, `tombstone`, `video`}
@@ -2605,7 +2555,7 @@ Description
 :   The name of the software product that produced this transmission.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 90 characters.
     
 Substructures
@@ -2617,7 +2567,7 @@ Description
 :   The official name of the archive in which the stated source material is stored.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 90 characters.
     
 Substructures
@@ -2629,7 +2579,7 @@ Description
 :   The name of the submitter formatted for display and address generation.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 60 characters.
     
 Substructures
@@ -2642,7 +2592,7 @@ Description
 :   The name value is formed in the manner the name is normally spoken.
 
 Payload
-:   A string.
+:   A *line string*, formatted as outlined below.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
     
     The family name (surname) SHOULD be surrounded by U+002F SOLIDUS `/`.
@@ -2654,16 +2604,16 @@ Payload
     In the event that this payload disagrees with the substructures of this structure, the payload SHOULD be taken as more correct.
     
 Substructures
-:   `[NPFX]`?
 :   `[GIVN]`?
 :   `[NICK]`?
+:   `[NPFX]`?
+:   `[NSFX]`?
 :   `[SPFX]`?
 :   `[SURN]`?
-:   `[NSFX]`?
-:   `[SOUR]`\*
-:   `[NOTE]`\*
 :   `[FONE]`\*
 :   `[ROMN]`\*
+:   `[NOTE]`\*
+:   `[SOUR]`\*
 
 
 ### `http://terms.fhiso.org/elf/NATI`  {#NATI}
@@ -2677,7 +2627,7 @@ Description
 :   The person's division of national origin or other folk, house, kindred, lineage, or tribal interest. Examples: Irish, Swede, Egyptian Coptic, Sioux Dakota Rosebud, Apache Chiricawa, Navajo Bitter Water, Eastern Cherokee Taliwa Wolf, and so forth.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -2716,7 +2666,7 @@ Contexts
 :   .`[FAM]`.`[NCHI]`
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 3 characters.
     It is RECOMMENDED that this string represent a base-10 integer.
     
@@ -2757,7 +2707,7 @@ Description
 :   A descriptive or familiar name used in connection with one's proper name.
 
 Payload
-:   A string containing a comma-separated list of names.
+:   A *line string* containing a comma-separated list of names.
     It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
 {.note} While the `NICK` grammar in GEDCOM is for a comma-separated list, there is no descriptive text specifying the meaning of the commas.  In particular, it is not clear if multiple nicknames derived from the same given name should be listed in a single comma-separated `NICK` under that `[NAME]` or as several distinct `[NAME]`s.
@@ -2777,7 +2727,7 @@ Description
 :   The number of different families that this person was known to have been a member of as a spouse or parent, regardless of whether the associated families are represented in the dataset.
 
 Payload
-:   A string.
+:   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 3 characters.
     It is RECOMMENDED that this string represent a base-10 integer.
     
@@ -2808,10 +2758,10 @@ Payload
 :   None
 
 Substructures
-:   `[SOUR]`\*
+:   `[CHAN]`?
 :   `[REFN]`\*
 :   `[RIN]`?
-:   `[CHAN]`?
+:   `[SOUR]`\*
 
 #### Context .`[HEAD]`.`[NOTE]`
 
@@ -2819,7 +2769,7 @@ Description
 :   A note that a user enters to describe the contents of the lineage-linked file in terms of "ancestors or descendants of" so that the person receiving the data knows what genealogical information the transmission contains.
 
 Payload
-:   String of arbitrary length.
+:   *Block string* of arbitrary length.
 
 Substructures
 :   None
@@ -2842,7 +2792,7 @@ Description
 :   Comments or opinions from the submitter.
 
 Payload
-:   *Either* String of arbitrary length *or* pointer to a `[NOTE]`.
+:   *Either* *block string* of arbitrary length *or* pointer to a `[NOTE]`.
 
 Substructures
 :   `[SOUR]`\*
@@ -2861,7 +2811,7 @@ Description
 :   Non indexing name piece that appears preceding the given name and surname parts. Different name prefix parts are separated by a comma.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
 Substructures
 :   None
@@ -2880,7 +2830,7 @@ Description
 :   Non-indexing name piece that appears after the given name and surname parts. Different name suffix parts are separated by a comma.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
 Substructures
 :   None
@@ -2917,16 +2867,16 @@ Payload
 :   None
 
 Substructures
+:   `[BLOB]`! -- GEDCOM 5.5 only
+:   `[FILE]`+ -- GEDCOM 5.5.1 only
+:   `[FORM]`! -- GEDCOM 5.5 only
+:   `[CHAN]`?
 :   `[NOTE]`\*
-:   `[SOUR]`\*
+:   `[OBJE]`? -- GEDCOM 5.5 only
 :   `[REFN]`\*
 :   `[RIN]`?
-:   `[CHAN]`?
-:   `[FORM]`! -- GEDCOM 5.5 only
+:   `[SOUR]`\*
 :   `[TITL]`? -- GEDCOM 5.5 only
-:   `[BLOB]`! -- GEDCOM 5.5 only
-:   `[OBJE]`? -- GEDCOM 5.5 only
-:   `[FILE]`+ -- GEDCOM 5.5.1 only
 
 #### Context .`[OBJE]`.`[OBJE]`
 
@@ -2948,10 +2898,10 @@ Payload
 
 Substructures
 :   *Either* None (if payload is a pointer) *or*
-:   `[FORM]`! -- GEDCOM 5.5 only (not present in GEDCOM 5.5.1)
-:   `[TITL]`?
 :   `[FILE]`! (GEDCOM 5.5) or `[FILE]`+ (GEDCOM 5.5.1)
-:   `[NOTE]`\* -- GEDCOM 5.5 only (not present in GEDCOM 5.5.1)
+:   `[FORM]`! -- GEDCOM 5.5 only
+:   `[NOTE]`\* -- GEDCOM 5.5 only
+:   `[TITL]`?
 
 
 ### `http://terms.fhiso.org/elf/OCCU`  {#OCCU}
@@ -2965,7 +2915,7 @@ Description
 :   The kind of activity that an individual does for a job, profession, or principal activity.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -3005,7 +2955,7 @@ Description
 :   Specific location with in the information referenced. For a published work, this could include the volume of a multi-volume work and the page number(s). For a periodical, it could include volume, issue, and page numbers. For a newspaper, it could include a column number and page number. For an unpublished source, this could be a sheet number, page number, frame number, etc. A census record might have a line number or dwelling and family numbers in addition to the page number.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 248 characters.
 
 Substructures
 :   None
@@ -3048,7 +2998,7 @@ Contexts
 :   `[ADDR]`.`[PHON]`
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 25 characters.
 
 Substructures
 :   None
@@ -3086,7 +3036,7 @@ Description
 :   The name of the lowest jurisdiction that encompasses all lower-level places named in this source. For example, "Oneida, Idaho" would be used as a source jurisdiction place for events occurring in the various towns within Oneida County. "Idaho" would be the source jurisdiction place if the events recorded took place in other counties as well as Oneida County.
 
 Payload
-:   A string formatted as a *place hierarchy*.
+:   A *line string* formatted as a *place hierarchy*.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Substructures
@@ -3095,13 +3045,13 @@ Substructures
 #### Context (`[Event]`).`[PLAC]`
 
 Payload
-:   A string formatted as a *place hierarchy*.
+:   A *line string* formatted as a *place hierarchy*.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Substructures
 :   `[FORM]`?
-:   `[SOUR]`\*
 :   `[NOTE]`\*
+:   `[SOUR]`\*
 
 
 ### `http://terms.fhiso.org/elf/POST`  {#POST}
@@ -3115,7 +3065,7 @@ Description
 :   The ZIP or postal code used by the various localities in handling of mail. Isolated for sorting or indexing.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 10 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 10 characters.
 
 Substructures
 :   None
@@ -3152,7 +3102,7 @@ Description
 :   A list of possessions (real estate or other property) belonging to this individual.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 248 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -3176,7 +3126,7 @@ Description
     For an unpublished work, it includes the date the record was created and the place where it was created. For example, the county and state of residence of a person making a declaration for a pension or the city and state of residence of the writer of a letter.
 
 Payload
-:   A string of arbitrary length.
+:   A *block string* of arbitrary length.
 
 Substructures
 :   None
@@ -3230,7 +3180,7 @@ Description
 :   A user-defined number or text that the submitter uses to identify this record. For instance, it may be a record number within the submitter's automated or manual system, or it may be a page and position number on a pedigree chart.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 20 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 20 characters.
 
 Substructures
 :   `[TYPE]`?
@@ -3247,7 +3197,7 @@ Description
 :   A word or phrase that states object 1's relation is object 2.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 25 characters.
 
 Substructures
 :   None
@@ -3279,7 +3229,7 @@ Description
 :   A name of the religion with which this person, event, or record was affiliated.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -3313,12 +3263,12 @@ Payload
 :   None
 
 Substructures
-:   `[NAME]`?
 :   `[ADDR]`?
+:   `[CHAN]`?
+:   `[NAME]`?
 :   `[NOTE]`\*
 :   `[REFN]`\*
 :   `[RIN]`?
-:   `[CHAN]`?
 
 #### Context .`[SOUR]`.`[REPO]`
 
@@ -3329,8 +3279,8 @@ Payload
 :   Pointer to a .`[REPO]`
 
 Substructures
-:   `[NOTE]`\*
 :   `[CALN]`\*
+:   `[NOTE]`\*
 
 {.note} Due to an example in the GEDCOM specification that is inconsistent with the grammar, it is RECOMMENDED that implementations parse a .`[SOUR]`.`[REPO]`.`[MEDI]` (i.e., coordinate with instead of subordinate to `CALN`) as if they were .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`.
 
@@ -3425,7 +3375,7 @@ Description
     -   marked in GEDCOM 5.5 as being "for future use".
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 Substructures
 :   None
@@ -3442,7 +3392,7 @@ Description
 :   A unique record identification number assigned to the record by the source system. This number is intended to serve as a more sure means of identification of a record between two interfacing systems.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 12 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 12 characters.
 
 Substructures
 :   None
@@ -3457,7 +3407,7 @@ Contexts
 
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 25 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 25 characters.
 
     The payload SHOULD be either one of {`CHIL`, `HUSB`, `WIFE`, `MOTH`, `FATH`, `SPOU`}, or parentheses surrounding a word or phrase that identifies a person's role in an event being described---the same word or phrase, and in the same language, that the recorder used to define the role in the actual record.
 
@@ -3478,7 +3428,7 @@ Contexts
 :   (`[Event]`).`[PLAC]`.`[ROMN]`
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 #### Context .`[INDI]`.`[NAME]`.`[ROMN]`
 
@@ -3487,12 +3437,12 @@ Description
 
 Substructures
 :   `[TYPE]`!
-:   `[NPFX]`?
 :   `[GIVN]`?
 :   `[NICK]`?
+:   `[NPFX]`?
+:   `[NSFX]`?
 :   `[SPFX]`?
 :   `[SURN]`?
-:   `[NSFX]`?
 :   `[NOTE]`\*
 :   `[SOUR]`\*
 
@@ -3547,13 +3497,13 @@ Description
 :    A system identification name which was obtained through the GEDCOM registration process. This name must be unique from any other product. Spaces within the name must be substituted with a U+005F (underscore `_`) so as to create one word.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 20 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 20 characters.
 
 Substructures
-:   `[VERS]`?
-:   `[NAME]`?
 :   `[CORP]`?
 :   `[DATA]`?
+:   `[NAME]`?
+:   `[VERS]`?
 
 #### Context .`[SOUR]`
 
@@ -3564,18 +3514,18 @@ Payload
 :   None
 
 Substructures
-:   `[DATA]`?
-:   `[AUTH]`?
-:   `[TITL]`?
 :   `[ABBR]`?
-:   `[PUBL]`?
-:   `[TEXT]`?
-:   `[REPO]`?
-:   `[OBJE]`\*
-:   `[NOTE]`\*
-:   `[REFN]`\*
-:   `[RIN]`?
+:   `[AUTH]`?
 :   `[CHAN]`?
+:   `[DATA]`?
+:   `[NOTE]`\*
+:   `[OBJE]`\*
+:   `[PUBL]`?
+:   `[REFN]`\*
+:   `[REPO]`?
+:   `[RIN]`?
+:   `[TEXT]`?
+:   `[TITL]`?
 
 #### Context `[SOUR]`, pointer version
 
@@ -3583,12 +3533,12 @@ Payload
 :   Pointer to a .`[SOUR]`
 
 Substructures
-:   `[PAGE]`?
-:   `[EVEN]`?
 :   `[DATA]`?
-:   `[QUAY]`?
-:   `[OBJE]`\*
+:   `[EVEN]`?
 :   `[NOTE]`\*
+:   `[OBJE]`\*
+:   `[PAGE]`?
+:   `[QUAY]`?
 
 #### Context `[SOUR]`, text block version
 
@@ -3598,11 +3548,11 @@ Description
 :   A free form text block used to describe the source from which information was obtained. This text block is used by those systems which cannot use a pointer to a source record. It must contain a descriptive title, who created the work, where and when it was created, and where is source data stored. The developer should encourage users to use an appropriate style for forming this free form bibliographic reference.
 
 Payload
-:   A string of arbitrary length
+:   A *block string* of arbitrary length
 
 Substructures
-:   `[TEXT]`\*
 :   `[NOTE]`\*
+:   `[TEXT]`\*
 
 
 ### `http://terms.fhiso.org/elf/SPFX`  {#SPFX}
@@ -3616,7 +3566,7 @@ Description
 :   Surname prefix or article used in a family name.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
     Different surname articles are separated by a comma, for example in the name "de la Cruz", this value would be "de, la".
 
@@ -3637,7 +3587,7 @@ Description
 :   A number assigned to a person in the United States for identification purposes.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 11 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 11 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -3657,7 +3607,7 @@ Description
 :   The name of the state used in the address. Isolated for sorting or indexing.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 60 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 60 characters.
 
 Substructures
 :   None
@@ -3712,12 +3662,12 @@ Payload
 
 Substructures
 :   `[NAME]`!
+:   `[CHAN]`?
 :   `[ADDR]`?
-:   `[OBJE]`\*
 :   `[LANG]`\* -- GEDCOM limited this to no more than three `SUBM.LANG` per `LANG`
+:   `[OBJE]`\*
 :   `[RFN]`?
 :   `[RIN]`?
-:   `[CHAN]`?
 
 #### Context (`[Record]`).`[SUBM]`
 
@@ -3730,9 +3680,9 @@ Substructures
 
 ### `http://terms.fhiso.org/elf/SUBN`  {#SUBN}
 
-{.ednote} Should this be omitted as LDS-specific?
-
 Submission: pertains to a collection of data issued for processing.
+
+{.note} GEDCOM required that `SUBN` be the first `[Record]` in any serialization.
 
 Contexts
 :   .`[SUBN]`
@@ -3747,10 +3697,10 @@ Payload
 :   None
 
 Substructures
-:   `[SUBM]`?
 :   `[ANCE]`?
 :   `[DESC]`?
 :   `[RIN]`?
+:   `[SUBM]`?
 
 #### Context .`[HEAD]`.`[SUBN]`
 
@@ -3772,7 +3722,7 @@ Description
 :   Surname or family name. Different surnames are separated by a comma.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Substructures
 :   None
@@ -3790,7 +3740,7 @@ Description
 :   A verbatim copy of any description contained within the source. This indicates notes or text that are actually contained in the source document, not the submitter's opinion about the source.
 
 Payload
-:   A string of arbitrary length
+:   A *block string* of arbitrary length
 
 Substructures
 :   None
@@ -3808,7 +3758,7 @@ Description
 :   The time of a specific event, usually a computer-timed event.
 
 Payload
-:   A string.  It is RECOMMENDED that implementations support payloads of at least 12 characters.
+:   A *line string*.  It is RECOMMENDED that implementations support payloads of at least 12 characters.
     
     The string should match the `Time` production:
     
@@ -3839,7 +3789,7 @@ Description
 :   The title given to or used by a person, especially of royalty or other noble class within a locality.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Supertype
 :   `[IndividualAttribute]`
@@ -3853,7 +3803,7 @@ Description
 :   The title of a work, record, item, or object.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 248 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 248 characters.
 
 Substructures
 :   None
@@ -3865,7 +3815,7 @@ Description
 :   The title of the work, record, or item and, when appropriate, the title of the larger work or series of which it is a part.
 
 Payload
-:   A string of arbitrary length.
+:   A *line string* of arbitrary length.
 
 Substructures
 :   None
@@ -3890,7 +3840,7 @@ Description
 :   A user-defined definition of the `[REFN]`.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 40 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 40 characters.
 
 
 #### Context (`[Event]`).`[TYPE]`
@@ -3901,7 +3851,7 @@ Description
 {.ednote} The description text from GEDCOM suggests `[EVEN]`.`[TYPE]`, but it is a known to appear as a substructure of all (`[Event]`)s.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 90 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 90 characters.
 
 
 #### Context `[FONE]`.`[TYPE]`
@@ -3910,7 +3860,7 @@ Description
 :   Indicates the method used in transforming the text to the phonetic variation.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
     Known values include, but are not limited to, `hangul` and `kana`.
 
 
@@ -3920,7 +3870,7 @@ Description
 :   Indicates the method used in transforming the text to the romanized variation.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 30 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 30 characters.
     Known values include, but are not limited to, `pinyin`, `romanji`, and `wadegiles`.
 
 
@@ -3931,13 +3881,12 @@ Version: indicates which version of a product, item, or publication is being use
 Contexts
 :   .`[HEAD]`.`[SOUR]`.`[VERS]`
 :   .`[HEAD]`.`[GEDC]`.`[VERS]`
-:   .`[HEAD]`.`[CHAR]`.`[VERS]`
 
 Description
 :   An identifier that represents the version level assigned to the associated product. It is defined and changed by the creators of the product.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 15 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 15 characters.
     
 {.note} This draft is based off of a specification for which `.HEAD.GEDC.VERS` would typically be `5.5.1`, though depending on the specific features used other version strings might be appropriate too.
 
@@ -4005,7 +3954,7 @@ Description
 :   The world wide web page address.
 
 Payload
-:   A string. It is RECOMMENDED that implementations support payloads of at least 120 characters.
+:   A *line string*. It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
 Substructures
 :   None
@@ -4018,17 +3967,10 @@ Substructures
 The list of types contained in this specification are not exhaustive
 and may be extended by other specifications.
 
-Extension types are subject to the following limitations
+Extension types' *structure type identifier*s SHOULD be one of
 
--   Extensions MUST be subtypes of either `[TopLevel]` or `[InnerStructure]` (or their subtypes).
-
--   Extension [TopLevel]s MUST NOT appear 
-    before the .`[HEAD]` or
-    between the .`[HEAD]` and the .`[SUBN]` (if there is a .`[SUBN]`).
-
--   Extensions' *structure type identifier*s SHOULD be one of
-    -   an IRI with an authority component owned by the extension author, as documented in [IRIs]
-    -   a known *structure type identifier* appearing in a different context
+-   an IRI with an authority component owned by the extension author, as documented in [IRIs]
+-   a known *structure type identifier* appearing in a different context
     
 Implementations encountering an unknown extension structures MAY ignore the structure and its substructures.
 It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
