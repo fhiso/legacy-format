@@ -369,6 +369,10 @@ A string-valued *payload* is encoded into a *payload line* as follows:
     a `[CONT]` pseudo-structure if the split point was a *linebreak*
     and a `[CONC]` pseudo-structure otherwise.
 
+    It is RECOMMENDED that all payloads be split as needed
+    to ensure that no the [Line] containing a portion of the payload
+    exceeds 255 characters in length.
+
 1.  Each U+0040 *payload* which is not part of a substring that matches production `Escape`
     is replaced by two adjacent U+0040s.
 
@@ -382,6 +386,8 @@ A string-valued *payload* is encoded into a *payload line* as follows:
 {.note} Delimiter escaping will never be used with any of the structures documented in [ELF-DM]
 because all *payload*s there are either *whitespace normalized* or *linebreak normalized*.
 It is included to permit adoption of this serialization format to other date models or extensions that do not make that provision.
+
+{.ednote} The above leaves out the ability to replace "a b" with "a@#20@" CONC "b", but I think we can omit that safely; we can simply require long lines of spaces to exceed 255 characters.
 
 {.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes  \n supported."`, the `NOTE` could be encoded as
 
