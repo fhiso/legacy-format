@@ -1359,11 +1359,11 @@ Dates are represented using a somewhat involved syntax, which shares a common su
     approx  ::= ( "ABT" | "CAL" | "EST" ) Date
     range   ::= ( "BEF" | "AFT" ) Date | "BET" Date "AND" Date
     
-    greg    ::= "@#DGREGORIAN@"? d_greg
-    juln    ::= "@#DJULIAN@" d_juln
-    hebr    ::= "@#DHEBREW@" d_hebr
-    fren    ::= "@#DFRENCH R@" d_fren
-    future  ::= "@#D" ( "ROMAN" | "UNKNOWN" ) "@" String
+    greg    ::= ("@#DGREGORIAN@" #x20)? d_greg
+    juln    ::= "@#DJULIAN@" #x20 d_juln
+    hebr    ::= "@#DHEBREW@" #x20 d_hebr
+    fren    ::= "@#DFRENCH R@" #x20 d_fren
+    future  ::= "@#D" ( "ROMAN" | "UNKNOWN" ) "@" #x20 String
     
     d_fren  ::= ( ( [1-9] [0-9]? )? month_f )? year
     d_greg  ::= ( ( [1-9] [0-9]? )? month )? year_g
@@ -1457,6 +1457,21 @@ meaning one of the following three forms:
 ##### Date Value {#date-value}
 
 Many `[DATE]` payloads, referred to below *date values*, may have any of a variety of formats:
+
+| Format               | Meaning                                                           |
+|----------------------|-------------------------------------------------------------------|
+| [Date](#date-format) | |
+| [Date Period](#date-period) | |
+| `BEF` [Date](#date-format) | before the given date |
+| `AFT` [Date](#date-format) | after the given date |
+| `BET` [Date](#date-format) `AND` [Date](#date-format) | between the given dates; the first date SHOULD be earlier than the second date |
+| `ABT` [Date](#date-format) | about; the given date is not exact |
+| `CAL` [Date](#date-format) | calculated mathematically, for example, from an event date and age |
+| `EST` [Date](#date-format) | estimated based on some other event date |
+| `INT` [Date](#date-format) `(`arbitrary text`)` | interpreted from knowledge about the associated date phrase included in parentheses |
+| `(`arbitrary text`)` | information about when an event occurred that is not recognizable to a date parser |
+
+{.ednote} Is the above table or the below list more understandable?
 
 -   [Date](#date-format)
 -   [Date Period](#date-period)
