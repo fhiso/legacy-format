@@ -94,11 +94,6 @@ It matches the production `LB`:
 
     LB  ::=  #xD #xA? | #xA #xD?
 
-A **padded linebreak** is defined as a *linebreak* preceded and followed by zero or more space *characters* or tabs.
-It matches the production `PLB`:
-
-    PLB  ::=  (#x20 | #x9)* LB (#x20 | #x9)*
-
 In the event of a difference between the definitions of the `Char`, `RestrictedChar` and `S` productions given here and those in [[XML](//www.w3.org/TR/xml11/)], the definitions in the latest edition of XML 1.1 specification are definitive.
 
 ### IRIs  {#IRIs}
@@ -360,7 +355,7 @@ even though one has a pointer as its payload and the other has a string:
 
 A string-valued *payload* is encoded into a *payload line* as follows:
 
-1.  The *payload* is split on all *padded linebreak*s,
+1.  The *payload* is split on all *linebreak*s,
     and may also be split between any two non-*whitespace* characters
     that are not part of a substring matching the `Escape` production.
 
@@ -371,11 +366,22 @@ A string-valued *payload* is encoded into a *payload line* as follows:
     is encoded as the *payload line* of the structure's line;
     the remaining portions are encoded in order
     as the *payload line*s of pseudo-substructures of the structure:
-    a `[CONT]` pseudo-structure if the split point was a *padded linebreak*
+    a `[CONT]` pseudo-structure if the split point was a *linebreak*
     and a `[CONC]` pseudo-structure otherwise.
 
 1.  Each U+0040 *payload* which is not part of a substring that matches production `Escape`
     is replaced by two adjacent U+0040s.
+
+1.  Any *payload* that begins or ends with a *delimiter* character
+    MUST replace that character with an escape sequence:
+
+        1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
+        1.  A hexadecimal encoding of the code point of the *delimiter* character (i.e., either `20` or `9`)
+        1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
+
+{.note} Delimiter escaping will never be used with any of the structures documented in [ELF-DM]
+because all *payload*s there are either *whitespace normalized* or *linebreak normalized*.
+It is included to permit adoption of this serialization format to other date models or extensions that do not make that provision.
 
 {.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes  \n supported."`, the `NOTE` could be encoded as
 
@@ -595,22 +601,18 @@ the serialization could begin
 ### String to octets
 
 Given a string and character encoding, the string is converted into a sequence of octets as specified by that encoding.
-It is RECOMMENDED that only encodings that are able to represent all code points within the string be used,
-but if this is not done then this specification does not define what should be done with those code points.
+It is RECOMMENDED that only encodings that are able to represent all code points within the string be used.
+Any code points that cannot be directly represented as octets within the character encoding SHALL be encoded as follows:
 
-{.ednote ...} The following has been proposed:
+1.  Replace the codepoint with the string made of
+    1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
+    1.  A hexadecimal encoding of the code point
+    1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
+1.  Encode the string with the character encoding
 
-> Any code points that cannot be directly represented as octets within the character encoding SHALL be encoded as follows:
->
-> 1.  Replace the codepoint with the string made of
->     1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
->     1.  A hexadecimal encoding of the code point
->     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
-> 1.  Encode the string with the character encoding
+{.note} While GEDCOM has provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
 
-While GEDCOM has no similar provision, the "escape" construct in GEDCOM chapter 1 suggests these should be ignored by existing GEDCOM parses.
-However, it may be simpler to simply require a unicode-compatible character encoding.
-{/}
+{.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
 
 ### Octets to string
 
@@ -648,18 +650,14 @@ Otherwise, the *character encoding* SHALL be determined to be ANSEL.
 Given an octet stream and a character encoding,
 the octet stream is converted into a sequence of characters as specified by that encoding.
 
-{.ednote ...} The following has been proposed:
+If any subsequence of the decoded string matches the production `UEsc`:
 
-> If any subsequence of the decoded string matches the production `UEsc`:
->
->     hex  ::= [0-9A-Fa-f]+
->     UEsc ::= "@#U" hex "@" #x20
-> 
-> that substring SHALL be replaced by the code point represented by the hexadecimal number included within the escape sequence.
+    hex  ::= [0-9A-Fa-f]+
+    UEsc ::= "@#U" hex "@" #x20?
 
-While GEDCOM has no similar provision,
-this provision will not break any known GEDCOM exporter.
-{/}
+that substring SHALL be replaced by the code point represented by the hexadecimal number included within the escape sequence.
+
+{.note} While GEDCOM does not have the UEsc provision, this provision will not cause an ELF decoder to misinterpret the output of any known GEDCOM exporter.
 
 
 
