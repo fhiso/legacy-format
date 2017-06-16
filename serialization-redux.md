@@ -115,7 +115,7 @@ to yield the original IRI.
 
 ## Structures and pseudo-structures
 
-A dataset consists of **structures**; as part of encoding as a *string*, these are augmented by a set of **pseudo-structures**, structure-like constructs that are not part of the data model.
+A dataset consists of **structures**; as part of encoding as a *string*, these are augmented by a set of **pseudo-structures**, *structure*-like constructs that are not part of the data model.
 
 ### Structures   {#Structure}
 
@@ -156,29 +156,29 @@ if there exits a *record* with the *structure type identifier* `http://terms.fhi
 
 ### Pseudo-structures
 
-A pseudo-structure consists of the following components:
+A **pseudo-structure** consists of the following components:
 
 Tag
-:   Every pseudo-structure has a *tag*, a four-character *string* specified elsewhere in this document.
+:   Every *pseudo-structure* has a *tag*, a four-character *string* specified elsewhere in this document.
 
 Payload
 :   If present, a *string*.
 
 Substructures
-:   Pseudo-structures may contain zero or more  Structures,
-    which are called the pseudo-structure's **substructures**.
+:   *Pseudo-structures* may contain zero or more  *Structures*,
+    which are called the *pseudo-structure*'s **substructures**.
 
-This specification documents five specific pseudo-structures:
+This specification documents five specific *pseudo-structures*:
 
 -   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payload strings*.
-    As such, they may appear as pseudo-substructures of any structure with a *string* payload.
-    The order of `[CONT]` and `[CONC]` pseudo-structures MUST be preserved.
+    As such, they may appear as pseudo-substructures of any *structure* with a *string* payload.
+    The order of `[CONT]` and `[CONC]` *pseudo-structures* MUST be preserved.
     Any `[CONT]` and `[CONC]` pseudo-substructures MUST appear 
     before any other substructures or pseudo-substructures
     within any serialization.
 
 -   `[PRFX]` and `[DEFN]` are used to encode the [IRI Dictionary].
-    They appear only as pseudo-substructures of the *head* structure.
+    They appear only as pseudo-substructures of the *head* *structure*.
 
 -   `[TRLR]` is always the last element of a serialized dataset.
 
@@ -209,20 +209,20 @@ To encode a *dataset*,
     ------    --------------------------------------------------------------------------
 
     The character encoding selected
-    MUST be able to encode all code points in all payloads in every structure within the dataset.
+    MUST be able to encode all code points in all payloads in every *structure* within the dataset.
     It is RECOMMENDED that UTF-8 be used for all datasets.
     
-1.  Add a `[CHAR]` pseudo-structure to the *head* with the encoding as its payload.
+1.  Add a `[CHAR]` *pseudo-structure* to the *head* with the encoding as its payload.
 
 1.  Create an [*IRI dictionary*](#IRI-dictionary) that can map all *structure type identifiers* in the data into *tag*s.
 
-1.  Add `[PRFX]` and `[DEFN]` pseudo-structures to the *head* to [encode the *IRI dictionary*](#IRI)
+1.  Add `[PRFX]` and `[DEFN]` *pseudo-structures* to the *head* to [encode the *IRI dictionary*](#IRI)
 
 1.  Create a *string* by
 
     1.  Converting the *head* [into a *string*](#struct-string).
-    1.  Appending to that *string* the *string* created by converting each other [Structure] that is not the substructure of any other [Structure] [into a *string*](#struct-string).
-    1.  Appending the [*string* representation](#struct-string) of a trailer pseudo-structure (level 0, tag `TRLR`, no payload).
+    1.  Appending to that *string* the *string* created by converting each other *structure* that is not the substructure of any other *structure* [into a *string*](#struct-string).
+    1.  Appending the [*string* representation](#struct-string) of a trailer *pseudo-structure* (level 0, tag `TRLR`, no payload).
 
     If the encoding is either `UNICODE` or `UTF-8`,
     it is RECOMMENDED that the byte-order mark U+FEFF be prepended to the *string*.
@@ -236,17 +236,17 @@ To decode a *dataset*,
 1.  [Convert the sequence of octets into a *string*](#octet2string).
 
 1.  Inspect the portion of the *string* that encodes the *head*,
-    ignoring all lines other than those encoding `[PRFX]` and `[DEFN]` pseudo-structures.
-    Use those `[PRFX]` and `[DEFN]` pseudo-structures to populate an [*IRI dictionary*](#IRI-dictionary).
+    ignoring all lines other than those encoding `[PRFX]` and `[DEFN]` *pseudo-structures*.
+    Use those `[PRFX]` and `[DEFN]` *pseudo-structures* to populate an [*IRI dictionary*](#IRI-dictionary).
 
-1.  [Convert each line into a structure or pseudo-structure](#struct-string).
+1.  [Convert each line into a *structure* or *pseudo-structure*](#struct-string).
     The first *structure* is the dataset's *head*;
-    each remaining structure is either one of the dataset's *records*
-    or a substructure of another strucure or pseudo-structure.
+    each remaining *structure* is either one of the dataset's *records*
+    or a substructure of another strucure or *pseudo-structure*.
     
-    Pseudo-structures provide metadata or modify other structures
+    *Pseudo-structures* provide metadata or modify other *structures*
     and are not part of from the resulting dataset.
-    Substructures of pseudo-structures have no meaning and SHALL be ignored.
+    Substructures of *pseudo-structures* have no meaning and SHALL be ignored.
 
 {.ednote} Substrutures of pseudo-structures are *ignored* rather than *forbidden* because GEDCOM listed the `CHAR` pseudo-structure as having an optional `VERS` substructure with no defined semantics and because non-conformant GEDCOM producers might have placed substructures under any line.
 
@@ -294,36 +294,36 @@ when parsing a *line*, any *delimiter* SHALL be accepted.
 
 ### Structure to/from line(s)
 
-Each [Structure or pseudo-structure](#Structure) is encoded as one or more lines as follows:
+Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more lines as follows:
 
-1.  The *level* of a structure that is not the substructure of any other structure is `0`.
+1.  The *level* of a *structure* that is not the substructure of any other *structure* is `0`.
     The *level* of a substructure is 1 greater than the *level* of its superstructure.
     
     For example,
     a substructure of the *head* has level `1`;
     a substructure of a substructure of the *head* has level `2`.
 
-2.  If the structure has an *identifier*, that identifier surrounded by U+0040 (`@`) is the *xref_id*; otherwise, there is no *xref_id*.
+2.  If the *structure* has an *identifier*, that identifier surrounded by U+0040 (`@`) is the *xref_id*; otherwise, there is no *xref_id*.
     
-    For example, the *xref_id* of a structure with *identifier* "S23" is `@S23@`.
+    For example, the *xref_id* of a *structure* with *identifier* "S23" is `@S23@`.
 
-3.  The *tag* is a sting which will map to the structure's *structure type identifier*
+3.  The *tag* is a sting which will map to the *structure*'s *structure type identifier*
     using the [IRI dictionary](#tag2iri).
 
-    For example, the *tag* of an `http://terms.fhiso.org/elf/ADDR` structure is `ADDR`.
+    For example, the *tag* of an `http://terms.fhiso.org/elf/ADDR` *structure* is `ADDR`.
 
 4.  The *payload line* has several possibilities:
     
-    -   If the *payload* of the structure is None, there is no *payload line*.
+    -   If the *payload* of the *structure* is None, there is no *payload line*.
     
-    -   If the *payload* of the structure is a pointer, the *payload line* is the *identifier* of the pointed-to structure surrounded by U+0040 (`@`).
+    -   If the *payload* of the *structure* is a pointer, the *payload line* is the *identifier* of the pointed-to *structure* surrounded by U+0040 (`@`).
         
         For example, if the payload of a .`INDI`.`ALIA` points to an `INDI` with identifier "I45", the *payload line* is `@I45@`.
     
-    -   If the *payload* of the structure is a *string*, the *payload line* is a prefix of the *payload string*, determined and encoded as described in [Payload String Encoding].
+    -   If the *payload* of the *structure* is a *string*, the *payload line* is a prefix of the *payload string*, determined and encoded as described in [Payload String Encoding].
 
 
-The [line(s)](#Line) encoding a structure is followed immediately by lines encoding each of its substructures and pseudo-substructures.
+The [line(s)](#Line) encoding a *structure* is followed immediately by lines encoding each of its substructures and pseudo-substructures.
 The order of substructures of different *structure type identifier*s is arbitrary, but the order of substructures with the same *structure type identifier* MUST be preserved.
 It is RECOMMENDED that all substructures with the same *structure type identifier* be placed adjacent to one another.
 
@@ -386,11 +386,11 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     
     The portion before the first split point
     (or the entire *payload* if there are no splits)
-    is encoded as the *payload line* of the structure's line;
+    is encoded as the *payload line* of the *structure*'s line;
     the remaining portions are encoded in order
-    as the *payload line*s of pseudo-substructures of the structure:
-    a `[CONT]` pseudo-structure if the split point was a *linebreak*
-    and a `[CONC]` pseudo-structure otherwise.
+    as the *payload line*s of pseudo-substructures of the *structure*:
+    a `[CONT]` *pseudo-structure* if the split point was a *linebreak*
+    and a `[CONC]` *pseudo-structure* otherwise.
 
     It is RECOMMENDED that all payloads be split as needed
     to ensure that no *line* containing a portion of the payload
@@ -407,7 +407,7 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     1.  A hexadecimal encoding of the code point of the *delimiter* character (i.e., either `20` or `9`)
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 
-{.note} Delimiter escaping will never be used with any of the structures documented in [ELF-DM]
+{.note} Delimiter escaping will never be used with any of the *structures* documented in [ELF-DM]
 because all *payload*s there are either *whitespace normalized* or *linebreak normalized*.
 Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
 
@@ -445,16 +445,16 @@ but *not* as
 ### Payload String Decoding
 
 A the *payload line*s
-of a structure's line
+of a *structure*'s line
 and all its `[CONT]` and `[CONC]` pseudo-substructure lines
-are combined to create the structure's *payload* as follows:
+are combined to create the *structure*'s *payload* as follows:
 
 1.  Each adjacent pair of U+0040 in each *payload line* is replaced by a single U+0040.
 
 1.  *Whitespace* at the beginning or end of each *payload line* is removed
 
 1.  The *payload* is created by concatenating all *payload line*s in order;
-    if a *payload line* is of a `[CONT]` pseudo-structure,
+    if a *payload line* is of a `[CONT]` *pseudo-structure*,
     it is preceded a single *linebreak* prior to concatenation.
 
 {.ednote} There is a problem with the above,
@@ -514,11 +514,11 @@ No two *individual tag mapping*s within a single dataset may share a key.
 To convert a *tag* to an IRI, the following checks are performed in order; the first one that matches is used.
 
 1.  If the tag is one of `CONT`, `CONC`, `PRFX`, `DEFN`, or `TRLR`,
-    the tag is identifying a pseudo-structure and does not map to an IRI.
+    the tag is identifying a *pseudo-structure* and does not map to an IRI.
 
 1.  Otherwise, if the tag is a key of an *individual tag mapping*,
     the IRI associated with that tag is the first IRI in the IRI sequence of that mapping.
-    Additional IRIs in that sequence provide *hints* to implementations that structures with this IRI MAY be treated like structures with other IRIs in the sequence, with a *preference* for the first usable IRI.
+    Additional IRIs in that sequence provide *hints* to implementations that *structures* with this IRI MAY be treated like *structures* with other IRIs in the sequence, with a *preference* for the first usable IRI.
 
 1.  Otherwise, if the tag contains one or more underscores,
     let *p* be the substring of the tag up to and including the first underscore
@@ -566,32 +566,32 @@ the others being instead *hints* about how to treat that type.
 
 ### IRI to Tag {#iri2tag}
 
-Every structure type IRI MUST be replaced by a tag as part of serialization,
+Every *structure* type IRI MUST be replaced by a tag as part of serialization,
 and every such replacement MUST be reversible via the IRI dictionary.
 The simplest technique to accomplish this is to create an *individual tag mapping* for every IRI with a unique key for each.
 However, it is RECOMMENDED that more compact *namespace definition*s be used;
 in particular, implementations SHOULD
 
--   use the default prefix for all structure types documented in the [Elf-DM].
+-   use the default prefix for all *structure* types documented in the [Elf-DM].
 -   use one *namespace definition* for each *namespace* (as defined in [Vocabularies]),
     with a key of two or more characters.
 -   use just-underscore keys only for compatibility communication with implementations that expect particular tag names.
--   provide additional IRIs for extensions that extend structure types documented in the [Elf-DM].
+-   provide additional IRIs for extensions that extend *structure* types documented in the [Elf-DM].
 
 
 ### IRI dictionary encoding {#IRI}
 
 The IRI dictionary is encoded as a set pseudo-substructures of the *head*.
 
-Each *namespace definition* is encoded as a pseudo-structure with *tag* `[PRFX]`
+Each *namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
 and payload consisting of
 the key of the *namespace definition*, a *delimiter*, and the absolute IRI of the *namespace definition*.
 
-Each *default namespace definition* is encoded as a pseudo-structure with *tag* `[PRFX]`
+Each *default namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
 and payload consisting of
 the absolute IRI of the *default namespace definition*.
 
-Each *individual tag mapping* is encoded as a pseudo-structure with *tag* `[DEFN]`
+Each *individual tag mapping* is encoded as a *pseudo-structure* with *tag* `[DEFN]`
 and a payload consisting of
 the key of the *individual tag mapping*, a *delimiter*, and the sequence of absolute IRIs of the *individual tag mapping* separated by *whitespace*.
 
