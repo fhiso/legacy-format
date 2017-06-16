@@ -131,7 +131,7 @@ Identifier
         ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
 
 Payload
-:   If present, a payload is either a pointer to a *structure* within the dataset or a *string*.
+:   If present, a *payload* is either a pointer to a *structure* within the dataset or a *string*.
     Each pointed-to *structure* MUST have a unique identifier within the dataset.
 
 Substructures
@@ -170,8 +170,8 @@ Substructures
 
 This specification documents five specific *pseudo-structures*:
 
--   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payload strings*.
-    As such, they may appear as pseudo-substructures of any *structure* with a *string* payload.
+-   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payloads*.
+    As such, they may appear as pseudo-substructures of any *structure* with a *string* *payload*.
     The order of `[CONT]` and `[CONC]` *pseudo-structures* MUST be preserved.
     Any `[CONT]` and `[CONC]` pseudo-substructures MUST appear 
     before any other substructures or pseudo-substructures
@@ -212,7 +212,7 @@ To encode a *dataset*,
     MUST be able to encode all code points in all payloads in every *structure* within the dataset.
     It is RECOMMENDED that UTF-8 be used for all datasets.
     
-1.  Add a `[CHAR]` *pseudo-structure* to the *head* with the encoding as its payload.
+1.  Add a `[CHAR]` *pseudo-structure* to the *head* with the encoding as its *payload*.
 
 1.  Create an [*IRI dictionary*](#IRI-dictionary) that can map all *structure type identifiers* in the data into *tag*s.
 
@@ -222,7 +222,7 @@ To encode a *dataset*,
 
     1.  Converting the *head* [into a *string*](#struct-string).
     1.  Appending to that *string* the *string* created by converting each other *structure* that is not the substructure of any other *structure* [into a *string*](#struct-string).
-    1.  Appending the [*string* representation](#struct-string) of a trailer *pseudo-structure* (level 0, tag `TRLR`, no payload).
+    1.  Appending the [*string* representation](#struct-string) of a trailer *pseudo-structure* (*level* 0, *tag* `TRLR`, no *payload*).
 
     If the encoding is either `UNICODE` or `UTF-8`,
     it is RECOMMENDED that the byte-order mark U+FEFF be prepended to the *string*.
@@ -318,9 +318,9 @@ Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more l
     
     -   If the *payload* of the *structure* is a pointer, the *payload line* is the *identifier* of the pointed-to *structure* surrounded by U+0040 (`@`).
         
-        For example, if the payload of a .`INDI`.`ALIA` points to an `INDI` with identifier "I45", the *payload line* is `@I45@`.
+        For example, if the *payload* of a .`INDI`.`ALIA` points to an `INDI` with identifier "I45", the *payload line* is `@I45@`.
     
-    -   If the *payload* of the *structure* is a *string*, the *payload line* is a prefix of the *payload string*, determined and encoded as described in [Payload String Encoding].
+    -   If the *payload* of the *structure* is a *string*, the *payload line* is a prefix of the *payload* determined and encoded as described in [Payload String Encoding].
 
 
 The [line(s)](#Line) encoding a *structure* is followed immediately by lines encoding each of its substructures and pseudo-substructures.
@@ -364,7 +364,7 @@ The following is *not* equivalent to any of the above:
 
 {.example ...} It is the *structure type identifier* that determines if order must be preserved;
 thus, the order of the two notes in the following must be preserved
-even though one has a pointer as its payload and the other has a string:
+even though one has a pointer as its *payload* and the other has a string:
 
 ````gedcom
 1 NAME Jno. /Banks/
@@ -393,7 +393,7 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     and a `[CONC]` *pseudo-structure* otherwise.
 
     It is RECOMMENDED that all payloads be split as needed
-    to ensure that no *line* containing a portion of the payload
+    to ensure that no *line* containing a portion of the *payload*
     exceeds 255 characters in length.
 
 1.  Each U+0040 `@` in a *payload*
@@ -477,7 +477,7 @@ The *IRI dictionary* may also define a set of alternate IRIs for a *tag*.
 is to aid implementations in handling unknown extensions
 without the overhead of a full discovery mechanism.
 
-{.example ...} Suppose that `http://terms.fhiso.org/sources/authorName` is a subtype of `http://terms.fhiso.org/elf/AUTH` that provides additional structural information within the payload.  An implementation might create the mapping 
+{.example ...} Suppose that `http://terms.fhiso.org/sources/authorName` is a subtype of `http://terms.fhiso.org/elf/AUTH` that provides additional structural information within the *payload*.  An implementation might create the mapping 
 
 | Tag  | IRIs                                        |
 |------|---------------------------------------------|
@@ -513,15 +513,15 @@ No two *individual tag mapping*s within a single dataset may share a key.
 
 To convert a *tag* to an IRI, the following checks are performed in order; the first one that matches is used.
 
-1.  If the tag is one of `CONT`, `CONC`, `PRFX`, `DEFN`, or `TRLR`,
-    the tag is identifying a *pseudo-structure* and does not map to an IRI.
+1.  If the *tag* is one of `CONT`, `CONC`, `PRFX`, `DEFN`, or `TRLR`,
+    the *tag* is identifying a *pseudo-structure* and does not map to an IRI.
 
-1.  Otherwise, if the tag is a key of an *individual tag mapping*,
-    the IRI associated with that tag is the first IRI in the IRI sequence of that mapping.
+1.  Otherwise, if the *tag* is a key of an *individual tag mapping*,
+    the IRI associated with that *tag* is the first IRI in the IRI sequence of that mapping.
     Additional IRIs in that sequence provide *hints* to implementations that *structures* with this IRI MAY be treated like *structures* with other IRIs in the sequence, with a *preference* for the first usable IRI.
 
-1.  Otherwise, if the tag contains one or more underscores,
-    let *p* be the substring of the tag up to and including the first underscore
+1.  Otherwise, if the *tag* contains one or more underscores,
+    let *p* be the substring of the *tag* up to and including the first underscore
     and *s* be the substring after the first underscore.
     If *p* is a key in the prefix dictionary,
     the IRI associated with the *tag* 
@@ -529,10 +529,10 @@ To convert a *tag* to an IRI, the following checks are performed in order; the f
 
 1.  Otherwise, if there is a *default namespace definition*,
     the IRI associated with the *tag*
-    is the IRI of the *default namespace definition* concatenated with the tag.
+    is the IRI of the *default namespace definition* concatenated with the *tag*.
 
 1.  Otherwise, the IRI associated with the *tag*
-    is `http://terms.fhiso.org/elf/` concatenated with the tag.
+    is `http://terms.fhiso.org/elf/` concatenated with the *tag*.
 
 {.example ...} Given the following namespace mappings dictionary entries:
 
@@ -566,7 +566,7 @@ the others being instead *hints* about how to treat that type.
 
 ### IRI to Tag {#iri2tag}
 
-Every *structure* type IRI MUST be replaced by a tag as part of serialization,
+Every *structure* type IRI MUST be replaced by a *tag* as part of serialization,
 and every such replacement MUST be reversible via the IRI dictionary.
 The simplest technique to accomplish this is to create an *individual tag mapping* for every IRI with a unique key for each.
 However, it is RECOMMENDED that more compact *namespace definition*s be used;
@@ -575,7 +575,7 @@ in particular, implementations SHOULD
 -   use the default prefix for all *structure* types documented in the [Elf-DM].
 -   use one *namespace definition* for each *namespace* (as defined in [Vocabularies]),
     with a key of two or more characters.
--   use just-underscore keys only for compatibility communication with implementations that expect particular tag names.
+-   use just-underscore keys only for compatibility communication with implementations that expect particular *tag*s.
 -   provide additional IRIs for extensions that extend *structure* types documented in the [Elf-DM].
 
 
@@ -584,15 +584,15 @@ in particular, implementations SHOULD
 The IRI dictionary is encoded as a set pseudo-substructures of the *head*.
 
 Each *namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
-and payload consisting of
+and *payload* consisting of
 the key of the *namespace definition*, a *delimiter*, and the absolute IRI of the *namespace definition*.
 
 Each *default namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
-and payload consisting of
+and *payload* consisting of
 the absolute IRI of the *default namespace definition*.
 
 Each *individual tag mapping* is encoded as a *pseudo-structure* with *tag* `[DEFN]`
-and a payload consisting of
+and a *payload* consisting of
 the key of the *individual tag mapping*, a *delimiter*, and the sequence of absolute IRIs of the *individual tag mapping* separated by *whitespace*.
 
 {.note} The permission of *whitespace* separation allows either all IRIs to be encoded in a single line or some to be encoded in `[CONT]` lines.
