@@ -115,7 +115,7 @@ to yield the original IRI.
 
 ## Structures and pseudo-structures
 
-A dataset consists of **structures**; as part of encoding as a string, these are augmented by a set of **pseudo-structures**, structure-like constructs that are not part of the data model.
+A dataset consists of **structures**; as part of encoding as a *string*, these are augmented by a set of **pseudo-structures**, structure-like constructs that are not part of the data model.
 
 ### Structures   {#Structure}
 
@@ -125,13 +125,13 @@ Structure Type Identifier
 :   Every *structure* has a *structure type identifier*, which is always an IRI.
 
 Identifier
-:   A string uniquely identifying this *structure* within this dataset.
+:   A *string* uniquely identifying this *structure* within this dataset.
     If present, the identifier MUST match the production ID:
         
         ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
 
 Payload
-:   If present, a payload is either a pointer to a *structure* within the dataset or a string.
+:   If present, a payload is either a pointer to a *structure* within the dataset or a *string*.
     Each pointed-to *structure* MUST have a unique identifier within the dataset.
 
 Substructures
@@ -159,10 +159,10 @@ if there exits a *record* with the *structure type identifier* `http://terms.fhi
 A pseudo-structure consists of the following components:
 
 Tag
-:   Every pseudo-structure has a *tag*, a string specified in this document.
+:   Every pseudo-structure has a *tag*, a four-character *string* specified elsewhere in this document.
 
 Payload
-:   If present, a string.
+:   If present, a *string*.
 
 Substructures
 :   Pseudo-structures may contain zero or more  Structures,
@@ -170,8 +170,8 @@ Substructures
 
 This specification documents five specific pseudo-structures:
 
--   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) payload strings.
-    As such, they may appear as pseudo-substructures of any structure with a string payload.
+-   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payload strings*.
+    As such, they may appear as pseudo-substructures of any structure with a *string* payload.
     The order of `[CONT]` and `[CONC]` pseudo-structures MUST be preserved.
     Any `[CONT]` and `[CONC]` pseudo-substructures MUST appear 
     before any other substructures or pseudo-substructures
@@ -218,24 +218,24 @@ To encode a *dataset*,
 
 1.  Add `[PRFX]` and `[DEFN]` pseudo-structures to the *head* to [encode the *IRI dictionary*](#IRI)
 
-1.  Create a string by
+1.  Create a *string* by
 
-    1.  Converting the *head* [into a string](#struct-string).
-    1.  Appending to that string the string created by converting each other [Structure] that is not the substructure of any other [Structure] [into a string](#struct-string).
-    1.  Appending the [string representation](#struct-string) of a trailer pseudo-structure (level 0, tag `TRLR`, no payload).
+    1.  Converting the *head* [into a *string*](#struct-string).
+    1.  Appending to that *string* the *string* created by converting each other [Structure] that is not the substructure of any other [Structure] [into a *string*](#struct-string).
+    1.  Appending the [*string* representation](#struct-string) of a trailer pseudo-structure (level 0, tag `TRLR`, no payload).
 
     If the encoding is either `UNICODE` or `UTF-8`,
-    it is RECOMMENDED that the byte-order mark U+FEFF be prepended to the string.
+    it is RECOMMENDED that the byte-order mark U+FEFF be prepended to the *string*.
 
-1.  [Convert the string into a sequence of octets](#string2octet).
+1.  [Convert the *string* into a sequence of octets](#string2octet).
 
 ### Decoding a dataset
 
 To decode a *dataset*,
 
-1.  [Convert the sequence of octets into a string](#octet2string).
+1.  [Convert the sequence of octets into a *string*](#octet2string).
 
-1.  Inspect the portion of the string that encodes the *head*,
+1.  Inspect the portion of the *string* that encodes the *head*,
     ignoring all lines other than those encoding `[PRFX]` and `[DEFN]` pseudo-structures.
     Use those `[PRFX]` and `[DEFN]` pseudo-structures to populate an [*IRI dictionary*](#IRI-dictionary).
 
@@ -257,7 +257,7 @@ Each *structure* is mapped to a *string* through the intermediate form of a *lin
 
 ### Lines     {#Line}
 
-A *line* is a string consisting of the following components, in order.
+A *line* is a *string* consisting of the following components, in order.
 When creating a *line*, each *delimiter* MUST be a single space character U+0020;
 when parsing a *line*, any *delimiter* SHALL be accepted.
 
@@ -273,11 +273,11 @@ when parsing a *line*, any *delimiter* SHALL be accepted.
 
     If the *xref_id* is present, a *delimiter* MUST follow it, delimiting it from the next element.
 
-3.  A **tag**: a string (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
+3.  A **tag**: a *string* (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
     
         Tag  ::= [0-9a-zA-Z_]+
 
-4.  Optionally, a **payload line**: a string matching the production `Pline`:
+4.  Optionally, a **payload line**: a *string* matching the production `Pline`:
     
         Pline  ::= ([^@] | "@@" | "@#" [^@x#Ax#D]* "@")*
 
@@ -320,7 +320,7 @@ Each [Structure or pseudo-structure](#Structure) is encoded as one or more lines
         
         For example, if the payload of a .`INDI`.`ALIA` points to an `INDI` with identifier "I45", the *payload line* is `@I45@`.
     
-    -   If the *payload* of the structure is a string, the *payload line* is a prefix of the payload string, determined and encoded as described in [Payload String Encoding].
+    -   If the *payload* of the structure is a *string*, the *payload line* is a prefix of the *payload string*, determined and encoded as described in [Payload String Encoding].
 
 
 The [line(s)](#Line) encoding a structure is followed immediately by lines encoding each of its substructures and pseudo-substructures.
@@ -376,7 +376,7 @@ even though one has a pointer as its payload and the other has a string:
 
 ### Payload String Encoding
 
-A string-valued *payload* is encoded into a *payload line* as follows:
+A *string*-valued *payload* is encoded into a *payload line* as follows:
 
 1.  The *payload* is split on all *linebreak*s,
     and may also be split between any two non-*whitespace* characters
@@ -411,7 +411,7 @@ A string-valued *payload* is encoded into a *payload line* as follows:
 because all *payload*s there are either *whitespace normalized* or *linebreak normalized*.
 Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
 
-{.ednote} The above leaves out the ability to split next to a space or tab, meaning strings of hundreds of spaces or tabs will of necessity exceed the 255-character limit.
+{.ednote} The above leaves out the ability to split next to a space or tab, meaning *strings* of hundreds of spaces or tabs will of necessity exceed the 255-character limit.
 
 {.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes  \n supported."`, the `NOTE` could be encoded as
 
@@ -641,15 +641,15 @@ the serialization could begin
 
 ### String to octets  {#string2octet}
 
-Given a string and character encoding, the string is converted into a sequence of octets as specified by that encoding.
-It is RECOMMENDED that the encoding used should be able to represent all code points within the string.
+Given a *string* and character encoding, the *string* is converted into a sequence of octets as specified by that encoding.
+It is RECOMMENDED that the encoding used should be able to represent all code points within the *string*.
 Any code points that cannot be directly represented as octets within the character encoding SHALL be encoded as follows:
 
-1.  Replace the codepoint with the string made of
+1.  Replace the codepoint with the *string* made of
     1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
     1.  A hexadecimal encoding of the code point
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
-1.  Encode the string with the character encoding
+1.  Encode the *string* with the character encoding
 
 {.note} While GEDCOM has provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
 GEDCOM also does not define what is done with unknown code points, so the above definition does not violate what GEDCOM requires.
@@ -692,7 +692,7 @@ Otherwise, the *character encoding* SHALL be determined to be ANSEL.
 Given an octet stream and a character encoding,
 the octet stream is converted into a sequence of characters as specified by that encoding.
 
-If any subsequence of the decoded string matches the production `UEsc`:
+If any subsequence of the decoded *string* matches the production `UEsc`:
 
     hex  ::= [0-9A-Fa-f]+
     UEsc ::= "@#U" hex "@" #x20?
