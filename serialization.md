@@ -48,6 +48,14 @@ except that no significance is attached to the capitalisation of grammar symbols
 *Conforming* applications MUST NOT generate data not conforming to the syntax given here,
 but non-conforming syntax MAY be accepted and processed by a *conforming* application in an implementation-defined manner.
 
+When it is ambiguous what portion of a *string* an EBNF production matches because multiple possible matches exist,
+the match is defined to be the element of the set of possible matches such that
+
+-   no other possible match has an earlier starting index
+-   no other possible match with the same starting index has a later ending index
+
+{.ednote} The above disambiguation should probably be re-worded.  The intent is to ensure that in a line like "`1 NOTE   hi`" the payload is "`hi`" not "`  hi`" because the `Delim` production consumes all the leading whitespace.
+
 
 ### Characters and strings
 
@@ -325,6 +333,10 @@ Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more l
     
     -   If the *payload* of the *structure* is a *string*, the *payload line* is a prefix of the *payload* determined and encoded as described in [Payload String Encoding].
 
+    If there is no *payload line* but the *structure* expects a *string*-valued *payload*, the *payload* is a string of length 0.
+    If there is a *payload line* of length 0 but the *structure* expects no *payload*, there is no *payload*.
+
+{.ednote} The length-0 passage above deals with the case were "`1 CONT`" should be parsed as a blank line, not as an error because it lacks the required *payload line*.
 
 The [line(s)](#Line) encoding a *structure* is followed immediately by lines encoding each of its substructures and pseudo-substructures.
 The order of substructures of different *structure type identifier*s is arbitrary, but the order of substructures with the same *structure type identifier* MUST be preserved.
