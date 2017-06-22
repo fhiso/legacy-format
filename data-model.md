@@ -24,6 +24,9 @@ It will likely change significantly prior to being released.
 The FHISO Extended Legacy Format is a data model and serialization format indented to be fully compatible with the earlier GEDCOM 5.5.1 specification.
 This document presents the data model; the serialization format is presented in [ELF-File].
 
+{.ednote} Comments on this draft should be directed to [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public)
+
+
 ## General
 
 Where this standard gives a specific technical meaning to a word or phrase, that word or phrase is formatted in bold text in its initial definition, and in italics when used elsewhere.

@@ -18,6 +18,8 @@ or ELF-file.
 This draft is intended to provide enough context for meaningful discussion of the value and desirable content of a potential future standard.
 It will likely change significantly prior to being released.
 
+{.ednote} Comments on this draft should be directed to [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public)
+
 ----
 
 
