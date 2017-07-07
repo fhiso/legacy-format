@@ -1,18 +1,18 @@
 ---
 title: "Extended Legacy Format (ELF)"
-subtitle: Serialization Format
+subtitle: Serialisation Format
 date: 14 June 2017
 numbersections: true
 ...
-# ELF Serialization Format
+# ELF Serialisation Format
 
 This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.1.
 
-The GEDCOM specification described a document model, a set of tags, and a serialization format.
-This document describes the serialization format portion of that specification.
+The GEDCOM specification described a document model, a set of tags, and a serialisation format.
+This document describes the serialisation format portion of that specification.
 
-The working title of this draft proposed standard is the FHISO Extended Legacy Format Serialization Format,
-also known as the ELF serialization format
+The working title of this draft proposed standard is the FHISO Extended Legacy Format Serialisation Format,
+also known as the ELF serialisation format
 or ELF-file.
 
 This draft is intended to provide enough context for meaningful discussion of the value and desirable content of a potential future standard.
@@ -106,7 +106,7 @@ It matches the production `LB`:
 
     LB  ::=  #xD #xA? | #xA
 
-{.note} *linebreak* is used to create payloads and serializations; but a more permissive production is used to parse serializations, as outlined in the section titled [Lines](#Line).
+{.note} *linebreak* is used to create payloads and serialisations; but a more permissive production is used to parse serialisations, as outlined in the section titled [Lines](#Line).
 
 In the event of a difference between the definitions of the `Char`, `RestrictedChar` and `S` productions given here and those in [[XML](//www.w3.org/TR/xml11/)], the definitions in the latest edition of XML 1.1 specification are definitive.
 
@@ -157,13 +157,13 @@ Substructures
 
 Every dataset contains exactly one *structure* called the **head**
 and any number of *structures* called **records**.
-Within a serialization, the *head* is always the first *structure*;
+Within a serialisation, the *head* is always the first *structure*;
 within a dataset, the *head* is always identified as such.
 Neither the *head* nor the *records* are substructures of other *structures*.
 
-The order of *records* is not significant and may be changed upon serialization.
+The order of *records* is not significant and may be changed upon serialisation.
 However, for backwards compatibility it is RECOMMENDED that
-if there exits a *record* with the *structure type identifier* `http://terms.fhiso.org/elf/SUBN`, that *record* be placed before any other *record* within the serialization.
+if there exits a *record* with the *structure type identifier* `http://terms.fhiso.org/elf/SUBN`, that *record* be placed before any other *record* within the serialisation.
 
 {.ednote} GEDCOM REQUIRED `SUBN` to be immediately after the `HEAD` if present; the author of this specification is aware of no GEDCOM parser that fails to parse files violating that constraint, hence the RECOMMENDED rather than REQUIRED status.
 
@@ -189,12 +189,12 @@ This specification documents five specific *pseudo-structures*:
     The order of `[CONT]` and `[CONC]` *pseudo-structures* MUST be preserved.
     Any `[CONT]` and `[CONC]` pseudo-substructures MUST appear 
     before any other substructures or pseudo-substructures
-    within any serialization.
+    within any serialisation.
 
 -   `[PRFX]` and `[DEFN]` are used to encode the [IRI Dictionary].
     They appear only as pseudo-substructures of the *head* *structure*.
 
--   `[TRLR]` is always the last element of a serialized dataset.
+-   `[TRLR]` is always the last element of a serialised dataset.
 
 
 
@@ -303,7 +303,7 @@ when parsing a *line*, any *delimiter* SHALL be accepted.
 
         PLB  ::= Delim? LB S?
     
-    Implementations producing *lines* SHOULD use the same sting matching `LB` for all *terminators* within a single serialization.
+    Implementations producing *lines* SHOULD use the same sting matching `LB` for all *terminators* within a single serialisation.
 
 ### Structure to/from line(s)
 
@@ -425,7 +425,7 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 
 {.note} Delimiter escaping will never be used with any of the *structures* documented in [ELF-DM]
-because all *payload*s there are either *whitespace normalized* or *linebreak normalized*.
+because all *payload*s there are either *whitespace normalised* or *linebreak normalised*.
 Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
 
 {.ednote} The above leaves out the ability to split next to a space or tab, meaning *strings* of hundreds of spaces or tabs will of necessity exceed the 255-character limit.
@@ -486,7 +486,7 @@ The only solution to this that I have come up with involves moving the escapes t
 ## IRI to/from Tag
 
 Each *structure type identifier* in a dataset
-is represented by a **tag** in the serialization format.
+is represented by a **tag** in the serialisation format.
 The mapping between *tag*s and *structure type identifier*s is handled by an **IRI dictionary**.
 The *IRI dictionary* may also define a set of alternate IRIs for a *tag*.
 
@@ -583,7 +583,7 @@ the others being instead *hints* about how to treat that type.
 
 ### IRI to Tag {#iri2tag}
 
-Every *structure* type IRI MUST be replaced by a *tag* as part of serialization,
+Every *structure* type IRI MUST be replaced by a *tag* as part of serialisation,
 and every such replacement MUST be reversible via the IRI dictionary.
 The simplest technique to accomplish this is to create an *individual tag mapping* for every IRI with a unique key for each.
 However, it is RECOMMENDED that more compact *namespace definition*s be used;
@@ -627,7 +627,7 @@ Key     Value
 ------  ---------------------------------------------------------------
 `_UID`  `http://example.com/UUID` <br> `http://purl.org/dc/terms/identifier`
 
-the serialization could begin
+the serialisation could begin
 
 ````
 0 HEAD
