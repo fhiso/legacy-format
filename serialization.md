@@ -6,23 +6,49 @@ numbersections: true
 ...
 # ELF Serialisation Format
 
-This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.1.
+{.ednote ...} This is an **exploratory draft** of the serialisation
+format for FHISO's proposed suite of Extended Legacy Format (ELF)
+standards.  This document is not endorsed by the FHISO membership, and
+may be updated, replaced or obsoleted by other documents at any time.
 
-The GEDCOM specification described a document model, a set of tags, and a serialisation format.
-This document describes the serialisation format portion of that specification.
+Comments on this draft should be directed to the
+[tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing list.
+{/}
 
-The working title of this draft proposed standard is the FHISO Extended Legacy Format Serialisation Format,
-also known as the ELF serialisation format
-or ELF-file.
+FHISO's **Extended Legacy Format** (or **ELF**) is a serialisation and
+data model that is fully compatible with GEDCOM, but with the addition
+of a structured extensibility mechanism.  It also clarifies ambiguities
+in GEDCOM and documents best current practice. 
 
-This draft is intended to provide enough context for meaningful discussion of the value and desirable content of a potential future standard.
-It will likely change significantly prior to being released.
+The **GEDCOM** file format developed by The Church of Jesus Christ of
+Latter-day Saints is the *de facto* standard for the exchange of
+genealogical data between applications and data providers.  Its most
+recent version is GEDCOM 5.5.1 which was produced in 1999, but despite
+many technological advances since then, GEDCOM has remained unchanged.
 
-{.ednote} Comments on this draft should be directed to [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public)
+{.note} Strictly, GEDCOM 5.5 was the last version to be publicly
+released back in 1995.  However a draft of a proposed GEDCOM 5.5.1 dated
+2 October 1999 was made public, and is generally considered to have the
+status of standard and has been implemented in many applications.
 
-----
+FHISO are undertaking a program of work to produce a modernised yet
+backward-compatible reformulation of GEDCOM under the name ELF, the new
+name having been chosen to avoid confusion with any other updates or
+extensions to GEDCOM, or any future use of the term by The Church of
+Jesus Christ of Latter-day Saints.  This document is one of two that
+form the initial suite of ELF standards:
 
+* **ELF: Serialisation Format**.  This standard defines a
+  general-purpose serialisation format based on the GEDCOM data format
+  which encodes a *dataset* as a hierarchical series of *lines*, and
+  provides low-level facilities such as escaping and extensibility
+  mechanisms.
 
+* **ELF: Data Model**.  This standard defines a data model based on the
+  lineage-linked GEDCOM form, reformulated in terms of the
+  serialisation model described in this document.  It is not a major
+  update to the GEDCOM data model, but rather a basis for future
+  extension.
 
 ## General
 
