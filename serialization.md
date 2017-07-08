@@ -28,8 +28,8 @@ many technological advances since then, GEDCOM has remained unchanged.
 
 {.note} Strictly, GEDCOM 5.5 was the last version to be publicly
 released back in 1995.  However a draft of a proposed GEDCOM 5.5.1 dated
-2 October 1999 was made public, and is generally considered to have the
-status of standard and has been implemented in many applications.
+2 October 1999 was made public; it is generally considered to have the
+status of a standard and has been widely implemented.
 
 FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
