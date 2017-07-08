@@ -26,10 +26,10 @@ genealogical data between applications and data providers.  Its most
 recent version is GEDCOM 5.5.1 which was produced in 1999, but despite
 many technological advances since then, GEDCOM has remained unchanged.
 
-{.note} Strictly, GEDCOM 5.5 was the last version to be publicly
-released back in 1995.  However a draft of a proposed GEDCOM 5.5.1 dated
-2 October 1999 was made public; it is generally considered to have the
-status of a standard and has been widely implemented.
+{.note} Strictly, [GEDCOM 5.5] was the last version to be publicly
+released back in 1995.  However a draft dated 2 October 1999 of a
+proposed [GEDCOM 5.5.1] was made public; it is generally considered to
+have the status of a standard and has been widely implemented as such.
 
 FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
@@ -818,6 +818,14 @@ that substring SHALL be replaced by the code point represented by the hexadecima
     (See <https://www.w3.org/TR/xml11/>.)
 
 ### Other references
+
+[GEDCOM 5.5.1]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.5.  2 Oct 1999.
+
+[GEDCOM 5.5]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 5.5.  1996.
 
 [XML Names]
 :   W3 (World Wide Web Consortium).
