@@ -770,7 +770,9 @@ that substring SHALL be replaced by the code point represented by the hexadecima
 :   NISO (National Information Standards Organization).
     *ANSI/NISO Z39.47-1993.
     Extended Latin Alphabet Coded Character Set for Bibliographic Use*.
-    1993.
+    1993.  (See 
+    <http://www.niso.org/apps/group_public/project/details.php?project_id=10>.)
+    Standard withdrawn, 2013.
 
 [ASCII]
 :   ANSI (American National Standards Institute).
