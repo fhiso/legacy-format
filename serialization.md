@@ -268,7 +268,7 @@ To encode a *dataset*,
 1.  Create a *string* by
 
     1.  Converting the *head* [into a *string*](#struct-string).
-    1.  Appending to that *string* the *string* created by converting each other *structure* that is not the substructure of any other *structure* [into a *string*](#struct-string).
+    1.  Appending to that *string* the *string* created by converting each *record* [into a *string*](#struct-string).
     1.  Appending the [*string* representation](#struct-string) of a trailer *pseudo-structure* (*level* 0, *tag* `TRLR`, no *payload*).
 
     If the encoding is either `UNICODE` or `UTF-8`,
@@ -342,7 +342,7 @@ when parsing a *line*, any *delimiter* SHALL be accepted.
 
 Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more lines as follows:
 
-1.  The *level* of a *structure* that is not the substructure of any other *structure* is `0`.
+1.  The *level* of the *head*, of each *record*, and of the `[TRLR]` pseudo-structure is `0`.
     The *level* of a substructure is 1 greater than the *level* of its superstructure.
     
     For example,
@@ -563,7 +563,7 @@ No two *individual tag mapping*s within a single dataset may share a key.
 
 To convert a *tag* to an IRI, the following checks are performed in order; the first one that matches is used.
 
-1.  If the *tag* is one of `CONT`, `CONC`, `PRFX`, `DEFN`, or `TRLR`,
+1.  If the *tag* is one of `CHAR`, `CONC`, `CONT`, `DEFN`, `PRFX`, or `TRLR`,
     the *tag* is identifying a *pseudo-structure* and does not map to an IRI.
 
 1.  Otherwise, if the *tag* is a key of an *individual tag mapping*,
@@ -595,10 +595,9 @@ and the following individual tag mapping:
 
 Key     Value
 ------  -------------------------------------------
-`_UID`  `http://example.com/UUID`
-        `http://purl.org/dc/terms/identifier`
+`_UID`  `http://example.com/UUID` <br> `http://purl.org/dc/terms/identifier`
 
-the following tags represent to the following IRIs:
+the following tags convert to the following IRIs:
 
 Tag         IRI
 ----------  ------------------------------------------------
@@ -610,7 +609,7 @@ Tag         IRI
 Note that `http://purl.org/dc/terms/identifier` is *not* the IRI of `_UID`:
 even if an implementation does not understand `http://example.com/UUID`,
 the first element in the IRI sequence is always the IRI of a tag,
-the others being instead *hints* about how to treat that type.
+the others being instead hints about how to treat that type.
 {/}
 
 
@@ -628,6 +627,7 @@ in particular, implementations SHOULD
 -   use just-underscore keys only for compatibility communication with implementations that expect particular *tag*s.
 -   provide additional IRIs for extensions that extend *structure* types documented in the [Elf-DM].
 
+{.ednote} Should we say "implementations MUST NOT use any of the six pseudo-structure tags" or add contexts to the definition of pseudo-structures?  In other words, is .INDI.NOTE.DEFN a pseudo-structure or can it be defined as a structure?
 
 ### IRI dictionary encoding {#IRI}
 
@@ -666,9 +666,9 @@ the serialisation could begin
 0 HEAD
 1 CHAR UTF-8
 1 DEFN _UID http://example.com/UUID
-1 PRFX X_ http://example.com/xtensions/
-1 PRFX _ http://example.com/old_extensions.html#
 2 CONT http://purl.org/dc/terms/identifier
+1 PRFX X_ http://example.com/extensions/
+1 PRFX _ http://example.com/old_extensions.html#
 ````
 {/}
 
@@ -701,7 +701,7 @@ Any code points that cannot be directly represented as octets within the charact
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 1.  Encode the *string* with the character encoding
 
-{.note} While GEDCOM has provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
+{.note} While GEDCOM has no provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
 GEDCOM also does not define what is done with unknown code points, so the above definition does not violate what GEDCOM requires.
 
 {.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
