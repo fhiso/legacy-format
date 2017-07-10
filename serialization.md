@@ -212,7 +212,7 @@ Substructures
 :   *Pseudo-structures* may contain zero or more  *Structures*,
     which are called the *pseudo-structure*'s **substructures**.
 
-This specification documents five specific *pseudo-structures*:
+This specification documents six specific *pseudo-structures*:
 
 -   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payloads*.
     As such, they may appear as pseudo-substructures of any *structure* with a *string* *payload*.
@@ -223,6 +223,9 @@ This specification documents five specific *pseudo-structures*:
 
 -   `[PRFX]` and `[DEFN]` are used to encode the [IRI Dictionary].
     They appear only as pseudo-substructures of the *head* *structure*.
+
+-   `[CHAR]` is used to specify the character encoding of the dateaset's serialization.
+    It appears only as pseudo-substructures of the *head* *structure*.
 
 -   `[TRLR]` is always the last element of a serialised dataset.
 
