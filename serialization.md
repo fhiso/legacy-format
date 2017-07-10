@@ -826,7 +826,7 @@ that substring SHALL be replaced by the code point represented by the hexadecima
 
 [GEDCOM 5.5.1]
 :   The Church of Jesus Christ of Latter-day Saints.
-    *The GEDCOM Standard*, draft release 5.5.  2 Oct 1999.
+    *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
 
 [GEDCOM 5.5]
 :   The Church of Jesus Christ of Latter-day Saints.
