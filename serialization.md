@@ -88,9 +88,8 @@ Standards** standard.  To be *conformant* with this standard, an
 application *must* also be *conformant* with [Basic Concepts].  Concepts
 defined in that standard are used here without further definition.
 
-Indented text in grey or coloured boxes, such as preceding paragraph,
-does not form a normative part of this standard, and is labelled as
-either an example or a note.  
+Indented text in grey or coloured boxes does not form a normative part
+of this standard, and is labelled as either an example or a note.  
 
 {.ednote} Editorial notes, such as this, are used to record outstanding
 issues, or points where there is not yet consensus; they will be
