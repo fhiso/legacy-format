@@ -112,21 +112,6 @@ the match is defined to be the element of the set of possible matches such that
 {.ednote} The above disambiguation should probably be re-worded.  The intent is to ensure that in a line like "`1 NOTE   hi`" the payload is "`hi`" not "`  hi`" because the `Delim` production consumes all the leading whitespace.
 
 
-### Characters and strings
-
-A **delimiter** is defined as zero or more adjacent space *characters* or tabs.
-It matches the production `Delim`:
-
-    Delim  ::=  (#x20 | #x9)+
-
-A **linebreak** is defined as either a carriage return, a line feed, or a carriage return followed by a line feed.
-It matches the production `LB`:
-
-    LB  ::=  #xD #xA? | #xA
-
-{.note} *linebreak* is used to create payloads and serialisations; but a more permissive production is used to parse serialisations, as outlined in the section titled [Lines](#Line).
-
-
 ### IRIs  {#IRIs}
 
 The **structure type identifier**s used in this specification are *strings*
@@ -291,39 +276,70 @@ Each *structure* is mapped to a *string* through the intermediate form of a *lin
 
 ### Lines     {#Line}
 
-A *line* is a *string* consisting of the following components, in order.
-When creating a *line*, each *delimiter* MUST be a single space character U+0020;
-when parsing a *line*, any *delimiter* SHALL be accepted.
+A **line** is a *string* that matches the following `Line` production.
+
+    Line  ::=  Delim? Number Delim (XRef Delim)? Tag (Delim PLine)? Delim? LB
+
+The components of a *line* are each separated by a *whitespace*
+**delimiter**, defined as one or more space *characters* or
+tabs.  It matches the production `Delim`:
+
+    Delim  ::=  (#x20 | #x9)+
+
+When creating a *line*, a *conformant* application *shall* use a single
+space *character* (U+0020) for each required *delimiter* and *shall not*
+use a *delimiter* where it is *optional* in grammar.
+
+{.note} This requires an application to be permissive about where
+*whitespace* is permitted when reading a *line*, but conservative in
+where *whitespace* is placed when writing a *line*.  This ensures
+maximum compatibility with existing applications, regardless of whether
+they strictly conform to the [GEDCOM 5.5.1] standard.
+
+Each *line* ends with a **line break** which is defined to be a carriage
+return, a line feed, or a carriage return followed by a line feed.  It
+matches the production `LB`:
+
+    LB  ::=  #xD #xA? | #xA
+
+{.note} This includes the form of line breaks used on Windows (U+000D
+U+000A), the form used on Unix, Linux and modern Mac OS (U+000A), and
+the traditional Mac OS form (U+000D).  However this standard makes no
+requirement that an application running on one of these operating
+systems should use the native form of line break.
+
+Applications *should* use the same form of *line break* throughout any
+given serialisation.
+
+The non-*whitespace* components of a *line* have the following forms: 
+
 
 1.  The **level**: a base-ten integer matching the production `Number`:
     
         Number  ::= "0" | [1-9] [0-9]*
 
-    A *delimiter* MUST follow the *level*, delimiting it from the next element.
-
-2.  Optionally, a **xref_id**: an identifier surrounded by at-signs, matching the production `Xref`:
+2.  An *optional* **xref_id**: an identifier surrounded by at-signs, matching the production `XRef`:
     
-        Xref  ::= "@" [a-zA-Z0-9_] [^@]* "@"
-
-    If the *xref_id* is present, a *delimiter* MUST follow it, delimiting it from the next element.
+        XRef  ::= "@" [a-zA-Z0-9_] [^@#xA#xD]* "@"
 
 3.  A **tag**: a *string* (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
     
         Tag  ::= [0-9a-zA-Z_]+
 
-4.  Optionally, a **payload line**: a *string* matching the production `Pline`:
+4.  An *optional* **payload line**: a *string* matching the production `PLine`:
     
-        Pline  ::= ([^@] | "@@" | "@#" [^@x#Ax#D]* "@")*
+        PLine   ::= (PChar - S) (PChar* (PChar - S))?
+        PChar   ::= ([^@x#Ax#D] | "@@" | Escape)
+        Escape  ::= "@#" [^@x#Ax#D]* "@"
 
-    If the *payload line* is present, a *delimiter* MUST precede it, delimiting it from the previous element.
-    A *payload line* MUST NOT begin or end with *whitespace*.
+{.note}  The `PLine` production appears quite complicated when written
+in EBNF.  In fact, it allows an arbitrary *string* except that it *must
+not* begin or end with *whitespace*, and that any `@` sign must either
+be doubled (to represent a literal `@`) or be part of an escape
+sequence.
 
-5.  A **terminator**, which SHALL match production `LB` when creating a *line* 
-    and SHALL match production `PLB` when parsing a *line*.
-
-        PLB  ::= Delim? LB S?
-    
-    Implementations producing *lines* SHOULD use the same sting matching `LB` for all *terminators* within a single serialisation.
+{.ednote}  At the moment this grammar does not deal with a *line* like
+`1 HUSB @I2@`.
 
 ### Structure to/from line(s)
 
@@ -415,7 +431,7 @@ even though one has a pointer as its *payload* and the other has a string:
 
 A *string*-valued *payload* is encoded into a *payload line* as follows:
 
-1.  The *payload* is split on all *linebreak*s,
+1.  The *payload* is split on all *line break*s,
     and may also be split between any two non-*whitespace* characters
     that are not part of a substring matching the `Escape` production.
 
@@ -426,7 +442,7 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     is encoded as the *payload line* of the *structure*'s line;
     the remaining portions are encoded in order
     as the *payload line*s of pseudo-substructures of the *structure*:
-    a `[CONT]` *pseudo-structure* if the split point was a *linebreak*
+    a `[CONT]` *pseudo-structure* if the split point was a *line break*
     and a `[CONC]` *pseudo-structure* otherwise.
 
     It is RECOMMENDED that all payloads be split as needed
@@ -445,7 +461,7 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 
 {.note} Delimiter escaping will never be used with any of the *structures* documented in [ELF-DM]
-because all *payload*s there are either *whitespace normalised* or *linebreak normalised*.
+because all *payload*s there are either *whitespace normalised* or *line break normalised*.
 Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
 
 {.ednote} The above leaves out the ability to split next to a space or tab, meaning *strings* of hundreds of spaces or tabs will of necessity exceed the 255-character limit.
@@ -492,7 +508,7 @@ are combined to create the *structure*'s *payload* as follows:
 
 1.  The *payload* is created by concatenating all *payload line*s in order;
     if a *payload line* is of a `[CONT]` *pseudo-structure*,
-    it is preceded by a single *linebreak* prior to concatenation.
+    it is preceded by a single *line break* prior to concatenation.
 
 {.ednote} There is a problem with the above,
 where "`@@#x@@`", "`@@#x@`", "`@#x@@`", and "`@#x@`" will all decode as the same *payload*.
