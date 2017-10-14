@@ -103,15 +103,6 @@ applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
 
-When it is ambiguous what portion of a *string* an EBNF production matches because multiple possible matches exist,
-the match is defined to be the element of the set of possible matches such that
-
--   no other possible match has an earlier starting index
--   no other possible match with the same starting index has a later ending index
-
-{.ednote} The above disambiguation should probably be re-worded.  The intent is to ensure that in a line like "`1 NOTE   hi`" the payload is "`hi`" not "`  hi`" because the `Delim` production consumes all the leading whitespace.
-
-
 ### IRIs  {#IRIs}
 
 The **structure type identifier**s used in this specification are *strings*
@@ -320,7 +311,7 @@ The non-*whitespace* components of a *line* have the following forms:
 
 2.  An *optional* **xref_id**: an identifier surrounded by at-signs, matching the production `XRef`:
     
-        XRef  ::= "@" [a-zA-Z0-9_] [^@#xA#xD]* "@"
+        XRef  ::= "@" [a-zA-Z0-9_] [^#x40#xA#xD]* "@"
 
 3.  A **tag**: a *string* (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
     
@@ -328,18 +319,16 @@ The non-*whitespace* components of a *line* have the following forms:
 
 4.  An *optional* **payload line**: a *string* matching the production `PLine`:
     
-        PLine   ::= (PChar - S) (PChar* (PChar - S))?
-        PChar   ::= ([^@x#Ax#D] | "@@" | Escape)
-        Escape  ::= "@#" [^@x#Ax#D]* "@"
+        PLine   ::= PItem ((PItem | #x20 | #x90)* PItem)? | XRef
+        PItem   ::= [^#x40#x20#x9#xA#xD] | "@@" | Escape
+        Escape  ::= "@#" [^#x40#xA#xD]* "@"
 
 {.note}  The `PLine` production appears quite complicated when written
 in EBNF.  In fact, it allows an arbitrary *string* except that it *must
 not* begin or end with *whitespace*, and that any `@` sign must either
 be doubled (to represent a literal `@`) or be part of an escape
-sequence.
-
-{.ednote}  At the moment this grammar does not deal with a *line* like
-`1 HUSB @I2@`.
+sequence.  Writing the grammar like this avoides ambiguity as to whether
+*whitespace* is part of the *payload line* or the *delimiter*.
 
 ### Structure to/from line(s)
 
@@ -435,7 +424,7 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     and may also be split between any two non-*whitespace* characters
     that are not part of a substring matching the `Escape` production.
 
-        Escape  ::= "@#" [^@#xA#xD]* "@"
+        Escape  ::= "@#" [^#x40#xA#xD]* "@"
     
     The portion before the first split point
     (or the entire *payload* if there are no splits)
