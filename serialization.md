@@ -780,13 +780,6 @@ that substring SHALL be replaced by the code point represented by the hexadecima
     Scott Bradner, 1997.
     (See <http://tools.ietf.org/html/rfc2119>.)
 
-[RFC 3987]
-:   IETF (Internet Engineering Task Force).
-    *RFC 3987:
-    Internationalized Resource Identifiers (IRIs).*
-    Martin Duerst and Michel Suignard, 2005.
-    (See <http://tools.ietf.org/html/rfc3987>.)
-
 [Vocabularies]
 :   FHISO (Family History Information Standards Organisation)
     *Preferred nature of vocabularies.*
