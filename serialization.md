@@ -732,7 +732,7 @@ ASCII.
 
 Otherwise, there is no *detected character encoding*.
 
-{.note ...} These case can be summarised as follows:
+{.note ...} These cases can be summarised as follows:
 
 ----------------  -------------------------------------------------
 Initial octets    Detected character encoding
