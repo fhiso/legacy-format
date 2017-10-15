@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Serialisation Format
-date: 14 June 2017
+date: 15 October 2017
 numbersections: true
 ...
 # ELF Serialisation Format
@@ -88,6 +88,9 @@ Standards** standard.  To be *conformant* with this standard, an
 application *must* also be *conformant* with [Basic Concepts].  Concepts
 defined in that standard are used here without further definition.
 
+{.note} In particular, precise meaning of *string*, *character*,
+*whitespace* and *term* are given in [Basic Concepts].
+
 Indented text in grey or coloured boxes does not form a normative part
 of this standard, and is labelled as either an example or a note.  
 
@@ -103,23 +106,6 @@ applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
 
-### IRIs  {#IRIs}
-
-The **structure type identifier**s used in this specification are *strings*
-that SHALL take the form of an IRI matching the `IRI` production
-in §2.2 of [[RFC 3987](//tools.ietf.org/html/rfc3987)].
-
-An IRI MUST NOT be used as a *structure type identifier*
-unless it can be converted to a URI using the algorithm
-specified in §3.1 of [[RFC 3987](//tools.ietf.org/html/rfc3987)],
-and back to a IRI again using the algorithm
-specified in §3.2 of [[RFC 3987](//tools.ietf.org/html/rfc3987)],
-to yield the original IRI.
-
-
-
-
-
 ## Structures and pseudo-structures
 
 A dataset consists of **structures**; as part of encoding as a *string*, these are augmented by a set of **pseudo-structures**, *structure*-like constructs that are not part of the data model.
@@ -129,7 +115,8 @@ A dataset consists of **structures**; as part of encoding as a *string*, these a
 Every *structure* consists of the following components:
 
 Structure Type Identifier
-:   Every *structure* has a *structure type identifier*, which is always an IRI.
+:   Every *structure* has a *structure type identifier*, which is
+    *shall* be a *term*.
 
 Identifier
 :   A *string* uniquely identifying this *structure* within this dataset.
@@ -792,13 +779,6 @@ that substring SHALL be replaced by the code point represented by the hexadecima
     Key words for use in RFCs to Indicate Requirement Levels.*
     Scott Bradner, 1997.
     (See <http://tools.ietf.org/html/rfc2119>.)
-
-[RFC 3987]
-:   IETF (Internet Engineering Task Force).
-    *RFC 3987:
-    Internationalized Resource Identifiers (IRIs).*
-    Martin Duerst and Michel Suignard, 2005.
-    (See <http://tools.ietf.org/html/rfc3987>.)
 
 [Vocabularies]
 :   FHISO (Family History Information Standards Organisation)
