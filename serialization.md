@@ -697,17 +697,20 @@ document per §6.2.1.
 #### Detected character encoding
 
 If a character encoding is specified via any supported external means,
-such as an HTTP `Content-Typ` header, this *shall* be the *detected
+such as an HTTP `Content-Type` header, this *should* be the *detected
 character encoding*.
 
 {.example ...}  Suppose the ELF file was download using HTTP and the
 response included this header:
 
-    Content-Type: text/x-gedcom; charset=UTF-8
+    Content-Type: text/plain; charset=UTF-8
 
 If an application supports taking the *detected character encoding* from
-an HTTP `Content-Type` header, it *must* determine the *detected
-character encoding* to be UTF-8.
+an HTTP `Content-Type` header, the *detected character encoding*
+*should* be UTF-8.
+
+Note that the use of the MIME type `text/plain` is *not recommended* for
+ELF.  It is used here purely as an example. 
 {/}
 
 Otherwise, if the document begins with a byte-order mark (U+FEFF)
