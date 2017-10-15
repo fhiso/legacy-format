@@ -687,24 +687,69 @@ GEDCOM also does not define what is done with unknown code points, so the above 
 
 ### Octets to string   {#octet2string}
 
-In order to parse an ELF document, an application must determine how to map the raw stream of octets read from the network or disk into characters.
-This is mapping is called the **character encoding** of the document.
-Determining it is a two-stage process.
+In order to parse an ELF document, an application must determine how to
+map the raw stream of octets read from the network or disk into
+characters.  This is mapping is called the **character encoding** of
+the document.  Determining it is a two-stage process, with the first
+stage is to determine the **detected character encoding** of the
+document per §6.2.1.
 
 #### Detected character encoding
 
-If a character encoding is specified via any supported external means, such as an HTTP header,
-this *shall* be the **detected character encoding**.  
+If a character encoding is specified via any supported external means,
+such as an HTTP `Content-Typ` header, this *shall* be the *detected
+character encoding*.
 
-Otherwise, if the document begins with a byte-order mark (U+FEFF) encoded in UTF-8 or UTF-16 (of either endianness),
-this determines the *detected character encoding*.
-The byte-order mark is removed from the data stream before further processing.
+{.example ...}  Suppose the ELF file was download using HTTP and the
+response included this header:
 
-Otherwise, if the first octets of the data stream are 30 00 or 00 30,
-the *detected character encoding* is UTF-16, in little-endian or big-endian form, respectively.
+    Content-Type: text/x-gedcom; charset=UTF-8
 
-Otherwise, there is no *detected character encoding* defined by this specification.
-Extensions MAY implement detection of other character encodings, but are NOT RECOMMENDED to do so.
+If an application supports taking the *detected character encoding* from
+an HTTP `Content-Type` header, it *must* determine the *detected
+character encoding* to be UTF-8.
+{/}
+
+Otherwise, if the document begins with a byte-order mark (U+FEFF)
+encoded in UTF-8, or UTF-16 of either endianness, this encoding *shall*
+be the *detected character encoding*.  The byte-order mark is removed
+from the data stream before further processing.
+
+Otherwise, if the document begins with the digit `0` (U+0030) encoded in
+UTF-16 of either endianness, this encoding *shall* be the *detected
+character encoding*.
+
+{.note}  The digit `0` is tested for because an ELF file *must* begin
+with the *line* "`0 HEAD`".
+
+Otherwise, applications *may* try to detect other character encodings by
+examining the octet stream, but it is *not recommended* that they do so.
+
+{.note}  One situation where it might be desirable to try to detect
+another encoding is if the application needs to support (as an
+extension) a character encoding like EBCDIC which is not compatible with
+ASCII.
+
+Otherwise, there is no *detected character encoding*.
+
+{.note ...} These cases can be summarised as follows:
+
+----------------  -------------------------------------------------
+Initial octets    Detected character encoding
+----------------  -------------------------------------------------
+EF BB BF          UTF-8 (with byte-order mark)
+
+FF FE             UTF-16, little endian (with byte-order mark) 
+
+FE FF             UTF-16, big endian (with byte-order mark)
+
+30 00             UTF-16, little endian (without byte-order mark)
+
+00 30             UTF-16, big endian (without byte-order mark)
+
+Otherwise         None
+----------------  -------------------------------------------------
+{/}
 
 #### Character encoding
 
@@ -730,7 +775,10 @@ that substring SHALL be replaced by the code point represented by the hexadecima
 
 {.note} While GEDCOM does not have the UEsc provision, this provision will not cause an ELF decoder to misinterpret the output of any known GEDCOM exporter.
 
-
+{.ednote}  This is specified at the wrong time in the decoding process.
+Escape decoding must be done after *lines* have been parsed, otherwise
+it is not possible to use "`1 NOTE @#U20@`" to encode a *string*
+consisting of just a single space *character*.
 
 
 
