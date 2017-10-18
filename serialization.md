@@ -15,10 +15,11 @@ Comments on this draft should be directed to the
 [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing list.
 {/}
 
-FHISO's **Extended Legacy Format** (or **ELF**) is a serialisation
-format and data model that is fully compatible with GEDCOM, but with the
-addition of a structured extensibility mechanism.  It also clarifies
-ambiguities in GEDCOM and documents best current practice. 
+FHISO's **Extended Legacy Format** (or **ELF**) is a hierarchical
+serialisation format and genealogical data model that is fully
+compatible with GEDCOM, but with the addition of a structured
+extensibility mechanism.  It also clarifies some ambiguities that were
+present in GEDCOM and documents best current practice. 
 
 The **GEDCOM** file format developed by The Church of Jesus Christ of
 Latter-day Saints is the *de facto* standard for the exchange of
