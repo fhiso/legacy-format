@@ -9,6 +9,10 @@ is converted to code point sequence
     
     U+0064  U+0065  U+0066  U+030A  U+0067
 
+and is rendered as
+
+    def̊g
+
 Bytes 00 through 7F map to themselves as code points.
 Bytes 80 through A0, AF, BB, C9 through CC, D0 through DF, FD, and FF will never appear in any valid ANSEL encoding.
 All of these appear in the following table for completeness.
