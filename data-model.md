@@ -3483,7 +3483,7 @@ Description
 :   A code that indicates the sex of the individual
 
 Payload
-:   one of {`M`, `F`}
+:   one of {`M`, `F`, `U`}
 
 Substructures
 :   None
