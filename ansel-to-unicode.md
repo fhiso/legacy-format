@@ -1,6 +1,6 @@
 The following provides the complete information needed to convert GEDCOM-extension ANSEL into Unicode code points.
 Each ANSEL byte converts into a single code point in Unicode.
-For those bytes marked "Swap with next", the the byte and it's subsequent byte are reversed in the codepoint sequence;
+For those bytes marked "Swap with next", the byte and it's subsequent byte are reversed in the codepoint sequence;
 for example the byte sequence
 
     64      65      EA      66      67
