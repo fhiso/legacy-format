@@ -2212,7 +2212,28 @@ Substructures
 
 ### `http://terms.fhiso.org/elf/HUSB`  {#HUSB}
 
-Husband: an individual in the family role of a married man or father.
+An individual in the family whose role is as husband or first partner in
+a marriage or other relationship, or as a father or first parent of a
+child.
+
+{.note ...} The wording "first partner" and "first parent" is intended
+to be interpreted broadly, and encompasses situations where the
+individual cannot be described as a husband or father.  In particular,
+many current GEDCOM applications use `[HUSB]` to encode the first
+parter in a same-sex union, regardless of the sex of the individual.
+This behaviour has arisen because many applications reject `[FAM]`
+records with more than one `[WIFE]` or more than one `[HUSB]`.  FHISO
+recognises that misgendering a person in this way is wholly
+inappropriate, and plans to address it in a future standard.
+
+Many existing visualisations will display each `[FAM]` as a branch in a
+family tree, with `[HUSB]` on one side and `[WIFE]` on the other in an
+internally-consistent way. Because of this, many tools will not permit
+`[FAM]` notes with more than one `[HUSB]` or `[WIFE]`, and the selection
+of which spouse in a same-sex union is referenced by `[HUSB]` and which
+is referenced by `[WIFE]` can be considered a layout hint.
+{/}
+
 
 Contexts
 :   .`[FAM]`.(`[FamilyEvent]`).`[HUSB]`
@@ -2234,6 +2255,8 @@ Payload
 Substructures
 :   None
 
+Applications *must not* place any requirement on the `[SEX]`
+*substructure* of the referenced `[INDI]`.
 
 ### `http://terms.fhiso.org/elf/IDNO`  {#IDNO}
 
@@ -3913,7 +3936,27 @@ Substructures
 
 ### `http://terms.fhiso.org/elf/WIFE`  {#WIFE}
 
-An individual in the role as a mother and/or married woman.
+An individual in the family whose role is as wife or second partner in
+a marriage or other relationship, or as a mother or second parent of a
+child.
+
+{.note ...} The wording "second partner" and "second parent" is intended
+to be interpreted broadly, and encompasses situations where the
+individual cannot be described as a wife or mother.  In particular,
+many current GEDCOM applications use `[WIFE]` to encode the second
+parter in a same-sex union, regardless of the sex of the individual.
+This behaviour has arisen because many applications reject `[FAM]`
+records with more than one `[WIFE]` or more than one `[HUSB]`.  FHISO
+recognises that misgendering a person in this way is wholly
+inappropriate, and plans to address it in a future standard.
+
+Many existing visualisations will display each `[FAM]` as a branch in a
+family tree, with `[HUSB]` on one side and `[WIFE]` on the other in an
+internally-consistent way. Because of this, many tools will not permit
+`[FAM]` notes with more than one `[HUSB]` or `[WIFE]`, and the selection
+of which spouse in a same-sex union is referenced by `[HUSB]` and which
+is referenced by `[WIFE]` can be considered a layout hint.
+{/}
 
 Contexts
 :   .`[FAM]`.(`[FamilyEvent]`).`[WIFE]`
@@ -3934,6 +3977,9 @@ Payload
 
 Substructures
 :   None
+
+Applications *must not* place any requirement on the `[SEX]`
+*substructure* of the referenced `[INDI]`.
 
 
 ### `http://terms.fhiso.org/elf/WILL`  {#WILL}
