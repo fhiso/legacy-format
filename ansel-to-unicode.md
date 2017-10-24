@@ -335,4 +335,4 @@ Reorder:    `65      FC      F1      F7      E8      E9      E0`
     
 Unicode:    `U+0065  U+0338  U+0328  U+0326  U+0308  U+030C  U+0309`
     
-Rendering:  ![image of rendering](stacked-diacritics.png) (your browser shows it as ę̸̦̈̌̉)
+Rendering:  <img src="stacked-diacritics.png" style="height:1.2em"/> (your browser shows it as ę̸̦̈̌̉)
