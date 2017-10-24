@@ -51,9 +51,7 @@ form the initial suite of ELF standards:
   update to the GEDCOM data model, but rather a basis for future
   extension.
 
-## General
-
-### Conventions used
+## Conventions used
 
 Where this standard gives a specific technical meaning to a word or
 phrase, that word or phrase is formatted in bold text in its initial
@@ -106,6 +104,48 @@ attached to the capitalisation of grammar symbols.  *Conforming*
 applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
+
+## Overview of ELF
+
+The ELF serialisation format is a structured, line-based text format for
+encoding data in a form that is both machine-readable and
+human-readable.  An ELF document consists of a sequence *structures*, 
+which are recursive data structures that allow arbitrary information to
+be represented in a hierarchical manner.  Each *structure* *may* have a
+*payload*, which is either a *string* or a *pointer* to another
+structure, and a list of child *structures* known as *substructures*.
+
+{.note} The expressiveness of ELF is similar to that of XML.  ELF's
+*structures* serve the same role as elements in XML, and nest similarly.
+
+Each *structure* is encoded as sequence of *lines*.  The type of
+*structure* is encoded on the first *line*, together with its
+*payload*; *substructures* are encoded in order on subsequent
+*lines*.  Each *line* is prefixed by a *level*, which is a number that
+states how many levels of *substructures* deep the current *structure*
+is.
+
+{.example ...}
+    0 HEAD
+    1 GEDC
+    2 VERS 5.5.1
+    2 ELF 1.0.0
+    2 FORM LINEAGE-LINKED
+    1 CHAR UTF-8
+    0 INDI
+    1 NAME Charlemagne
+    0 TRLR
+
+The ELF document has three *lines* with *level* `0` which mark the start
+of the three top-level *structures*.  These *structures* have,
+respectively, two, one and zero *substructures*, which are denoted by
+the *lines* with *level* `1`.   The *structure* represented by the
+`CHAR` *line* is a *substructure* of the *structure* that begins on the
+`HEAD` *line* because there is no intervening *line* with *level* one
+less than `1` (i.e. `0`); the *structure* represented by the `NAME`
+*line* is a *substructure* of the `INDI` *structure* as that is the
+preceding *line* with a *level* `0`.
+{/}
 
 ## Structures and pseudo-structures
 
@@ -693,7 +733,13 @@ map the raw stream of octets read from the network or disk into
 characters.  This is mapping is called the **character encoding** of
 the document.  Determining it is a two-stage process, with the first
 stage is to determine the **detected character encoding** of the
-document per §6.2.1.
+document per §7.2.1.
+
+{.note}  The *detected character encoding* might not be the actual
+*character encoding* used in the document, but if the document is
+*conformant*, it will be similar enough to allow a limited degree of
+parsing as basic ASCII *character* will be correctly identified.
+
 
 #### Detected character encoding
 
