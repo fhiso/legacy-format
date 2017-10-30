@@ -276,3 +276,63 @@ FC     |U+0338 |Swap with next| Not 5.5               | GEDCOM Extension
 FD     |       |              |                       |
 FE     |U+0313 |Swap with next|                       |
 FF     |       |              |                       |
+
+
+# Addendum: multiple combining diacritics
+
+The above describes how to convert text where only one combining diacritic is present per letter.
+Multiple accents need to be handled specially, as the stacking order of multiple diacritics is different in UTF-8 and ANSEL (or at least the MARC-8 clarification of ANSEL; ANSEL itself is silent on the topic) depending on where they appear:
+
+ANSEL  |Unicode|Type
+-------|-------|------
+E0     |U+0309 |High
+E1     |U+0300 |High
+E2     |U+0301 |High
+E3     |U+0302 |High
+E4     |U+0303 |High
+E5     |U+0304 |High
+E6     |U+0306 |High
+E7     |U+0307 |High
+E8     |U+0308 |High
+E9     |U+030C |High
+EA     |U+030A |High
+EB     |U+FE20 |High
+EC     |U+FE21 |High
+ED     |U+0315 |High
+EE     |U+030B |High
+EF     |U+0310 |High
+F0     |U+0327 |Low
+F1     |U+0328 |Low
+F2     |U+0323 |Low
+F3     |U+0324 |Low
+F4     |U+0325 |Low
+F5     |U+0333 |Low
+F6     |U+0332 |Low
+F7     |U+0326 |Low
+F8     |U+0328 |Low
+F9     |U+032E |Low
+FA     |U+FE22 |High
+FB     |U+FE23 |High
+FC     |U+0338 |Center
+FD     |       |
+FE     |U+0313 |High
+FF     |       |
+
+Given an ANSEL byte sequence consisting of any number of bytes &ge; E0 followed by a single byte &lt; E0,
+re-order that sequence as follows:
+
+1.  Put the final byte's code point first
+2.  If there is a center-type character (byte FC), put it second
+3.  Then put the high-type and low-type characters, reversing the order of the high-type characters and preserving the order of the low-type characters.
+    How high- and low-type characters are ordered is does not impact rendering;
+    however, Unicode normalized forms prefer low-type before high-type.
+
+Example:
+
+ANSEL:      `E0      E9      F1      FC      E8      F7      65`
+    
+Reorder:    `65      FC      F1      F7      E8      E9      E0`
+    
+Unicode:    `U+0065  U+0338  U+0328  U+0326  U+0308  U+030C  U+0309`
+    
+Rendering:  <img src="stacked-diacritics.png" style="height:1.2em"/> (your browser shows it as ę̸̦̈̌̉)
