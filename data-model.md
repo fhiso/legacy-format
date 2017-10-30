@@ -28,7 +28,7 @@ recent version is GEDCOM 5.5.1 which was produced in 1999, but despite
 many technological advances since then, GEDCOM has remained unchanged.
 
 {.note} Strictly, [GEDCOM 5.5] was the last version to be publicly
-released back in 1995.  However a draft dated 2 October 1999 of a
+released back in 1996.  However a draft dated 2 October 1999 of a
 proposed [GEDCOM 5.5.1] was made public; it is generally considered to
 have the status of a standard and has been widely implemented as such.
 
@@ -4085,6 +4085,15 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 
 ### Other references
 
+[GEDCOM 5.5]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 5.5.  2 Jan 1996, as amended by the
+    errata sheet dated 10 Jan 1996.
+
+[GEDCOM 5.5.1]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
+
 [XML Names]
 :   W3 (World Wide Web Consortium).
     *Namespaces in XML 1.1*, 2nd edition.
@@ -4092,6 +4101,3 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
     W3C Recommendation.
     See <https://www.w3.org/TR/xml-names11/>.
 
-[ELF-File]
-:   FHISO (Family History Information Standards Organisation)
-    *Extended Legacy Format (ELF): Serialization Format.*
