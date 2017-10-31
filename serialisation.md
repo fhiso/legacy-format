@@ -218,10 +218,10 @@ supports the *optional* UTF-16 encoding, this encoding *shall* be the
 *character encoding*.  The byte-order mark *must* be removed from the
 data stream before further processing.
 
-Otherwise, if the document begins with the digit `0` (U+0030), a space
-*character* (U+0020) or a horizontal tab (U+0009) encoded in UTF-16 of
-either endianness, and if the application supports the *optional* UTF-16
-encoding, this encoding *shall* be the *character encoding*.
+Otherwise, if the document begins with any ASCII *character* (U+0001 to
+U+007F) encoded in UTF-16 of either endianness, and if the application
+supports the *optional* UTF-16 encoding, this encoding *shall* be the
+*character encoding*.
 
 {.note}  The digit `0` is tested for because an ELF file *must* begin
 with the *line* "`0 HEAD`"; a space *character* or horizontal tab are
@@ -238,7 +238,8 @@ ASCII.
 
 Otherwise, there is no *character encoding* is detected.
 
-{.note ...} These cases can be summarised as follows:
+{.note ...} These cases can be summarised as follows, where `xx` denotes
+an arbitrary byte:
 
 ----------------  -------------------------------------------------
 Initial bytes     Character encoding
@@ -249,17 +250,9 @@ FF FE             UTF-16, little endian (with byte-order mark)
 
 FE FF             UTF-16, big endian (with byte-order mark)
 
-30 00             UTF-16, little endian (without byte-order mark)
+xx 00             UTF-16, little endian (without byte-order mark)
 
-00 30             UTF-16, big endian (without byte-order mark)
-
-20 00             UTF-16, little endian (without byte-order mark)
-
-00 20             UTF-16, big endian (without byte-order mark)
-
-09 00             UTF-16, little endian (without byte-order mark)
-
-00 09             UTF-16, big endian (without byte-order mark)
+00 xx             UTF-16, big endian (without byte-order mark)
 
 Otherwise         None
 ----------------  -------------------------------------------------
@@ -284,9 +277,9 @@ backslash and tilde.
 The application *shall* scan the initial section of the byte stream
 searching for a byte sequence that corresponds to a `CHAR`
 *substructure* in a `HEAD` *record*.  Scanning proceeds *line* by
-*line*, by assuming the file is encoded in ASCII; however the
-application *must* accept 8-bit characters outside the range of ASCII
-without issuing an error.
+*line*, by assuming the file is encoded in ASCII; however, while doing
+so, the application *must* accept 8-bit characters outside the range of
+ASCII without issuing an error.
 
 {.note} Equivalently, an application *may* assume a *character
 encoding* of ISO-8859-1 for the purpose of scanning for the actual
