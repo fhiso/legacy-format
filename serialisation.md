@@ -518,6 +518,9 @@ Substructures
 :   *Pseudo-structures* may contain zero or more  *Structures*,
     which are called the *pseudo-structure*'s **substructures**.
 
+{.note}  Pseudo-structures have a *tag* rather than a *structure type
+identifier*, and are not part of the *data model*.
+
 This specification documents six specific *pseudo-structures*:
 
 -   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payloads*.
