@@ -195,8 +195,8 @@ reading specific *character encodings* can be found in §3.3.
 
 {.note} For applications that opt not to support UTF-16, the process
 described in this section can be as simple as skipping over a UTF-8
-byte-order mark, determining the *character encoding* to be UTF-8 if one
-is present.
+byte-order mark, and determining the *character encoding* to be UTF-8 if
+one was present.
 
 If a character encoding is specified via any supported external means,
 such as an HTTP `Content-Type` header, this *should* be used as the
@@ -218,13 +218,15 @@ supports the *optional* UTF-16 encoding, this encoding *shall* be the
 *character encoding*.  The byte-order mark *must* be removed from the
 data stream before further processing.
 
-Otherwise, if the document begins with the digit `0` (U+0030) encoded in
-UTF-16 of either endianness, and if the application supports the
-*optional* UTF-16 encoding, this encoding *shall* be the *character
-encoding*.
+Otherwise, if the document begins with the digit `0` (U+0030), a space
+*character* (U+0020) or a horizontal tab (U+0009) encoded in UTF-16 of
+either endianness, and if the application supports the *optional* UTF-16
+encoding, this encoding *shall* be the *character encoding*.
 
 {.note}  The digit `0` is tested for because an ELF file *must* begin
-with the *line* "`0 HEAD`".
+with the *line* "`0 HEAD`"; a space *character* or horizontal tab are
+also accommodated to permit more flexible use of *whitespace* in the
+file.
 
 Otherwise, applications *may* try to detect other character encodings by
 examining the octet stream, but it is *not recommended* that they do so.
@@ -250,6 +252,14 @@ FE FF             UTF-16, big endian (with byte-order mark)
 30 00             UTF-16, little endian (without byte-order mark)
 
 00 30             UTF-16, big endian (without byte-order mark)
+
+20 00             UTF-16, little endian (without byte-order mark)
+
+00 20             UTF-16, big endian (without byte-order mark)
+
+09 00             UTF-16, little endian (without byte-order mark)
+
+00 09             UTF-16, big endian (without byte-order mark)
 
 Otherwise         None
 ----------------  -------------------------------------------------
