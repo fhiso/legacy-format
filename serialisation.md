@@ -288,7 +288,7 @@ encoding* of ISO-8859-1 for the purpose of scanning for the actual
 Each *line* is read by reading bytes from the file and appending them to
 the *line* until a byte is encountered that is the ASCII encoding of a
 line feed (U+000A) or carriage return (U+000D), or the end of the file
-is reached.  This byte is not not appended to the *line*.  Next, any
+is reached.  This byte is not appended to the *line*.  Next, any
 leading or trailing sequences of bytes that are ASCII encodings of space
 *characters* (U+0020) or horizontal tabs (U+0009) are removed from the
 *line*.  If this results in an empty *line*, another *line* is read
@@ -312,7 +312,7 @@ determine the *character encoding* to be ANSEL.
 with GEDCOM, despite being *deprecated* in ELF.
 
 If the end of the file is reached while scanning for the *character
-encoding*, the application should issue and error and stop reading the
+encoding*, the application should issue an error and stop reading the
 file.
 
 {.note}  A valid ELF file must end with a "`0 TRLR`" *line* which will
@@ -385,12 +385,12 @@ definitions of ASCII is meant, partly because the Unicode standard is
 much more readily available than the ASCII one, and partly because ASCII
 allows certain punctuation marks a be used as combining diacritics when
 they follow the backspace *character* (U+0008).  This cannot be used
-legally in GEDCOM as the backspace *character* is not peritted.  Unicode
+legally in GEDCOM as the backspace *character* is not permitted.  Unicode
 provides separate combining diacritics and does not allow this use.
 
 ANSEL refers to the Extended Latin Alphabet Coded Character Set for
 Bibliographic Use defined in [ANSEL].  If an ELF file is determined to
-used the ANSEL *character encoding* it *must* be converted into a
+use the ANSEL *character encoding* it *must* be converted into a
 sequence of Unicode *characters* before it can be processed further.
 This is discussed in §3.3.1.  
 
@@ -410,7 +410,7 @@ be regarded as such too for our purpose; but ANSEL is a different
 a further distinction between *encoding forms* like UTF-8 and UTF-16, and
 *encoding schemes* like UTF-16BE and UTF-16LE.
 
-#### Converting ANSEL to Unicoed
+#### Converting ANSEL to Unicode
 
 {.ednote} Add material from `ansel-to-unicode.md`.
 
@@ -601,7 +601,7 @@ To decode a *dataset*,
     and are not part of from the resulting dataset.
     Substructures of *pseudo-structures* have no meaning and SHALL be ignored.
 
-{.ednote} Substrutures of pseudo-structures are *ignored* rather than *forbidden* because GEDCOM listed the `CHAR` pseudo-structure as having an optional `VERS` substructure with no defined semantics and because non-conformant GEDCOM producers might have placed substructures under any line.
+{.ednote} Substructures of pseudo-structures are *ignored* rather than *forbidden* because GEDCOM listed the `CHAR` pseudo-structure as having an optional `VERS` substructure with no defined semantics and because non-conformant GEDCOM producers might have placed substructures under any line.
 
 
 ## Structure to/from String  {#struct-string}
@@ -706,7 +706,7 @@ Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more l
     If there is no *payload line* but the *structure* expects a *string*-valued *payload*, the *payload* is a string of length 0.
     If there is a *payload line* of length 0 but the *structure* expects no *payload*, there is no *payload*.
 
-{.ednote} The length-0 passage above deals with the case were "`1 CONT`" should be parsed as a blank line, not as an error because it lacks the required *payload line*.
+{.ednote} The length-0 passage above deals with the case where "`1 CONT`" should be parsed as a blank line, not as an error because it lacks the required *payload line*.
 
 The [line(s)](#Line) encoding a *structure* is followed immediately by lines encoding each of its substructures and pseudo-substructures.
 The order of substructures of different *structure type identifier*s is arbitrary, but the order of substructures with the same *structure type identifier* MUST be preserved.
@@ -1037,7 +1037,7 @@ Any code points that cannot be directly represented as octets within the charact
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 1.  Encode the *string* with the character encoding
 
-{.note} While GEDCOM has no provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
+{.note} While GEDCOM has no provision for escaping unencodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
 GEDCOM also does not define what is done with unknown code points, so the above definition does not violate what GEDCOM requires.
 
 {.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
