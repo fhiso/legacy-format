@@ -1,10 +1,10 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Serialisation Format
-date: 15 October 2017
+date: 31 October 2017
 numbersections: true
 ...
-# ELF Serialisation Format
+# Extended Legacy Format (ELF):<br/> Serialisation Format
 
 {.ednote ...} This is an **exploratory draft** of the serialisation
 format for FHISO's proposed suite of Extended Legacy Format (ELF)
@@ -28,7 +28,7 @@ recent version is GEDCOM 5.5.1 which was produced in 1999, but despite
 many technological advances since then, GEDCOM has remained unchanged.
 
 {.note} Strictly, [GEDCOM 5.5] was the last version to be publicly
-released back in 1995.  However a draft dated 2 October 1999 of a
+released back in 1996.  However a draft dated 2 October 1999 of a
 proposed [GEDCOM 5.5.1] was made public; it is generally considered to
 have the status of a standard and has been widely implemented as such.
 
@@ -90,6 +90,12 @@ defined in that standard are used here without further definition.
 {.note} In particular, precise meaning of *string*, *character*,
 *whitespace* and *term* are given in [Basic Concepts].
 
+Certain facilities in this standard are described as **deprecated**,
+which is a warning that they may be removed from a future version of
+this standard.  This has no affect on whether a *conformant* application
+must implement the facility: they may be *required*, *recommended* or
+*optional* as described in this standard.  
+
 Indented text in grey or coloured boxes does not form a normative part
 of this standard, and is labelled as either an example or a note.  
 
@@ -123,7 +129,7 @@ Each *structure* is encoded as sequence of *lines*.  The type of
 *payload*; *substructures* are encoded in order on subsequent
 *lines*.  Each *line* is prefixed by a *level*, which is a number that
 states how many levels of *substructures* deep the current *structure*
-is.
+is nested.
 
 {.example ...}
     0 HEAD
@@ -145,6 +151,312 @@ the *lines* with *level* `1`.   The *structure* represented by the
 less than `1` (i.e. `0`); the *structure* represented by the `NAME`
 *line* is a *substructure* of the `INDI` *structure* as that is the
 preceding *line* with a *level* `0`.
+{/}
+
+The ELF serialisation format is a general purpose format that can be
+used to represent arbitrary data, depending on the particular types of 
+*structures* that are used.  A particular set of *structures*, together
+with their meanings and restrictions on how they are to be used, is
+called a **data model**.  The ELF serialisation format is designed to be
+useable with various *data models*, however it is anticipated that most
+files using the ELF serialisation format will use the data model
+described in [ELF Data Model], which is based on and compatible with
+GEDCOM's lineage-linked form.
+
+## Parsing lines
+
+Applications parsing an ELF file *shall* follow the steps outlined in
+this section.  *Conformant* applications *may* deviate from this
+processing sequence only if it has no effect on the observable behaviour
+of the application.
+
+{.note} In particular, this processing sequence implies multiple passes
+over the input document. Applications *may* merge the steps in such a
+way as to reduce the number of passes needed providing the behaviour is
+the same as specified here.
+
+In order to parse an ELF document, an application *shall* first convert
+the raw stream of bytes which it has read from the network or disk into
+a sequence of *strings* called *lines*.  The way in which a raw stream
+of bytes, as read from the network or disk, is mapped to a *string* is
+called the **character encoding** of the document.  Determining it is a
+two-stage process, with the first stage is to attempt to detect a
+*character encoding* using the process given in §3.1.
+
+If no *character encoding* was detected, the *character encoding* is
+assumed to be a 7 or 8-bit encoding that is sufficiently compatible with
+ASCII that an application can locate and read a `CHAR` *structure* to
+determine the actual *character encoding*.  This *shall* be done using
+the process described in §3.2.  If no such `CHAR` *structure* is found,
+the *character encoding* *shall* default to ANSEL.  Considerations for
+reading specific *character encodings* can be found in §3.3.
+
+### Detecting a character encoding
+
+{.note} For applications that opt not to support UTF-16, the process
+described in this section can be as simple as skipping over a UTF-8
+byte-order mark, determining the *character encoding* to be UTF-8 if one
+is present.
+
+If a character encoding is specified via any supported external means,
+such as an HTTP `Content-Type` header, this *should* be used as the
+*character encoding*.
+
+{.example ...}  Suppose the ELF file was download using HTTP and the
+response included this header:
+
+    Content-Type: application/x-gedcom; charset=UTF-8
+
+If an application has access to this `Content-Type` header and is able
+to understand it, it *should* determine the *character encoding* to be
+UTF-8.
+{/}
+
+Otherwise, if the document begins with a byte-order mark (U+FEFF)
+encoded in UTF-8, or in UTF-16 of either endianness if the application
+supports the *optional* UTF-16 encoding, this encoding *shall* be the
+*character encoding*.  The byte-order mark *must* be removed from the
+data stream before further processing.
+
+Otherwise, if the document begins with the digit `0` (U+0030) encoded in
+UTF-16 of either endianness, and if the application supports the
+*optional* UTF-16 encoding, this encoding *shall* be the *character
+encoding*.
+
+{.note}  The digit `0` is tested for because an ELF file *must* begin
+with the *line* "`0 HEAD`".
+
+Otherwise, applications *may* try to detect other character encodings by
+examining the octet stream, but it is *not recommended* that they do so.
+
+{.note}  One situation where it may be necessary to attempt to detect
+another encoding is if the application needs to support (as an
+extension) a character encoding like UTF-32 which is not compatible with
+ASCII.
+
+Otherwise, there is no *character encoding* is detected.
+
+{.note ...} These cases can be summarised as follows:
+
+----------------  -------------------------------------------------
+Initial bytes     Character encoding
+----------------  -------------------------------------------------
+EF BB BF          UTF-8 (with byte-order mark)
+
+FF FE             UTF-16, little endian (with byte-order mark) 
+
+FE FF             UTF-16, big endian (with byte-order mark)
+
+30 00             UTF-16, little endian (without byte-order mark)
+
+00 30             UTF-16, big endian (without byte-order mark)
+
+Otherwise         None
+----------------  -------------------------------------------------
+{/}
+
+### Scanning for a character encoding
+
+If no *character encoding* was detected by the process given in §3.1,
+the *character encoding* *must* be a 7 or 8-bit *character encoding*
+(possibly a multibyte encoding like UTF-8), that is sufficiently
+compatible with ASCII that the `CHAR` *structure* can be read.
+
+{.note}  This standard does not define what constitutes sufficient
+compatibility with ASCII.  The only 7 or 8-bit *character encodings*
+defined in this standard are ASCII, ANSEL and UTF-8 which encode ASCII
+*characters* identically to ASCII.  However an application *may* support
+*character encodings* that have small differences from ASCII, such as
+the Japanese Shift-JIS *character encoding* which uses the bytes 5C and
+7E to encode the yen currency sign and overbar where ASCII has a
+backslash and tilde.
+
+The application *shall* scan the initial section of the byte stream
+searching for a byte sequence that corresponds to a `CHAR`
+*substructure* in a `HEAD` *record*.  Scanning proceeds *line* by
+*line*, by assuming the file is encoded in ASCII; however the
+application *must* accept 8-bit characters outside the range of ASCII
+without issuing an error.
+
+{.note} Equivalently, an application *may* assume a *character
+encoding* of ISO-8859-1 for the purpose of scanning for the actual
+*character encoding*.
+
+Each *line* is read by reading bytes from the file and appending them to
+the *line* until a byte is encountered that is the ASCII encoding of a
+line feed (U+000A) or carriage return (U+000D), or the end of the file
+is reached.  This byte is not not appended to the *line*.  Next, any
+leading or trailing sequences of bytes that are ASCII encodings of space
+*characters* (U+0020) or horizontal tabs (U+0009) are removed from the
+*line*.  If this results in an empty *line*, another *line* is read
+until either a non-empty *line* is read or the end of the file is
+reached.
+
+For the purpose of scanning for a *character encoding*, all *lines*
+*shall* be *whitespace normalised*, and all lowercase ASCII letters
+(U+0061 to U+007A) converted to the corresponding uppercase letter
+(U+0041 to U+005A).  
+
+Once normalised in this manner, the first non-empty *line* of
+the file *must* be "`0 HEAD`"; if it is not, the application *should*
+issue an error and stop reading the file.  After the first non-empty
+*line*, if the application encounters another normalised *line* starting
+with a `0` digit (U+0030) followed by a space *character* (U+0020), the
+application *shall* cease scanning for a *character encoding* and
+determine the *character encoding* to be ANSEL.
+
+{.note}  ANSEL is the default *character encoding* for compatibility
+with GEDCOM, despite being *deprecated* in ELF.
+
+If the end of the file is reached while scanning for the *character
+encoding*, the application should issue and error and stop reading the
+file.
+
+{.note}  A valid ELF file must end with a "`0 TRLR`" *line* which will
+cause scanning to cease before the end of file is reached, even if the
+file contains no other *record*.
+
+If the application encounters a *line* beginning with "`1 CHAR`"
+followed by a space *character* (U+0020) while scanning for the
+*character encoding*, the remainder of the *line* *shall* be used to
+determine the *character encoding* as follows, and then cease scanning
+for a *character encoding*.
+
+If the remainder of the *line* is "`ASCII`", "`ANSEL`" or "`UTF-8`" the
+application *shall* determine the *character encoding* to be ASCII,
+ANSEL or UTF-8, respectively.  *Conformant* applications are *required*
+to support these three *character encodings*.
+
+Otherwise, if the remainder of the *line* is "`UNICODE`", the
+application *should* issue an error and stop reading the file.
+
+{.note} The value `UNICODE` represents the UTF-16 encoding, and if the
+file is genuinely in UTF-16, it will have been detected as such in §3.1
+and the file will not be scanned for a *character encoding*.  The value
+`UNICODE` is also ambiguous as it does not specify which endianness of
+UTF-16 is to be used: this is detected by the process given in §3.1.
+
+Otherwise the application *shall* determine the *character encoding* in
+an implementation defined way.  In doing so, it *may* read one further
+*line* and if it begins with "`2 VERS `", the application *may* use the
+remainder of that *line* to provide further detail on *character
+encoding*.  If the application is unable to determine the *character
+encoding*, or if the *character encoding* is one which the application
+does not support, it should issue an error and stop reading the file.
+
+{.note}  Applications are encouraged to support other *character
+encodings* where feasible, but most of the other values found on `CHAR`
+*lines* are inherently ambiguous.  One of the more common is "`ANSI`"
+which refers to any of several Windows code pages, most frequently
+CP-1252 which was the Windows default code page for English and several
+other Western European languages; however, other code pages exist, and
+an application localised for, say, Hungarian might have included a  
+"`1 CHAR ANSI`" *line* while encoding the file in CP-1250.  In principle
+a `VERS` *line* could contain information to specify the particular code
+page used, but in practice this is rare.
+
+### Character encodings
+
+Support for reading the ASCII, ANSEL and UTF-8 *character encodings* is
+*required* by this standard.  Applications may *optionally* support the
+UTF-16 *character encoding* in either or both the big and little endian
+forms.   The use of any of these *character encodings* other than UTF-8
+is *deprecated*.
+
+The UTF-8 and UTF-16 *character encodings* are the Unicode encoding
+forms defined in §2.5 of [ISO 10646], and the specifics of the big and
+little endian forms of UTF-16 are defined in §2.6 of [ISO 10646].  
+
+{.note}  As these are encodings of Unicode, they naturally decode into a
+sequence of Unicode *characters* without requiring conversion between
+character sets. 
+
+The *character encoding* referred to as ASCII in this standard is the US
+version of ASCII which, for the purpose of this standard, is defined as
+the subset of UTF-8 which uses only Unicode characters U+0001 to U+007F.
+
+{.note} The US ASCII *character encoding* is nominally defined in
+[ASCII], but this standard defines it in terms of [ISO 10646].  This is
+partly to avoid uncertainty over which of several incompatible
+definitions of ASCII is meant, partly because the Unicode standard is
+much more readily available than the ASCII one, and partly because ASCII
+allows certain punctuation marks a be used as combining diacritics when
+they follow the backspace *character* (U+0008).  This cannot be used
+legally in GEDCOM as the backspace *character* is not peritted.  Unicode
+provides separate combining diacritics and does not allow this use.
+
+ANSEL refers to the Extended Latin Alphabet Coded Character Set for
+Bibliographic Use defined in [ANSEL].  If an ELF file is determined to
+used the ANSEL *character encoding* it *must* be converted into a
+sequence of Unicode *characters* before it can be processed further.
+This is discussed in §3.3.1.  
+
+If other *character encodings* are supported, they too must be converted
+into a sequence of Unicode *characters* for further processing.
+
+{.note}  This standard makes no recommendation on how applications
+should represent sequences of Unicode *characters* internally, and the
+UTF-8, UTF-16 and UTF-32 *character encodings* each have advantages.
+
+{.ednote}  This standard currently makes no distinction between a
+*character set* and a *character encoding*, but arguably it would be
+cleaner to make this distinction.  Then UTF-16 and UTF-8 are different
+*character encodings* of the same Unicode *character set*, and ASCII may
+be regarded as such too for our purpose; but ANSEL is a different
+*character set* and required conversion to Unicode.  [ISO 10646] makes
+a further distinction between *encoding forms* like UTF-8 and UTF-16, and
+*encoding schemes* like UTF-16BE and UTF-16LE.
+
+#### Converting ANSEL to Unicoed
+
+{.ednote} Add material from `ansel-to-unicode.md`.
+
+### Reading lines
+
+Once the *character encoding* has been determined and the ELF file,
+excluding any byte-order mark that was removed in §3.1, has been
+converted to a sequence of Unicode *characters*, an application
+reading an ELF file *shall* read *lines* from the beginning of the file
+as described in this section.
+
+{.note ...}  In practice it is expected that applications will typically
+decode the *character encoding* while reading *lines*, rather than as a
+separate step.
+
+Applications that do not wish to make multiple passes over the `HEAD`
+*record*, first when scanning for a *character encoding* per §3.2 and
+again when reading *lines*, *may* store the lines read during scanning
+immediately before they are *whitespace normalised* and converted to
+uppercase.  These scanned *lines* will still be byte sequences that need
+converting to the actual *character encoding* per §3.3, but otherwise
+the rules for reading lines in §3.2 are the same as those here.
+{/}
+
+Each *line* is read by reading *characters* from the file and appending
+them to the *line* until a line feed (U+000A) or carriage return
+(U+000D) is encountered, or the end of the file is reached.  This
+*character* is not not appended to the *line*.  Next, any leading or
+trailing sequences of space *characters* (U+0020) or horizontal tabs
+(U+0009) are removed from the *line*.  If this results in an empty
+*line*, another *line* is read until either a non-empty *line* is read
+or the end of the file is reached.
+
+{.note ...}  Even though this process for reading *lines* only
+explicitly handles the form of line endings used on Unix, Linux and
+modern Mac OS (U+000A), and the traditional Mac OS form (U+000D),
+Windows line endings (U+000D U+000A) are handled implicitly as a
+traditional Mac OS *line* followed by an empty Unix *line* which is
+discarded.  It is equivalent to splitting lines using a line terminator
+that matches the production:
+
+    Terminator  ::=  ((#x20 | #x9)* (#xD | #xA))+ (#x20 | #x9)*
+
+This is more flexible that the equivalent production in GEDCOM,
+however the GEDCOM specification notes that some applications indent
+lines with *whitespace* and possibly include blank *lines* between
+*records*.  Neither of these are permitted by the GEDCOM grammar, but
+may parsers accept them;  this standard permits these constructs, though
+their use is *not recommended*.
 {/}
 
 ## Structures and pseudo-structures
@@ -477,7 +789,8 @@ A *string*-valued *payload* is encoded into a *payload line* as follows:
     1.  A hexadecimal encoding of the code point of the *delimiter* character (i.e., either `20` or `9`)
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 
-{.note} Delimiter escaping will never be used with any of the *structures* documented in [ELF-DM]
+{.note} Delimiter escaping will never be used with any of the
+*structures* documented in [ELF Data Model]
 because all *payload*s there are either *whitespace normalised* or *line break normalised*.
 Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
 
@@ -728,91 +1041,6 @@ GEDCOM also does not define what is done with unknown code points, so the above 
 
 ### Octets to string   {#octet2string}
 
-In order to parse an ELF document, an application must determine how to
-map the raw stream of octets read from the network or disk into
-characters.  This is mapping is called the **character encoding** of
-the document.  Determining it is a two-stage process, with the first
-stage is to determine the **detected character encoding** of the
-document per §7.2.1.
-
-{.note}  The *detected character encoding* might not be the actual
-*character encoding* used in the document, but if the document is
-*conformant*, it will be similar enough to allow a limited degree of
-parsing as basic ASCII *character* will be correctly identified.
-
-
-#### Detected character encoding
-
-If a character encoding is specified via any supported external means,
-such as an HTTP `Content-Type` header, this *should* be the *detected
-character encoding*.
-
-{.example ...}  Suppose the ELF file was download using HTTP and the
-response included this header:
-
-    Content-Type: text/plain; charset=UTF-8
-
-If an application supports taking the *detected character encoding* from
-an HTTP `Content-Type` header, the *detected character encoding*
-*should* be UTF-8.
-
-Note that the use of the MIME type `text/plain` is *not recommended* for
-ELF.  It is used here purely as an example. 
-{/}
-
-Otherwise, if the document begins with a byte-order mark (U+FEFF)
-encoded in UTF-8, or UTF-16 of either endianness, this encoding *shall*
-be the *detected character encoding*.  The byte-order mark is removed
-from the data stream before further processing.
-
-Otherwise, if the document begins with the digit `0` (U+0030) encoded in
-UTF-16 of either endianness, this encoding *shall* be the *detected
-character encoding*.
-
-{.note}  The digit `0` is tested for because an ELF file *must* begin
-with the *line* "`0 HEAD`".
-
-Otherwise, applications *may* try to detect other character encodings by
-examining the octet stream, but it is *not recommended* that they do so.
-
-{.note}  One situation where it might be desirable to try to detect
-another encoding is if the application needs to support (as an
-extension) a character encoding like EBCDIC which is not compatible with
-ASCII.
-
-Otherwise, there is no *detected character encoding*.
-
-{.note ...} These cases can be summarised as follows:
-
-----------------  -------------------------------------------------
-Initial octets    Detected character encoding
-----------------  -------------------------------------------------
-EF BB BF          UTF-8 (with byte-order mark)
-
-FF FE             UTF-16, little endian (with byte-order mark) 
-
-FE FF             UTF-16, big endian (with byte-order mark)
-
-30 00             UTF-16, little endian (without byte-order mark)
-
-00 30             UTF-16, big endian (without byte-order mark)
-
-Otherwise         None
-----------------  -------------------------------------------------
-{/}
-
-#### Character encoding
-
-A prefix of octet stream shall be decoded using the *detected character encoding*,
-or an unspecified ASCII-compatible encoding if there is no *detected character encoding*.
-This prefix is parsed into *lines*, stopping at the second instance of a *line* with *level* 0.   If a *line* with *level* 1 and *tag* `CHAR` was found, its *payload* is the **specified character encoding** of the document.
-
-If there is a *specified character encoding*, it SHALL be used as the *character encoding* of the octet stream.
-Otherwise, if there is a *detected character encoding*, it SHALL be used as the *character encoding* of the octet stream.
-Otherwise, the *character encoding* SHALL be determined to be ANSEL.
-
-#### Decoding
-
 Given an octet stream and a character encoding,
 the octet stream is converted into a sequence of characters as specified by that encoding.
 
@@ -859,12 +1087,6 @@ consisting of just a single space *character*.
     *Basic Concepts for Genealogical Standards*.  Public draft.
     (See <https://fhiso.org/TR/basic-concepts>.)
 
-[ASCII]
-:   ANSI (American National Standards Institute).
-    *ANSI X3.4-1986.
-    Coded Character Sets -- 7-Bit American National Standard Code for Information Interchange (7-Bit ASCII)*.
-    1986.
-
 [ISO 10646]
 :   ISO (International Organization for Standardization).
     *ISO/IEC 10646:2014.
@@ -892,13 +1114,25 @@ consisting of just a single space *character*.
 
 ### Other references
 
-[GEDCOM 5.5.1]
-:   The Church of Jesus Christ of Latter-day Saints.
-    *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
+[ASCII]
+:   ANSI (American National Standards Institute).
+    *ANSI INCITS 4-1986 (R2012).  Coded Character Sets -- 7-Bit American
+    National Standard Code for Information Interchange (7-Bit ASCII)*.
+    2012.
+
+[ELF Data Model]
+:   FHISO (Family History Information Standards Organisation)
+    *Extended Legacy Format (ELF): Data Model.*  Public draft.
+    (See <https://fhiso.org/TR/elf-data-model>.)
 
 [GEDCOM 5.5]
 :   The Church of Jesus Christ of Latter-day Saints.
-    *The GEDCOM Standard*, release 5.5.  1996.
+    *The GEDCOM Standard*, release 5.5.  2 Jan 1996, as amended by the
+    errata sheet dated 10 Jan 1996.
+
+[GEDCOM 5.5.1]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
 
 [XML Names]
 :   W3 (World Wide Web Consortium).
@@ -907,6 +1141,4 @@ consisting of just a single space *character*.
     W3C Recommendation.
     See <https://www.w3.org/TR/xml-names11/>.
 
-[ELF-DM]
-:   FHISO (Family History Information Standards Organisation)
-    *Extended Legacy Format (ELF): Data Model.*
+
