@@ -1,122 +1,127 @@
 ---
-title: "FHISO Extended Legacy Format (ELF)"
+title: "Extended Legacy Format (ELF)"
 subtitle: Data Model
-date: 14 June 2017
+date: 30 October 2017
 numbersections: true
 ...
-# FHISO Extended Legacy Format
+# Extended Legacy Format (ELF):<br/> Data Model
 
-{.ednote ...} This is an early exploratory draft of a proposed FHISO standard that is fully compatible with GEDCOM 5.5.1.
-Goals include 
+{.ednote ...} This is an **exploratory draft** of the genealogical
+data model for FHISO's proposed suite of Extended Legacy Format (ELF)
+standards.  This document is not endorsed by the FHISO membership, and
+may be updated, replaced or obsoleted by other documents at any time.
 
--   Clarifying ambiguities
--   Updating presentation
--   Providing extension mechanisms suitable for anticipated FHISO extensions
--   Creating a archival standard, as GEDCOM 5.5.1 is no longer available from its authoring corporation.
--   Documenting GEDCOM as it exists in practice
-
-The working title of this draft proposed standard is the FHISO Extended Legacy Format, or ELF.
-
-This draft is intended to provide enough context for meaningful discussion of the value and desirable content of a potential future standard.
-It will likely change significantly prior to being released.
+Comments on this draft should be directed to the
+[tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing list.
 {/}
 
-The FHISO Extended Legacy Format is a data model and serialization format indented to be fully compatible with the earlier GEDCOM 5.5.1 specification.
-This document presents the data model; the serialization format is presented in [ELF-File].
+FHISO's **Extended Legacy Format** (or **ELF**) is a hierarchical
+serialisation format and genealogical data model that is fully
+compatible with GEDCOM, but with the addition of a structured
+extensibility mechanism.  It also clarifies some ambiguities that were
+present in GEDCOM and documents best current practice. 
 
-{.ednote} Comments on this draft should be directed to [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public)
+The **GEDCOM** file format developed by The Church of Jesus Christ of
+Latter-day Saints is the *de facto* standard for the exchange of
+genealogical data between applications and data providers.  Its most
+recent version is GEDCOM 5.5.1 which was produced in 1999, but despite
+many technological advances since then, GEDCOM has remained unchanged.
 
+{.note} Strictly, [GEDCOM 5.5] was the last version to be publicly
+released back in 1996.  However a draft dated 2 October 1999 of a
+proposed [GEDCOM 5.5.1] was made public; it is generally considered to
+have the status of a standard and has been widely implemented as such.
+
+FHISO are undertaking a program of work to produce a modernised yet
+backward-compatible reformulation of GEDCOM under the name ELF, the new
+name having been chosen to avoid confusion with any other updates or
+extensions to GEDCOM, or any future use of the term by The Church of
+Jesus Christ of Latter-day Saints.  This document is one of two that
+form the initial suite of ELF standards:
+
+* **ELF: Serialisation Format**.  This standard defines a
+  general-purpose serialisation format based on the GEDCOM data format
+  which encodes a *dataset* as a hierarchical series of *lines*, and
+  provides low-level facilities such as escaping and extensibility
+  mechanisms.
+
+* **ELF: Data Model**.  This standard defines a data model based on the
+  lineage-linked GEDCOM form, reformulated in terms of the
+  serialisation model described in this document.  It is not a major
+  update to the GEDCOM data model, but rather a basis for future
+  extension.
 
 ## General
 
-Where this standard gives a specific technical meaning to a word or phrase, that word or phrase is formatted in bold text in its initial definition, and in italics when used elsewhere.
-The key words MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, MAY and OPTIONAL in this standard are to be interpreted as described in [[RFC 2119](//tools.ietf.org/html/rfc2119)].
+Where this standard gives a specific technical meaning to a word or
+phrase, that word or phrase is formatted in bold text in its initial
+definition, and in italics when used elsewhere.
+The key words **must**, **must not**, **required**, **shall**, 
+**shall not**, **should**, **should not**, **recommended**,
+**not recommended**, **may** and **optional** in this standard are to be
+interpreted as described in
+&#x5B;[RFC 2119](https://tools.ietf.org/html/rfc2119)].
 
-An application is **conformant** with this standard if and only if it obeys all the requirements and prohibitions contained in this document,
-as indicated by use of the words MUST, MUST NOT, REQUIRED, SHALL, and SHALL NOT, and the relevant parts of its normative references.
-Standards referencing this standard MUST NOT loosen any of the requirements and prohibitions made by this standard,
-nor place additional requirements or prohibitions on the constructs defined herein.  
+An application is **conformant** with this standard if and only if it
+obeys all the requirements and prohibitions contained in this
+document, as indicated by use of the words *must*, *must not*,
+*required*, *shall* and *shall not*, and the relevant parts of its
+normative references.  Standards referencing this standard *must not*
+loosen any of the requirements and prohibitions made by this standard,
+nor place additional requirements or prohibitions on the constructs
+defined herein.  
 
-{.note} Derived standards are not allowed to add or remove requirements or prohibitions on the facilities defined herein so as to preserve interoperability between applications.
-Data generated by one *conformant* application must always be acceptable to another *conformant* application, regardless of what additional standards each may conform to. 
+{.note} Derived standards are not allowed to add or remove requirements
+or prohibitions on the facilities defined herein so as to preserve
+interoperability between applications.  Data generated by one
+*conformant* application must always be acceptable to another
+*conformant* application, regardless of what additional standards each
+may conform to. 
 
-Where this standard gives a specific technical meaning to a word or phrase, that word or phrase is formatted in **bold text** in its initial definition, and in *italics* when used elsewhere.
+If a *conformant* application encounters data that does not conform to
+this standard, it *may* issue a warning or error message, and *may*
+terminate processing of the document or data fragment.
 
-Indented text in grey or coloured boxes, such as preceding paragraph, does not form a normative part of this standard, and is labelled as either an example or a note.
+This standard depends on FHISO's **Basic Concepts for Genealogical
+Standards** standard.  To be *conformant* with this standard, an
+application *must* also be *conformant* with [Basic Concepts].  Concepts
+defined in that standard are used here without further definition.
 
-{.ednote} Editorial notes, such as this, are used to record outstanding issues, or points where there is not yet consensus;
-they will be resolved and removed for the final standard.
-Examples and notes will be retained in the standard.
+{.note} In particular, precise meaning of *string*, *character*,
+*whitespace* and *term* are given in [Basic Concepts].
 
-The grammar given here uses the form of EBNF notation defined in §6 of [[XML](https://www.w3.org/TR/xml11/)],
-except that no significance is attached to the capitalisation of grammar symbols.
-*Conforming* applications MUST NOT generate data not conforming to the syntax given here,
-but non-conforming syntax MAY be accepted and processed by a *conforming* application in an implementation-defined manner.
+Indented text in grey or coloured boxes does not form a normative part
+of this standard, and is labelled as either an example or a note.  
 
+{.ednote} Editorial notes, such as this, are used to record outstanding
+issues, or points where there is not yet consensus; they will be
+resolved and removed for the final standard.  Examples and notes will be
+retained in the standard.
 
-### Characters and strings
+The grammar given here uses the form of EBNF notation defined in §6 of
+&#x5B;[XML](https://www.w3.org/TR/xml11/)], except that no significance is
+attached to the capitalisation of grammar symbols.  *Conforming*
+applications *must not* generate data not conforming to the syntax given
+here, but non-conforming syntax *may* be accepted and processed by a
+*conforming* application in an implementation-defined manner.
 
-**Characters** are specified by reference to their *code point* number in [ISO 10646], without regard to any particular character encoding.
-In this standard, *characters* may be identified in this standard by their hexadecimal code point prefixed with "U+".
+### Line and block strings
 
-{.note} The character encoding is a property of the serialisation, and not defined in this standard.  Non-Unicode encodings are not precluded, so long as it is defined how characters in that encoding corresponds to Unicode characters.
+A **line string** is a *string* that *shall* be *whitespace-normalised*
+before being processed.
 
+{.note} In a *line string*, the production `S` defined in [Basic
+Concepts] collapses to a single space *character* (U+0020).
 
-*Characters* MUST match the `Char` production from [[XML](https://www.w3.org/TR/xml11/)].
-
-    Char  ::=  [#1-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
-
-{.note} This includes all valid unicode *code points* except
-the null character,
-surrogates (which are reserved for encodings such as UTF-16 and not characters in their own right),
-and the invalid characters U+FFFE and U+FFFF.
-
-A **string** is a sequence of zero or more *characters*.
-
-    String  ::= Char*
-
-Applications MAY convert any *string* into Unicode Normalization Form C,
-as defined in any version of Unicode Standard Annex #15 [[UAX 15](//unicode.org/reports/tr15/)].
-
-{.note} This allows applications to store *strings* internally
-in either Normalization Form C or Normalization Form D
-for ease of searching, sorting and comparison,
-without also retaining the original, unnormalised form.
-
-{.note} This allows applications to store *strings* internally with any line ending.
-It also removes the need to discuss lines within payloads in the data model, as it was in GEDCOM.
-
-*Characters* matching the `RestrictedChar` production from [[XML](//www.w3.org/TR/xml11/)]
-
-    RestrictedChar  ::=  [#x1-#x8] | [#xB-#xC] | [#xE-#x1F]
-                           | [#x7F-#x84] | [#x86-#x9F]
-
-SHOULD NOT appear in *strings*,
-and applications MAY process such characters in an implementation-defined manner or reject *strings* containing them.
-
-{.note} This includes all C0 and C1 control characters except tab (U+0009), line feed (U+000A), carriage return (U+000D) and next line (U+0085).
-
-**Whitespace** is defined as a sequence of one or more space *characters*,
-carriage returns, line feeds, or tabs.
-It matches the production `S` from [[XML](//www.w3.org/TR/xml11/)]:
-
-    S  ::=  (#x20 | #x9 | #xD | #xA)+
-
-**Whitespace normalisation** is the process of discarding any leading or trailing *whitespace*,
-and replacing other *whitespace* with a single space (U+0020) *character*.
-
-{.note}  The definition of *whitespace normalisation* is identical to that in [[XML](https://www.w3.org/TR/xml11/)]. 
-
-A **line string** is a *string* that SHALL be *whitespace-normalised* before being processed:
-and in such elements the production `S` collapses to a single space (U+0020).
-
-A **linebreak** is defined as either a carriage return, a line feed, or a carriage return followed by a line feed.
-It matches the production `LB`:
+A **line break** is defined as either a carriage return, a line feed, or
+a carriage return followed by a line feed.  It matches the production
+`LB`:
 
     LB  ::=  #xD #xA? | #xA
 
-A **padded linebreak** is defined as a *linebreak* preceded and followed by zero or more space *characters* or tabs.
-It matches the production `PLB`:
+A **padded linebreak** is defined as a *linebreak* preceded and followed
+by zero or more space *characters* or tabs.  It matches the production
+`PLB`:
 
     PLB  ::=  (#x20 | #x9)* LB (#x20 | #x9)*
 
@@ -124,52 +129,23 @@ It matches the production `PLB`:
 
 A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed.
 
-In the event of a difference between the definitions of the `Char`, `RestrictedChar` and `S` productions given here and those in [[XML](//www.w3.org/TR/xml11/)], the definitions in the latest edition of XML 1.1 specification are definitive.
+{.note} This allows applications to store *strings* internally with any
+line ending.  It also removes the need to discuss lines within payloads
+in the data model, as it was in GEDCOM.
 
-### IRIs  {#IRIs}
+### Structure type identifiers
 
-The **structure type identifier**s used in this specification are *strings*
-that SHALL take the form of an IRI matching the `IRI` production
-in §2.2 of [[RFC 3987](//tools.ietf.org/html/rfc3987)].
+The **structure type identifier**s used in this specification are
+*terms*.
 
-The *structure type identifiers* defined in this standard all begin `http://terms.fhiso.org/elf/`.
-It is RECOMMENDED that any *extension structure type identifiers*
-also use the `http` IRI scheme defined in §2.7.1 of [[RFC 7230](//tools.ietf.org/html/rfc7230)],
-and an authority component consisting of just a domain name (or subdomain)
-under the control of the party defining the *extension structure type identifier*. 
+The *term names* of the *structure type identifiers* defined in this
+standard all begin `https://terms.fhiso.org/elf/`.  It is *recommended*
+that any *extension structure type identifiers* also use the `https` IRI
+scheme defined in §2.7.1 of &#x5B;[RFC 7230](//tools.ietf.org/html/rfc7230)],
+and an authority component consisting of just a domain name (or
+subdomain) under the control of the party defining the *extension
+structure type identifier*. 
  
-It is RECOMMENDED that an HTTP 1.1 `GET` request made
-without an `Accept` header
-to the *structure type identifier* IRI
-(once converted to a URI per §3.1 of [[RFC 3987](//tools.ietf.org/html/rfc3987)])
-SHOULD result in a 303 "See Other" redirect
-to a document containing a human-readable definition of the element.
-It is RECOMMENDED that this definition is in HTML,
-and that documentation in alternative formats MAY be made available when the request includes a suitable `Accept` header, per §5.3.2 of [[RFC 7231](//tools.ietf.org/html/rfc7231)].
-
-{.ednote} A future draft of this standard is likely to add support for a **discovery** mechanism, whereby a HTTP 1.1 `GET` request made with an appropriate `Accept` header yields 303 redirect to a machine-readable definition of the *structure type*.
-Support for this by the authors of *extension structure type* is likely to be RECOMMENDED but not REQUIRED,
-while application support for it would be OPTIONAL.
-
-*Structure type identifiers* are compared using the "simple string comparison" algorithm
-given in §5.3.1 of [[RFC 3987](//tools.ietf.org/html/rfc3987)].
-If a *structure type identifier* does not compare equal to an IRI known to the application,
-the application SHOULD NOT make any assumptions about the *structure element* based on the IRI.
-
-{.note} This comparison is a simple character-by-character comparison,
-with no normalisation carried out on the IRIs prior to comparison.
-This is how XML namespace names are compared in [[XML Names](//www.w3.org/TR/xml-names11/)].
-
-An IRI MUST NOT be used as a *structure type identifier*
-unless it can be converted to a URI using the algorithm
-specified in §3.1 of [[RFC 3987](//tools.ietf.org/html/rfc3987)],
-and back to a IRI again using the algorithm
-specified in §3.2 of [[RFC 3987](//tools.ietf.org/html/rfc3987)],
-to yield the original IRI.
-
-
-
-
 
 ## ELF Datasets
 
@@ -323,10 +299,10 @@ A type hierarchy is known to exist; the known types with subtypes are
 
 These types serve only as abstract supertypes for other data types.
 
-### `http://terms.fhiso.org/elf/Record`  {#Record}
+### `https://terms.fhiso.org/elf/Record`  {#Record}
 
-The `http://terms.fhiso.org/elf/Record` type serves as an abstract supertype for those `[Structure]` types that are directly included in the dataset and describe the principle contents of the data set.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/Record` should appear in an ELF dataset.
+The `https://terms.fhiso.org/elf/Record` type serves as an abstract supertype for those `[Structure]` types that are directly included in the dataset and describe the principle contents of the data set.
+No structures with *structure type identifier* `https://terms.fhiso.org/elf/Record` should appear in an ELF dataset.
 
 Supertype
 :   `[Structure]`
@@ -347,10 +323,10 @@ Substructures
 :   `[CHAN]`?
 
 
-### `http://terms.fhiso.org/elf/Event`  {#Event}
+### `https://terms.fhiso.org/elf/Event`  {#Event}
 
-The `http://terms.fhiso.org/elf/Event` type serves as an abstract supertype for other events and attributes.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/Event` should appear in an ELF dataset.
+The `https://terms.fhiso.org/elf/Event` type serves as an abstract supertype for other events and attributes.
+No structures with *structure type identifier* `https://terms.fhiso.org/elf/Event` should appear in an ELF dataset.
 
 Supertype
 :   `[Structure]`
@@ -380,10 +356,10 @@ Substructures
 
 {.note} GEDCOM 5.5 also includes `[AGE]` as a substructure of `[Event]`, but GEDCOM 5.5.1 moves that to `[IndividualEvent]` and `[IndividualAttribute]` instead.
 
-### `http://terms.fhiso.org/elf/IndividualEvent`  {#IndividualEvent}
+### `https://terms.fhiso.org/elf/IndividualEvent`  {#IndividualEvent}
 
-The `http://terms.fhiso.org/elf/IndividualEvent` type serves as an abstract supertype for events that pertain to a particular individual.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/IndividualEvent` should appear in an ELF dataset.
+The `https://terms.fhiso.org/elf/IndividualEvent` type serves as an abstract supertype for events that pertain to a particular individual.
+No structures with *structure type identifier* `https://terms.fhiso.org/elf/IndividualEvent` should appear in an ELF dataset.
 
 
 Supertype
@@ -436,10 +412,10 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/FamilyEvent`  {#FamilyEvent}
+### `https://terms.fhiso.org/elf/FamilyEvent`  {#FamilyEvent}
 
-The `http://terms.fhiso.org/elf/FamilyEvent` type serves as an abstract supertype for events that pertain to a couple or nuclear family.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/FamilyEvent` should appear in an ELF dataset.
+The `https://terms.fhiso.org/elf/FamilyEvent` type serves as an abstract supertype for events that pertain to a couple or nuclear family.
+No structures with *structure type identifier* `https://terms.fhiso.org/elf/FamilyEvent` should appear in an ELF dataset.
 
 Supertype
 :   `[Event]`
@@ -482,10 +458,10 @@ Substructures
 {.note} Prior to GEDCOM 5.5.1, `[AGE]`? was listed as a substructure of all (`[Event]`)s, including (`[FamilyEvent]`).  The semantics of a (`[FamilyEvent]`).`[AGE]` was not defined in any GEDCOM specification and it was removed from 5.5.1; this specification does not define what a (`[FamilyEvent]`).`[AGE]` might mean if present.
 
 
-### `http://terms.fhiso.org/elf/IndividualAttribute`  {#IndividualAttribute}
+### `https://terms.fhiso.org/elf/IndividualAttribute`  {#IndividualAttribute}
 
-The `http://terms.fhiso.org/elf/IndividualAttribute` type serves as an abstract supertype for attributes of an individual.
-No structures with *structure type identifier* `http://terms.fhiso.org/elf/IndividualAttribute` should appear in an ELF dataset.
+The `https://terms.fhiso.org/elf/IndividualAttribute` type serves as an abstract supertype for attributes of an individual.
+No structures with *structure type identifier* `https://terms.fhiso.org/elf/IndividualAttribute` should appear in an ELF dataset.
 
 Attributes or facts are used to describe an individual's actions, physical description, employment, education, places of residence, etc.
 These are not generally thought of as events.
@@ -547,7 +523,7 @@ and are thus defined by this specification to be [Extension Types](#Extensions).
 
 Unless otherwise specified, all types listed here are direct subtypes of `[Structure]`.
 
-### `http://terms.fhiso.org/elf/ABBR`  {#ABBR}
+### `https://terms.fhiso.org/elf/ABBR`  {#ABBR}
 
 Abbreviation: a short name of a title, description, or name.
 
@@ -564,7 +540,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ADDR`  {#ADDR}
+### `https://terms.fhiso.org/elf/ADDR`  {#ADDR}
 
 Address: the contemporary place, usually required for postal purposes, of an individual, a submitter of information, a repository, a business, a school, or a company.
 
@@ -596,7 +572,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/ADR1`  {#ADR1}
+### `https://terms.fhiso.org/elf/ADR1`  {#ADR1}
 
 The first line of an address.
 
@@ -613,7 +589,7 @@ Payload
 Substructures
 :   None
 
-### `http://terms.fhiso.org/elf/ADR2`  {#ADR2}
+### `https://terms.fhiso.org/elf/ADR2`  {#ADR2}
 
 The second line of an address.
 
@@ -631,7 +607,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ADOP`  {#ADOP}
+### `https://terms.fhiso.org/elf/ADOP`  {#ADOP}
 
 Adoption: pertaining to creation of a child-parent relationship that does not exist biologically.
 
@@ -665,7 +641,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/AGE`  {#AGE}
+### `https://terms.fhiso.org/elf/AGE`  {#AGE}
 
 The age of the individual at the time an event occurred, or the age listed in the document.
 
@@ -707,7 +683,7 @@ Substructures
 {.note} Recall that additional whitespaces are permitted in these productions, as documented in [Spaces in Formatted Payloads](#extra-spaces).
 
 
-### `http://terms.fhiso.org/elf/AGNC`  {#AGNC}
+### `https://terms.fhiso.org/elf/AGNC`  {#AGNC}
 
 Agency: the institution or individual having authority and/or responsibility to manage or govern.
 
@@ -734,7 +710,7 @@ Description
 
 
 
-### `http://terms.fhiso.org/elf/ALIA`  {#ALIA}
+### `https://terms.fhiso.org/elf/ALIA`  {#ALIA}
 
 Alias: an indicator to link different record descriptions of a person who may be the same person.
 
@@ -748,7 +724,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ANCE`  {#ANCE}
+### `https://terms.fhiso.org/elf/ANCE`  {#ANCE}
 
 Ancestors: pertaining to forbearers of an individual.
 
@@ -769,7 +745,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ANCI`  {#ANCI}
+### `https://terms.fhiso.org/elf/ANCI`  {#ANCI}
 
 Ancestor interest: indicates an interest in additional research for ancestors of this individual. 
 
@@ -785,7 +761,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ANUL`  {#ANUL}
+### `https://terms.fhiso.org/elf/ANUL`  {#ANUL}
 
 Annulment: declaring a marriage void from the beginning (never existed).
 
@@ -805,7 +781,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/ASSO`  {#ASSO}
+### `https://terms.fhiso.org/elf/ASSO`  {#ASSO}
 
 Associates: an indicator to link friends, neighbors, relatives, or associates of an individual.
 
@@ -821,7 +797,7 @@ Substructures
 :   `[SOUR]`\*
 
 
-### `http://terms.fhiso.org/elf/AUTH`  {#AUTH}
+### `https://terms.fhiso.org/elf/AUTH`  {#AUTH}
 
 Author: the name of the individual who created or compiled information.
 
@@ -838,7 +814,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/BAPM`  {#BAPM}
+### `https://terms.fhiso.org/elf/BAPM`  {#BAPM}
 
 Baptism: the event of baptism, performed in infancy or later.
 
@@ -860,7 +836,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/BARM`  {#BARM}
+### `https://terms.fhiso.org/elf/BARM`  {#BARM}
 
 Bar Mitzvah: the ceremonial event held when a Jewish boy reaches age 13.
 
@@ -880,7 +856,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/BASM`  {#BASM}
+### `https://terms.fhiso.org/elf/BASM`  {#BASM}
 
 Bas Mitzvah: the ceremonial event held when a Jewish girl reaches age 13, also known as "Bat Mitzvah."
 
@@ -900,7 +876,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/BIRT`  {#BIRT}
+### `https://terms.fhiso.org/elf/BIRT`  {#BIRT}
 
 Birth: the event of entering into life.
 
@@ -921,7 +897,7 @@ Substructures
 :   `[FAMC]`?
 
 
-### `http://terms.fhiso.org/elf/BLES`  {#BLES}
+### `https://terms.fhiso.org/elf/BLES`  {#BLES}
 
 Blessing: a religious event of bestowing divine care or intercession. Sometimes given in connection with a naming ceremony.
 
@@ -941,7 +917,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/BLOB`  {#BLOB}
+### `https://terms.fhiso.org/elf/BLOB`  {#BLOB}
 
 Binary object: a grouping of data used as input to a multimedia system that processes binary data to represent images, sound, and video.
 
@@ -977,7 +953,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/BURI`  {#BURI}
+### `https://terms.fhiso.org/elf/BURI`  {#BURI}
 
 Burial: the event of the proper disposing of the mortal remains of a deceased person.
 
@@ -1011,7 +987,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/CALN`  {#CALN}
+### `https://terms.fhiso.org/elf/CALN`  {#CALN}
 
 Call number: the number used by a repository to identify the specific items in its collections.
 
@@ -1030,7 +1006,7 @@ Substructures
 {.note} Due to an example in the GEDCOM specification that is inconsistent with the grammar, it is RECOMMENDED that implementations parse a .`[SOUR]`.`[REPO]`.`[MEDI]` (i.e., coordinate with instead of subordinate to `CALN`) as if they were .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`.
 
 
-### `http://terms.fhiso.org/elf/CAST`  {#CAST}
+### `https://terms.fhiso.org/elf/CAST`  {#CAST}
 
 Caste: the name of an individual's rank or status in society, based on racial or religious differences, or differences in wealth, inherited rank, profession, occupation, etc.
 
@@ -1050,7 +1026,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/CAUS`  {#CAUS}
+### `https://terms.fhiso.org/elf/CAUS`  {#CAUS}
 
 Cause: a description of the cause of the associated event or fact, such as the cause of death.
 
@@ -1064,7 +1040,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/CENS`  {#CENS}
+### `https://terms.fhiso.org/elf/CENS`  {#CENS}
 
 Census: the event of the periodic count of the population for a designated locality, such as a national or state Census.
 
@@ -1085,7 +1061,7 @@ Substructures
 :   [*inherited from IndividualEvent*](#IndividualEvent) or [*inherited from FamilyEvent*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/CHAN`  {#CHAN}
+### `https://terms.fhiso.org/elf/CHAN`  {#CHAN}
 
 Change: indicates a change, correction, or modification. Typically used in connection with a `[DATE]` to specify when a change in information occurred.
 
@@ -1103,7 +1079,7 @@ Substructures
 :   `[NOTE]`\*
 
 
-### `http://terms.fhiso.org/elf/CHIL`  {#CHIL}
+### `https://terms.fhiso.org/elf/CHIL`  {#CHIL}
 
 Child: the natural, adopted, or otherwise recognized child of a father and a mother.
 
@@ -1120,7 +1096,7 @@ Substructures
 {.note} In GEDCOM versions 3 and 4, `FAM.CHIL` had a substructure `[ADOP]`.
 
 
-### `http://terms.fhiso.org/elf/CHR`  {#CHR}
+### `https://terms.fhiso.org/elf/CHR`  {#CHR}
 
 Christening: the religious event of baptizing and/or naming a child.
 
@@ -1140,7 +1116,7 @@ Substructures
 :   [*inherited*](#IndividualEvent), `[FAMC]`?
 
 
-### `http://terms.fhiso.org/elf/CHRA`  {#CHRA}
+### `https://terms.fhiso.org/elf/CHRA`  {#CHRA}
 
 Adult christening: the religious event of baptizing and/or naming an adult person.
 
@@ -1160,7 +1136,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/CITY`  {#CITY}
+### `https://terms.fhiso.org/elf/CITY`  {#CITY}
 
 A lower level jurisdictional unit. Normally an incorporated municipal unit.
 
@@ -1177,7 +1153,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/CONF`  {#CONF}
+### `https://terms.fhiso.org/elf/CONF`  {#CONF}
 
 Confirmation: the religious event of conferring the gift of the Holy Ghost and, among protestants, full church membership.
 
@@ -1200,7 +1176,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/COPR`  {#COPR}
+### `https://terms.fhiso.org/elf/COPR`  {#COPR}
 
 Copyright: a statement that accompanies data to protect it from unlawful duplication and distribution.
 
@@ -1232,7 +1208,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/CORP`  {#CORP}
+### `https://terms.fhiso.org/elf/CORP`  {#CORP}
 
 Corporate: a name of an institution, agency, corporation, or company.
 
@@ -1250,7 +1226,7 @@ Substructures
 :   `[PHON]`\*
 
 
-### `http://terms.fhiso.org/elf/CREM`  {#CREM}
+### `https://terms.fhiso.org/elf/CREM`  {#CREM}
 
 Cremation: disposal of the remains of a person's body by fire.
 
@@ -1272,7 +1248,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/CTRY`  {#CTRY}
+### `https://terms.fhiso.org/elf/CTRY`  {#CTRY}
 
 Country: the name or code of the country.
 
@@ -1289,7 +1265,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/DATA`  {#DATA}
+### `https://terms.fhiso.org/elf/DATA`  {#DATA}
 
 Pertaining to stored automated information.
 
@@ -1330,7 +1306,7 @@ Substructures
 :   `[TEXT]`\*
 
 
-### `http://terms.fhiso.org/elf/DATE`  {#DATE}
+### `https://terms.fhiso.org/elf/DATE`  {#DATE}
 
 The time of an event in a calendar format.
 
@@ -1578,7 +1554,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/DEAT`  {#DEAT}
+### `https://terms.fhiso.org/elf/DEAT`  {#DEAT}
 
 Death: the event when mortal life terminates.
 
@@ -1598,7 +1574,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/DESC`  {#DESC}
+### `https://terms.fhiso.org/elf/DESC`  {#DESC}
 
 Descendants: pertaining to offspring of an individual.
 
@@ -1619,7 +1595,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/DESI`  {#DESI}
+### `https://terms.fhiso.org/elf/DESI`  {#DESI}
 
 Descendant interest: indicates an interest in research to identify additional descendants of this individual.
 
@@ -1635,7 +1611,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/DEST`  {#DEST}
+### `https://terms.fhiso.org/elf/DEST`  {#DEST}
 
 Destination: a system receiving data.
 
@@ -1653,7 +1629,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/DIV`  {#DIV}
+### `https://terms.fhiso.org/elf/DIV`  {#DIV}
 
 Divorce: an event of dissolving a marriage through civil action.
 
@@ -1673,7 +1649,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/DIVF`  {#DIVF}
+### `https://terms.fhiso.org/elf/DIVF`  {#DIVF}
 
 Divorce filed: an event of filing for a divorce by a spouse.
 
@@ -1693,7 +1669,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/DSCR`  {#DSCR}
+### `https://terms.fhiso.org/elf/DSCR`  {#DSCR}
 
 Physical description: the physical characteristics of a person, place, or thing.
 
@@ -1714,7 +1690,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/EDUC`  {#EDUC}
+### `https://terms.fhiso.org/elf/EDUC`  {#EDUC}
 
 Education: indicator of a level of education attained.
 
@@ -1734,11 +1710,11 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/EMAIL`  {#EMAIL}
+### `https://terms.fhiso.org/elf/EMAIL`  {#EMAIL}
 
 An electronic mail address.
 
-{.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tags: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `http://terms.fhiso.org/elf/EMAI` as synonymous with `http://terms.fhiso.org/elf/EMAIL`.
+{.note} `[EMAIL]` was introduced in GEDCOM 5.5.1 with two tags: both `EMAIL` and `EMAI`.  `EMAIL` was used more consistently and is documented here, but it is RECOMMENDED that implementations treat `https://terms.fhiso.org/elf/EMAI` as synonymous with `https://terms.fhiso.org/elf/EMAIL`.
 
 Contexts
 :   `[ADDR]`.`[EMAIL]`
@@ -1753,7 +1729,7 @@ Substructures
 :    None
 
 
-### `http://terms.fhiso.org/elf/EMIG`  {#EMIG}
+### `https://terms.fhiso.org/elf/EMIG`  {#EMIG}
 
 Emigration: an event of leaving one's homeland with the intent of residing elsewhere.
 
@@ -1773,7 +1749,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/ENGA`  {#ENGA}
+### `https://terms.fhiso.org/elf/ENGA`  {#ENGA}
 
 Engagement: An event of recording or announcing an agreement between two people to become married.
 
@@ -1793,7 +1769,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/EVEN`  {#EVEN}
+### `https://terms.fhiso.org/elf/EVEN`  {#EVEN}
 
 Event: a noteworthy happening related to an individual, a group, or an organization.
 
@@ -1853,7 +1829,7 @@ Substructures
 {.ednote} We could say the payload is a set of *structure type identifier*s, abbreviated to tags in the serialization stage, but doing so will complicate serialization's description.
 
 
-### `http://terms.fhiso.org/elf/FACT`  {#FACT}
+### `https://terms.fhiso.org/elf/FACT`  {#FACT}
 
 Pertaining to a noteworthy attribute or fact concerning an individual, a group, or an organization. A `FACT` structure is usually qualified or classified by a subordinate use of the `TYPE` structure.
 
@@ -1874,7 +1850,7 @@ Substructures
 :   `[TYPE]`!
 
 
-### `http://terms.fhiso.org/elf/FAM`  {#FAM}
+### `https://terms.fhiso.org/elf/FAM`  {#FAM}
 
 Family: identifies a legal, common law, or other customary relationship of man and woman and their children, if any, or a family created by virtue of the birth of a child to its biological father and mother.
 
@@ -1907,7 +1883,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/FAMC`  {#FAMC}
+### `https://terms.fhiso.org/elf/FAMC`  {#FAMC}
 
 Family child: identifies the family in which an individual appears as a child.
 
@@ -1938,7 +1914,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/FAMS`  {#FAMS}
+### `https://terms.fhiso.org/elf/FAMS`  {#FAMS}
 
 Family spouse: identifies the family in which an individual appears as a spouse.
 
@@ -1952,7 +1928,7 @@ Substructures
 :    `[NOTE]`\*
 
 
-### `http://terms.fhiso.org/elf/FAX`  {#FAX}
+### `https://terms.fhiso.org/elf/FAX`  {#FAX}
 
 Electronic facimilie transmission.
 
@@ -1971,7 +1947,7 @@ Substructures
 :    None
 
 
-### `http://terms.fhiso.org/elf/FCOM`  {#FCOM}
+### `https://terms.fhiso.org/elf/FCOM`  {#FCOM}
 
 First communion: a religious rite, the first act of sharing in the Lord's supper as part of church worship.
 
@@ -1991,7 +1967,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/FILE`  {#FILE}
+### `https://terms.fhiso.org/elf/FILE`  {#FILE}
 
 An information storage place that is ordered and arranged for preservation and reference.
 
@@ -2031,7 +2007,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/FONE`  {#FONE}
+### `https://terms.fhiso.org/elf/FONE`  {#FONE}
 
 Phonetic: a phonetic variation of a superior text string.
 
@@ -2071,7 +2047,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/FORM`  {#FORM}
+### `https://terms.fhiso.org/elf/FORM`  {#FORM}
 
 Format: an assigned name given to a consistent format in which information can be conveyed.
 
@@ -2129,7 +2105,7 @@ Payload
 {.note} These two contexts differ primarily in the GEDCOM version in which they were introduced.  For more, see the discussion under `[OBJE]`
 
 
-### `http://terms.fhiso.org/elf/GEDC`  {#GEDC}
+### `https://terms.fhiso.org/elf/GEDC`  {#GEDC}
 
 GEDCOM: Information about the use of GEDCOM in a transmission.
 
@@ -2144,7 +2120,7 @@ Substructures
 :   `[VERS]`!
 
 
-### `http://terms.fhiso.org/elf/GIVN`  {#GIVN}
+### `https://terms.fhiso.org/elf/GIVN`  {#GIVN}
 
 Given name: a given or earned name used for official identification of a person.
 
@@ -2163,7 +2139,7 @@ Substructures
 :    None
 
 
-### `http://terms.fhiso.org/elf/GRAD`  {#GRAD}
+### `https://terms.fhiso.org/elf/GRAD`  {#GRAD}
 
 Graduation: an event of awarding educational diplomas or degrees to individuals.
 
@@ -2183,7 +2159,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/HEAD`  {#HEAD}
+### `https://terms.fhiso.org/elf/HEAD`  {#HEAD}
 
 Header: identifies information pertaining to an entire GEDCOM transmission.
 
@@ -2210,7 +2186,7 @@ Substructures
 :   `[SUBN]`?
 
 
-### `http://terms.fhiso.org/elf/HUSB`  {#HUSB}
+### `https://terms.fhiso.org/elf/HUSB`  {#HUSB}
 
 An individual in the family whose role is as husband or first partner in
 a marriage or other relationship, or as a father or first parent of a
@@ -2258,7 +2234,7 @@ Substructures
 Applications *must not* place any requirement on the `[SEX]`
 *substructure* of the referenced `[INDI]`.
 
-### `http://terms.fhiso.org/elf/IDNO`  {#IDNO}
+### `https://terms.fhiso.org/elf/IDNO`  {#IDNO}
 
 Identification number: a number assigned to identify a person within some external system.
 
@@ -2283,7 +2259,7 @@ Substructures
 :   `[TYPE]`!
 
 
-### `http://terms.fhiso.org/elf/IMMI`  {#IMMI}
+### `https://terms.fhiso.org/elf/IMMI`  {#IMMI}
 
 Immigration: an event of entering into a new locality with the intent of residing there.
 
@@ -2303,7 +2279,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/INDI`  {#INDI}
+### `https://terms.fhiso.org/elf/INDI`  {#INDI}
 
 Individual: a person.
 
@@ -2341,7 +2317,7 @@ Substructures
 :   `[SUBM]`\*
 
 
-### `http://terms.fhiso.org/elf/LANG`  {#LANG}
+### `https://terms.fhiso.org/elf/LANG`  {#LANG}
 
 Language: the name of the language used in a communication or transmission of information.
 
@@ -2368,7 +2344,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/LEGA`  {#LEGA}
+### `https://terms.fhiso.org/elf/LEGA`  {#LEGA}
 
 Legatee: a role of an individual acting as a person receiving a bequest or legal devise.
 
@@ -2378,7 +2354,7 @@ In the GEDCOM standard, this structure is documented as existing but does not ap
 
 
 
-### `http://terms.fhiso.org/elf/LATI`  {#LATI}
+### `https://terms.fhiso.org/elf/LATI`  {#LATI}
 
 Latitude: a value indicating a coordinate position on a line, plane, or space.
 
@@ -2407,7 +2383,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/LONG`  {#LONG}
+### `https://terms.fhiso.org/elf/LONG`  {#LONG}
 
 Longitude: a value indicating a coordinate position on a line, plane, or space.
 
@@ -2436,7 +2412,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/MAP`  {#MAP}
+### `https://terms.fhiso.org/elf/MAP`  {#MAP}
 
 Pertains to a representation of measurements usually presented in a graphical form.
 
@@ -2454,7 +2430,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/MARB`  {#MARB}
+### `https://terms.fhiso.org/elf/MARB`  {#MARB}
 
 Marriage bann: an event of an official public notice given that two people intend to marry.
 
@@ -2474,7 +2450,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/MARC`  {#MARC}
+### `https://terms.fhiso.org/elf/MARC`  {#MARC}
 
 Marriage contract: an event of recording a formal agreement of marriage, including the prenuptial agreement in which marriage partners reach agreement about the property rights of one or both, securing property to their children.
 
@@ -2494,7 +2470,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/MARL`  {#MARL}
+### `https://terms.fhiso.org/elf/MARL`  {#MARL}
 
 Marriage License: an event of obtaining a legal license to marry.
 
@@ -2514,7 +2490,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/MARR`  {#MARR}
+### `https://terms.fhiso.org/elf/MARR`  {#MARR}
 
 Marriage: a legal, common-law, or customary event of creating a family unit of a man and a woman as husband and wife.
 
@@ -2534,7 +2510,7 @@ Substructures
 :   [*inherited*](#FamilyEvent)
 
 
-### `http://terms.fhiso.org/elf/MARS`  {#MARS}
+### `https://terms.fhiso.org/elf/MARS`  {#MARS}
 
 Marriage settlement: an event of creating an agreement between two people contemplating marriage, at which time they agree to release or modify property rights that would otherwise arise from the marriage.
 
@@ -2556,7 +2532,7 @@ Substructures
 
 
 
-### `http://terms.fhiso.org/elf/MEDI`  {#MEDI}
+### `https://terms.fhiso.org/elf/MEDI`  {#MEDI}
 
 Media: identifies information about the media or having to do with the medium in which information is stored.
 
@@ -2578,7 +2554,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/NAME`  {#NAME}
+### `https://terms.fhiso.org/elf/NAME`  {#NAME}
 
 A word or combination of words used to help identify an individual, title, or other item. More than one NAME line should be used for people who were known by multiple names.
 
@@ -2656,7 +2632,7 @@ Substructures
 :   `[SOUR]`\*
 
 
-### `http://terms.fhiso.org/elf/NATI`  {#NATI}
+### `https://terms.fhiso.org/elf/NATI`  {#NATI}
 
 Nationality: the national heritage of an individual.
 
@@ -2676,7 +2652,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/NATU`  {#NATU}
+### `https://terms.fhiso.org/elf/NATU`  {#NATU}
 
 Naturalization: the event of obtaining citizenship.
 
@@ -2696,7 +2672,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/NCHI`  {#NCHI}
+### `https://terms.fhiso.org/elf/NCHI`  {#NCHI}
 
 Children count: the number of children that this person is known to be the parent of (all marriages) when specified for an `[INDI]`, or that belong to this family when specified for an `[FAM]`.
 
@@ -2736,7 +2712,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/NICK`  {#NICK}
+### `https://terms.fhiso.org/elf/NICK`  {#NICK}
 
 Nickname: a descriptive or familiar that is used instead of, or in addition to, one's proper name.
 
@@ -2756,7 +2732,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/NMR`  {#NMR}
+### `https://terms.fhiso.org/elf/NMR`  {#NMR}
 
 Marriage count: the number of times this person has participated in a family as a spouse or parent.
 
@@ -2780,7 +2756,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/NOTE`  {#NOTE}
+### `https://terms.fhiso.org/elf/NOTE`  {#NOTE}
 
 Additional information provided by the submitter for understanding the enclosing data.
 
@@ -2838,7 +2814,7 @@ Substructures
 :   `[SOUR]`\*
 
 
-### `http://terms.fhiso.org/elf/NPFX`  {#NPFX}
+### `https://terms.fhiso.org/elf/NPFX`  {#NPFX}
 
 Name prefix: text which appears on a name line before the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
@@ -2857,7 +2833,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/NSFX`  {#NSFX}
+### `https://terms.fhiso.org/elf/NSFX`  {#NSFX}
 
 Name suffix: text which appears on a name line after or behind the given and surname parts of a name.
 i.e. `Lt. Cmndr. Joseph /Allen/ jr.`
@@ -2876,7 +2852,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/OBJE`  {#OBJE}
+### `https://terms.fhiso.org/elf/OBJE`  {#OBJE}
 
 Object: pertaining to a grouping of attributes used in describing something. Usually referring to the data required to represent a multimedia object, such an audio recording, a photograph of a person, or an image of a document.
 
@@ -2944,7 +2920,7 @@ Substructures
 :   `[TITL]`?
 
 
-### `http://terms.fhiso.org/elf/OCCU`  {#OCCU}
+### `https://terms.fhiso.org/elf/OCCU`  {#OCCU}
 
 Occupation: the type of work or profession of an individual.
 
@@ -2964,7 +2940,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/ORDN`  {#ORDN}
+### `https://terms.fhiso.org/elf/ORDN`  {#ORDN}
 
 Ordinance: a religious event of receiving authority to act in religious matters.
 
@@ -2984,7 +2960,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/PAGE`  {#PAGE}
+### `https://terms.fhiso.org/elf/PAGE`  {#PAGE}
 
 A number or description to identify where information can be found in a referenced work.
 
@@ -3001,7 +2977,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/PEDI`  {#PEDI}
+### `https://terms.fhiso.org/elf/PEDI`  {#PEDI}
 
 Pedigree: information pertaining to an individual to parent lineage chart.
 
@@ -3027,7 +3003,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/PHON`  {#PHON}
+### `https://terms.fhiso.org/elf/PHON`  {#PHON}
 
 Phone: a unique number assigned to access a specific telephone.
 
@@ -3044,7 +3020,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/PLAC`  {#PLAC}
+### `https://terms.fhiso.org/elf/PLAC`  {#PLAC}
 
 Place: a jurisdictional name to identify the place or location of an event.
 
@@ -3094,7 +3070,7 @@ Substructures
 :   `[SOUR]`\*
 
 
-### `http://terms.fhiso.org/elf/POST`  {#POST}
+### `https://terms.fhiso.org/elf/POST`  {#POST}
 
 Postal code: a code used by a postal service to identify an area to facilitate mail handling.
 
@@ -3111,7 +3087,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/PROB`  {#PROB}
+### `https://terms.fhiso.org/elf/PROB`  {#PROB}
 
 Probate: an event of judicial determination of the validity of a will. May indicate several related court activities over several dates.
 
@@ -3131,7 +3107,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/PROP`  {#PROP}
+### `https://terms.fhiso.org/elf/PROP`  {#PROP}
 
 Property: pertaining to possessions such as real estate or other property of interest.
 
@@ -3151,7 +3127,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/PUBL`  {#PUBL}
+### `https://terms.fhiso.org/elf/PUBL`  {#PUBL}
 
 Publication: refers to when and/or were a work was published or created.
 
@@ -3174,7 +3150,7 @@ Substructures
 {.ednote} GEDCOM asserts that every `PUBL` payload must be *at least* 248 characters and *cannot* have a newline in the first 248 characters; this is almost certainly an error and not reflected in this specification.
 
 
-### `http://terms.fhiso.org/elf/QUAY`  {#QUAY}
+### `https://terms.fhiso.org/elf/QUAY`  {#QUAY}
 
 Quality of data: an assessment of the certainty of the evidence to support the conclusion drawn from evidence.
 
@@ -3204,7 +3180,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/REFN`  {#REFN}
+### `https://terms.fhiso.org/elf/REFN`  {#REFN}
 
 Reference: a description or number used to identify an item for filing, storage, or other reference purposes.
 
@@ -3226,7 +3202,7 @@ Substructures
 :   `[TYPE]`?
 
 
-### `http://terms.fhiso.org/elf/RELA`  {#RELA}
+### `https://terms.fhiso.org/elf/RELA`  {#RELA}
 
 Relationship: a relationship value between the indicated contexts.
 
@@ -3253,7 +3229,7 @@ You would read the following as "Joe Jacob's great grandson is the person descri
 ````
 
 
-### `http://terms.fhiso.org/elf/RELI`  {#RELI}
+### `https://terms.fhiso.org/elf/RELI`  {#RELI}
 
 Religion: a religious denomination to which a person is affiliated or for which a record applies.
 
@@ -3289,7 +3265,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/REPO`  {#REPO}
+### `https://terms.fhiso.org/elf/REPO`  {#REPO}
 
 Repository: an institution or person that has the specified item as part of their collection(s).
 
@@ -3325,7 +3301,7 @@ Substructures
 {.note} Due to an example in the GEDCOM specification that is inconsistent with the grammar, it is RECOMMENDED that implementations parse a .`[SOUR]`.`[REPO]`.`[MEDI]` (i.e., coordinate with instead of subordinate to `CALN`) as if they were .`[SOUR]`.`[REPO]`.`[CALN]`.`[MEDI]`.
 
 
-### `http://terms.fhiso.org/elf/RESI`  {#RESI}
+### `https://terms.fhiso.org/elf/RESI`  {#RESI}
 
 Residence: the act of dwelling at an address for a period of time.
 
@@ -3344,7 +3320,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/RESN`  {#RESN}
+### `https://terms.fhiso.org/elf/RESN`  {#RESN}
 
 Restriction: a processing indicator signifying access to information has been denied or otherwise restricted.
 
@@ -3374,7 +3350,7 @@ Substructures
 {.ednote} Although the GEDCOM spec defines `RESN` in terms of the specific product *Ancestral File*, we assume other systems might use `RESN` for same purpose.
 
 
-### `http://terms.fhiso.org/elf/RETI`  {#RETI}
+### `https://terms.fhiso.org/elf/RETI`  {#RETI}
 
 Retirement: an event of exiting an occupational relationship with an employer after a qualifying time period.
 
@@ -3394,7 +3370,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/RFN`  {#RFN}
+### `https://terms.fhiso.org/elf/RFN`  {#RFN}
 
 Record file number: a permanent number assigned to a record that uniquely identifies it within a known file.
 
@@ -3421,7 +3397,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/RIN`  {#RIN}
+### `https://terms.fhiso.org/elf/RIN`  {#RIN}
 
 Record identification number: a number assigned to a record by an originating automated system that can be used by a receiving system to report results pertaining to that record.
 
@@ -3438,7 +3414,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ROLE`  {#ROLE}
+### `https://terms.fhiso.org/elf/ROLE`  {#ROLE}
 
 A name given to a role played by an individual in connection with an event.
 
@@ -3455,7 +3431,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/ROMN`  {#ROMN}
+### `https://terms.fhiso.org/elf/ROMN`  {#ROMN}
 
 {.note} This tag was introduced in GEDCOM 5.5.1.
 
@@ -3495,7 +3471,7 @@ Substructures
 :   `[TYPE]`!
 
 
-### `http://terms.fhiso.org/elf/SEX`  {#SEX}
+### `https://terms.fhiso.org/elf/SEX`  {#SEX}
 
 Indicates the sex of an individual---male or female.
 
@@ -3512,7 +3488,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/SOUR`  {#SOUR}
+### `https://terms.fhiso.org/elf/SOUR`  {#SOUR}
 
 Source: the initial or original material from which information was obtained.
 
@@ -3595,7 +3571,7 @@ Substructures
 :   `[TEXT]`\*
 
 
-### `http://terms.fhiso.org/elf/SPFX`  {#SPFX}
+### `https://terms.fhiso.org/elf/SPFX`  {#SPFX}
 
 Surname prefix: a name piece used as a non-indexing pre-part of a surname.
 
@@ -3614,7 +3590,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/SSN`  {#SSN}
+### `https://terms.fhiso.org/elf/SSN`  {#SSN}
 
 Social security number: a number assigned by the United States Social Security Administration. Used for tax identification purposes.
 
@@ -3636,7 +3612,7 @@ Substructures
 :   [*inherited*](#IndividualAttribute)
 
 
-### `http://terms.fhiso.org/elf/STAE`  {#STAE}
+### `https://terms.fhiso.org/elf/STAE`  {#STAE}
 
 State: a geographical division of a larger jurisdictional area, such as a State within the United States of America.
 
@@ -3653,7 +3629,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/STAT`  {#STAT}
+### `https://terms.fhiso.org/elf/STAT`  {#STAT}
 
 Status: an assessment of the state or condition of something.
 
@@ -3681,7 +3657,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/SUBM`  {#SUBM}
+### `https://terms.fhiso.org/elf/SUBM`  {#SUBM}
 
 Submitter: an individual or organization who contributes genealogical data to a file or transfers it to someone else.
 
@@ -3718,7 +3694,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/SUBN`  {#SUBN}
+### `https://terms.fhiso.org/elf/SUBN`  {#SUBN}
 
 Submission: pertains to a collection of data issued for processing.
 
@@ -3751,7 +3727,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/SURN`  {#SURN}
+### `https://terms.fhiso.org/elf/SURN`  {#SURN}
 
 Surname: a family name passed on or used by members of a family.
 
@@ -3768,7 +3744,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/TEXT`  {#TEXT}
+### `https://terms.fhiso.org/elf/TEXT`  {#TEXT}
 
 The exact wording found in an original source document.
 
@@ -3786,7 +3762,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/TIME`  {#TIME}
+### `https://terms.fhiso.org/elf/TIME`  {#TIME}
 
 A time value in a 24-hour clock format, including hours, minutes, and optional seconds, separated by a colon (`:`). Fractions of seconds are shown in decimal notation.
 
@@ -3811,7 +3787,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/TITL`  {#TITL}
+### `https://terms.fhiso.org/elf/TITL`  {#TITL}
 
 Title: a description of a specific writing or other work, such as the title of a book when used in a source context, or a formal designation used by an individual in connection with positions of royalty or other social status, such as Grand Duke.
 
@@ -3861,7 +3837,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/TYPE`  {#TYPE}
+### `https://terms.fhiso.org/elf/TYPE`  {#TYPE}
 
 A further qualification to the meaning of the associated superior structure. The value does not have any computer processing reliability. It is more in the form of a short one or two word note that should be displayed any time the associated data is displayed.
 
@@ -3914,7 +3890,7 @@ Payload
     Known values include, but are not limited to, `pinyin`, `romanji`, and `wadegiles`.
 
 
-### `http://terms.fhiso.org/elf/VERS`  {#VERS}
+### `https://terms.fhiso.org/elf/VERS`  {#VERS}
 
 Version: indicates which version of a product, item, or publication is being used or referenced.
 
@@ -3934,7 +3910,7 @@ Substructures
 :   None
 
 
-### `http://terms.fhiso.org/elf/WIFE`  {#WIFE}
+### `https://terms.fhiso.org/elf/WIFE`  {#WIFE}
 
 An individual in the family whose role is as wife or second partner in
 a marriage or other relationship, or as a mother or second parent of a
@@ -3982,7 +3958,7 @@ Applications *must not* place any requirement on the `[SEX]`
 *substructure* of the referenced `[INDI]`.
 
 
-### `http://terms.fhiso.org/elf/WILL`  {#WILL}
+### `https://terms.fhiso.org/elf/WILL`  {#WILL}
 
 A legal document treated as an event, by which a person disposes of his or her estate, to take effect after death. The event date is the date the will was signed while the person was alive. 
 
@@ -4004,7 +3980,7 @@ Substructures
 :   [*inherited*](#IndividualEvent)
 
 
-### `http://terms.fhiso.org/elf/WWW`  {#WWW}
+### `https://terms.fhiso.org/elf/WWW`  {#WWW}
 
 World Wide Web home page.
 
@@ -4109,6 +4085,15 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 
 ### Other references
 
+[GEDCOM 5.5]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 5.5.  2 Jan 1996, as amended by the
+    errata sheet dated 10 Jan 1996.
+
+[GEDCOM 5.5.1]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
+
 [XML Names]
 :   W3 (World Wide Web Consortium).
     *Namespaces in XML 1.1*, 2nd edition.
@@ -4116,6 +4101,3 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
     W3C Recommendation.
     See <https://www.w3.org/TR/xml-names11/>.
 
-[ELF-File]
-:   FHISO (Family History Information Standards Organisation)
-    *Extended Legacy Format (ELF): Serialization Format.*
