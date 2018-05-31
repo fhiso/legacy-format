@@ -317,7 +317,7 @@ in particular, implementations SHOULD
 
 {.ednote} Should we say "implementations MUST NOT use any of the six pseudo-structure tags" or add contexts to the definition of pseudo-structures?  In other words, is .INDI.NOTE.DEFN a pseudo-structure or can it be defined as a structure?
 
-### IRI dictionary encoding {#IRI}
+### IRI dictionary encoding {#IRI-enc}
 
 The IRI dictionary is encoded as a set pseudo-substructures of the *head*.
 
