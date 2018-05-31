@@ -460,7 +460,7 @@ The following uses (incorrect) indentation to emphasize logical organization.
       3 IRI https://fhiso.org/elf/lds#TEMP
       3 DESCRIPTION A 5-character abbreviation of the temple in which LDS temple ordinances were performed.
       3 PAYLOAD
-        4 TYPE string
+        4 TYPE line string
         4 ENUM ALBERTA,ALBER,AL,
           5 CONC APIA SAMOA,APIA,AP,
           5 CONC ARIZONA,ARIZO,AZ,
@@ -533,7 +533,7 @@ The following uses (incorrect) indentation to emphasize logical organization.
       3 IRI https://fhiso.org/elf/lds#ORDI
       3 DESCRIPTION A flag that indicates whether submission should be processed for clearing temple ordinances.
       3 PAYLOAD
-        4 TYPE string
+        4 TYPE line string
         4 ENUM yes, no
       3 SUBSTRUCTURES none
       3 CONTEXT .SUBN
