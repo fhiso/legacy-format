@@ -404,3 +404,166 @@ It ends with the direct superstructure of the defined structure.
 ````
 {/}
 
+
+## Defining tags
+
+ELF serialization allows the inclusion of arbitrary tags, even those not representing any *structure type identifier*.
+This permission is required to support extant GEDCOM extensions which contain such tags.
+
+
+## Extended example: LDS Legacy Descriptor Set
+
+GEDCOM 5.5.1 was authored by the Church of Jesus Christ of Latter-Day Saints
+and as such included several tags specific to the LDS context which are not included in [ELF-data-model].
+The following provides a SCHEMA that documents all of those tags as an extended example of how SCHEMA may be created.
+
+{.example ...}
+The following uses (incorrect) indentation to emphasize logical organization.
+
+````gedcom
+0 HEAD
+  1 SCHEMA
+    2 DEFN AFN
+      3 IRI https://fhiso.org/elf/lds#AFN
+      3 CONTEXT / https://fhiso.org/elf/INDI
+      3 PAYLOAD
+      4 TYPE line string
+      3 DESCRIPTION A unique permanent record number of an individual record contained in the Family History Department's Ancestral File.
+    2 DEFN FAMF
+      3 IRI https://fhiso.org/elf/lds#FAMF
+      3 CONTEXT / https://fhiso.org/elf/SUBN
+      3 PAYLOAD
+      4 TYPE line string
+      3 DESCRIPTION Name under which family names for ordinances are stored in the temple's family file. 
+    2 DEFN BAPL
+      3 IRI https://fhiso.org/elf/lds#BAPL
+      3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
+      3 DESCRIPTION The event of baptism performed at age eight or later by priesthood authority of the LDS Church.
+    2 DEFN CONL
+      3 IRI https://fhiso.org/elf/lds#CONL
+      3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
+      3 DESCRIPTION The religious event by which a person receives membership in the LDS Church. Always follows BAPL, usually within a few days.
+    2 DEFN ENDL
+      3 IRI https://fhiso.org/elf/lds#ENDL
+      3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
+      3 DESCRIOTION A religious event where an endowment ordinance for an individual was performed by priesthood authority in an LDS temple.
+    2 DEFN SLGC
+      3 IRI https://fhiso.org/elf/lds#SLGC
+      3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
+      3 DESCRIPTION A religious event pertaining to the sealing of a child to his or her parents in an LDS temple ceremony. Usually, but not always, to legal or genetic parents.
+    2 DEFN SLGS
+      3 IRI https://fhiso.org/elf/lds#SLGS
+      3 ISA https://fhiso.org/elf/lds#LDS_ORDINANCE
+      3 CONTEXT / https://fhiso.org/elf/FAM
+      3 DESCRIPTION A religious event pertaining to the sealing of a husband and wife in an LDS temple ceremony.
+    2 DEFN TEMP
+      3 IRI https://fhiso.org/elf/lds#TEMP
+      3 DESCRIPTION A 5-character abbreviation of the temple in which LDS temple ordinances were performed.
+      3 PAYLOAD
+        4 TYPE string
+        4 ENUM ALBERTA,ALBER,AL,
+          5 CONC APIA SAMOA,APIA,AP,
+          5 CONC ARIZONA,ARIZO,AZ,
+          5 CONC ATLANTA GA,ATLAN,AT,
+          5 CONC BOGOTA COL.,BOGOT,BG,
+          5 CONC BOISE ID,BOISE,BO,
+          5 CONC BOUNTIFUL UT,BOUNT,
+          5 CONC BUENOS AIRES,BAIRE,BA,
+          5 CONC CHICAGO,IL,CHICA,CH,,COCHABAMBA,
+          5 CONC BOLIVIA,COCHA,
+          5 CONC DALLAS TX,DALLA,DA,
+          5 CONC DENVER CO,DENVE,DV,
+          5 CONC ENDOWMENT HOUSE,EHOUS,EH,
+          5 CONC FRANKFURT,FRANK,FR,
+          5 CONC FREIBERG,FREIB,FD,
+          5 CONC GUATAMALA,GUATE,GA,
+          5 CONC GUAYAQUIL ECUADOR,GUAYA,GY,
+          5 CONC HARTFORD CONN,HARTF,
+          5 CONC HAWAII,HAWAI,HA,
+          5 CONC HONG KONG,HKONG,
+          5 CONC IDAHO FALLS,IFALL,IF,
+          5 CONC JOHANNESBURG S.A.,JOHAN,JO,
+          5 CONC JORDAN RIVER UT,JRIVE,JR,
+          5 CONC LAS VEGAS NV,LVEGA,LV,
+          5 CONC LIMA PERU,LIMA,LI,
+          5 CONC LOGAN UT,LOGAN,LG,
+          5 CONC LONDON,LONDO,LD,
+          5 CONC LOS ANGELES,LANGE,LA,
+          5 CONC MADRID SPAIN,MADRI,
+          5 CONC MANILA PHILIPINES,MANIL,MA,
+          5 CONC MANTI UT,MANTI,MT,
+          5 CONC MEXICO CITY,MEXIC,MX,
+          5 CONC MT. TIMPANOGAS UT,MTIMP,
+          5 CONC NASHVILLE TENN,NASHV,
+          5 CONC NAUVOO,NAUVO,
+          5 CONC NEW ZEALAND,NZEAL,NZ,
+          5 CONC NUKU'ALOFA TONGA,NUKUA,TG,
+          5 CONC OAKLAND CA,OAKLA,OK,
+          5 CONC OGDEN UT,OGDEN,OG,
+          5 CONC ORLANDO,FL,ORLAN,,75,
+          5 CONC PAPEETE TAHITI,PAPEE,TA,
+          5 CONC PORTLAND OR,PORTL,PT,
+          5 CONC PRESIDENT'S OFFICE,POFFI,
+          5 CONC PRESTON ENG,PREST,
+          5 CONC PROVO,UT,PROVO,
+          5 CONC PVRECIFE BRAZIL,RECIF,
+          5 CONC SALT LAKE UT,SLAKE,SL,
+          5 CONC SAN DIEGO CA,SDIEG,SA,
+          5 CONC SANTIAGO CHILE,SANTI,SN,
+          5 CONC SANTO DOMINGO D.R.,SDOMI,
+          5 CONC SAO PAULO BRAZ,SPAUL,SP,
+          5 CONC SEATTLE WA,SEATT,SE,
+          5 CONC SEOUL KOREA,SEOUL,SO,
+          5 CONC ST. GEORGE UT,SGEOR,SG,
+          5 CONC ST. LOUIS MISSOURI,SLOUI,
+          5 CONC STOCKHOLM SWDN,STOCK,ST,
+          5 CONC SWISS,SWISS,SW,
+          5 CONC SYDNEY AUST,SYDNE,SD,
+          5 CONC TAIPEI TAIWAN,TAIPE,TP,
+          5 CONC TOKYO JAPAN,TOKYO,TK,
+          5 CONC TORONTO CAN.,TORNO,TR,
+          5 CONC VERNAL UT.,VERNA,
+          5 CONC WASHINGTON DC,WASHI,WA
+      3 CONTEXT / https://fhiso.org/elf/SUBN
+      3 CONTEXT https://fhiso.org/elf/lds#LDS_ORDINANCE
+      3 SUBSTRUCTURES none
+      3 NOTE in the LDS_ORDINANCE context, this indicates the person in question was physically present at that temple on that date if and only if the person was alive at the time of the ordinance being performed.
+      3 NOTE The presence of a TEMP substructure on a BAPL or CONL implies that the individual was deceased at the time the ordinance was performed.
+    2 DEFN ORDI
+      3 IRI https://fhiso.org/elf/lds#ORDI
+      3 DESCRIPTION A flag that indicates whether submission should be processed for clearing temple ordinances.
+      3 PAYLOAD
+        4 TYPE string
+        4 ENUM yes, no
+      3 SUBSTRUCTURES none
+      3 CONTEXT .SUBN
+    2 DEFN
+      3 IRI https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
+      3 ISA https://fhiso.org/elf/lds#LDS_ORDINANCE
+      3 CONTEXT / https://fhiso.org/elf/INDI
+    2 DEFN
+      3 IRI https://fhiso.org/elf/lds#LDS_ORDINANCE
+      3 SUBSTRUCTURES
+        4 https://fhiso.org/elf/lds#STAT ?
+        4 https://fhiso.org/elf/DATE ?
+        4 https://fhiso.org/elf/TEMP ?
+        4 https://fhiso.org/elf/PLAC ?
+        4 https://fhiso.org/elf/SOUR *
+        4 https://fhiso.org/elf/NOTE *
+      3 PAYLOAD none
+      3 NOTE While it may appear that these are parallels to other kinds of religious rites, as e.g. assuming a BAPL is a BAPM, this is not in general true because LDS ordinances may be performed posthumously by proxy. Only when a DATE substructure is present and the DATE is within the person's known lifespan is it appropriate to infer that the person in question physically participated in the rite.
+      3 NOTE GECDCOM states of a PLAC substructure "Usually only a living LDS baptism place is recorded in this field," implying a living ordinance and thus a BAPM.
+````
+
+The above does not provide means for clarifying that the (LDS_ORDINANCE).PLACE is the just-payload kind, not the FORM-containing kind, as those (currently) have the same IRI in [FHISO-data-model].
+{/}
+
+{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints (LDS) and contains several types specific to that church and its genealogical products, including
+
+-   AFN and FAMF, which are defined in terms of former LDS genealogical products
+-   BAPL and CONL, which are LDS-specific versions of `[BAPM]` and `[CONF]`
+-   ENDL, SLGC, SLGS, TEMP, and ORDI, which are specific to LDS temples
+
+These LDS-specific types have been omitted from this specification
+and are thus defined by this specification to be [Extension Types](#Extensions).
+{/}
