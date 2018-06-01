@@ -428,37 +428,47 @@ The following uses (incorrect) indentation to emphasize logical organization.
       3 CONTEXT / https://fhiso.org/elf/INDI
       3 PAYLOAD
       4 TYPE line string
-      3 DESCRIPTION A unique permanent record number of an individual record contained in the Family History Department's Ancestral File.
+      3 DESCRIPTION A unique permanent record number of an individual record
+        4 CONT contained in the Family History Department's Ancestral File.
     2 DEFN FAMF
       3 IRI https://fhiso.org/elf/lds#FAMF
       3 CONTEXT / https://fhiso.org/elf/SUBN
       3 PAYLOAD
       4 TYPE line string
-      3 DESCRIPTION Name under which family names for ordinances are stored in the temple's family file. 
+      3 DESCRIPTION Name under which family names for ordinances are stored in
+        4 CONT the temple's family file. 
     2 DEFN BAPL
       3 IRI https://fhiso.org/elf/lds#BAPL
       3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
-      3 DESCRIPTION The event of baptism performed at age eight or later by priesthood authority of the LDS Church.
+      3 DESCRIPTION The event of baptism performed at age eight or later by
+        4 CONT priesthood authority of the LDS Church.
     2 DEFN CONL
       3 IRI https://fhiso.org/elf/lds#CONL
       3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
-      3 DESCRIPTION The religious event by which a person receives membership in the LDS Church. Always follows BAPL, usually within a few days.
+      3 DESCRIPTION The religious event by which a person receives membership in
+        4 CONT the LDS Church.
     2 DEFN ENDL
       3 IRI https://fhiso.org/elf/lds#ENDL
       3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
-      3 DESCRIOTION A religious event where an endowment ordinance for an individual was performed by priesthood authority in an LDS temple.
+      3 DESCRIOTION A religious event where an endowment ordinance for an
+        4 CONT individual was performed by priesthood authority in an LDS temple.
     2 DEFN SLGC
       3 IRI https://fhiso.org/elf/lds#SLGC
       3 ISA https://fhiso.org/elf/lds#LDS_INDIVIDUAL_ORDINANCE
-      3 DESCRIPTION A religious event pertaining to the sealing of a child to his or her parents in an LDS temple ceremony. Usually, but not always, to legal or genetic parents.
+      3 DESCRIPTION A religious event pertaining to the sealing of a child to
+        4 CONT his or her parents in an LDS temple ceremony. Usually, but not
+        4 CONT always, to legal or genetic parents.
     2 DEFN SLGS
       3 IRI https://fhiso.org/elf/lds#SLGS
       3 ISA https://fhiso.org/elf/lds#LDS_ORDINANCE
       3 CONTEXT / https://fhiso.org/elf/FAM
-      3 DESCRIPTION A religious event pertaining to the sealing of a husband and wife in an LDS temple ceremony.
+      3 DESCRIPTION A religious event pertaining to the sealing of a husband and
+        4 CONT wife in an LDS temple ceremony. May have been used for spiritual-
+        4 CONC only (i.e., non-marital) unions, particularly in the mid 1800s.
     2 DEFN TEMP
       3 IRI https://fhiso.org/elf/lds#TEMP
-      3 DESCRIPTION A 5-character abbreviation of the temple in which LDS temple ordinances were performed.
+      3 DESCRIPTION A 5-character abbreviation of the temple in which LDS temple
+        4 CONT ordinances were performed.
       3 PAYLOAD
         4 TYPE line string
         4 ENUM ALBERTA,ALBER,AL,
@@ -527,11 +537,15 @@ The following uses (incorrect) indentation to emphasize logical organization.
       3 CONTEXT / https://fhiso.org/elf/SUBN
       3 CONTEXT https://fhiso.org/elf/lds#LDS_ORDINANCE
       3 SUBSTRUCTURES none
-      3 NOTE in the LDS_ORDINANCE context, this indicates the person in question was physically present at that temple on that date if and only if the person was alive at the time of the ordinance being performed.
-      3 NOTE The presence of a TEMP substructure on a BAPL or CONL implies that the individual was deceased at the time the ordinance was performed.
+      3 NOTE in the LDS_ORDINANCE context, this indicates the person in question
+        4 CONT was physically present at that temple on that date if and only if
+        4 CONT the person was alive at the time of the ordinance being performed.
+      3 NOTE The presence of a TEMP substructure on a BAPL or CONL implies that
+        4 CONT the individual was deceased at the time the ordinance was performed.
     2 DEFN ORDI
       3 IRI https://fhiso.org/elf/lds#ORDI
-      3 DESCRIPTION A flag that indicates whether submission should be processed for clearing temple ordinances.
+      3 DESCRIPTION A flag that indicates whether submission should be processed
+        4 CONT for clearing temple ordinances.
       3 PAYLOAD
         4 TYPE line string
         4 ENUM yes, no
@@ -551,19 +565,17 @@ The following uses (incorrect) indentation to emphasize logical organization.
         4 https://fhiso.org/elf/SOUR *
         4 https://fhiso.org/elf/NOTE *
       3 PAYLOAD none
-      3 NOTE While it may appear that these are parallels to other kinds of religious rites, as e.g. assuming a BAPL is a BAPM, this is not in general true because LDS ordinances may be performed posthumously by proxy. Only when a DATE substructure is present and the DATE is within the person's known lifespan is it appropriate to infer that the person in question physically participated in the rite.
-      3 NOTE GECDCOM states of a PLAC substructure "Usually only a living LDS baptism place is recorded in this field," implying a living ordinance and thus a BAPM.
+      3 NOTE While it may appear that these are parallels to other kinds of
+        4 CONT religious rites, as e.g. assuming a BAPL is a BAPM, this is not
+        4 CONT in general true because LDS ordinances may be performed
+        4 CONT posthumously by proxy. Only when a DATE substructure is present
+        4 CONT and the DATE is within the person's known lifespan is it
+        4 CONT appropriate to infer that the person in question physically
+        4 CONT participated in the rite.
+      3 NOTE GECDCOM states of a PLAC substructure "Usually only a living LDS
+        4 CONT baptism place is recorded in this field," implying a living
+        4 CONT ordinance and thus a BAPM.
 ````
 
 The above does not provide means for clarifying that the (LDS_ORDINANCE).PLACE is the just-payload kind, not the FORM-containing kind, as those (currently) have the same IRI in [FHISO-data-model].
-{/}
-
-{.note ...} The GEDCOM specification was authored by the Church of Jesus Christ of Latter-Day Saints (LDS) and contains several types specific to that church and its genealogical products, including
-
--   AFN and FAMF, which are defined in terms of former LDS genealogical products
--   BAPL and CONL, which are LDS-specific versions of `[BAPM]` and `[CONF]`
--   ENDL, SLGC, SLGS, TEMP, and ORDI, which are specific to LDS temples
-
-These LDS-specific types have been omitted from this specification
-and are thus defined by this specification to be [Extension Types](#Extensions).
 {/}
