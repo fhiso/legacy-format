@@ -347,7 +347,7 @@ The non-*whitespace* components of a *line* have the following forms:
 
 4.  An *optional* **payload line**: a *string* matching the production `PLine`:
     
-        PLine   ::= PItem ((PItem | #x20 | #x90)* PItem)? | XRef
+        PLine   ::= PItem ((PItem | #x20 | #x9)* PItem)? | XRef
         PItem   ::= [^#x40#x20#x9#xA#xD] | "@@" | Escape
         Escape  ::= "@#" [^#x40#xA#xD]* "@"
 

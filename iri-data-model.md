@@ -767,3 +767,129 @@ Default tag
 :   `STAT`
 
 
+### `elf:Event`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   None
+
+Substructures
+:   `[elf:EVENT_OR_FACT_CLASSIFICATION]` ?
+:   `[elf:DATE_VALUE]` ?
+:   `[elf:PLACE_STRUCTURE]` ?
+:   `[elf:ADDRESS_STRUCTURE]` ?
+:   `[elf:RESPONSIBLE_AGENCY]` ?
+:   `[elf:RELIGIOUS_AFFILIATION]` ?
+:   `[elf:CAUSE_OF_EVENT]` ?
+:   `[elf:RESTRICTION_NOTICE]` ?
+:   `[elf:NOTE_STRUCTURE]` \*
+:   `[elf:SOURCE_CITATION]` \*
+:   `[elf:MULTIMEDIA_LINK]` \*
+
+Subtypes
+:   `[elf:FamilyEvent]`
+:   `[elf:IndividualAttribute]`
+:   `[elf:IndividualEvent]`
+
+### `elf:FamilyEvent`
+
+Supertype
+:   `[elf:Event]`
+
+Superstructures
+:   `[elf:FAMILY_RECORD]`
+
+Substructures
+:   `[elf:FirstParentAge]` ?
+:   `[elf:SecondParentAge]` ?
+
+Subtypes
+:   `[elf:ANUL]`
+:   `[elf:CENS]`
+:   `[elf:DIVF]`
+:   `[elf:ENGA]`
+:   `[elf:MARB]`
+:   `[elf:MARC]`
+:   `[elf:MARR]`
+:   `[elf:MARL]`
+:   `[elf:MARS]`
+:   `[elf:RESI]`
+:   `[elf:EVEN#FAM]`
+
+Payload
+:   A *string*, which may be limited by subtypes.
+    
+    The special value `Y` indicates an assertion that the event in question did occur,
+    even if it has no subordinate date or place.
+
+### `elf:IndividualAttribute`
+
+Supertype
+:   `[elf:Event]`
+
+Superstructures
+:   `[elf:INDIVIDUAL_RECORD]`
+
+Substructures
+:   *inherited*
+
+Subtypes
+:   `[elf:CASTE_NAME]`
+:   `[elf:PHYSICAL_DESCRIPTION]`
+:   `[elf:SCHOLASTIC_ACHIEVEMENT]`
+:   `[elf:NATIONAL_ID_NUMBER]`
+:   `[elf:NATIONAL_OR_TRIBAL_ORIGIN]`
+:   `[elf:COUNT_OF_CHILDREN]`
+:   `[elf:COUNT_OF_MARRIAGES]`
+:   `[elf:OCCUPATION]`
+:   `[elf:POSSESSIONS]`
+:   `[elf:RELIGIOUS_AFFILIATION]`
+:   `[elf:RESIDES_AT]`
+:   `[elf:SOCIAL_SECURITY_NUMBER]`
+:   `[elf:NOBILITY_TYPE_TITLE]`
+:   `[elf:ATTRIBUTE_DESCRIPTOR]`
+
+### `elf:IndividualEvent`
+
+Supertype
+:   `[elf:Event]`
+
+Superstructures
+:   `[elf:INDIVIDUAL_RECORD]`
+
+Substructures
+:   *inherited*
+
+Subtypes
+:   `[elf:BIRT]`
+:   `[elf:CHR]`
+:   `[elf:DEAT]`
+:   `[elf:BURI]`
+:   `[elf:CREM]`
+:   `[elf:ADOP]`
+:   `[elf:BAPM]`
+:   `[elf:BARM]`
+:   `[elf:BASM]`
+:   `[elf:BLES]`
+:   `[elf:CHRA]`
+:   `[elf:CONF]`
+:   `[elf:FCOM]`
+:   `[elf:ORDN]`
+:   `[elf:NATU]`
+:   `[elf:EMIG]`
+:   `[elf:IMMI]`
+:   `[elf:CENS]`
+:   `[elf:PROB]`
+:   `[elf:WILL]`
+:   `[elf:GRAT]`
+:   `[elf:RETI]`
+:   `[elf:EVEN#INDI]`
+
+Payload
+:   A *string*, which may be limited by subtypes.
+
+    The special value `Y` indicates an assertion that the event in question did occur,
+    even if it has no subordinate date or place.
+
