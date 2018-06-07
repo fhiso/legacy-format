@@ -4,6 +4,188 @@
 - Use IRI = meaning instead of tag-hierarchy = meaning.
 {/}
 
+
+## Microformats
+
+Several microformats are used in payloads of various structures below.
+
+### Personal name format
+
+A full name, presented in the order usually spoken and with the capitalization typical of the culture of the named individual.
+
+The text *should not* include commas or digits.
+
+It *should* include exactly two U+002F SOLIDUS `/` characters, one on each side of the family name or surname if present, or adjacent to one another if no family name or surname name is known.
+
+Portions of the name *may* be elided and replaced by three U+002E FULL STOP `...`.
+This *should* only be done if part of a name is known to exist but its content is not known.
+
+### Date formats
+
+Dates are represented using a somewhat involved syntax with three entry points, documented below.
+
+{.ednote ...} The following is the EBNF for date payloads, but it lacks semantics
+
+    Date    ::= greg | juln | hebr | fren | future
+
+    Exact   ::= [1-9] [0-9]? month year_g
+
+    Value   ::= Date | Period | range | approx
+                | ( "INT" Date )? "(" String ")"
+
+    Period  ::= "FROM" Date ( "TO" Date )? | "TO" Date
+
+    approx  ::= ( "ABT" | "CAL" | "EST" ) Date
+    range   ::= ( "BEF" | "AFT" ) Date | "BET" Date "AND" Date
+    
+    greg    ::= ("@#DGREGORIAN@" #x20)? d_greg
+    juln    ::= "@#DJULIAN@" #x20 d_juln
+    hebr    ::= "@#DHEBREW@" #x20 d_hebr
+    fren    ::= "@#DFRENCH R@" #x20 d_fren
+    future  ::= "@#D" ( "ROMAN" | "UNKNOWN" ) "@" #x20 String
+    
+    d_fren  ::= ( ( [1-9] [0-9]? )? month_f )? year
+    d_greg  ::= ( ( [1-9] [0-9]? )? month )? year_g
+    d_hebr  ::= ( ( [1-9] [0-9]? )? month_h )? year
+    d_juln  ::= ( ( [1-9] [0-9]? )? month )? year
+    
+    year_g  ::= [1-9] [0-9]* ( "/" [0-9] [0-9] )? "(B.C.)"?
+    year    ::= [1-9] [0-9]* "(B.C.)"?
+    
+    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
+                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+
+    month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
+                | "FLOR" | "PRAI" | "MESS" | "THER" | "FRUC" | "COMP"
+
+    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
+                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
+    
+{/}
+
+#### Date {#date-format}
+
+At the core of the date syntax is a calendared date.
+This consists of an optional *calender escape* followed by the content of the date.
+
+The *calender escape* is a substring beginning `@#D` and ending `@`, between which is a calender identifier; known calender identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
+If no calender escape is given, `GREGORIAN` is assumed.
+
+{.ednote} Should we move the escape syntax to [ELF-Serialization] and change the above to describe an abstract notion of "an escape"?
+
+{.note} Some dates (in particular the [Period](#date-period) and [Value](#date-value) productions) may have multiple [Date](#date-format) values; it is not known if current implementations can handle situations where the dates are from different calenders, nor if they assume an uncalendered date paired with a calendered date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calender be used for both Dates in such payloads.
+
+The `ROMAN` and `UNKNOWN` calenders's date formats are not defined in this specification.
+
+`GREGORIAN`, `FRENCH R`, `HEBREW`, and `JULIAN` dates all have the format "day month year", separated by spaces; the day may be omitted; if the day is omitted, the month may be omitted as well.
+The three pieces are formatted as follows:
+    
+day
+:   A decimal number of one or two digits.
+    This SHOULD NOT be zero or greater than the number of days in the appropriate month.
+    This specification does not specify whether single-digit days should begin with a zero or not.
+
+{.ednote} Should we specify leading 0s are preferred?
+
+month
+:   Each calender has a set of strings that may be used.
+    
+    `GREGORIAN` or `JULIAN`
+    :   One of the following three-character strings:
+        `JAN`, `FEB`, `MAR`, `APR`, `M‌AY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`
+    
+    `FRENCH R`
+    :   One of the following four-character strings:
+        `VEND`, `BRUM`, `FRIM`, `NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER`, `FRUC`, `COMP`
+    
+    `HEBREW`
+    :   One of the following three-character strings:
+        `TSH`, `CSH`, `KSL`, `TVT`, `SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`
+
+year
+:   A decimal number.
+    
+    For `GREGORIAN` (only), the number may be optionally followed by either or both of the following year suffixes:
+    
+    Alternate Year
+    :   Represented as a `/` and two additional decimal digits, with no spaces.
+        Shows the possible date alternatives brought about when the beginning of the year changed from `MAR` to `JAN`: for example, `15 APR 1699/00`.
+        
+        The `/` MUST NOT have a space on either side.
+    
+    BCE
+    :   Represented as `(B.C.)`, which SHOULD be preceded by a space.
+        Indicates a date before the birth of Christ.
+    
+    If both suffixes are present, `(B.C.)` comes last.
+
+#### Exact Date {#exact-date}
+
+An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additional constraints:
+
+-   They MUST NOT include a *calender escape*
+-   They MUST include the day and month
+-   They MUST NOT have either year suffix
+
+#### Date Period {#date-period}
+
+A *date period* is one of the following three forms:
+
+-   `FROM` [Date](#date-format)
+-   `TO` [Date](#date-format)
+-   `FROM` [Date](#date-format) `TO` [Date](#date-format)
+
+#### Date Value {#date-value}
+
+A *date value* may have any of a variety of formats:
+
+| Format               | Meaning                                                           |
+|----------------------|-------------------------------------------------------------------|
+| [Date](#date-format) | |
+| [Date Period](#date-period) | |
+| `BEF` [Date](#date-format) | before the given date |
+| `AFT` [Date](#date-format) | after the given date |
+| `BET` [Date](#date-format) `AND` [Date](#date-format) | between the given dates; the first date SHOULD be earlier than the second date |
+| `ABT` [Date](#date-format) | about; the given date is not exact |
+| `CAL` [Date](#date-format) | calculated mathematically, for example, from an event date and age |
+| `EST` [Date](#date-format) | estimated based on some other event date |
+| `INT` [Date](#date-format) `(`arbitrary text`)` | interpreted from knowledge about the associated date phrase included in parentheses |
+| `(`arbitrary text`)` | information about when an event occurred that is not recognizable to a date parser |
+
+{.ednote} Is the above table or the below list more understandable? We definitely don't need both...
+
+-   [Date](#date-format)
+-   [Date Period](#date-period)
+-   `BEF` [Date](#date-format)
+    
+    Meaning: before the given date.
+-   `AFT` [Date](#date-format)
+    
+    Meaning: after the given date.
+-   `BET` [Date](#date-format) `AND` [Date](#date-format) 
+    
+    Meaning: between the given dates.
+
+    The first date SHOULD be earlier than the second date.
+-   `ABT` [Date](#date-format)
+    
+    Meaning: about; the given date is not exact.
+-   `CAL` [Date](#date-format)
+    
+    Meaning: calculated mathematically, for example, from an event date and age.
+-   `EST` [Date](#date-format)
+
+    Meaning: estimated based on some other event date.
+-   `INT` [Date](#date-format) `(`arbitrary text`)`
+
+    Meaning: interpreted from knowledge about the associated date phrase included in parentheses.
+-   `(`arbitrary text`)`
+    
+    The text gives information about when an event occurred but is not recognizable to a date parser.
+
+
+## Structure types
+
 ### `elf:Record`
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
@@ -23,7 +205,7 @@ Substructures
 :   `[elf:NOTE_STRUCTURE]` \*
 
 Subtypes
-:   `[elf:FAMILY_RECORD]`
+:   `[elf:FAM_RECORD]`
 :   `[elf:INDIVIDUAL_RECORD]`
 :   `[elf:MULTIMEDIA_RECORD]`
 :   `[elf:NOTE_RECORD]`
@@ -39,7 +221,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:FAMILY_RECORD]`
+:   `[elf:FAM_RECORD]`
 :   `[elf:INDIVIDUAL_RECORD]`
 :   `[elfm:HEAD]`
 
@@ -727,9 +909,9 @@ Substructures
 :   `[elf:NOTE_STRUCTURE]` \*
 
 Payload
-:   A *pointer* to a `[elf:FAMILY_RECORD]`
+:   A *pointer* to a `[elf:FAM_RECORD]`
 
-    It *must* be the case that the pointed-to `[elf:FAMILY_RECORD]` contains a `[elf:CHILD_POINTER]` pointing to the superstructure of this structure.
+    It *must* be the case that the pointed-to `[elf:FAM_RECORD]` contains a `[elf:CHILD_POINTER]` pointing to the superstructure of this structure.
 
 Default tag
 :   `FAMC`
@@ -749,7 +931,7 @@ Payload
 :   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 7 characters.
 
-    Contains a description of how this child is related to the superstructure's pointed-to `[elf:FAMILY_RECORD]`.
+    Contains a description of how this child is related to the superstructure's pointed-to `[elf:FAM_RECORD]`.
     Known values include {`adopted`, `birth`, `foster`}.
 
 Default tag
@@ -818,7 +1000,7 @@ Supertype
 :   `[elf:Event]`
 
 Superstructures
-:   `[elf:FAMILY_RECORD]`
+:   `[elf:FAM_RECORD]`
 
 Substructures
 :   `[elf:FirstParentAge]` ?
@@ -962,7 +1144,7 @@ Supertype
 
 Superstructures
 :   `[elf:SOURCE_CITATION]`
-:   `[elf:FAMILY_RECORD]`
+:   `[elf:FAM_RECORD]`
 :   `[elf:INDIVIDUAL_RECORD]`
 :   `[elf:SOURCE_RECORD]`
 :   `[elf:SUBMITTER_RECORD]`
@@ -1166,9 +1348,9 @@ Substructures
 :   `[elf:NOTE_STRUCTURE]` \*
 
 Payload
-:   A *pointer* to a `[elf:FAMILY_RECORD]`
+:   A *pointer* to a `[elf:FAM_RECORD]`
 
-    It *must* be the case that the pointed-to `[elf:FAMILY_RECORD]` contains a `[elf:ParentPointer]` pointing to the superstructure of this structure.
+    It *must* be the case that the pointed-to `[elf:FAM_RECORD]` contains a `[elf:ParentPointer]` pointing to the superstructure of this structure.
 
 Default tag
 :   `FAMS`
@@ -1949,7 +2131,7 @@ Superstructures
 :   `[elf:ADOPTION]`
 
 Payload
-:   A pointer to a `[elf:FAMILY_RECORD]`.
+:   A pointer to a `[elf:FAM_RECORD]`.
 
     The pointed-to record describes the family unit into which the individual was adopted.
 
@@ -1973,7 +2155,7 @@ Payload
     It is RECOMMENDED that implementations support payloads of at least 4 characters.
     
     Known values include {`HUSB`, `WIFE`, `BOTH`}.
-    `HUSB` means the adoption was to the individual indicated by the `[elf:FIRST_PARENT_POINTER]` of the `[elf:FAMILY_RECORD]` pointed to by the payload of the containing superstructure;
+    `HUSB` means the adoption was to the individual indicated by the `[elf:FIRST_PARENT_POINTER]` of the `[elf:FAM_RECORD]` pointed to by the payload of the containing superstructure;
     `WIFE` means the adoption was to the individual indicated by the `[elf:SECOND_PARENT_POINTER]`pointed to by the payload of the containing superstructure;
     and `BOTH` means both of those individuals were part of the adoption.
 
@@ -1991,7 +2173,7 @@ Superstructures
 :   `[elf:CHRISTENING]`
 
 Payload
-:   A pointer to a `[elf:FAMILY_RECORD]`.
+:   A pointer to a `[elf:FAM_RECORD]`.
 
     The pointed-to record describes the family unit associated with the individual event described by the superstructure.
 
@@ -2077,7 +2259,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:FAMILY_RECORD]`
+:   `[elf:FAM_RECORD]`
 
 Payload
 :   A *line string* taking the form of a decimal number.
@@ -2091,4 +2273,204 @@ Default tag
 :   `NCHI`
 
 {.ednote} It seems odd to me that `elf:COUNT_OF_CHILDREN#Family` is not a `elf:FamilyEvent` (or `elf:FamilyAttribute`, though no such supertype currently exists) as surely the number of children of a family would need sourcing and an as-of date? Should we leave it as a stand-alone structure, or boost it to event status?
+
+### `elf:DATE_VALUE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:Event]`
+
+Payload
+:   A *line string* matching the [Date Value](#date-value) microformat.
+    
+    Indicates when the event or attribute described by the containing structure occurred or was witnessed.
+    
+Default tag
+:   `DATE`
+
+### `elf:DATE_PERIOD`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:EVENTS_RECORDED]`
+
+Payload
+:   A *line string* matching the [Date Period](#date-period) microformat.
+    
+    Indicates the period during which the source recorded events.
+    
+Default tag
+:   `DATE`
+
+### `elf:ENTRY_RECORDING_DATE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_CITATION_DATA]`
+
+Payload
+:   A *line string* matching the [Date Value](#date-value) microformat.
+    
+    Indicates when the portion of the source being cited was entered into the source.
+    
+Default tag
+:   `DATE`
+
+### `elf:EVENT_OR_FACT_CLASSIFICATION`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:Event]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    A classification for the superstructure's category, more precise than its type alone provides but generic enough to be anticipated to be re-used.
+    
+Default tag
+:   `TYPE`
+
+### `elf:EVENT_TYPE_CITED_FROM`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_CITATION]`
+
+Substructures
+:   `[elf:ROLE_IN_EVENT]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 15 characters.
+    
+    Known values include 
+    {`CAST`, `EDUC`, `NATI`, `OCCU`, `PROP`, `RELI`, `RESI`, `TITL`, `FACT`,
+    `ANUL`, `CENS`, `DIV`, `DIVF`, `ENGA`, `MARR`, `MARB`, `MARC`, `MARL`, `MARS`,
+    `ADOP`, `BIRT`, `BAPM`, `BARM`, `BASM`, `BLES`, `BURI`, `CENS`, `CHR`,
+    `CHRA`, `CONF`, `CREM`, `DEAT`, `EMIG`, `FCOM`, `GRAD`, `IMMI`, `NATU`,
+    `ORDN`, `RETI`, `PROB`, `WILL`,
+    `EVEN`}.
+    Indicates that the cited source was created to document the event or attribute
+    described by the subtype of `elf:Event` whose default tag is the provided value.
+
+{.example ...}
+A marriage certificate may document the spouses' birth dates;
+however, it's `elf:EVENT_TYPE_CITED_FROM`'s payload should be `MARR`, not `BIRT`. 
+{/}
+
+Default tag
+:   `EVEN`
+
+### `elf:EVENTS_RECORDED`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD_DATA]`
+
+Substructures
+:   `[elf:DATE_PERIOD]`
+:   `[elf:SOURCE_JURISDICTION_PLACE]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    A comma-separated list of valid payload values of `[elf:EVENT_TYPE_CITED_FROM]`.
+    Indicates that the source includes documentation of these events or attributes.
+
+Default tag
+:   `EVEN`
+
+### `elf:FILE_NAME`
+
+{.ednote} What is the purpose of this structure? Clearly it cannot always match the name of the physical file, which can be renamed without editing; nor are there any limitations given on it in GEDCOM besides that it include an extension *if* the file containing it has an extension in its name. Without knowing its purpose, I don't know how to document this structure.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEAD]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The base name (i.e., not a full path) of a file.
+
+Default tag
+:   `EVEN`
+
+### `elf:GEDCOM_CONTENT_DESCRIPTION`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEAD]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+    
+    A description of the intended scope of the contents of the dataset.
+
+Default tag
+:   `NOTE`
+
+### `elf:GEDCOM_FORM`
+
+{.ednote GEDCOM_FORM seems like a pseudostructure?}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:GEDCOM_FORMAT]`
+
+Substructures
+:   None
+
+Payload
+:   The exact string `LINEAGE-LINKED`.
+
+Default tag
+:   `FORM`
+
+### `elf:GEDCOM_FORMAT`
+
+{.ednote GEDCOM_FORMAT seems like a pseudostructure?}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEAD]`
+
+Substructures
+:   `[elf:GEDCOM_FORM]`
+:   `[elf:VERSION_NUMBER]`
+
+Payload
+:   None
+
+Default tag
+:   `GEDC`
 
