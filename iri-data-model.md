@@ -21,11 +21,9 @@ Substructures
 :   `[elf:AUTOMATED_RECORD_ID]` ?
 :   `[elf:CHANGE_DATE]` ?
 :   `[elf:NOTE_STRUCTURE]` \*
-:   `[elf:SUBMITTER_POINTER]` ?
-:   `[elf:SOURCE_CITATION]` \*
 
 Subtypes
-:   `[elf:FAM_RECORD]`
+:   `[elf:FAMILY_RECORD]`
 :   `[elf:INDIVIDUAL_RECORD]`
 :   `[elf:MULTIMEDIA_RECORD]`
 :   `[elf:NOTE_RECORD]`
@@ -41,7 +39,9 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Record]`
+:   `[elf:FAMILY_RECORD]`
+:   `[elf:INDIVIDUAL_RECORD]`
+:   `[elfm:HEAD]`
 
 Payload
 :   A pointer to an `[elf:SUBMITTER_RECORD]`
@@ -129,6 +129,7 @@ Substructures
 :   `[elf:CHILD_POINTER]` \*
 :   `[elf:COUNT_OF_CHILDREN#Family]` ?
 :   `[elf:MULTIMEDIA_LINK]` \*
+:   `[elf:SOURCE_CITATION]` \*
 
 Payload
 :   None
@@ -228,6 +229,7 @@ Substructures
 :   `[elf:ANCESTOR_INTEREST_POINTER]` \*
 :   `[elf:DESCENDANT_INTEREST_POINTER]` \*
 :   `[elf:MULTIMEDIA_LINK]` \*
+:   `[elf:SOURCE_CITATION]` \*
 
 Payload
 :   None
@@ -388,14 +390,14 @@ Supertype
 Superstructures
 :   `[elfm:Document]`
 
-Substructures
-:   Although it is an `[elf:Record]`, an `elf:NOTE_RECORD` *should not* include an `[elf:NOTE_STRUCTURE]` substructure.
-
 Payload
 :   A *block string* of arbitrary length.
 
 Default tag
 :   `NOTE`
+
+{.note} GEDCOM did not `[elf:NOTE_STRUCTURE]` as a substructure of `elf:NOTE_RECORD`, but they do appear in the wild and have valid semantics (notes about the note itself) so `elf:NOTE_RECORD` inherits the `[elf:NOTE_STRUCTURE]` substructure from `[elf:Record]` in this specification.
+
 
 ### `elf:REPOSITORY_RECORD`
 
@@ -406,11 +408,10 @@ Supertype
 
 Superstructures
 :   `[elfm:Document]`
+:   `[elf:Agent]`
 
 Substructures
 :   `[elf:NAME_OF_REPOSITORY]` !
-:   `[elf:ADDRESS_STRUCTURE]` ?
-:   Although it is an `[elf:Record]`, an `elf:REPOSITORY_RECORD` *should not* include an `[elf:SOURCE_CITATION]` substructure.
 
 Payload
 :   None
@@ -435,7 +436,6 @@ Substructures
 :   `[elf:TEXT_FROM_SOURCE]` ?
 :   `[elf:SOURCE_REPOSITORY_CITATION]` \*
 :   `[elf:MULTIMEDIA_LINK]` \*
-:   Although it is an `[elf:Record]`, an `elf:SOURCE_RECORD` *should not* include an `[elf:SOURCE_CITATION]` substructure.
 
 Payload
 :   None
@@ -469,10 +469,10 @@ Supertype
 
 Superstructures
 :   `[elfm:Document]`
+:   `[elf:Agent]`
 
 Substructures
 :   `[elf:SUBMITTER_NAME]` !
-:   `[elf:ADDRESS_STRUCTURE]` ?
 :   `[elf:MULTIMEDIA_LINK]` \*
 :   `[elf:LANGUAGE_PREFERENCE]` \*
 
@@ -489,23 +489,34 @@ Default tag
 
 
 
+### `elf:Agent`
 
-### `elf:ADDRESS_STRUCTURE`
+This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
-{.ednote} What to do with this is under discussion on the technical-work mailing list
+An `elf:Agent` structure represents an entity that may be contacted, such as a person, corporation, or archive.
 
-#### `elf:ADDRESS`
+Supertype
+:   `[elf:Structure]`
 
-{.ednote} Might become a subtype of or substructure of elf:ADDRESS_STRUCTURE depending on outcome of technical-work email thread
+Substructures
+:   `[elf:ADDRESS]` ?
+:   `[elf:ADDRESS_WEB_PAGE]` \*
+:   `[elf:ADDRESS_FAX]` \*
+:   `[elf:ADDRESS_EMAIL]` \*
+:   `[elf:PHONE_NUMBER]` \*
+
+Subtypes
+:   `[elf:NAME_OF_BUSINESS]`
+:   `[elf:REPOSITORY_RECORD]`
+:   `[elf:REPOSITORY_RECORD]`
+
+### `elf:ADDRESS`
 
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Event]`
-:   `[elf:NAME_OF_BUSINESS]`
-:   `[elf:REPOSITORY_RECORD]`
-:   `[elf:SUBMITTER_RECORD]`
+:   `[elf:Agent]`
 
 Substructures
 :   `[elf:ADDRESS_LINE1]`
@@ -527,16 +538,11 @@ Default tag
 
 #### `elf:PHONE_NUMBER`
 
-{.ednote} Might become a subtype of or substructure of elf:ADDRESS_STRUCTURE depending on outcome of technical-work email thread
-
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Event]`
-:   `[elf:NAME_OF_BUSINESS]`
-:   `[elf:REPOSITORY_RECORD]`
-:   `[elf:SUBMITTER_RECORD]`
+:   `[elf:Agent]`
 
 Substructures
 :   None
@@ -555,16 +561,11 @@ Default tag
 
 #### `elf:ADDRESS_EMAIL`
 
-{.ednote} Might become a subtype of or substructure of elf:ADDRESS_STRUCTURE depending on outcome of technical-work email thread
-
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Event]`
-:   `[elf:NAME_OF_BUSINESS]`
-:   `[elf:REPOSITORY_RECORD]`
-:   `[elf:SUBMITTER_RECORD]`
+:   `[elf:Agent]`
 
 Substructures
 :   None
@@ -584,16 +585,11 @@ Default tag
 
 #### `elf:ADDRESS_FAX`
 
-{.ednote} Might become a subtype of or substructure of elf:ADDRESS_STRUCTURE depending on outcome of technical-work email thread
-
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Event]`
-:   `[elf:NAME_OF_BUSINESS]`
-:   `[elf:REPOSITORY_RECORD]`
-:   `[elf:SUBMITTER_RECORD]`
+:   `[elf:Agent]`
 
 Substructures
 :   None
@@ -612,16 +608,11 @@ Default tag
 
 #### `elf:ADDRESS_WEB_PAGE`
 
-{.ednote} Might become a subtype of or substructure of elf:ADDRESS_STRUCTURE depending on outcome of technical-work email thread
-
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Event]`
-:   `[elf:NAME_OF_BUSINESS]`
-:   `[elf:REPOSITORY_RECORD]`
-:   `[elf:SUBMITTER_RECORD]`
+:   `[elf:Agent]`
 
 Substructures
 :   None
@@ -803,7 +794,7 @@ Substructures
 :   `[elf:EVENT_OR_FACT_CLASSIFICATION]` ?
 :   `[elf:DATE_VALUE]` ?
 :   `[elf:PLACE_STRUCTURE]` ?
-:   `[elf:ADDRESS_STRUCTURE]` ?
+:   `[elf:ADDRESS]` ?
 :   `[elf:RESPONSIBLE_AGENCY]` ?
 :   `[elf:RELIGIOUS_AFFILIATION]` ?
 :   `[elf:CAUSE_OF_EVENT]` ?
@@ -816,6 +807,8 @@ Subtypes
 :   `[elf:FamilyEvent]`
 :   `[elf:IndividualAttribute]`
 :   `[elf:IndividualEvent]`
+
+{.note} GEDCOM suggested that `elf:Event` was a subtype of `[elf:Agent]` and thus could have `[elf:ADDRESS_WEB_PAGE]`, etc, inside; this appears to be a mistake as almost no historical event has any of that information.
 
 ### `elf:FamilyEvent`
 
