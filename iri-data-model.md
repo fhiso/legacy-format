@@ -2437,7 +2437,7 @@ Default tag
 
 ### `elf:GEDCOM_FORM`
 
-{.ednote GEDCOM_FORM seems like a pseudostructure?}
+{.ednote} GEDCOM_FORM seems like a pseudostructure?
 
 Supertype
 :   `[elf:Structure]`
@@ -2456,7 +2456,7 @@ Default tag
 
 ### `elf:GEDCOM_FORMAT`
 
-{.ednote GEDCOM_FORMAT seems like a pseudostructure?}
+{.ednote} GEDCOM_FORMAT seems like a pseudostructure?
 
 Supertype
 :   `[elf:Structure]`
