@@ -9,7 +9,7 @@
 
 Several microformats are used in payloads of various structures below.
 
-### Personal name format
+### Personal name format {#personal-name)
 
 A full name, presented in the order usually spoken and with the capitalization typical of the culture of the named individual.
 
@@ -19,6 +19,36 @@ It *should* include exactly two U+002F SOLIDUS `/` characters, one on each side 
 
 Portions of the name *may* be elided and replaced by three U+002E FULL STOP `...`.
 This *should* only be done if part of a name is known to exist but its content is not known.
+
+### Language tag format {#language-tag}
+
+{.ednote} TO DO: fill this section using the "either GEDCOM or IANA" concept outlined in `languages.tsv`.
+
+### Age format {#age}
+
+Principally to describe an age, but may also be used for any other quantity of time.
+
+Matches the production `Age`:
+
+    Age  ::= [<>]? ([0-9]+ "y")? ([0-9]+ "m")? ([0-9]+ "d")? 
+            | CHILD | INFANT | STILLBORN
+
+The component pieces of the microformat have the following meanings:
+
+| Symbol       | Meaning                                |
+|--------------|----------------------------------------|
+| `>`          | greater than indicated age             |
+| `<`          | less than indicated age                |
+| `[0-9]+ "y"` | a number of years                      |
+| `[0-9]+ "m"` | a number of months                     |
+| `[0-9]+ "d"` | a number of days                       |
+| `CHILD`      | `<8y`                                  |
+| `INFANT`     | `<1y`                                  |
+| `STILLBORN`  | just prior, at, or near birth; or `0y` |
+
+Additional white space may be inserted between tokens without changing meaning.
+
+{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be that `3d` means `0y 0m 3d` and `2m 3d` means `0y 2m 3d`, but whether `1y` means `1y 0m 0d` or "an unknown value between `1y 0m 0d` and `1y 12m 30d`" was not specified, and it is likely that both uses are common in practice.
 
 ### Date formats
 
@@ -199,7 +229,6 @@ Superstructures
 :   `[elfm:Document]`
 
 Substructures
-:   `[elf:USER_REFERENCE_NUMBER]` ?
 :   `[elf:AUTOMATED_RECORD_ID]` ?
 :   `[elf:CHANGE_DATE]` ?
 :   `[elf:NOTE_STRUCTURE]` \*
@@ -212,6 +241,7 @@ Subtypes
 :   `[elf:REPOSITORY_RECORD]`
 :   `[elf:SOURCE_RECORD]`
 :   `[elf:SUBMITTER_RECORD]`
+:   `[elf:USER_REFERENCE_NUMBER]` \*
 
 #### `elf:SUBMITTER_POINTER`
 
@@ -223,7 +253,7 @@ Supertype
 Superstructures
 :   `[elf:FAM_RECORD]`
 :   `[elf:INDIVIDUAL_RECORD]`
-:   `[elfm:HEAD]`
+:   `[elfm:HEADER]`
 
 Payload
 :   A pointer to an `[elf:SUBMITTER_RECORD]`
@@ -413,6 +443,8 @@ Substructures
 :   `[elf:MULTIMEDIA_LINK]` \*
 :   `[elf:SOURCE_CITATION]` \*
 
+{.note} GEDCOM permitted a `PERMANENT_RECORD_FILE_NUMBER` with tag `RFN`, the value of which was under-defined and not included in this one.
+
 Payload
 :   None
 
@@ -481,7 +513,7 @@ Superstructures
 :   `[elfm:Document]`
 
 Substructures
-:   `[elf:MULTIMEDIA_FILE_REFN]` \* -- GEDCOM 5.5.1
+:   `[elf:MULTIMEDIA_FILE_REFERENCE]` \* -- GEDCOM 5.5.1
 :   `[elf:MULTIMEDIA_FORMAT]` ! -- GEDCOM 5.5
 :   `[elf:DESCRIPTIVE_TITLE]` ? -- GEDCOM 5.5
 :   `[elf:BLOB_CONTINUATION]` ? -- GEDCOM 5.5
@@ -496,7 +528,7 @@ Default tag
 
 {.ednote} TO DO: document blob and continuation
 
-#### `elf:MULTIMEDIA_FILE_REFN`
+#### `elf:MULTIMEDIA_FILE_REFERENCE`
 
 Supertype
 :   `[elf:Structure]`
@@ -527,7 +559,7 @@ Supertype
 
 Superstructures
 :   `[elf:MULTIMEDIA_RECORD]` -- GEDCOM 5.5
-:   `[elf:MULTIMEDIA_FILE_REFN]` -- GEDCOM 5.5.1
+:   `[elf:MULTIMEDIA_FILE_REFERENCE]` -- GEDCOM 5.5.1
 
 Substructures
 :   None
@@ -549,7 +581,7 @@ Supertype
 
 Superstructures
 :   `[elf:MULTIMEDIA_RECORD]` -- GEDCOM 5.5
-:   `[elf:MULTIMEDIA_FILE_REFN]` -- GEDCOM 5.5.1
+:   `[elf:MULTIMEDIA_FILE_REFERENCE]` -- GEDCOM 5.5.1
 
 Substructures
 :   None
@@ -657,11 +689,12 @@ Substructures
 :   `[elf:SUBMITTER_NAME]` !
 :   `[elf:MULTIMEDIA_LINK]` \*
 :   `[elf:LANGUAGE_PREFERENCE]` \*
+:   *should not* contain a `[elf:USER_REFERENCE_NUMBER]` even though it is an `[elf:Record]`
 
 Payload
 :   None
 
-{.note} GEDCOM required that an `[elf:USER_REFERENCE_NUMBER]` in an `elf:SUBMITTER_RECORD` be preregistered with Ancestral File, a service that is no longer available. It is *recommended* that an `[elf:USER_REFERENCE_NUMBER]` not be included in an `elf:SUBMITTER_RECORD`.
+{.note} GEDCOM permitted a `SUBMITTER_REGISTERED_RFN` with tag `RFN`, the value of which needed to to be preregistered with Ancestral File, a service that is no longer available. It has thus been removed from this specification, making it an extension tag.
 
 Default tag
 :   `SUBM`
@@ -1151,7 +1184,7 @@ Superstructures
 :   `[elf:Event]`
 
 Substructures
-:   `[elf:MULTIMEDIA_FILE_REFN]` \*
+:   `[elf:MULTIMEDIA_FILE_REFERENCE]` \*
 :   `[elf:DESCRIPTIVE_TITLE]` ?
 :   `[elf:MULTIMEDIA_FORMAT]` ? -- GEDCOM 5.5
 
@@ -1226,14 +1259,8 @@ Substructures
 :   `[elf:NAME_ROMANIZED_VARIATION]`
 
 Payload
-:   A *line string*.
+:   A *line string* matching the [Language Tag](#language-tag) microformat.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
-    
-    This *should* be a full name, preferably presented in the order usually spoken by the individual with the name and with the capitalization customary in that individual's culture.
-    It *should not* include commas or digits.
-    It *should* include exactly two U+002F SOLIDUS `/` characters, one on each side of the family name or surname if present or adjacent to one another if no family name or surname name is known.
-    
-    Portions of the name may be elided and replaced by three U+002E FULL STOP `...`.
     
     In the event that this payload disagrees with the substructures of this structure, the payload *should* be taken as more correct.
 
@@ -1250,6 +1277,11 @@ Superstructures
 
 Substructures
 :   `[elf:PLACE_HIERARCHY]` ?
+:   `[elf:PLACE_PHONETIC_VARIATION]` \*
+:   `[elf:PLACE_ROMANIZED_VARIATION]` \*
+:   `[elf:MAP_COORDINATES]` ?
+:   `[elf:NOTE_STRUCTURE]` \*
+
 
 Payload
 :   A *line string*.
@@ -1261,6 +1293,118 @@ Payload
 
 Default tag
 :   `PLAC`
+
+#### `elf:MAP_COORDINATES`
+
+Contains the location of a place in a global coordinate system.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PLACE_STRUCTURE]`
+
+Substructures
+:   `[elf:PLACE_LATITUDE]` !
+:   `[elf:PLACE_LONGITUDE]` !
+
+
+Payload
+:   None
+
+Default tag
+:   `MAP`
+
+#### `elf:PLACE_LONGITUDE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:MAP_COORDINATES]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 12 characters.
+
+    Decimal degrees from the prime meridian.
+    Either the letter `E` (for east) or `W` (for west), followed (without a space) by a decimal number between 0 and 180.
+
+{.note} Only decimal degrees supported; degree-minute-second representations *must not* appear in this payload.
+
+Default tag
+:   `LONG`
+
+#### `elf:PLACE_LATITUDE`
+
+Degrees north or south of the equator
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:MAP_COORDINATES]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 12 characters.
+    
+    Decimal degrees from the equator.
+    Either the letter `N` (for north) or `S` (for south), followed (without a space) by a decimal number between 0 and 90.
+
+{.note} Only decimal degrees supported; degree-minute-second representations *must not* appear in this payload.
+
+Default tag
+:   `LATI`
+
+
+### `elf:DEFAULT_PLACE_FORMAT`
+
+Contains the default `[elf:PLACE_HIERARCHY]` for the full document stream.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elf:PLACE_HIERARCHY]` ?
+
+Payload
+:   None
+
+Default tag
+:   `PLAC`
+
+### `elf:PLACE_HIERARCHY`
+
+{.ednote} This feels like a strange way of serializing an ordered map, and thus perhaps better defined as a pseudostructure?
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PLACE_STRUCTURE]`
+:   `[elf:DEFAULT_PLACE_FORMAT]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+    A comma-separated list of names of what the specific components of `[elf:PLACE_STRUCTURE]` represent.
+
+Default tag
+:   `FORM`
 
 ### `elf:SOURCE_CITATION`
 
@@ -2190,25 +2334,7 @@ Superstructures
 :   `[elf:SecondParentAge]`
 
 Payload
-:   A *line string*, which uses an age-specification microformat matching the production `Age`:
-
-        Age  ::= [<>]? ([0-9]+ "y")? ([0-9]+ "m")? ([0-9]+ "d")? 
-                | CHILD | INFANT | STILLBORN
-
-    The component pieces of the microformat have the following meanings:
-
-    | Symbol       | Meaning                                |
-    |--------------|----------------------------------------|
-    | `>`          | greater than indicated age             |
-    | `<`          | less than indicated age                |
-    | `[0-9]+ "y"` | a number of years                      |
-    | `[0-9]+ "m"` | a number of months                     |
-    | `[0-9]+ "d"` | a number of days                       |
-    | `CHILD`      | `<8y`                                  |
-    | `INFANT`     | `<1y`                                  |
-    | `STILLBORN`  | just prior, at, or near birth; or `0y` |
-    
-    Additional white space may be inserted between tokens.
+:   A *line string* matching the [Age](#age) microformat.
 
 Default tag
 :   `AGE`
@@ -2402,7 +2528,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elfm:HEAD]`
+:   `[elfm:HEADER]`
 
 Substructures
 :   None
@@ -2422,7 +2548,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elfm:HEAD]`
+:   `[elfm:HEADER]`
 
 Substructures
 :   None
@@ -2462,7 +2588,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elfm:HEAD]`
+:   `[elfm:HEADER]`
 
 Substructures
 :   `[elf:GEDCOM_FORM]`
@@ -2473,4 +2599,241 @@ Payload
 
 Default tag
 :   `GEDC`
+
+### `elf:LANGUAGE_OF_TEXT`
+
+{.ednote} Should this really be a pseudostructure? If we re-work this as having language-tagged strings as payloads, then it is; but if we leave the strings in this document as non-language-tagged then it is data instead.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string* matching the [Language Tag](#language-tag) microformat.
+    
+    Indicates the default language of the free-text payloads in the dataset.
+
+Default tag
+:   `LANG`
+
+
+### `elf:LANGUAGE_PREFERENCE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SUBMITTER_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string* matching the [Language Tag](#language-tag) microformat.
+    
+    Indicates a language in which the person described by the superstructure prefers to communicate.
+
+Default tag
+:   `LANG`
+
+### `elf:NAME_OF_BUSINESS`
+
+Supertype
+:   `[elf:Agent]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of the entity that produced the product described by the superstructure.
+
+Default tag
+:   `CORP`
+
+### `elf:NAME_OF_PRODUCT`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of the product described by the superstructure.
+
+Default tag
+:   `NAME`
+
+### `elf:NAME_OF_REPOSITORY`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:REPOSITORY_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of the repository described by the superstructure.
+
+Default tag
+:   `NAME`
+
+### `elf:NAME_OF_SOURCE_DATA`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+
+Substructures
+:   `[elf:PULBICATION_DATE]`
+:   `[elf:COPYRIGHT_SOURCE_DATA]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of an electronic data source from which this dataset was extracted.
+
+Default tag
+:   `DATA`
+
+### `elf:NAME_PHONETIC_VARIATION`
+
+Supertype
+:   `[elf:PersonalName]`
+
+Superstructures
+:   `[elf:PERSONAL_NAME_STRUCTURE]`
+
+Substructures
+:   `[elf:PHONETIC_TYPE]`
+:   `[elf:COPYRIGHT_SOURCE_DATA]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    Contains a phonetic presentation of the same name as its superstructure.
+
+Default tag
+:   `FONE`
+
+### `elf:PHONETIC_TYPE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:NAME_PHONETIC_VARIATION]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
+    
+    Identifies the phonetic scheme used in the superstructure.
+    Known values include {`hangul`, `kana`}.
+
+{.ednote} Should we add others, like `ipa`?
+
+Default tag
+:   `TYPE`
+
+### `elf:NAME_ROMANIZED_VARIATION`
+
+Supertype
+:   `[elf:PersonalName]`
+
+Superstructures
+:   `[elf:PERSONAL_NAME_STRUCTURE]`
+
+Substructures
+:   `[elf:ROMANIZED_TYPE]`
+:   `[elf:COPYRIGHT_SOURCE_DATA]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    Contains the same name as its superstructure, but presented using ASCII letters.
+
+Default tag
+:   `ROMN`
+
+### `elf:ROMANIZED_TYPE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:NAME_ROMANIZED_VARIATION]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
+    
+    Identifies the romanization scheme used in the superstructure.
+    Known values include {`pinyin`, `romanji`, `wadegiles`}.
+
+Default tag
+:   `TYPE`
+
+### `elf:NAME_TYPE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PERSONAL_NAME_STRUCTURE]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
+    
+    The kind of name the superstructure contains.
+    Known values include {`aka`, `birth`, `immigration`, `maiden`, `married`}; additional values are encouraged as appropriate.
+    
+    | known value | meaning                                 |
+    |:------------|:----------------------------------------|
+    | aka         | also known as: an unofficial pseudonym  |
+    | birth       | name given at or near birth             |
+    | immigrant   | name assumed when immigrating           |
+    | maiden      | name used prior to marriage             |
+    | married     | name assumed at marriage                |
+    
+{.note} GEDCOM's definition of the `married` payload was "name was persons previous married name," suggestion it was only to be used after the married name was no longer used; this nuanced definition does not appear to have been used in practice.
+
+Default tag
+:   `TYPE`
+
 
