@@ -3585,6 +3585,8 @@ Payload
     | 0x00--0x0B | byte + 0x2E        |
     | 0x0C--0x25 | byte + 0x35        |
     | 0x25--0x3F | byte + 0x3B        |
+    
+    See also the discussion under `[elf:CONTINUED_BINARY_OBJECT]` for how multiple `elf:BINARY_OBJECT` payloads are combined to represent large binary values.
 
 Default tag
 :   `BLOB`
