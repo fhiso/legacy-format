@@ -335,7 +335,7 @@ Superstructures
 
 Substructures
 :   `[elf:RESTRICTION_NOTICE]` ?
-:   `[elf:FAMILY_EVENT_STRUCTURE]` \*
+:   `[elf:FamilyEvent]` \*
 :   `[elf:FIRST_PARENT_POINTER]` ?
 :   `[elf:SECOND_PARENT_POINTER]` ?
 :   `[elf:CHILD_POINTER]` \*
@@ -432,8 +432,8 @@ Substructures
 :   `[elf:RESTRICTION_NOTICE]` ?
 :   `[elf:PERSONAL_NAME_STRUCTURE]` \*
 :   `[elf:SEX_VALUE]` ?
-:   `[elf:INDIVIDUAL_EVENT_STRUCTURE]` \*
-:   `[elf:INDIVIDUAL_ATTRIBUTE_STRUCTURE]` \*
+:   `[elf:IndividualEvent]` \*
+:   `[elf:IndividualAttribute]` \*
 :   `[elf:CHILD_TO_FAMILY_LINK]` \*
 :   `[elf:SPOUSE_TO_FAMILY_LINK]` \*
 :   `[elf:ASSOCIATION_STRUCTURE]` \*
@@ -516,8 +516,8 @@ Substructures
 :   `[elf:MULTIMEDIA_FILE_REFERENCE]` \* -- GEDCOM 5.5.1
 :   `[elf:MULTIMEDIA_FORMAT]` ! -- GEDCOM 5.5
 :   `[elf:DESCRIPTIVE_TITLE]` ? -- GEDCOM 5.5
-:   `[elf:BLOB_CONTINUATION]` ? -- GEDCOM 5.5
-:   `[elf:BLOB]` ! -- GEDCOM 5.5
+:   `[elf:CONTINUED_BINARY_OBJECT]` ? -- GEDCOM 5.5
+:   `[elf:BINARY_OBJECT]` ! -- GEDCOM 5.5
 
 Payload
 :   None
@@ -562,7 +562,7 @@ Superstructures
 :   `[elf:MULTIMEDIA_FILE_REFERENCE]` -- GEDCOM 5.5.1
 
 Substructures
-:   None
+:   `[elf:SOURCE_MEDIA_TYPE]` ?
 
 Payload
 :   A *line string*. Known values include {`bmp`, `gif`, `jpg`, `ole`, `pcx`, `tif`, `wav`}.
@@ -860,8 +860,11 @@ Substructures
 Payload
 :   A *pointer* to a `[elf:INDIVIDUAL_RECORD]`
 
+{.ednote} While GEDCOM unambiguously stated this was a pointer to an INDIVIDUAL_RECORD, it also contained an example (under the definition of RELATION_IS_DESCRIPTOR) where it was a pointer to a SUBMITTER_RECORD instead.
+
 Default tag
 :   `ASSO`
+
 
 ### `elf:CHANGE_DATE`
 
@@ -1040,17 +1043,17 @@ Substructures
 :   `[elf:SecondParentAge]` ?
 
 Subtypes
-:   `[elf:ANUL]`
-:   `[elf:CENS]`
-:   `[elf:DIVF]`
-:   `[elf:ENGA]`
-:   `[elf:MARB]`
-:   `[elf:MARC]`
-:   `[elf:MARR]`
-:   `[elf:MARL]`
-:   `[elf:MARS]`
-:   `[elf:RESI]`
-:   `[elf:EVEN#FAM]`
+:   `[elf:ANNULMENT]`
+:   `[elf:CENSUS#Family]`
+:   `[elf:DIVORCE_FILED]`
+:   `[elf:ENGAGEMENT]`
+:   `[elf:MARRIAGE_BANN]`
+:   `[elf:MARRIAGE_CONTRACT]`
+:   `[elf:MARRIAGE]`
+:   `[elf:MARRIAGE_LICENSE]`
+:   `[elf:MARRIAGE_SETTLEMENT]`
+:   `[elf:RESIDENCE]`
+:   `[elf:EVENT#Family]`
 
 Payload
 :   A *string*, which may be limited by subtypes.
@@ -1058,7 +1061,7 @@ Payload
     The special value `Y` indicates an assertion that the event in question did occur,
     even if it has no subordinate date or place.
 
-#### `[elf:FirstParentAge]`
+#### `elf:FirstParentAge`
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
 
@@ -1077,7 +1080,7 @@ Payload
 Default tag
 :   `HUSB`
 
-#### `[elf:SecondParentAge]`
+#### `elf:SecondParentAge`
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
 
@@ -1162,7 +1165,7 @@ Subtypes
 :   `[elf:WILL]`
 :   `[elf:GRADUATION]`
 :   `[elf:RETIREMENT]`
-:   `[elf:EVEN#INDI]`
+:   `[elf:EVENT#Individual]`
 
 Payload
 :   A *string*, which may be limited by subtypes.
@@ -1205,7 +1208,7 @@ Supertype
 
 Superstructures
 :   `[elf:Record]`
-:   `[elf:SOURCE_DATA]`
+:   `[elf:SOURCE_RECORD_DATA]`
 :   `[elf:ASSOCIATION_STRUCTURE]`
 :   `[elf:CHILD_TO_FAMILY_LINK]`
 :   `[elf:Event]`
@@ -1287,12 +1290,14 @@ Payload
 :   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
 
-    A comma-separated list of names of jurisdictions, where each element of the list is subsumed within all subsequent elements.
+    A comma-separated list of names of regions, where each element of the list is subsumed within all subsequent elements.
     
     If this structure has a `[elf:PLACE_HIERARCHY]` substructure or there is a default `[elf:PLACE_HIERARCHY]` defined for the dataset, then this payload *should* contain one name for each jurisdictional elements in that `[elf:PLACE_HIERARCHY]`, using empty strings in place of any unknown or non-present elements.
 
 Default tag
 :   `PLAC`
+
+{.note} If an individual region name contains a comma, that comma cannot be represented in the place structure format. As there is no escaping mechanism provided, it must either be omitted or replaced with a substitute marking.
 
 #### `elf:MAP_COORDINATES`
 
@@ -1941,7 +1946,7 @@ Supertype
 Default tag
 :   `BAPM`
 
-### `elf:BAPTISM`
+### `elf:BAR_MITZVAH`
 
 Bar Mitzvah, a Jewish rite (typically for 13-year-old boys).
 
@@ -2729,7 +2734,6 @@ Superstructures
 
 Substructures
 :   `[elf:PHONETIC_TYPE]`
-:   `[elf:COPYRIGHT_SOURCE_DATA]`
 
 Payload
 :   A *line string*.
@@ -2747,6 +2751,7 @@ Supertype
 
 Superstructures
 :   `[elf:NAME_PHONETIC_VARIATION]`
+:   `[elf:PLACE_PHONETIC_VARIATION]`
 
 Substructures
 :   None
@@ -2791,6 +2796,7 @@ Supertype
 
 Superstructures
 :   `[elf:NAME_ROMANIZED_VARIATION]`
+:   `[elf:PLACE_ROMANIZED_VARIATION]`
 
 Substructures
 :   None
@@ -2837,3 +2843,782 @@ Default tag
 :   `TYPE`
 
 
+
+### `elf:PLACE_PHONETIC_VARIATION`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PLACE_STRUCTURE]`
+
+Substructures
+:   `[elf:PHONETIC_TYPE]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    Contains a phonetic presentation of the same place, in the same format, as its superstructure.
+
+Default tag
+:   `FONE`
+
+### `elf:PLACE_ROMANIZED_VARIATION`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PLACE_STRUCTURE]`
+
+Substructures
+:   `[elf:ROMANIZED_TYPE]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    Contains an ASCII letter presentation of the same place, in the same format, as its superstructure.
+
+Default tag
+:   `ROMN`
+
+### `elf:PULBICATION_DATE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:NAME_OF_SOURCE_DATA]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string* matching the [Exact Date](#exact-date) microformat.
+        
+    Contains the date the source dataset (described by the superstructure) was published or created.
+
+Default tag
+:   `DATE`
+
+
+### `elf:COPYRIGHT_SOURCE_DATA`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:NAME_OF_SOURCE_DATA]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+    
+    Contains a copyright statement for the source dataset described by the superstructure.
+
+Default tag
+:   `COPR`
+
+### `elf:COPYRIGHT_GEDCOM_FILE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    Contains a copyright statement for the entire dataset.
+
+Default tag
+:   `COPR`
+
+### `elf:RELATION_IS_DESCRIPTOR`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:ASSOCIATION_STRUCTURE]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string* of arbitrary length.
+    It is RECOMMENDED that implementations support payloads of at least 25 characters.
+    
+    Describes the nature of the association described by the superstructure.
+    This is a directed relationship.
+    If the payload text is *X*,
+    the person described by the record pointed to by the payload of the superstructure is *Y*, and 
+    the person described by the superstructure of the superstructure is *Z*
+    then this payload means "*Y* is *X*'s *Z*".
+
+{.example ...}
+The following ELF fragment records that Galahad was employed by Arthur:
+
+````gedcom
+0 @arthur@ INDI
+1 NAME Arthur //
+1 ASSO @galahad@
+2 RELA employee
+0 @galahad@ INDI
+1 NAME Galahad //
+1 ASSO @arthur@
+2 RELA employer
+````
+{/}
+
+Default tag
+:   `RELA`
+
+### `elf:RELIGIOUS_AFFILIATION`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructure
+:   `[elf:Event]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of a religion with which the event was affiliated.
+
+Default tag
+:   `RELI`
+
+### `elf:RESPONSIBLE_AGENCY`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD_DATA]`
+:   `[elf:Event]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    The group or entity that was responsible for this event or data.
+
+Default tag
+:   `ROMN`
+
+### `elf:RESTRICTION_NOTICE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:INDIVIDUAL_RECORD]`
+:   `[elf:FAM_RECORD]`
+:   `[elf:Event]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 12 characters.
+    
+    Specifies how the superstructure should be treated.
+    Known values and their meaning are listed in the following table:
+    
+    Known value     Meaning
+    --------------  ------------------------------------------------------------
+    confidential    should not be distributed or exported
+    locked          should not be edited
+    privacy         has had information omitted to maintain confidentiality
+    
+Default tag
+:   `RESN`
+
+### `elf:ROLE_IN_EVENT`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:EVENT_TYPE_CITED_FROM]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 25 characters.
+    
+    When contained within an `[elf:INDIVIDUAL_RECORD]`, indicates what role that individual played in the event described by this structure's superstructure.
+    It has no defined meaning (and thus *should not* be used) outside of that context.
+    
+    Known values and their meanings are listed in the following table.
+    It is expected that additional values are also used when these are insufficient:
+    
+    Known value     Role the individual played in the event
+    -------------   ------------------------------------------------------------
+    CHIL            child
+    FATH            father
+    HUSB            husband
+    MOTH            mother
+    SPOU            spouse
+    WIFE            wife
+    
+
+Default tag
+:   `ROLE`
+
+### `elf:SEX_VALUE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:INDIVIDUAL_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 7 characters.
+    
+    The sex of the individual.
+    Known values and their meanings are listed in the following table:
+    
+    Known value     Sex
+    -------------   ------------------------------------------------------------
+    F               female
+    M               male
+    U               not knowable from available records
+    
+
+{.note} GEDCOM was silent on if this was to be interpreted as biological sex or gender identity, and it is likely that data exists with both intended meanings.
+
+{.ednote} A revision of or extension to this structure has been discussed by FHISO and is anticipated in a future release of this standard.
+
+
+Default tag
+:   `ROLE`
+
+### `elf:SOURCE_CALL_NUMBER`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_REPOSITORY_CITATION]`
+
+Substructures
+:   `[elf:SOURCE_MEDIA_TYPE]` ?
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+    
+    An identifier used by the repository to refer to the cited source.
+    
+Default tag
+:   `CALN`
+
+### `elf:SOURCE_DESCRIPTIVE_TITLE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+    
+    A description of the source defined by the superstructure;
+    for example, 
+    a periodical article's `elf:SOURCE_DESCRIPTIVE_TITLE` might include the title of the article and the title of the periodical;
+    a family bible's `elf:SOURCE_DESCRIPTIVE_TITLE` might include a list of past and present owners and the book's dimensions and appearance.
+
+{.note} Although this tag is called a "title", it is not (just) the title of the work in the usual sense of the word.
+
+Default tag
+:   `TITL`
+
+### `elf:SOURCE_FILED_BY_ENTRY`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 60 characters.
+    
+    A short title for this source.
+    Intended to be used for sorting and filing.
+    
+Default tag
+:   `ABBR`
+
+### `elf:SOURCE_JURISDICTION_PLACE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:EVENTS_RECORDED]`
+
+Substructure
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+    A comma-separated list of names of regions, where each element of the list is subsumed within all subsequent elements.
+    An assertion that all events recorded in this source
+    would have a `[elf:PLACE_STRUCTURE]` payload ending with this payload.
+
+{.note ...} While similar to the format of a `[elf:PLACE_STRUCTURE]` payload, this differs in a few key ways:
+
+- it must use the default `[elf:DEFAULT_PLACE_FORMAT]` as it has no `[elf:PLACE_HIERARCHY]` substructure.
+- it may (and often does) omit the first several elements of the list. Unlike a `[elf:PLACE_STRUCTURE]`, the omitted parts are not represented by empty strings, but by removal of their entire entry.
+    - a `[elf:PLACE_STRUCTURE]` for an unknown location in Nevada would be "`, , Nevada, USA`"
+    - a `[elf:SOURCE_JURISDICTION_PLACE]` the entirety of Nevada "`Nevada, USA`"
+{/}
+
+Default tag
+:   `PLAC`
+
+### `elf:SOURCE_MEDIA_TYPE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:MULTIMEDIA_FORMAT]`
+:   `[elf:SOURCE_CALL_NUMBER]`
+
+Substructure
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 15 characters.
+
+    The medium of the source.
+    Known values include {`audio`, `book`, `card`, `electronic`, `fiche`, `film`, `magazine`, `manuscript`, `map`, `newspaper`, `photo`, `tombstone`, `video`}
+
+Default tag
+:   `MEDI`
+
+### `elf:SOURCE_ORIGINATOR`
+
+{.ednote} GEDCOM has this singular (0 or 1 per source record) and describes it listing only one creator. Should we change it to multiple, or de-describe it as listing all creators?
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD]`
+
+Substructure
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+
+    The name of the primary creator of the source.
+
+Default tag
+:   `AUTH`
+
+### `elf:SOURCE_PUBLICATION_FACTS`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD]`
+
+Substructure
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+
+    Full publication information for the source: when, where, and by whom it was created..
+
+Default tag
+:   `PUBL`
+
+### `elf:SUBMITTER_NAME`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SUBMITTER_RECORD]`
+
+Substructure
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 60 characters.
+
+    The name of the submitter, formatted as it should be displayed.
+
+Default tag
+:   `NAME`
+
+### `elf:TEXT_FROM_SOURCE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_RECORD]`
+:   `[elf:SOURCE_CITATION]`
+:   `[elf:SOURCE_CITATION_DATA]`
+
+Substructure
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+
+    An excerpt of contents of the source.
+
+Default tag
+:   `TEXT`
+
+### `elf:TRANSMISSION_DATE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructure
+:   `[elf:TIME_VALUE]`
+
+Payload
+:   A string matching the [Exact Date](#exact-date) syntax.
+
+    The date that this dataset was created.
+
+Default tag
+:   `DATE`
+
+### `elf:VERSION_NUMBER`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+:   `[elf:GEDCOM_FORMAT]`
+
+Substructure
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 15 characters.
+
+    A version identifier, with syntax and semantics varying by context.
+
+Default tag
+:   `VERS`
+
+### `elf:WHERE_WITHIN_SOURCE`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:SOURCE_CITATION]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+
+    Location information expressing what part of the cited source is being cited.
+
+Default tag
+:   `PAGE`
+
+### `elf:NAME_PIECE_GIVEN`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PersonalName]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+    A comma-separated list of given or earned named.
+
+Default tag
+:   `GIVN`
+
+### `elf:NAME_PIECE_NICKNAME`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PersonalName]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+    A comma-separated list of familiar or informal names.
+
+Default tag
+:   `NICK`
+
+### `elf:NAME_PIECE_PREFIX`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PersonalName]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+    A comma-separated list of non-name elements traditionally placed before the proper name, such as titles.
+
+Default tag
+:   `NPFX`
+
+### `elf:NAME_PIECE_SUFFIX`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PersonalName]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 30 characters.
+
+    A comma-separated list of non-name elements traditionally placed after the proper name, such as generational marks and ordinals.
+
+Default tag
+:   `NSFX`
+
+### `elf:NAME_PIECE_SURNAME`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PersonalName]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+    A comma-separated list of surnames and family names.
+
+Default tag
+:   `SURN`
+
+### `elf:NAME_PIECE_SURNAME_PREFIX`
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:PersonalName]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 120 characters.
+
+    A comma-separated list of non-name elements traditionally attached to and placed before a surname of family name, such as prepositions.
+
+Default tag
+:   `SPFX`
+
+
+### `elfm:HEADER`
+
+Substructures
+:   `[elf:DOCUMENT_SOURCE]` !
+:   `[elf:RECEIVING_SYSTEM_NAME]` ?
+:   `[elf:TRANSMISSION_DATE]` ?
+:   `[elf:SUBMITTER_POINTER]` !
+:   `[elf:FILE_NAME]` ?
+:   `[elf:COPYRIGHT_GEDCOM_FILE]` ?
+:   `[elf:GEDCOM_FORMAT]` !
+:   `[elf:LANGUAGE_OF_TEXT]` ?
+:   `[elf:DEFAULT_PLACE_FORMAT]` ?
+:   `[elf:GEDCOM_CONTENT_DESCRIPTION]` ?
+
+Default tag
+:   `HEAD`
+
+### `elf:DOCUMENT_SOURCE`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elf:VERSION_NUMBER]`
+:   `[elf:NAME_OF_PRODUCT]`
+:   `[elf:NAME_OF_BUSINESS]`
+:   `[elf:NAME_OF_SOURCE_DATA]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+    In early GEDCOM, this was a unique string assigned to each product through a registration process.
+    That process no longer exists.
+
+{.ednote} Do we want to make a new recommendation for the contents of this payload? Perhaps an IRI + date pair? A UUID? A generic "UNREGISTERED_PRODUCT" string or the like?
+
+Default tag
+:   `SOUR`
+
+### `elf:RECEIVING_SYSTEM_NAME`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+    Identifies the intended recipient software of this dataset.
+
+Default tag
+:   `DEST`
+
+### `elf:BINARY_OBJECT`
+
+Binary object was in GEDCOM 5.5 but removed from GEDCOM 5.5.1. Implementations *should* be able to parse them, but *should not* generate new binary objects.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:MULTIMEDIA_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* containing
+    two or more lines of base-64 encoded data, in the custom format described below.
+
+    The first line of of a blob is always empty.
+    Each subsequent line is between 4 and 72 characters long, encoded in a base-64 format that differs from other base-64 encodings in two ways.
+
+    First, it uses byte 0xFF as padding instead of the more common U+003D (EQUALS SIGN `=`)
+    (how to represent the padding when byte 0xFF is not a legal character in the encoding is not defined by this specification).
+
+    Second, it maps six-bit values to code points as follows:
+
+    | Byte range | Code point mapping |
+    |------------|--------------------|
+    | 0x00--0x0B | byte + 0x2E        |
+    | 0x0C--0x25 | byte + 0x35        |
+    | 0x25--0x3F | byte + 0x3B        |
+
+Default tag
+:   `BLOB`
+
+### `elf:CONTINUED_BINARY_OBJECT`
+
+Binary object was in GEDCOM 5.5 but removed from GEDCOM 5.5.1. Implementations *should* be able to parse them, but *should not* generate new binary objects.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:MULTIMEDIA_RECORD]`
+
+Substructures
+:   None
+
+Payload
+:   A pointer to a `[elf:MULTIMEDIA_RECORD]`.
+
+    Used to split `elf:BINARY_OBJECT`s across multiple records.
+    Prior to decoding, the payloads of all `elf:BINARY_OBJECT` in the superstructure
+    should be concatentated in the order in which they appear,
+    and then concatenated with the `elf:BINARY_OBJECT`s in the pointed-to record
+    and those pointed to by its `elf:CONTINUED_BINARY_OBJECT`, recursively.
+
+Default tag
+:   `OBJE`
+
+
+
+<!--
+egrep -o '`\[[^`]*\]`' iri-data-model.md  | sort -u | while read link; do m=${link:2}; m=${m%]\`}; grep -q '`'$m'`' iri-data-model.md || echo $m; done
+
+elfm:Document
+elf:Structure
+-->
