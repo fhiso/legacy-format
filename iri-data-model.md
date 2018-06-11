@@ -48,7 +48,7 @@ The component pieces of the microformat have the following meanings:
 
 Additional white space may be inserted between tokens without changing meaning.
 
-{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be that `3d` means `0y 0m 3d` and `2m 3d` means `0y 2m 3d`, but whether `1y` means `1y 0m 0d` or "an unknown value between `1y 0m 0d` and `1y 12m 30d`" was not specified, and it is likely that both uses are common in practice.
+{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be to assume that larger-resolution missing components are 0, but smaller are unknown. Thus, `2m` would be taken to mean  between `0y 2m 0d` and `0y 2m 30d`. However, this practice is not explicit in GEDCOM and data that violates it are likely present in the wild.
 
 ### Date formats
 
@@ -232,6 +232,7 @@ Substructures
 :   `[elf:AUTOMATED_RECORD_ID]` ?
 :   `[elf:CHANGE_DATE]` ?
 :   `[elf:NOTE_STRUCTURE]` \*
+:   `[elf:USER_REFERENCE_NUMBER]` \*
 
 Subtypes
 :   `[elf:FAM_RECORD]`
@@ -241,9 +242,8 @@ Subtypes
 :   `[elf:REPOSITORY_RECORD]`
 :   `[elf:SOURCE_RECORD]`
 :   `[elf:SUBMITTER_RECORD]`
-:   `[elf:USER_REFERENCE_NUMBER]` \*
 
-#### `elf:SUBMITTER_POINTER`
+### `elf:SUBMITTER_POINTER`
 
 {.ednote} GEDCOM limits these to at most one per HEAD, FAM, and INDI. This seems odd; surely a source, note, etc., can also have a submitter, and there can be more than one contributing submitter per record...
 
@@ -263,7 +263,7 @@ Payload
 Default tag
 :   `SUBM`
 
-#### `elf:USER_REFERENCE_NUMBER`
+### `elf:USER_REFERENCE_NUMBER`
 
 Supertype
 :   `[elf:Structure]`
@@ -285,13 +285,13 @@ Default tag
 :   `REFN`
 
 
-#### `elf:USER_REFERENCE_TYPE`
+### `elf:USER_REFERENCE_TYPE`
 
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:USER_REFERENCE_TYPE]`
+:   `[elf:USER_REFERENCE_NUMBER]`
 
 Payload
 :   A *line string*. It is RECOMMENDED that implementations support payloads of at least 40 characters.
@@ -301,7 +301,7 @@ Payload
 Default tag
 :   `TYPE`
 
-#### `elf:AUTOMATED_RECORD_ID`
+### `elf:AUTOMATED_RECORD_ID`
 
 Supertype
 :   `[elf:Structure]`
@@ -336,12 +336,13 @@ Superstructures
 Substructures
 :   `[elf:RESTRICTION_NOTICE]` ?
 :   `[elf:FamilyEvent]` \*
-:   `[elf:FIRST_PARENT_POINTER]` ?
-:   `[elf:SECOND_PARENT_POINTER]` ?
+:   `[elf:PARENT1_POINTER]` ?
+:   `[elf:PARENT2_POINTER]` ?
 :   `[elf:CHILD_POINTER]` \*
 :   `[elf:COUNT_OF_CHILDREN#Family]` ?
 :   `[elf:MULTIMEDIA_LINK]` \*
 :   `[elf:SOURCE_CITATION]` \*
+:   `[elf:SUBMITTER_POINTER]` \*
 
 Payload
 :   None
@@ -349,7 +350,7 @@ Payload
 Default tag
 :   `FAM`
 
-#### `elf:ParentPointer`
+### `elf:ParentPointer`
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -358,16 +359,17 @@ This is an abstract datatype and should not be used as the *structure type ident
 Supertype
 :   `[elf:Structure]`
 
-Superstructures
-:   `[elf:FAM_RECORD]`
+Subtypes
+:   `[elf:PARENT1_POINTER]`
+:   `[elf:PARENT2_POINTER]`
 
 Payload
 :   A pointer to an `[elf:INDIVIDUAL_RECORD]`
 
 
-#### `elf:FIRST_PARENT_POINTER`
+### `elf:PARENT1_POINTER`
 
-A pointer to the spouse or parent traditionally presented on the left in a vertical family tree or on the top in a horizontal family tree. In a heterosexual pair union, this is traditionally the husband or father.
+A pointer to the spouse or parent traditionally presented on the left fork of a vertical family tree or on the upper fork of a horizontal family tree. In a heterosexual pair union, this is traditionally the husband or father.
 
 Supertype
 :   `[elf:ParentPointer]`
@@ -382,9 +384,9 @@ Default tag
 :   `HSUB`
 
 
-#### `elf:SECOND_PARENT_POINTER`
+### `elf:PARENT2_POINTER`
 
-A pointer to the spouse or parent traditionally presented on the right in a vertical family tree or on the bottom in a horizontal family tree. In heterosexual pair unions, this is traditionally the wife or mother.
+A pointer to the spouse or parent traditionally presented on the right fork of a vertical family tree or on the bottom fork of a horizontal family tree. In heterosexual pair unions, this is traditionally the wife or mother.
 
 Supertype
 :   `[elf:ParentPointer]`
@@ -398,7 +400,7 @@ Payload
 Default tag
 :   `WIFE`
 
-#### `elf:CHILD_POINTER`
+### `elf:CHILD_POINTER`
 
 A pointer one of the children in a family.
 
@@ -442,6 +444,7 @@ Substructures
 :   `[elf:DESCENDANT_INTEREST_POINTER]` \*
 :   `[elf:MULTIMEDIA_LINK]` \*
 :   `[elf:SOURCE_CITATION]` \*
+:   `[elf:SUBMITTER_POINTER]` \*
 
 {.note} GEDCOM permitted a `PERMANENT_RECORD_FILE_NUMBER` with tag `RFN`, the value of which was under-defined and not included in this one.
 
@@ -452,7 +455,7 @@ Default tag
 :   `INDI`
 
 
-#### `elf:ALIAS_POINTER`
+### `elf:ALIAS_POINTER`
 
 Supertype
 :   `[elf:Structure]`
@@ -468,7 +471,7 @@ Payload
 Default tag
 :   `ALIA`
 
-#### `elf:ANCESTOR_INTEREST_POINTER`
+### `elf:ANCESTOR_INTEREST_POINTER`
 
 Supertype
 :   `[elf:Structure]`
@@ -485,7 +488,7 @@ Default tag
 :   `ANCI`
 
 
-#### `elf:DESCENDANT_INTEREST_POINTER`
+### `elf:DESCENDANT_INTEREST_POINTER`
 
 Supertype
 :   `[elf:Structure]`
@@ -526,15 +529,14 @@ Default tag
 :   `OBJE`
 
 
-{.ednote} TO DO: document blob and continuation
-
-#### `elf:MULTIMEDIA_FILE_REFERENCE`
+### `elf:MULTIMEDIA_FILE_REFERENCE`
 
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
 :   `[elf:MULTIMEDIA_RECORD]`
+:   `[elf:MULTIMEDIA_LINK]`
 
 Substructures
 :   `[elf:MULTIMEDIA_FORMAT]` !
@@ -552,7 +554,7 @@ Default tag
 :   `FILE`
 
 
-#### `elf:MULTIMEDIA_FORMAT`
+### `elf:MULTIMEDIA_FORMAT`
 
 Supertype
 :   `[elf:Structure]`
@@ -560,6 +562,7 @@ Supertype
 Superstructures
 :   `[elf:MULTIMEDIA_RECORD]` -- GEDCOM 5.5
 :   `[elf:MULTIMEDIA_FILE_REFERENCE]` -- GEDCOM 5.5.1
+:   `[elf:MULTIMEDIA_LINK]`
 
 Substructures
 :   `[elf:SOURCE_MEDIA_TYPE]` ?
@@ -574,7 +577,7 @@ Payload
 Default tag
 :   `FORM`
 
-#### `elf:DESCRIPTIVE_TITLE`
+### `elf:DESCRIPTIVE_TITLE`
 
 Supertype
 :   `[elf:Structure]`
@@ -582,6 +585,7 @@ Supertype
 Superstructures
 :   `[elf:MULTIMEDIA_RECORD]` -- GEDCOM 5.5
 :   `[elf:MULTIMEDIA_FILE_REFERENCE]` -- GEDCOM 5.5.1
+:   `[elf:MULTIMEDIA_LINK]`
 
 Substructures
 :   None
@@ -619,10 +623,10 @@ A representation of where a source or set of sources is located. May be formal, 
 
 Supertype
 :   `[elf:Record]`
+:   `[elf:Agent]`
 
 Superstructures
 :   `[elfm:Document]`
-:   `[elf:Agent]`
 
 Substructures
 :   `[elf:NAME_OF_REPOSITORY]` !
@@ -657,7 +661,7 @@ Payload
 Default tag
 :   `SOUR`
 
-#### `elf:SOURCE_RECORD_DATA`
+### `elf:SOURCE_RECORD_DATA`
 
 Supertype
 :   `[elf:Structure]`
@@ -680,10 +684,10 @@ Default tag
 
 Supertype
 :   `[elf:Record]`
+:   `[elf:Agent]`
 
 Superstructures
 :   `[elfm:Document]`
-:   `[elf:Agent]`
 
 Substructures
 :   `[elf:SUBMITTER_NAME]` !
@@ -723,7 +727,7 @@ Substructures
 Subtypes
 :   `[elf:NAME_OF_BUSINESS]`
 :   `[elf:REPOSITORY_RECORD]`
-:   `[elf:REPOSITORY_RECORD]`
+:   `[elf:SUBMITTER_RECORD]`
 
 ### `elf:ADDRESS`
 
@@ -731,6 +735,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
+:   `[elf:Event]`
 :   `[elf:Agent]`
 
 Substructures
@@ -751,7 +756,7 @@ Payload
 Default tag
 :   `ADDR`
 
-#### `elf:PHONE_NUMBER`
+### `elf:PHONE_NUMBER`
 
 Supertype
 :   `[elf:Structure]`
@@ -774,7 +779,7 @@ Payload
 Default tag
 :   `PHON`
 
-#### `elf:ADDRESS_EMAIL`
+### `elf:ADDRESS_EMAIL`
 
 Supertype
 :   `[elf:Structure]`
@@ -798,7 +803,7 @@ Default tag
 :   `EMAIL`
 :   `EMAI`
 
-#### `elf:ADDRESS_FAX`
+### `elf:ADDRESS_FAX`
 
 Supertype
 :   `[elf:Structure]`
@@ -821,7 +826,7 @@ Payload
 Default tag
 :   `FAX`
 
-#### `elf:ADDRESS_WEB_PAGE`
+### `elf:ADDRESS_WEB_PAGE`
 
 Supertype
 :   `[elf:Structure]`
@@ -886,13 +891,13 @@ Default tag
 
 {.ednote} GEDCOM uses the token CHANGE_DATE in two ways. Page 31 defines what we call `[elf:CHANGE_DATE]`, a structure containing a date and an arbitrary number of notes; page 44 defines what we call `elf:CHANGE_DATE_DATE`, a payload-only format structure. 
 
-#### `elf:CHANGE_DATE_DATE`
+### `elf:CHANGE_DATE_DATE`
 
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Record]`
+:   `[elf:CHANGE_DATE]`
 
 Substructures
 :   `[elf:TIME_VALUE]` ?
@@ -905,7 +910,7 @@ Payload
 Default tag
 :   `DATE`
 
-#### `elf:TIME_VALUE`
+### `elf:TIME_VALUE`
 
 Supertype
 :   `[elf:Structure]`
@@ -952,7 +957,7 @@ Payload
 Default tag
 :   `FAMC`
 
-#### `elf:PEDIGREE_LINKAGE_TYPE`
+### `elf:PEDIGREE_LINKAGE_TYPE`
 
 Supertype
 :   `[elf:Structure]`
@@ -974,7 +979,7 @@ Default tag
 :   `PEDI`
 
 
-#### `elf:CHILD_LINKAGE_STATUS`
+### `elf:CHILD_LINKAGE_STATUS`
 
 Supertype
 :   `[elf:Structure]`
@@ -1039,12 +1044,13 @@ Superstructures
 :   `[elf:FAM_RECORD]`
 
 Substructures
-:   `[elf:FirstParentAge]` ?
-:   `[elf:SecondParentAge]` ?
+:   `[elf:Parent1Age]` ?
+:   `[elf:Parent2Age]` ?
 
 Subtypes
 :   `[elf:ANNULMENT]`
 :   `[elf:CENSUS#Family]`
+:   `[elf:DIVORCE]`
 :   `[elf:DIVORCE_FILED]`
 :   `[elf:ENGAGEMENT]`
 :   `[elf:MARRIAGE_BANN]`
@@ -1061,7 +1067,7 @@ Payload
     The special value `Y` indicates an assertion that the event in question did occur,
     even if it has no subordinate date or place.
 
-#### `elf:FirstParentAge`
+### `elf:Parent1Age`
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
 
@@ -1080,7 +1086,7 @@ Payload
 Default tag
 :   `HUSB`
 
-#### `elf:SecondParentAge`
+### `elf:Parent2Age`
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
 
@@ -1216,6 +1222,8 @@ Superstructures
 :   `[elf:SOURCE_CITATION]`
 :   `[elf:SOURCE_REPOSITORY_CITATION]`
 :   `[elf:SPOUSE_TO_FAMILY_LINK]`
+:   `[elf:CHANGE_DATE]`
+:   `[elf:PLACE_STRUCTURE]`
 
 Substructures
 :   None
@@ -1299,7 +1307,7 @@ Default tag
 
 {.note} If an individual region name contains a comma, that comma cannot be represented in the place structure format. As there is no escaping mechanism provided, it must either be omitted or replaced with a substitute marking.
 
-#### `elf:MAP_COORDINATES`
+### `elf:MAP_COORDINATES`
 
 Contains the location of a place in a global coordinate system.
 
@@ -1320,7 +1328,7 @@ Payload
 Default tag
 :   `MAP`
 
-#### `elf:PLACE_LONGITUDE`
+### `elf:PLACE_LONGITUDE`
 
 Supertype
 :   `[elf:Structure]`
@@ -1343,7 +1351,7 @@ Payload
 Default tag
 :   `LONG`
 
-#### `elf:PLACE_LATITUDE`
+### `elf:PLACE_LATITUDE`
 
 Degrees north or south of the equator
 
@@ -1417,7 +1425,8 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Record]`
+:   `[elf:INDIVIDUAL_RECORD]`
+:   `[elf:FAM_RECORD]`
 :   `[elf:Event]`
 :   `[elf:ASSOCIATION_STRUCTURE]`
 :   `[elf:PersonalName]`
@@ -1447,7 +1456,7 @@ Default tag
 
 {.note} The text-payload version has significantly less internal structure than does the pointer version. Also note that the text-payload and pointer-payload versions may both contain `[elf:TEXT_FROM_SOURCE]`, but while the text-payload version has it as a direct substructure, the pointer-payload version has it both through the pointed-to structure and nested inside its `[elf:SOURCE_CITATION_DATA]` substructure.
 
-#### `elf:SOURCE_CITATION_DATA`
+### `elf:SOURCE_CITATION_DATA`
 
 Supertype
 :   `[elf:Structure]`
@@ -1795,13 +1804,13 @@ Default tag
 
 ### `elf:RESIDES_AT`
 
-Indicates that the person resided at the location indicated by the `[elf:PLACE_STRUCTURE]` substructure.
+Indicates that the person resided at the location indicated by the `[elf:ADDRESS]` substructure.
 
 Supertype
 :   `[elf:IndividualAttribute]`
 
 Substructures
-:   `[elf:PLACE_STRUCTURE]` !
+:   `[elf:ADDRESS]` !
 
 Payload
 :   None
@@ -2279,6 +2288,9 @@ Supertype
 Superstructures
 :   `[elf:ADOPTION]`
 
+Substructures
+:   `[elf:ADOPTED_BY_WHICH_PARENT]`
+
 Payload
 :   A pointer to a `[elf:FAM_RECORD]`.
 
@@ -2304,8 +2316,8 @@ Payload
     It is RECOMMENDED that implementations support payloads of at least 4 characters.
     
     Known values include {`HUSB`, `WIFE`, `BOTH`}.
-    `HUSB` means the adoption was to the individual indicated by the `[elf:FIRST_PARENT_POINTER]` of the `[elf:FAM_RECORD]` pointed to by the payload of the containing superstructure;
-    `WIFE` means the adoption was to the individual indicated by the `[elf:SECOND_PARENT_POINTER]`pointed to by the payload of the containing superstructure;
+    `HUSB` means the adoption was to the individual indicated by the `[elf:PARENT1_POINTER]` of the `[elf:FAM_RECORD]` pointed to by the payload of the containing superstructure;
+    `WIFE` means the adoption was to the individual indicated by the `[elf:PARENT2_POINTER]`pointed to by the payload of the containing superstructure;
     and `BOTH` means both of those individuals were part of the adoption.
 
 Default tag
@@ -2335,8 +2347,9 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:FirstParentAge]`
-:   `[elf:SecondParentAge]`
+:   `[elf:IndividualEvent]`
+:   `[elf:Parent1Age]`
+:   `[elf:Parent2Age]`
 
 Payload
 :   A *line string* matching the [Age](#age) microformat.
@@ -2357,6 +2370,9 @@ Payload
     It is RECOMMENDED that implementations support payloads of at least 90 characters.
     
     Introduced to record the cause of death as a substructure to a `[elf:DEATH]` structure, but permitted under any event in case a cause of the event is known.
+
+Default tag
+:   `CAUS`
 
 ### `elf:CERTAINTY_ASSESSMENT`
 
@@ -2383,6 +2399,9 @@ Payload
     > 3 = Direct and primary evidence used, or by dominance of the evidence
     
 {.note} It is unclear that GEDCOM's four categories have the relative reliability their ordering suggests, nor that `elf:CERTAINTY_ASSESSMENT`s in extant files contain meaningful information. It is not difficult to find example GEDCOM where all `[elf:SOURCE_CITATION]`s have a `elf:CERTAINTY_ASSESSMENT` with payload `3` even when some clearly cite sources providing secondary evidence of the facts containing the citation. 
+
+Default tag
+:   `QUAY`
 
 ### `elf:COUNT_OF_CHILDREN#Family`
 
@@ -2778,7 +2797,6 @@ Superstructures
 
 Substructures
 :   `[elf:ROMANIZED_TYPE]`
-:   `[elf:COPYRIGHT_SOURCE_DATA]`
 
 Payload
 :   A *line string*.
@@ -3500,6 +3518,9 @@ Default tag
 
 ### `elfm:HEADER`
 
+Superstructures
+:   `[elfm:Document]`
+
 Substructures
 :   `[elf:DOCUMENT_SOURCE]` !
 :   `[elf:RECEIVING_SYSTEM_NAME]` ?
@@ -3558,6 +3579,8 @@ Default tag
 ### `elf:BINARY_OBJECT`
 
 Binary object was in GEDCOM 5.5 but removed from GEDCOM 5.5.1. Implementations *should* be able to parse them, but *should not* generate new binary objects.
+
+{.ednote} The definition of the base-64 encoding used the terminology "byte" when GEDCOM had elsewhere defined its stream as consisting of characters, not bytes. It is unclear to me if it is possible to follow the spec for an encoding that does not permit byte 0xFF as a single character.
 
 Supertype
 :   `[elf:Structure]`
