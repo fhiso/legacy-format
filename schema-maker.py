@@ -1,5 +1,7 @@
 import re
 
+md_file = 'iri-data-model.md'
+
 chunks = re.compile(r'^([A-Za-z ]+?)[ \t]*\n(?:[: ] +([^\n]*)\n)+', re.MULTILINE)
 links = re.compile(r'  `\[([^\]]*)\]`')
 
@@ -8,7 +10,7 @@ def curie(s):
 
 themap = {}
 
-with open('iri-data-model.md') as f:
+with open(md_file) as f:
     txt = f.read()
     bits = re.split(r' *###+ *',txt)
     for bit in bits:
@@ -57,7 +59,7 @@ with open('iri-data-model.md') as f:
                     )
                 )
 
-from sys import stderr
+from sys import stderr, argv
 
 missing = set()
 
@@ -96,8 +98,12 @@ for i in range(3): # short-circuit fixed point
             if sup in themap:
                 v['within'] = list(sorted(set(v['within'] + themap[sup]['within'])))
 
+import datetime
+
 print('''0 HEAD
 1 SOUR https://fhiso.org/elf/
+1 NOTE This file was automatically generated from '''+md_file+'''
+2 CONT by '''+argv[0]+''' at '''+datetime.datetime.utcnow().isoformat()+'''
 1 SUBM @fhiso_elf1@
 1 GEDC 
 2 VERS 5.5.1
@@ -108,11 +114,11 @@ print('''0 HEAD
 
 for k in sorted(themap):
     print('2 IRI', k)
-    if 'tag' in themap[k] and themap[k]['tag'] is not None:
-        print('3 TAG', themap[k]['tag'], ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
     for sup in sorted(themap[k]['isa']):
         if sup != 'elf:Structure':
             print('3 ISA', sup)
+    if 'tag' in themap[k] and themap[k]['tag'] is not None:
+        print('3 TAG', themap[k]['tag'], ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
 print('''0 @fhiso_elf1@ SUBM
 1 NAME FHISO Extended Legacy Format, version 1
 0 TRLR''')
