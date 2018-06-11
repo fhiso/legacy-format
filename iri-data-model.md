@@ -2731,7 +2731,7 @@ Superstructures
 :   `[elf:DOCUMENT_SOURCE]`
 
 Substructures
-:   `[elf:PULBICATION_DATE]`
+:   `[elf:PUBLICATION_DATE]`
 :   `[elf:COPYRIGHT_SOURCE_DATA]`
 
 Payload
@@ -2902,7 +2902,7 @@ Payload
 Default tag
 :   `ROMN`
 
-### `elf:PULBICATION_DATE`
+### `elf:PUBLICATION_DATE`
 
 Supertype
 :   `[elf:Structure]`
