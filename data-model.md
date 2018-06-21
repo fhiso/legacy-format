@@ -259,16 +259,16 @@ Dates are represented using a somewhat involved syntax with three entry points, 
 #### Date {#date-format}
 
 At the core of the date syntax is a calendared date.
-This consists of an optional *calender escape* followed by the content of the date.
+This consists of an optional *calendar escape* followed by the content of the date.
 
-The *calender escape* is a substring beginning `@#D` and ending `@`, between which is a calender identifier; known calender identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
-If no calender escape is given, `GREGORIAN` is assumed.
+The *calendar escape* is a substring beginning `@#D` and ending `@`, between which is a calendar identifier; known calendar identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
+If no calendar escape is given, `GREGORIAN` is assumed.
 
 {.ednote} Should we move the escape syntax to [ELF-Serialization] and change the above to describe an abstract notion of "an escape"?
 
-{.note} Some dates (in particular the [Period](#date-period) and [Value](#date-value) productions) may have multiple [Date](#date-format) values; it is not known if current implementations can handle situations where the dates are from different calenders, nor if they assume an uncalendered date paired with a calendered date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calender be used for both Dates in such payloads.
+{.note} Some dates (in particular the [Period](#date-period) and [Value](#date-value) productions) may have multiple [Date](#date-format) values; it is not known if current implementations can handle situations where the dates are from different calendars, nor if they assume an uncalendared date paired with a calendared date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calendar be used for both Dates in such payloads.
 
-The `ROMAN` and `UNKNOWN` calenders's date formats are not defined in this specification.
+The `ROMAN` and `UNKNOWN` calendars's date formats are not defined in this specification.
 
 `GREGORIAN`, `FRENCH R`, `HEBREW`, and `JULIAN` dates all have the format "day month year", separated by spaces; the day may be omitted; if the day is omitted, the month may be omitted as well.
 The three pieces are formatted as follows:
@@ -281,7 +281,7 @@ day
 {.ednote} Should we specify leading 0s are preferred?
 
 month
-:   Each calender has a set of strings that may be used.
+:   Each calendar has a set of strings that may be used.
     
     `GREGORIAN` or `JULIAN`
     :   One of the following three-character strings:
@@ -316,7 +316,7 @@ year
 
 An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additional constraints:
 
--   They MUST NOT include a *calender escape*
+-   They MUST NOT include a *calendar escape*
 -   They MUST include the day and month
 -   They MUST NOT have either year suffix
 
@@ -737,7 +737,7 @@ Payload
 :   A *line string*.
     It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
-    A user-defined identifier (textual or numberic) of this record.
+    A user-defined identifier (textual or numeric) of this record.
     In GEDCOM, the examples suggests this was to allow brief links to another record keeping system, though its non-multi-values character limits that functionality.
 
 Default tag
@@ -823,7 +823,7 @@ Payload
 :   A pointer to an `[elf:INDIVIDUAL_RECORD]`
 
 Default tag
-:   `HSUB`
+:   `HUSB`
 
 
 ### `elf:PARENT2_POINTER`
@@ -1418,7 +1418,7 @@ Payload
     Contains a description of the confidence that this relationship exists.
     Known values include {`challenged`, `disproven`, `proven`}.
     
-    No matter the contents, there *should* be a `[elf:NOTE_STRUCTURE]` within this structure's superstructure that describes the the proof or challenge.
+    No matter the contents, there *should* be a `[elf:NOTE_STRUCTURE]` within this structure's superstructure that describes the proof or challenge.
 
 Default tag
 :   `STAT`
@@ -1873,7 +1873,7 @@ Default tag
 
 ### `elf:MARRIAGE_LICENSE`
 
-Optaining a legal license to marry.
+Obtaining a legal license to marry.
 
 Supertype
 :   `[elf:FamilyEvent]`
