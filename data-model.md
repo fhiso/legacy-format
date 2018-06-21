@@ -3935,11 +3935,10 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 
 ### Normative references
 
-[ISO 10646]
-:   ISO (International Organization for Standardization).
-    *ISO/IEC 10646:2014.
-    Information technology &mdash; Universal Coded Character Set (UCS).*
-    2014.
+[Basic Concepts]
+:   FHISO (Family History Information Standards Organisation).
+    *Basic Concepts for Genealogical Standards*.  First public draft.
+    (See <https://fhiso.org/TR/basic-concepts>.)
 
 [RFC 2119]
 :   IETF (Internet Engineering Task Force).
@@ -3962,20 +3961,6 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
     Roy Fieldind and Julian Reschke, eds., 2014.
     (See <http://tools.ietf.org/html/rfc7230>.)
 
-[RFC 7231]
-:   IETF (Internet Engineering Task Force).
-    *RFC 7231:
-    Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content.*
-    Roy Fieldind and Julian Reschke, eds., 2014.
-    (See <http://tools.ietf.org/html/rfc7231>.)
-
-[UAX 15]
-:   The Unicode Consortium.
-    "Unicode Standard Annex 15: Unicode Normalization Forms"
-    in *The Unicode Standard, Version 8.0.0.*
-    Mark Davis and Ken Whistler, eds., 2015.
-    (See <http://unicode.org/reports/tr15/>.)
-
 [XML]
 :   W3C (World Wide Web Consortium).
     *Extensible Markup Language (XML) 1.1*, 2nd edition.
@@ -3993,11 +3978,4 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 [GEDCOM 5.5.1]
 :   The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
-
-[XML Names]
-:   W3 (World Wide Web Consortium).
-    *Namespaces in XML 1.1*, 2nd edition.
-    Tim Bray, Dave Hollander, Andrew Layman and Richard Tobin, eds., 2006.
-    W3C Recommendation.
-    See <https://www.w3.org/TR/xml-names11/>.
 
