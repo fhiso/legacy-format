@@ -445,6 +445,12 @@ Their purpose is to provide inherited semantics via being used as *supertypes*.
 
 ## Abstract types
 
+### `elf:Structure`
+
+This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
+
+This represents the top of the type hierarchy and has no semantics of its own.
+
 ### `elf:Record`
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
@@ -515,6 +521,11 @@ Subtypes
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
+This supertype was introduced in GEDCOM and encompasses all details about individuals and families
+to which a time and/or place may be reasonably attached,
+whether they be events or attributes.
+However, it is not used for some of the core structural connections between individuals and families used to structure traditional family trees.
+
 Supertype
 :   `[elf:Structure]`
 
@@ -544,6 +555,11 @@ Subtypes
 ### `elf:FamilyEvent`
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
+
+This supertype was introduced in GEDCOM and encompasses all details about families
+to which a time and/or place may be reasonably attached,
+whether they be events or attributes.
+However, it is not used for some of the core structural connections between individuals and families used to structure traditional family trees.
 
 Supertype
 :   `[elf:Event]`
@@ -579,6 +595,9 @@ Payload
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
+This supertype was introduced in GEDCOM and encompasses all non-event details about individuals.
+However, it is not used for some of the core structural connections between individuals and families used to structure traditional family trees.
+
 Supertype
 :   `[elf:Event]`
 
@@ -607,6 +626,9 @@ Subtypes
 ### `elf:IndividualEvent`
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
+
+This supertype was introduced in GEDCOM and encompasses all events that an individual engaged with.
+However, it is not used for some of the core structural connections between individuals and families used to structure traditional family trees.
 
 Supertype
 :   `[elf:Event]`
@@ -651,6 +673,9 @@ Payload
 ### `elf:PersonalName`
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
+
+This supertype is a convenience to represent the set of structured name substructures shared by various personal name structures.
+
 
 Supertype
 :   `[elf:Structure]`
