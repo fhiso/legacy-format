@@ -1140,7 +1140,7 @@ Substructures
 Payload
 :   None
 
-{.note} GEDCOM permitted a `SUBMITTER_REGISTERED_RFN` with tag `RFN`, the value of which needed to to be preregistered with Ancestral File, a service that is no longer available. It has thus been removed from this specification, making it an extension tag.
+{.note} GEDCOM permitted a `SUBMITTER_REGISTERED_RFN` with tag `RFN`, the value of which needed to be preregistered with Ancestral File, a service that is no longer available. It has thus been removed from this specification, making it an extension tag.
 
 Default tag
 :   `SUBM`
@@ -1791,7 +1791,7 @@ Default tag
 
 ### `elf:EVENT#Family`
 
-A generic event, the type of which which *should* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
+A generic event, the type of which *should* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
 
 Supertype
 :   `[elf:FamilyEvent]`
@@ -2112,7 +2112,7 @@ Default tag
 
 ### `elf:ATTRIBUTE_DESCRIPTOR`
 
-A generic attribute, the type of which which *must* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
+A generic attribute, the type of which *must* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2237,7 +2237,7 @@ Default tag
 
 ### `elf:BLESSING`
 
-A religious rite invoking divine favor on an individual.
+A religious rite invoking divine favour on an individual.
 
 Supertype
 :   `[elf:IndividualEvent]`
@@ -2369,7 +2369,7 @@ Default tag
 
 ### `elf:EVENT#Individual`
 
-A generic event, the type of which which *should* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
+A generic event, the type of which *should* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
 
 Supertype
 :   `[elf:IndividualEvent]`
@@ -3855,7 +3855,7 @@ Payload
 :   A *block string* containing
     two or more lines of base-64 encoded data, in the custom format described below.
 
-    The first line of of a blob is always empty.
+    The first line of a blob is always empty.
     Each subsequent line is between 4 and 72 characters long, encoded in a base-64 format that differs from other base-64 encodings in two ways.
 
     First, it uses byte 0xFF as padding instead of the more common U+003D (EQUALS SIGN `=`)
@@ -3892,7 +3892,7 @@ Payload
 
     Used to split `elf:BINARY_OBJECT`s across multiple records.
     Prior to decoding, the payloads of all `elf:BINARY_OBJECT` in the superstructure
-    should be concatentated in the order in which they appear,
+    should be concatenated in the order in which they appear,
     and then concatenated with the `elf:BINARY_OBJECT`s in the pointed-to record
     and those pointed to by its `elf:CONTINUED_BINARY_OBJECT`, recursively.
 
@@ -3963,7 +3963,7 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 :   IETF (Internet Engineering Task Force).
     *RFC 7230:
     Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing.*
-    Roy Fieldind and Julian Reschke, eds., 2014.
+    Roy Fielding and Julian Reschke, eds., 2014.
     (See <http://tools.ietf.org/html/rfc7230>.)
 
 [XML]
