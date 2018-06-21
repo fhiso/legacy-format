@@ -399,7 +399,7 @@ Structure type
     Each *structure type* has a defined semantic meaning, supertype, and permitted *payload*.
     
     The dataset itself is not a *structure*, but may be treated as one in many ways.
-    It's *structure type identifier* is `[elf:Document]`.
+    Its *structure type identifier* is `[elf:Document]`.
     
 Payload
 :   Each *structure* has at most one of the following **payload** types:
@@ -738,7 +738,7 @@ Payload
     It is RECOMMENDED that implementations support payloads of at least 30 characters.
 
     A user-defined identifier (textual or numberic) of this record.
-    In GEDCOM, the examples suggests this was to allow brief links to another record keeping system, though it's non-multi-values character limits that functionality.
+    In GEDCOM, the examples suggests this was to allow brief links to another record keeping system, though its non-multi-values character limits that functionality.
 
 Default tag
 :   `REFN`
@@ -2778,7 +2778,7 @@ Payload
 
 {.example ...}
 A marriage certificate may document the spouses' birth dates;
-however, it's `elf:EVENT_TYPE_CITED_FROM`'s payload should be `MARR`, not `BIRT`. 
+however, its `elf:EVENT_TYPE_CITED_FROM`'s payload should be `MARR`, not `BIRT`. 
 {/}
 
 Default tag
