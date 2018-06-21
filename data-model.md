@@ -1218,8 +1218,6 @@ Payload
     This contains an email address.
     It is *recommended* that this match production `addr-spec` of [RFC 5322].
 
-{.ednote} Look up RFC 5322 and make sure addr-spec is what we want
-
 Default tag
 :   `EMAIL`
 :   `EMAI`
@@ -3953,6 +3951,13 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
     Internationalized Resource Identifiers (IRIs).*
     Martin Duerst and Michel Suignard, 2005.
     (See <http://tools.ietf.org/html/rfc3987>.)
+
+[RFC 5322]
+:   IETF (Internet Engineering Task Force).
+    *RFC 5322:
+    Internet Message Format.*
+    P. Resnick, 2008.
+    (See <http://tools.ietf.org/html/rfc5322>.)
 
 [RFC 7230]
 :   IETF (Internet Engineering Task Force).
