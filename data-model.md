@@ -445,13 +445,13 @@ Their purpose is to provide inherited semantics via being used as *supertypes*.
 
 ## Abstract types
 
-### `elf:Structure`
+### `elf:Structure`                                           {#elf:Structure}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
 This represents the top of the type hierarchy and has no semantics of its own.
 
-### `elf:Record`
+### `elf:Record`                                                 {#elf:Record}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -480,7 +480,7 @@ Subtypes
 :   `[elf:SOURCE_RECORD]`
 :   `[elf:SUBMITTER_RECORD]`
 
-### `elf:ParentPointer`
+### `elf:ParentPointer`                                   {#elf:ParentPointer}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -496,7 +496,7 @@ Subtypes
 Payload
 :   A pointer to an `[elf:INDIVIDUAL_RECORD]`
 
-### `elf:Agent`
+### `elf:Agent`                                                   {#elf:Agent}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -517,7 +517,7 @@ Subtypes
 :   `[elf:REPOSITORY_RECORD]`
 :   `[elf:SUBMITTER_RECORD]`
 
-### `elf:Event`
+### `elf:Event`                                                   {#elf:Event}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -552,7 +552,7 @@ Subtypes
 
 {.note} GEDCOM suggested that `elf:Event` was a subtype of `[elf:Agent]` and thus could have `[elf:ADDRESS_WEB_PAGE]`, etc, inside; this appears to be a mistake as almost no historical event has any of that information.
 
-### `elf:FamilyEvent`
+### `elf:FamilyEvent`                                       {#elf:FamilyEvent}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -591,7 +591,7 @@ Payload
     The special value `Y` indicates an assertion that the event in question did occur,
     even if it has no subordinate date or place.
 
-### `elf:IndividualAttribute`
+### `elf:IndividualAttribute`                       {#elf:IndividualAttribute}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -623,7 +623,7 @@ Subtypes
 :   `[elf:NOBILITY_TYPE_TITLE]`
 :   `[elf:ATTRIBUTE_DESCRIPTOR]`
 
-### `elf:IndividualEvent`
+### `elf:IndividualEvent`                               {#elf:IndividualEvent}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -670,7 +670,7 @@ Payload
     The special value `Y` indicates an assertion that the event in question did occur,
     even if it has no subordinate date or place.
 
-### `elf:PersonalName`
+### `elf:PersonalName`                                     {#elf:PersonalName}
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
@@ -702,7 +702,7 @@ Subtypes
 
 ## Concrete types
 
-### `elf:SUBMITTER_POINTER`
+### `elf:SUBMITTER_POINTER`                           {#elf:SUBMITTER_POINTER}
 
 {.ednote} GEDCOM limits these to at most one per HEAD, FAM, and INDI. This seems odd; surely a source, note, etc., can also have a submitter, and there can be more than one contributing submitter per record...
 
@@ -722,7 +722,7 @@ Payload
 Default tag
 :   `SUBM`
 
-### `elf:USER_REFERENCE_NUMBER`
+### `elf:USER_REFERENCE_NUMBER`                   {#elf:USER_REFERENCE_NUMBER}
 
 Supertype
 :   `[elf:Structure]`
@@ -744,7 +744,7 @@ Default tag
 :   `REFN`
 
 
-### `elf:USER_REFERENCE_TYPE`
+### `elf:USER_REFERENCE_TYPE`                       {#elf:USER_REFERENCE_TYPE}
 
 Supertype
 :   `[elf:Structure]`
@@ -760,7 +760,7 @@ Payload
 Default tag
 :   `TYPE`
 
-### `elf:AUTOMATED_RECORD_ID`
+### `elf:AUTOMATED_RECORD_ID`                       {#elf:AUTOMATED_RECORD_ID}
 
 Supertype
 :   `[elf:Structure]`
@@ -780,7 +780,7 @@ Default tag
 :   `RIN`
 
 
-### `elf:FAM_RECORD`
+### `elf:FAM_RECORD`                                         {#elf:FAM_RECORD}
 
 Used to record couple and parent/child relationships.
 
@@ -809,7 +809,7 @@ Payload
 Default tag
 :   `FAM`
 
-### `elf:PARENT1_POINTER`
+### `elf:PARENT1_POINTER`                               {#elf:PARENT1_POINTER}
 
 A pointer to the spouse or parent traditionally presented on the left fork of a vertical family tree or on the upper fork of a horizontal family tree. In a heterosexual pair union, this is traditionally the husband or father.
 
@@ -826,7 +826,7 @@ Default tag
 :   `HUSB`
 
 
-### `elf:PARENT2_POINTER`
+### `elf:PARENT2_POINTER`                               {#elf:PARENT2_POINTER}
 
 A pointer to the spouse or parent traditionally presented on the right fork of a vertical family tree or on the bottom fork of a horizontal family tree. In heterosexual pair unions, this is traditionally the wife or mother.
 
@@ -842,7 +842,7 @@ Payload
 Default tag
 :   `WIFE`
 
-### `elf:CHILD_POINTER`
+### `elf:CHILD_POINTER`                                   {#elf:CHILD_POINTER}
 
 A pointer one of the children in a family.
 
@@ -862,7 +862,7 @@ Payload
 Default tag
 :   `CHIL`
 
-### `elf:INDIVIDUAL_RECORD`
+### `elf:INDIVIDUAL_RECORD`                           {#elf:INDIVIDUAL_RECORD}
 
 A representation of a historical individual, together with the facts and events believed to apply to that individual and the sources of those data.
 
@@ -897,7 +897,7 @@ Default tag
 :   `INDI`
 
 
-### `elf:ALIAS_POINTER`
+### `elf:ALIAS_POINTER`                                   {#elf:ALIAS_POINTER}
 
 Supertype
 :   `[elf:Structure]`
@@ -913,7 +913,7 @@ Payload
 Default tag
 :   `ALIA`
 
-### `elf:ANCESTOR_INTEREST_POINTER`
+### `elf:ANCESTOR_INTEREST_POINTER`           {#elf:ANCESTOR_INTEREST_POINTER}
 
 Supertype
 :   `[elf:Structure]`
@@ -930,7 +930,7 @@ Default tag
 :   `ANCI`
 
 
-### `elf:DESCENDANT_INTEREST_POINTER`
+### `elf:DESCENDANT_INTEREST_POINTER`       {#elf:DESCENDANT_INTEREST_POINTER}
 
 Supertype
 :   `[elf:Structure]`
@@ -947,7 +947,7 @@ Default tag
 :   `DESI`
 
 
-### `elf:MULTIMEDIA_RECORD`
+### `elf:MULTIMEDIA_RECORD`                           {#elf:MULTIMEDIA_RECORD}
 
 The form of this record was changed between GEDCOM 5.5 and GEDCOM 5.5.1. Implementations should accept both formats but export only 5.5.1 format.
 
@@ -971,7 +971,7 @@ Default tag
 :   `OBJE`
 
 
-### `elf:MULTIMEDIA_FILE_REFERENCE`
+### `elf:MULTIMEDIA_FILE_REFERENCE`           {#elf:MULTIMEDIA_FILE_REFERENCE}
 
 Supertype
 :   `[elf:Structure]`
@@ -996,7 +996,7 @@ Default tag
 :   `FILE`
 
 
-### `elf:MULTIMEDIA_FORMAT`
+### `elf:MULTIMEDIA_FORMAT`                           {#elf:MULTIMEDIA_FORMAT}
 
 Supertype
 :   `[elf:Structure]`
@@ -1019,7 +1019,7 @@ Payload
 Default tag
 :   `FORM`
 
-### `elf:DESCRIPTIVE_TITLE`
+### `elf:DESCRIPTIVE_TITLE`                           {#elf:DESCRIPTIVE_TITLE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1042,7 +1042,7 @@ Default tag
 :   `TITL`
 
 
-### `elf:NOTE_RECORD`
+### `elf:NOTE_RECORD`                                       {#elf:NOTE_RECORD}
 
 Supertype
 :   `[elf:Record]`
@@ -1059,7 +1059,7 @@ Default tag
 {.note} GEDCOM did not `[elf:NOTE_STRUCTURE]` as a substructure of `elf:NOTE_RECORD`, but they do appear in the wild and have valid semantics (notes about the note itself) so `elf:NOTE_RECORD` inherits the `[elf:NOTE_STRUCTURE]` substructure from `[elf:Record]` in this specification.
 
 
-### `elf:REPOSITORY_RECORD`
+### `elf:REPOSITORY_RECORD`                           {#elf:REPOSITORY_RECORD}
 
 A representation of where a source or set of sources is located. May be formal, like a library, or informal, like the owner of a family bible.
 
@@ -1079,7 +1079,7 @@ Payload
 Default tag
 :   `REPO`
 
-### `elf:SOURCE_RECORD`
+### `elf:SOURCE_RECORD`                                   {#elf:SOURCE_RECORD}
 
 Supertype
 :   `[elf:Record]`
@@ -1103,7 +1103,7 @@ Payload
 Default tag
 :   `SOUR`
 
-### `elf:SOURCE_RECORD_DATA`
+### `elf:SOURCE_RECORD_DATA`                         {#elf:SOURCE_RECORD_DATA}
 
 Supertype
 :   `[elf:Structure]`
@@ -1122,7 +1122,7 @@ Payload
 Default tag
 :   `DATA`
 
-### `elf:SUBMITTER_RECORD`
+### `elf:SUBMITTER_RECORD`                             {#elf:SUBMITTER_RECORD}
 
 Supertype
 :   `[elf:Record]`
@@ -1150,7 +1150,7 @@ Default tag
 
 
 
-### `elf:ADDRESS`
+### `elf:ADDRESS`                                               {#elf:ADDRESS}
 
 Supertype
 :   `[elf:Structure]`
@@ -1177,7 +1177,7 @@ Payload
 Default tag
 :   `ADDR`
 
-### `elf:PHONE_NUMBER`
+### `elf:PHONE_NUMBER`                                     {#elf:PHONE_NUMBER}
 
 Supertype
 :   `[elf:Structure]`
@@ -1200,7 +1200,7 @@ Payload
 Default tag
 :   `PHON`
 
-### `elf:ADDRESS_EMAIL`
+### `elf:ADDRESS_EMAIL`                                   {#elf:ADDRESS_EMAIL}
 
 Supertype
 :   `[elf:Structure]`
@@ -1222,7 +1222,7 @@ Default tag
 :   `EMAIL`
 :   `EMAI`
 
-### `elf:ADDRESS_FAX`
+### `elf:ADDRESS_FAX`                                       {#elf:ADDRESS_FAX}
 
 Supertype
 :   `[elf:Structure]`
@@ -1245,7 +1245,7 @@ Payload
 Default tag
 :   `FAX`
 
-### `elf:ADDRESS_WEB_PAGE`
+### `elf:ADDRESS_WEB_PAGE`                             {#elf:ADDRESS_WEB_PAGE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1268,7 +1268,7 @@ Default tag
 :   `WWW`
 
 
-### `elf:ASSOCIATION_STRUCTURE`
+### `elf:ASSOCIATION_STRUCTURE`                   {#elf:ASSOCIATION_STRUCTURE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1290,7 +1290,7 @@ Default tag
 :   `ASSO`
 
 
-### `elf:CHANGE_DATE`
+### `elf:CHANGE_DATE`                                       {#elf:CHANGE_DATE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1310,7 +1310,7 @@ Default tag
 
 {.ednote} GEDCOM uses the token CHANGE_DATE in two ways. Page 31 defines what we call `[elf:CHANGE_DATE]`, a structure containing a date and an arbitrary number of notes; page 44 defines what we call `elf:CHANGE_DATE_DATE`, a payload-only format structure. 
 
-### `elf:CHANGE_DATE_DATE`
+### `elf:CHANGE_DATE_DATE`                             {#elf:CHANGE_DATE_DATE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1329,7 +1329,7 @@ Payload
 Default tag
 :   `DATE`
 
-### `elf:TIME_VALUE`
+### `elf:TIME_VALUE`                                         {#elf:TIME_VALUE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1355,7 +1355,7 @@ Default tag
 :   `TIME`
 
 
-### `elf:CHILD_TO_FAMILY_LINK`
+### `elf:CHILD_TO_FAMILY_LINK`                     {#elf:CHILD_TO_FAMILY_LINK}
 
 Supertype
 :   `[elf:Structure]`
@@ -1376,7 +1376,7 @@ Payload
 Default tag
 :   `FAMC`
 
-### `elf:PEDIGREE_LINKAGE_TYPE`
+### `elf:PEDIGREE_LINKAGE_TYPE`                   {#elf:PEDIGREE_LINKAGE_TYPE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1398,7 +1398,7 @@ Default tag
 :   `PEDI`
 
 
-### `elf:CHILD_LINKAGE_STATUS`
+### `elf:CHILD_LINKAGE_STATUS`                     {#elf:CHILD_LINKAGE_STATUS}
 
 Supertype
 :   `[elf:Structure]`
@@ -1422,7 +1422,7 @@ Default tag
 :   `STAT`
 
 
-### `elf:Parent1Age`
+### `elf:Parent1Age`                                         {#elf:Parent1Age}
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
 
@@ -1441,7 +1441,7 @@ Payload
 Default tag
 :   `HUSB`
 
-### `elf:Parent2Age`
+### `elf:Parent2Age`                                         {#elf:Parent2Age}
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
 
@@ -1461,7 +1461,7 @@ Default tag
 :   `WIFE`
 
 
-### `elf:MULTIMEDIA_LINK`
+### `elf:MULTIMEDIA_LINK`                               {#elf:MULTIMEDIA_LINK}
 
 Supertype
 :   `[elf:Structure]`
@@ -1489,7 +1489,7 @@ Default tag
 
 {.ednote} TO DO: review GEDCOM 5.5 to make sure this is right
 
-### `elf:NOTE_STRUCTURE`
+### `elf:NOTE_STRUCTURE`                                 {#elf:NOTE_STRUCTURE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1516,7 +1516,7 @@ Payload
 Default tag
 :   `NOTE`
 
-### `elf:PERSONAL_NAME_STRUCTURE`
+### `elf:PERSONAL_NAME_STRUCTURE`               {#elf:PERSONAL_NAME_STRUCTURE}
 
 Supertype
 :   `[elf:PersonalName]`
@@ -1538,7 +1538,7 @@ Payload
 Default tag
 :   `NAME`
 
-### `elf:PLACE_STRUCTURE`
+### `elf:PLACE_STRUCTURE`                               {#elf:PLACE_STRUCTURE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1567,7 +1567,7 @@ Default tag
 
 {.note} If an individual region name contains a comma, that comma cannot be represented in the place structure format. As there is no escaping mechanism provided, it must either be omitted or replaced with a substitute marking.
 
-### `elf:MAP_COORDINATES`
+### `elf:MAP_COORDINATES`                               {#elf:MAP_COORDINATES}
 
 Contains the location of a place in a global coordinate system.
 
@@ -1588,7 +1588,7 @@ Payload
 Default tag
 :   `MAP`
 
-### `elf:PLACE_LONGITUDE`
+### `elf:PLACE_LONGITUDE`                               {#elf:PLACE_LONGITUDE}
 
 Supertype
 :   `[elf:Structure]`
@@ -1611,7 +1611,7 @@ Payload
 Default tag
 :   `LONG`
 
-### `elf:PLACE_LATITUDE`
+### `elf:PLACE_LATITUDE`                                 {#elf:PLACE_LATITUDE}
 
 Degrees north or south of the equator
 
@@ -1637,7 +1637,7 @@ Default tag
 :   `LATI`
 
 
-### `elf:DEFAULT_PLACE_FORMAT`
+### `elf:DEFAULT_PLACE_FORMAT`                     {#elf:DEFAULT_PLACE_FORMAT}
 
 Contains the default `[elf:PLACE_HIERARCHY]` for the full document stream.
 
@@ -1656,7 +1656,7 @@ Payload
 Default tag
 :   `PLAC`
 
-### `elf:PLACE_HIERARCHY`
+### `elf:PLACE_HIERARCHY`                               {#elf:PLACE_HIERARCHY}
 
 {.ednote} This feels like a strange way of serializing an ordered map, and thus perhaps better defined as a pseudostructure?
 
@@ -1679,7 +1679,7 @@ Payload
 Default tag
 :   `FORM`
 
-### `elf:SOURCE_CITATION`
+### `elf:SOURCE_CITATION`                               {#elf:SOURCE_CITATION}
 
 Supertype
 :   `[elf:Structure]`
@@ -1716,7 +1716,7 @@ Default tag
 
 {.note} The text-payload version has significantly less internal structure than does the pointer version. Also note that the text-payload and pointer-payload versions may both contain `[elf:TEXT_FROM_SOURCE]`, but while the text-payload version has it as a direct substructure, the pointer-payload version has it both through the pointed-to structure and nested inside its `[elf:SOURCE_CITATION_DATA]` substructure.
 
-### `elf:SOURCE_CITATION_DATA`
+### `elf:SOURCE_CITATION_DATA`                     {#elf:SOURCE_CITATION_DATA}
 
 Supertype
 :   `[elf:Structure]`
@@ -1734,7 +1734,7 @@ Payload
 Default tag
 :   `DATA`
 
-### `elf:SOURCE_REPOSITORY_CITATION`
+### `elf:SOURCE_REPOSITORY_CITATION`         {#elf:SOURCE_REPOSITORY_CITATION}
 
 Supertype
 :   `[elf:Structure]`
@@ -1754,7 +1754,7 @@ Payload
 Default tag
 :   `SOUR`
 
-### `elf:SPOUSE_TO_FAMILY_LINK`
+### `elf:SPOUSE_TO_FAMILY_LINK`                   {#elf:SPOUSE_TO_FAMILY_LINK}
 
 Supertype
 :   `[elf:Structure]`
@@ -1779,7 +1779,7 @@ Default tag
 
 
 
-### `elf:CENSUS#Family`
+### `elf:CENSUS#Family`                                   {#elf:CENSUS#Family}
 
 An inventory of persons or households in a population.
 
@@ -1789,7 +1789,7 @@ Supertype
 Default tag
 :   `CENS`
 
-### `elf:EVENT#Family`
+### `elf:EVENT#Family`                                     {#elf:EVENT#Family}
 
 A generic event, the type of which *should* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
 
@@ -1809,7 +1809,7 @@ Default tag
 :   `EVEN`
 
 
-### `elf:ANNULMENT`
+### `elf:ANNULMENT`                                           {#elf:ANNULMENT}
 
 Declaring a marriage to be invalid, as though it had never occurred.
 
@@ -1819,7 +1819,7 @@ Supertype
 Default tag
 :   `ANUL`
 
-### `elf:DIVORCE`
+### `elf:DIVORCE`                                               {#elf:DIVORCE}
 
 The ending of a marriage between still-living individuals.
 
@@ -1829,7 +1829,7 @@ Supertype
 Default tag
 :   `DIV`
 
-### `elf:DIVORCE_FILED`
+### `elf:DIVORCE_FILED`                                   {#elf:DIVORCE_FILED}
 
 The legal action expressing intent to divorce.
 
@@ -1839,7 +1839,7 @@ Supertype
 Default tag
 :   `DIVF`
 
-### `elf:ENGAGEMENT`
+### `elf:ENGAGEMENT`                                         {#elf:ENGAGEMENT}
 
 The agreement of a couple to enter into a marriage in the future.
 
@@ -1849,7 +1849,7 @@ Supertype
 Default tag
 :   `ENGA`
 
-### `elf:MARRIAGE_BANN`
+### `elf:MARRIAGE_BANN`                                   {#elf:MARRIAGE_BANN}
 
 A public notice of an intent to marry.
 
@@ -1859,7 +1859,7 @@ Supertype
 Default tag
 :   `MARB`
 
-### `elf:MARRIAGE_CONTRACT`
+### `elf:MARRIAGE_CONTRACT`                           {#elf:MARRIAGE_CONTRACT}
 
 A formal contractual agreement to marry.
 
@@ -1869,7 +1869,7 @@ Supertype
 Default tag
 :   `MARC`
 
-### `elf:MARRIAGE_LICENSE`
+### `elf:MARRIAGE_LICENSE`                             {#elf:MARRIAGE_LICENSE}
 
 Obtaining a legal license to marry.
 
@@ -1879,7 +1879,7 @@ Supertype
 Default tag
 :   `MARL`
 
-### `elf:MARRIAGE`
+### `elf:MARRIAGE`                                             {#elf:MARRIAGE}
 
 The creation of a family unit (via a legal, religious, customary, common-law, or other form of union).
 
@@ -1889,7 +1889,7 @@ Supertype
 Default tag
 :   `MARR`
 
-### `elf:MARRIAGE_SETTLEMENT`
+### `elf:MARRIAGE_SETTLEMENT`                       {#elf:MARRIAGE_SETTLEMENT}
 
 A legal arrangement to modify property rights upon marriage.
 
@@ -1899,7 +1899,7 @@ Supertype
 Default tag
 :   `MARS`
 
-### `elf:RESIDENCE`
+### `elf:RESIDENCE`                                           {#elf:RESIDENCE}
 
 Residence: either the fact of residing at, or the event of moving to, a particular location.
 
@@ -1913,7 +1913,7 @@ Default tag
 
 
 
-### `elf:CASTE_NAME`
+### `elf:CASTE_NAME`                                         {#elf:CASTE_NAME}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -1927,7 +1927,7 @@ Payload
 Default tag
 :   `CAST`
 
-### `elf:PHYSICAL_DESCRIPTION`
+### `elf:PHYSICAL_DESCRIPTION`                     {#elf:PHYSICAL_DESCRIPTION}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -1940,7 +1940,7 @@ Payload
 Default tag
 :   `DSCR`
 
-### `elf:SCHOLASTIC_ACHIEVEMENT`
+### `elf:SCHOLASTIC_ACHIEVEMENT`                 {#elf:SCHOLASTIC_ACHIEVEMENT}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -1954,7 +1954,7 @@ Payload
 Default tag
 :   `EDUC`
 
-### `elf:NATIONAL_ID_NUMBER`
+### `elf:NATIONAL_ID_NUMBER`                         {#elf:NATIONAL_ID_NUMBER}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -1972,7 +1972,7 @@ Payload
 Default tag
 :   `IDNO`
 
-### `elf:NATIONAL_OR_TRIBAL_ORIGIN`
+### `elf:NATIONAL_OR_TRIBAL_ORIGIN`           {#elf:NATIONAL_OR_TRIBAL_ORIGIN}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -1986,7 +1986,7 @@ Payload
 Default tag
 :   `NATI`
 
-### `elf:COUNT_OF_CHILDREN#Individual`
+### `elf:COUNT_OF_CHILDREN#Individual`     {#elf:COUNT_OF_CHILDREN#Individual}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2002,7 +2002,7 @@ Default tag
 :   `NCHI`
 
 
-### `elf:COUNT_OF_MARRIAGES`
+### `elf:COUNT_OF_MARRIAGES`                         {#elf:COUNT_OF_MARRIAGES}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2018,7 +2018,7 @@ Default tag
 :   `NMR`
 
 
-### `elf:OCCUPATION`
+### `elf:OCCUPATION`                                         {#elf:OCCUPATION}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2033,7 +2033,7 @@ Default tag
 :   `OCCU`
 
 
-### `elf:POSSESSIONS`
+### `elf:POSSESSIONS`                                       {#elf:POSSESSIONS}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2047,7 +2047,7 @@ Default tag
 :   `PROP`
 
 
-### `elf:RELIGIOUS_AFFILIATION#Individual`
+### `elf:RELIGIOUS_AFFILIATION#Individual`{#elf:RELIGIOUS_AFFILIATION#Individual}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2062,7 +2062,7 @@ Default tag
 :   `RELI`
 
 
-### `elf:RESIDES_AT`
+### `elf:RESIDES_AT`                                         {#elf:RESIDES_AT}
 
 Indicates that the person resided at the location indicated by the `[elf:ADDRESS]` substructure.
 
@@ -2079,7 +2079,7 @@ Default tag
 :   `RESI`
 
 
-### `elf:SOCIAL_SECURITY_NUMBER`
+### `elf:SOCIAL_SECURITY_NUMBER`                 {#elf:SOCIAL_SECURITY_NUMBER}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2095,7 +2095,7 @@ Default tag
 
 {.ednote} I have not made this a subtype of IDNO because IDNO has a required TYPE where SSN does not.
 
-### `elf:NOBILITY_TYPE_TITLE`
+### `elf:NOBILITY_TYPE_TITLE`                       {#elf:NOBILITY_TYPE_TITLE}
 
 Supertype
 :   `[elf:IndividualAttribute]`
@@ -2110,7 +2110,7 @@ Default tag
 :   `TITL`
 
 
-### `elf:ATTRIBUTE_DESCRIPTOR`
+### `elf:ATTRIBUTE_DESCRIPTOR`                     {#elf:ATTRIBUTE_DESCRIPTOR}
 
 A generic attribute, the type of which *must* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
 
@@ -2136,7 +2136,7 @@ Default tag
 
 
 
-### `elf:ADOPTION`
+### `elf:ADOPTION`                                             {#elf:ADOPTION}
 
 The creation of a parent-child relationship not associated with birth.
 
@@ -2149,7 +2149,7 @@ Substructures
 Default tag
 :   `ADOP`
 
-### `elf:BIRTH`
+### `elf:BIRTH`                                                   {#elf:BIRTH}
 
 The exiting of the womb.
 
@@ -2162,7 +2162,7 @@ Substructures
 Default tag
 :   `BIRT`
 
-### `elf:CHRISTENING`
+### `elf:CHRISTENING`                                       {#elf:CHRISTENING}
 
 A religious rite occurring at or near birth.
 
@@ -2175,7 +2175,7 @@ Substructures
 Default tag
 :   `CHR`
 
-### `elf:DEATH`
+### `elf:DEATH`                                                   {#elf:DEATH}
 
 The end of life.
 
@@ -2185,7 +2185,7 @@ Supertype
 Default tag
 :   `DEAT`
 
-### `elf:BURIAL`
+### `elf:BURIAL`                                                 {#elf:BURIAL}
 
 The depositing of the body (in whole or in part) of the deceased.
 
@@ -2195,7 +2195,7 @@ Supertype
 Default tag
 :   `BRI`
 
-### `elf:CREMATION`
+### `elf:CREMATION`                                           {#elf:CREMATION}
 
 The burning of the body (in whole or in part) of the deceased.
 
@@ -2205,7 +2205,7 @@ Supertype
 Default tag
 :   `CREM`
 
-### `elf:BAPTISM`
+### `elf:BAPTISM`                                               {#elf:BAPTISM}
 
 Baptism, a common Christian rite, typically involving water and indicating entry into a particular faith or denomination, performed at different ages in different denominations.
 
@@ -2215,7 +2215,7 @@ Supertype
 Default tag
 :   `BAPM`
 
-### `elf:BAR_MITZVAH`
+### `elf:BAR_MITZVAH`                                       {#elf:BAR_MITZVAH}
 
 Bar Mitzvah, a Jewish rite (typically for 13-year-old boys).
 
@@ -2225,7 +2225,7 @@ Supertype
 Default tag
 :   `BARM`
 
-### `elf:BAS_MITZVAH`
+### `elf:BAS_MITZVAH`                                       {#elf:BAS_MITZVAH}
 
 Bas Mitzvah, a Jewish rite (typically for 13-year-old girls).
 
@@ -2235,7 +2235,7 @@ Supertype
 Default tag
 :   `BASM`
 
-### `elf:BLESSING`
+### `elf:BLESSING`                                             {#elf:BLESSING}
 
 A religious rite invoking divine favour on an individual.
 
@@ -2245,7 +2245,7 @@ Supertype
 Default tag
 :   `BLES`
 
-### `elf:ADULT_CHRISTENING`
+### `elf:ADULT_CHRISTENING`                           {#elf:ADULT_CHRISTENING}
 
 Adult christening, a religious rite in some Christian denominations typically performed when converting to the religion.
 
@@ -2255,7 +2255,7 @@ Supertype
 Default tag
 :   `CHRA`
 
-### `elf:CONFIRMATION`
+### `elf:CONFIRMATION`                                     {#elf:CONFIRMATION}
 
 Confirmation, a religious rite in some Christian denominations associated with gaining full fellowship in the religion and/or receiving the Holy Ghost.
 
@@ -2265,7 +2265,7 @@ Supertype
 Default tag
 :   `CONF`
 
-### `elf:FIRST_COMMUNION`
+### `elf:FIRST_COMMUNION`                               {#elf:FIRST_COMMUNION}
 
 First communion, a religious rite in many Christian denominations associated with first partaking of the communion of the Lord's Supper.
 
@@ -2275,7 +2275,7 @@ Supertype
 Default tag
 :   `FCOM`
 
-### `elf:ORDINATION`
+### `elf:ORDINATION`                                         {#elf:ORDINATION}
 
 The bestowal of religious authority or office.
 
@@ -2285,7 +2285,7 @@ Supertype
 Default tag
 :   `ORDN`
 
-### `elf:NATURALIZATION`
+### `elf:NATURALIZATION`                                 {#elf:NATURALIZATION}
 
 {.ednote} GEDCOM used American spelling; should we change it to British?
 
@@ -2297,7 +2297,7 @@ Supertype
 Default tag
 :   `NATU`
 
-### `elf:EMIGRATION`
+### `elf:EMIGRATION`                                         {#elf:EMIGRATION}
 
 The departure from the nation or land in which one has nativity or citizenship.
 
@@ -2307,7 +2307,7 @@ Supertype
 Default tag
 :   `EMIG`
 
-### `elf:IMMIGRATION`
+### `elf:IMMIGRATION`                                       {#elf:IMMIGRATION}
 
 The entering of a nation or land in which one does not have nativity or citizenship.
 
@@ -2317,7 +2317,7 @@ Supertype
 Default tag
 :   `IMMI`
 
-### `elf:CENSUS#Individual`
+### `elf:CENSUS#Individual`                           {#elf:CENSUS#Individual}
 
 An inventory of persons or households in a population.
 
@@ -2327,7 +2327,7 @@ Supertype
 Default tag
 :   `CENS`
 
-### `elf:PROBATE`
+### `elf:PROBATE`                                               {#elf:PROBATE}
 
 The judicial actions associated with the disposition of the estate of the deceased.
 
@@ -2337,7 +2337,7 @@ Supertype
 Default tag
 :   `PROB`
 
-### `elf:WILL`
+### `elf:WILL`                                                     {#elf:WILL}
 
 The creation of a legal document regarding the disposition of a person's estate upon death.
 
@@ -2347,7 +2347,7 @@ Supertype
 Default tag
 :   `WILL`
 
-### `elf:GRADUATION`
+### `elf:GRADUATION`                                         {#elf:GRADUATION}
 
 The conclusion of formal education.
 
@@ -2357,7 +2357,7 @@ Supertype
 Default tag
 :   `GRAD`
 
-### `elf:RETIREMENT`
+### `elf:RETIREMENT`                                         {#elf:RETIREMENT}
 
 The cessation of gainful employment, typically because sufficient wealth has been accumulated to no longer necessitate such.
 
@@ -2367,7 +2367,7 @@ Supertype
 Default tag
 :   `RETI`
 
-### `elf:EVENT#Individual`
+### `elf:EVENT#Individual`                             {#elf:EVENT#Individual}
 
 A generic event, the type of which *should* be more fully described in a `[elf:EVENT_OR_FACT_CLASSIFICATION]` substructure.
 
@@ -2395,7 +2395,7 @@ Default tag
 
 
 
-### `elf:ADDRESS_CITY`
+### `elf:ADDRESS_CITY`                                     {#elf:ADDRESS_CITY}
 
 Supertype
 :   `[elf:Structure]`
@@ -2415,7 +2415,7 @@ Payload
 Default tag
 :   `CITY`
 
-### `elf:ADDRESS_COUNTRY`
+### `elf:ADDRESS_COUNTRY`                               {#elf:ADDRESS_COUNTRY}
 
 Supertype
 :   `[elf:Structure]`
@@ -2435,7 +2435,7 @@ Payload
 Default tag
 :   `CTRY`
 
-### `elf:ADDRESS_LINE1`
+### `elf:ADDRESS_LINE1`                                   {#elf:ADDRESS_LINE1}
 
 Supertype
 :   `[elf:Structure]`
@@ -2456,7 +2456,7 @@ Default tag
 :   `ADR1`
 
 
-### `elf:ADDRESS_LINE2`
+### `elf:ADDRESS_LINE2`                                   {#elf:ADDRESS_LINE2}
 
 Supertype
 :   `[elf:Structure]`
@@ -2477,7 +2477,7 @@ Default tag
 :   `ADR2`
 
 
-### `elf:ADDRESS_LINE3`
+### `elf:ADDRESS_LINE3`                                   {#elf:ADDRESS_LINE3}
 
 Supertype
 :   `[elf:Structure]`
@@ -2498,7 +2498,7 @@ Default tag
 :   `ADR3`
 
 
-### `elf:ADDRESS_POSTAL_CODE`
+### `elf:ADDRESS_POSTAL_CODE`                       {#elf:ADDRESS_POSTAL_CODE}
 
 Supertype
 :   `[elf:Structure]`
@@ -2518,7 +2518,7 @@ Payload
 Default tag
 :   `POST`
 
-### `elf:ADDRESS_STATE`
+### `elf:ADDRESS_STATE`                                   {#elf:ADDRESS_STATE}
 
 Supertype
 :   `[elf:Structure]`
@@ -2540,7 +2540,7 @@ Default tag
 
 
 
-### `elf:ADOPTIVE_FAMILY`
+### `elf:ADOPTIVE_FAMILY`                               {#elf:ADOPTIVE_FAMILY}
 
 Supertype
 :   `[elf:Structure]`
@@ -2560,7 +2560,7 @@ Default tag
 :   `FAMC`
 
 
-### `elf:ADOPTED_BY_WHICH_PARENT`
+### `elf:ADOPTED_BY_WHICH_PARENT`               {#elf:ADOPTED_BY_WHICH_PARENT}
 
 Supertype
 :   `[elf:Structure]`
@@ -2584,7 +2584,7 @@ Default tag
 :   `ADOP`
 
 
-### `elf:WITHIN_FAMILY`
+### `elf:WITHIN_FAMILY`                                   {#elf:WITHIN_FAMILY}
 
 Supertype
 :   `[elf:Structure]`
@@ -2601,7 +2601,7 @@ Payload
 Default tag
 :   `FAMC`
 
-### `elf:AGE_AT_EVENT`
+### `elf:AGE_AT_EVENT`                                     {#elf:AGE_AT_EVENT}
 
 Supertype
 :   `[elf:Structure]`
@@ -2617,7 +2617,7 @@ Payload
 Default tag
 :   `AGE`
 
-### `elf:CAUSE_OF_EVENT`
+### `elf:CAUSE_OF_EVENT`                                 {#elf:CAUSE_OF_EVENT}
 
 Supertype
 :   `[elf:Structure]`
@@ -2634,7 +2634,7 @@ Payload
 Default tag
 :   `CAUS`
 
-### `elf:CERTAINTY_ASSESSMENT`
+### `elf:CERTAINTY_ASSESSMENT`                     {#elf:CERTAINTY_ASSESSMENT}
 
 Supertype
 :   `[elf:Structure]`
@@ -2663,7 +2663,7 @@ Payload
 Default tag
 :   `QUAY`
 
-### `elf:COUNT_OF_CHILDREN#Family`
+### `elf:COUNT_OF_CHILDREN#Family`             {#elf:COUNT_OF_CHILDREN#Family}
 
 Supertype
 :   `[elf:Structure]`
@@ -2684,7 +2684,7 @@ Default tag
 
 {.ednote} It seems odd to me that `elf:COUNT_OF_CHILDREN#Family` is not a `elf:FamilyEvent` (or `elf:FamilyAttribute`, though no such supertype currently exists) as surely the number of children of a family would need sourcing and an as-of date? Should we leave it as a stand-alone structure, or boost it to event status?
 
-### `elf:DATE_VALUE`
+### `elf:DATE_VALUE`                                         {#elf:DATE_VALUE}
 
 Supertype
 :   `[elf:Structure]`
@@ -2700,7 +2700,7 @@ Payload
 Default tag
 :   `DATE`
 
-### `elf:DATE_PERIOD`
+### `elf:DATE_PERIOD`                                       {#elf:DATE_PERIOD}
 
 Supertype
 :   `[elf:Structure]`
@@ -2716,7 +2716,7 @@ Payload
 Default tag
 :   `DATE`
 
-### `elf:ENTRY_RECORDING_DATE`
+### `elf:ENTRY_RECORDING_DATE`                     {#elf:ENTRY_RECORDING_DATE}
 
 Supertype
 :   `[elf:Structure]`
@@ -2732,7 +2732,7 @@ Payload
 Default tag
 :   `DATE`
 
-### `elf:EVENT_OR_FACT_CLASSIFICATION`
+### `elf:EVENT_OR_FACT_CLASSIFICATION`     {#elf:EVENT_OR_FACT_CLASSIFICATION}
 
 Supertype
 :   `[elf:Structure]`
@@ -2749,7 +2749,7 @@ Payload
 Default tag
 :   `TYPE`
 
-### `elf:EVENT_TYPE_CITED_FROM`
+### `elf:EVENT_TYPE_CITED_FROM`                   {#elf:EVENT_TYPE_CITED_FROM}
 
 Supertype
 :   `[elf:Structure]`
@@ -2782,7 +2782,7 @@ however, its `elf:EVENT_TYPE_CITED_FROM`'s payload should be `MARR`, not `BIRT`.
 Default tag
 :   `EVEN`
 
-### `elf:EVENTS_RECORDED`
+### `elf:EVENTS_RECORDED`                               {#elf:EVENTS_RECORDED}
 
 Supertype
 :   `[elf:Structure]`
@@ -2804,7 +2804,7 @@ Payload
 Default tag
 :   `EVEN`
 
-### `elf:FILE_NAME`
+### `elf:FILE_NAME`                                           {#elf:FILE_NAME}
 
 {.ednote} What is the purpose of this structure? Clearly it cannot always match the name of the physical file, which can be renamed without editing; nor are there any limitations given on it in GEDCOM besides that it include an extension *if* the file containing it has an extension in its name. Without knowing its purpose, I don't know how to document this structure.
 
@@ -2826,7 +2826,7 @@ Payload
 Default tag
 :   `EVEN`
 
-### `elf:GEDCOM_CONTENT_DESCRIPTION`
+### `elf:GEDCOM_CONTENT_DESCRIPTION`         {#elf:GEDCOM_CONTENT_DESCRIPTION}
 
 Supertype
 :   `[elf:Structure]`
@@ -2845,7 +2845,7 @@ Payload
 Default tag
 :   `NOTE`
 
-### `elf:GEDCOM_FORM`
+### `elf:GEDCOM_FORM`                                       {#elf:GEDCOM_FORM}
 
 {.ednote} GEDCOM_FORM seems like a pseudostructure?
 
@@ -2864,7 +2864,7 @@ Payload
 Default tag
 :   `FORM`
 
-### `elf:GEDCOM_FORMAT`
+### `elf:GEDCOM_FORMAT`                                   {#elf:GEDCOM_FORMAT}
 
 {.ednote} GEDCOM_FORMAT seems like a pseudostructure?
 
@@ -2884,7 +2884,7 @@ Payload
 Default tag
 :   `GEDC`
 
-### `elf:LANGUAGE_OF_TEXT`
+### `elf:LANGUAGE_OF_TEXT`                             {#elf:LANGUAGE_OF_TEXT}
 
 {.ednote} Should this really be a pseudostructure? If we re-work this as having language-tagged strings as payloads, then it is; but if we leave the strings in this document as non-language-tagged then it is data instead.
 
@@ -2906,7 +2906,7 @@ Default tag
 :   `LANG`
 
 
-### `elf:LANGUAGE_PREFERENCE`
+### `elf:LANGUAGE_PREFERENCE`                       {#elf:LANGUAGE_PREFERENCE}
 
 Supertype
 :   `[elf:Structure]`
@@ -2925,7 +2925,7 @@ Payload
 Default tag
 :   `LANG`
 
-### `elf:NAME_OF_BUSINESS`
+### `elf:NAME_OF_BUSINESS`                             {#elf:NAME_OF_BUSINESS}
 
 Supertype
 :   `[elf:Agent]`
@@ -2942,7 +2942,7 @@ Payload
 Default tag
 :   `CORP`
 
-### `elf:NAME_OF_PRODUCT`
+### `elf:NAME_OF_PRODUCT`                               {#elf:NAME_OF_PRODUCT}
 
 Supertype
 :   `[elf:Structure]`
@@ -2962,7 +2962,7 @@ Payload
 Default tag
 :   `NAME`
 
-### `elf:NAME_OF_REPOSITORY`
+### `elf:NAME_OF_REPOSITORY`                         {#elf:NAME_OF_REPOSITORY}
 
 Supertype
 :   `[elf:Structure]`
@@ -2982,7 +2982,7 @@ Payload
 Default tag
 :   `NAME`
 
-### `elf:NAME_OF_SOURCE_DATA`
+### `elf:NAME_OF_SOURCE_DATA`                       {#elf:NAME_OF_SOURCE_DATA}
 
 Supertype
 :   `[elf:Structure]`
@@ -3003,7 +3003,7 @@ Payload
 Default tag
 :   `DATA`
 
-### `elf:NAME_PHONETIC_VARIATION`
+### `elf:NAME_PHONETIC_VARIATION`               {#elf:NAME_PHONETIC_VARIATION}
 
 Supertype
 :   `[elf:PersonalName]`
@@ -3023,7 +3023,7 @@ Payload
 Default tag
 :   `FONE`
 
-### `elf:PHONETIC_TYPE`
+### `elf:PHONETIC_TYPE`                                   {#elf:PHONETIC_TYPE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3047,7 +3047,7 @@ Payload
 Default tag
 :   `TYPE`
 
-### `elf:NAME_ROMANIZED_VARIATION`
+### `elf:NAME_ROMANIZED_VARIATION`             {#elf:NAME_ROMANIZED_VARIATION}
 
 Supertype
 :   `[elf:PersonalName]`
@@ -3067,7 +3067,7 @@ Payload
 Default tag
 :   `ROMN`
 
-### `elf:ROMANIZED_TYPE`
+### `elf:ROMANIZED_TYPE`                                 {#elf:ROMANIZED_TYPE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3089,7 +3089,7 @@ Payload
 Default tag
 :   `TYPE`
 
-### `elf:NAME_TYPE`
+### `elf:NAME_TYPE`                                           {#elf:NAME_TYPE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3122,7 +3122,7 @@ Default tag
 
 
 
-### `elf:PLACE_PHONETIC_VARIATION`
+### `elf:PLACE_PHONETIC_VARIATION`             {#elf:PLACE_PHONETIC_VARIATION}
 
 Supertype
 :   `[elf:Structure]`
@@ -3142,7 +3142,7 @@ Payload
 Default tag
 :   `FONE`
 
-### `elf:PLACE_ROMANIZED_VARIATION`
+### `elf:PLACE_ROMANIZED_VARIATION`           {#elf:PLACE_ROMANIZED_VARIATION}
 
 Supertype
 :   `[elf:Structure]`
@@ -3162,7 +3162,7 @@ Payload
 Default tag
 :   `ROMN`
 
-### `elf:PUBLICATION_DATE`
+### `elf:PUBLICATION_DATE`                             {#elf:PUBLICATION_DATE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3182,7 +3182,7 @@ Default tag
 :   `DATE`
 
 
-### `elf:COPYRIGHT_SOURCE_DATA`
+### `elf:COPYRIGHT_SOURCE_DATA`                   {#elf:COPYRIGHT_SOURCE_DATA}
 
 Supertype
 :   `[elf:Structure]`
@@ -3201,7 +3201,7 @@ Payload
 Default tag
 :   `COPR`
 
-### `elf:COPYRIGHT_GEDCOM_FILE`
+### `elf:COPYRIGHT_GEDCOM_FILE`                   {#elf:COPYRIGHT_GEDCOM_FILE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3221,7 +3221,7 @@ Payload
 Default tag
 :   `COPR`
 
-### `elf:RELATION_IS_DESCRIPTOR`
+### `elf:RELATION_IS_DESCRIPTOR`                 {#elf:RELATION_IS_DESCRIPTOR}
 
 Supertype
 :   `[elf:Structure]`
@@ -3261,7 +3261,7 @@ The following ELF fragment records that Galahad was employed by Arthur:
 Default tag
 :   `RELA`
 
-### `elf:RELIGIOUS_AFFILIATION`
+### `elf:RELIGIOUS_AFFILIATION`                   {#elf:RELIGIOUS_AFFILIATION}
 
 Supertype
 :   `[elf:Structure]`
@@ -3281,7 +3281,7 @@ Payload
 Default tag
 :   `RELI`
 
-### `elf:RESPONSIBLE_AGENCY`
+### `elf:RESPONSIBLE_AGENCY`                         {#elf:RESPONSIBLE_AGENCY}
 
 Supertype
 :   `[elf:Structure]`
@@ -3302,7 +3302,7 @@ Payload
 Default tag
 :   `ROMN`
 
-### `elf:RESTRICTION_NOTICE`
+### `elf:RESTRICTION_NOTICE`                         {#elf:RESTRICTION_NOTICE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3331,7 +3331,7 @@ Payload
 Default tag
 :   `RESN`
 
-### `elf:ROLE_IN_EVENT`
+### `elf:ROLE_IN_EVENT`                                   {#elf:ROLE_IN_EVENT}
 
 Supertype
 :   `[elf:Structure]`
@@ -3365,7 +3365,7 @@ Payload
 Default tag
 :   `ROLE`
 
-### `elf:SEX_VALUE`
+### `elf:SEX_VALUE`                                           {#elf:SEX_VALUE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3398,7 +3398,7 @@ Payload
 Default tag
 :   `ROLE`
 
-### `elf:SOURCE_CALL_NUMBER`
+### `elf:SOURCE_CALL_NUMBER`                         {#elf:SOURCE_CALL_NUMBER}
 
 Supertype
 :   `[elf:Structure]`
@@ -3418,7 +3418,7 @@ Payload
 Default tag
 :   `CALN`
 
-### `elf:SOURCE_DESCRIPTIVE_TITLE`
+### `elf:SOURCE_DESCRIPTIVE_TITLE`             {#elf:SOURCE_DESCRIPTIVE_TITLE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3442,7 +3442,7 @@ Payload
 Default tag
 :   `TITL`
 
-### `elf:SOURCE_FILED_BY_ENTRY`
+### `elf:SOURCE_FILED_BY_ENTRY`                   {#elf:SOURCE_FILED_BY_ENTRY}
 
 Supertype
 :   `[elf:Structure]`
@@ -3463,7 +3463,7 @@ Payload
 Default tag
 :   `ABBR`
 
-### `elf:SOURCE_JURISDICTION_PLACE`
+### `elf:SOURCE_JURISDICTION_PLACE`           {#elf:SOURCE_JURISDICTION_PLACE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3493,7 +3493,7 @@ Payload
 Default tag
 :   `PLAC`
 
-### `elf:SOURCE_MEDIA_TYPE`
+### `elf:SOURCE_MEDIA_TYPE`                           {#elf:SOURCE_MEDIA_TYPE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3515,7 +3515,7 @@ Payload
 Default tag
 :   `MEDI`
 
-### `elf:SOURCE_ORIGINATOR`
+### `elf:SOURCE_ORIGINATOR`                           {#elf:SOURCE_ORIGINATOR}
 
 {.ednote} GEDCOM has this singular (0 or 1 per source record) and describes it listing only one creator. Should we change it to multiple, or de-describe it as listing all creators?
 
@@ -3536,7 +3536,7 @@ Payload
 Default tag
 :   `AUTH`
 
-### `elf:SOURCE_PUBLICATION_FACTS`
+### `elf:SOURCE_PUBLICATION_FACTS`             {#elf:SOURCE_PUBLICATION_FACTS}
 
 Supertype
 :   `[elf:Structure]`
@@ -3555,7 +3555,7 @@ Payload
 Default tag
 :   `PUBL`
 
-### `elf:SUBMITTER_NAME`
+### `elf:SUBMITTER_NAME`                                 {#elf:SUBMITTER_NAME}
 
 Supertype
 :   `[elf:Structure]`
@@ -3575,7 +3575,7 @@ Payload
 Default tag
 :   `NAME`
 
-### `elf:TEXT_FROM_SOURCE`
+### `elf:TEXT_FROM_SOURCE`                             {#elf:TEXT_FROM_SOURCE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3596,7 +3596,7 @@ Payload
 Default tag
 :   `TEXT`
 
-### `elf:TRANSMISSION_DATE`
+### `elf:TRANSMISSION_DATE`                           {#elf:TRANSMISSION_DATE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3615,7 +3615,7 @@ Payload
 Default tag
 :   `DATE`
 
-### `elf:VERSION_NUMBER`
+### `elf:VERSION_NUMBER`                                 {#elf:VERSION_NUMBER}
 
 Supertype
 :   `[elf:Structure]`
@@ -3636,7 +3636,7 @@ Payload
 Default tag
 :   `VERS`
 
-### `elf:WHERE_WITHIN_SOURCE`
+### `elf:WHERE_WITHIN_SOURCE`                       {#elf:WHERE_WITHIN_SOURCE}
 
 Supertype
 :   `[elf:Structure]`
@@ -3655,7 +3655,7 @@ Payload
 Default tag
 :   `PAGE`
 
-### `elf:NAME_PIECE_GIVEN`
+### `elf:NAME_PIECE_GIVEN`                             {#elf:NAME_PIECE_GIVEN}
 
 Supertype
 :   `[elf:Structure]`
@@ -3675,7 +3675,7 @@ Payload
 Default tag
 :   `GIVN`
 
-### `elf:NAME_PIECE_NICKNAME`
+### `elf:NAME_PIECE_NICKNAME`                       {#elf:NAME_PIECE_NICKNAME}
 
 Supertype
 :   `[elf:Structure]`
@@ -3695,7 +3695,7 @@ Payload
 Default tag
 :   `NICK`
 
-### `elf:NAME_PIECE_PREFIX`
+### `elf:NAME_PIECE_PREFIX`                           {#elf:NAME_PIECE_PREFIX}
 
 Supertype
 :   `[elf:Structure]`
@@ -3715,7 +3715,7 @@ Payload
 Default tag
 :   `NPFX`
 
-### `elf:NAME_PIECE_SUFFIX`
+### `elf:NAME_PIECE_SUFFIX`                           {#elf:NAME_PIECE_SUFFIX}
 
 Supertype
 :   `[elf:Structure]`
@@ -3735,7 +3735,7 @@ Payload
 Default tag
 :   `NSFX`
 
-### `elf:NAME_PIECE_SURNAME`
+### `elf:NAME_PIECE_SURNAME`                         {#elf:NAME_PIECE_SURNAME}
 
 Supertype
 :   `[elf:Structure]`
@@ -3755,7 +3755,7 @@ Payload
 Default tag
 :   `SURN`
 
-### `elf:NAME_PIECE_SURNAME_PREFIX`
+### `elf:NAME_PIECE_SURNAME_PREFIX`           {#elf:NAME_PIECE_SURNAME_PREFIX}
 
 Supertype
 :   `[elf:Structure]`
@@ -3776,7 +3776,7 @@ Default tag
 :   `SPFX`
 
 
-### `elfm:HEADER`
+### `elfm:HEADER`                                               {#elfm:HEADER}
 
 Superstructures
 :   `[elfm:Document]`
@@ -3796,7 +3796,7 @@ Substructures
 Default tag
 :   `HEAD`
 
-### `elf:DOCUMENT_SOURCE`
+### `elf:DOCUMENT_SOURCE`                               {#elf:DOCUMENT_SOURCE}
 
 Superstructures
 :   `[elfm:HEADER]`
@@ -3819,7 +3819,7 @@ Payload
 Default tag
 :   `SOUR`
 
-### `elf:RECEIVING_SYSTEM_NAME`
+### `elf:RECEIVING_SYSTEM_NAME`                   {#elf:RECEIVING_SYSTEM_NAME}
 
 Superstructures
 :   `[elfm:HEADER]`
@@ -3836,7 +3836,7 @@ Payload
 Default tag
 :   `DEST`
 
-### `elf:BINARY_OBJECT`
+### `elf:BINARY_OBJECT`                                   {#elf:BINARY_OBJECT}
 
 Binary object was in GEDCOM 5.5 but removed from GEDCOM 5.5.1. Implementations *should* be able to parse them, but *should not* generate new binary objects.
 
@@ -3874,7 +3874,7 @@ Payload
 Default tag
 :   `BLOB`
 
-### `elf:CONTINUED_BINARY_OBJECT`
+### `elf:CONTINUED_BINARY_OBJECT`               {#elf:CONTINUED_BINARY_OBJECT}
 
 Binary object was in GEDCOM 5.5 but removed from GEDCOM 5.5.1. Implementations *should* be able to parse them, but *should not* generate new binary objects.
 
