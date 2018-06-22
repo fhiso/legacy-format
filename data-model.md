@@ -172,7 +172,7 @@ Several microformats are used in payloads of various structures below.
 A list of *line-string*s serialized with commas in between.
 There is no mechanism provided for including commas or leading or trailing spaces within an element of a comma-separated list.
 
-### Personal name format {#personal-name)
+### Personal name format {#personal-name}
 
 A full name, presented in the order usually spoken and with the capitalization typical of the culture of the named individual.
 
@@ -1308,7 +1308,7 @@ Payload
 Default tag
 :   `CHAN`
 
-{.ednote} GEDCOM uses the token CHANGE_DATE in two ways. Page 31 defines what we call `[elf:CHANGE_DATE]`, a structure containing a date and an arbitrary number of notes; page 44 defines what we call `elf:CHANGE_DATE_DATE`, a payload-only format structure. 
+{.ednote} GEDCOM uses the token CHANGE_DATE in two ways. Page 31 defines what we call `[elf:CHANGE_DATE]`, a structure containing a date and an arbitrary number of notes; page 44 defines what we call `[elf:CHANGE_DATE_DATE]`, a payload-only format structure. 
 
 ### `elf:CHANGE_DATE_DATE`                             {#elf:CHANGE_DATE_DATE}
 
@@ -3907,7 +3907,7 @@ Default tag
 The list of types contained in this specification are not exhaustive
 and may be extended by other specifications.
 
-Extension types' *structure type identifier*s SHOULD be an IRI with an authority component owned by the extension author, as documented in [Basic-Concepts].
+Extension types' *structure type identifier*s SHOULD be an IRI with an authority component owned by the extension author, as documented in [Basic Concepts].
 
 Implementations encountering an unknown extension structures MAY ignore the structure and its substructures.
 It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
