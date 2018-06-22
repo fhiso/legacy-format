@@ -172,7 +172,7 @@ Several microformats are used in payloads of various structures below.
 A list of *line-string*s serialized with commas in between.
 There is no mechanism provided for including commas or leading or trailing spaces within an element of a comma-separated list.
 
-### Personal name format {#personal-name)
+### Personal name format {#personal-name}
 
 A full name, presented in the order usually spoken and with the capitalization typical of the culture of the named individual.
 
