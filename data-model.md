@@ -550,7 +550,7 @@ Subtypes
 :   `[elf:IndividualAttribute]`
 :   `[elf:IndividualEvent]`
 
-{.note} GEDCOM suggested that `elf:Event` was a subtype of `[elf:Agent]` and thus could have `[elf:ADDRESS_WEB_PAGE]`, etc, inside; this appears to be a mistake as almost no historical event has any of that information.
+{.note} GEDCOM suggested that `elf:Event` was a subtype of `[elf:Agent]` and thus could have `[elf:ADDRESS_WEB_PAGE]`, etc., inside; this appears to be a mistake as almost no historical event has any of that information.
 
 ### `elf:FamilyEvent`
 
@@ -1658,7 +1658,7 @@ Default tag
 
 ### `elf:PLACE_HIERARCHY`
 
-{.ednote} This feels like a strange way of serializing an ordered map, and thus perhaps better defined as a pseudostructure?
+{.ednote} This feels like a strange way of serializing an ordered map, and thus perhaps better defined as a pseudo-structure?
 
 Supertype
 :   `[elf:Structure]`
@@ -2847,7 +2847,7 @@ Default tag
 
 ### `elf:GEDCOM_FORM`
 
-{.ednote} GEDCOM_FORM seems like a pseudostructure?
+{.ednote} GEDCOM_FORM seems like a pseudo-structure?
 
 Supertype
 :   `[elf:Structure]`
@@ -2866,7 +2866,7 @@ Default tag
 
 ### `elf:GEDCOM_FORMAT`
 
-{.ednote} GEDCOM_FORMAT seems like a pseudostructure?
+{.ednote} GEDCOM_FORMAT seems like a pseudo-structure?
 
 Supertype
 :   `[elf:Structure]`
@@ -2886,7 +2886,7 @@ Default tag
 
 ### `elf:LANGUAGE_OF_TEXT`
 
-{.ednote} Should this really be a pseudostructure? If we re-work this as having language-tagged strings as payloads, then it is; but if we leave the strings in this document as non-language-tagged then it is data instead.
+{.ednote} Should this really be a pseudo-structure? If we re-work this as having language-tagged strings as payloads, then it is; but if we leave the strings in this document as non-language-tagged then it is data instead.
 
 Supertype
 :   `[elf:Structure]`
