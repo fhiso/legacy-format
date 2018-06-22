@@ -3238,10 +3238,10 @@ Payload
     
     Describes the nature of the association described by the superstructure.
     This is a directed relationship.
-    If the payload text is *X*,
-    the person described by the record pointed to by the payload of the superstructure is *Y*, and 
-    the person described by the superstructure of the superstructure is *Z*
-    then this payload means "*Y* is *X*'s *Z*".
+    If the payload text is *R*,
+    the person described by the record pointed to by the payload of the superstructure is *P*, and 
+    the person described by the superstructure of the superstructure is *Q*
+    then this payload means "*P* is *Q*'s *R*".
 
 {.example ...}
 The following ELF fragment records that Galahad was employed by Arthur:
