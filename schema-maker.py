@@ -1,6 +1,6 @@
 import re
 
-md_file = 'iri-data-model.md'
+md_file = 'data-model.md'
 
 chunks = re.compile(r'^([A-Za-z ]+?)[ \t]*\n(?:[: ] +([^\n]*)\n)+', re.MULTILINE)
 links = re.compile(r'  `\[([^\]]*)\]`')
@@ -98,27 +98,46 @@ for i in range(3): # short-circuit fixed point
             if sup in themap:
                 v['within'] = list(sorted(set(v['within'] + themap[sup]['within'])))
 
-import datetime
 
-print('''0 HEAD
-1 SOUR https://fhiso.org/elf/
-1 NOTE This file was automatically generated from '''+md_file+'''
-2 CONT by '''+argv[0]+''' at '''+datetime.datetime.utcnow().isoformat()+'''
-1 SUBM @fhiso_elf1@
-1 GEDC 
-2 VERS 5.5.1
-2 FORM LINEAGE-LINKED
-1 SCHMA
-2 PRFX elf https://fhiso.org/elf/
-2 PRFX elfm https://fhiso.org/elf/metadata/''')
+if 0:
+    import datetime
 
-for k in sorted(themap):
-    print('2 IRI', k)
-    for sup in sorted(themap[k]['isa']):
-        if sup != 'elf:Structure':
-            print('3 ISA', sup)
-    if 'tag' in themap[k] and themap[k]['tag'] is not None:
-        print('3 TAG', themap[k]['tag'], ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
-print('''0 @fhiso_elf1@ SUBM
-1 NAME FHISO Extended Legacy Format, version 1
-0 TRLR''')
+    print('''0 HEAD
+    1 SOUR https://fhiso.org/elf/
+    1 NOTE This file was automatically generated from '''+md_file+'''
+    2 CONT by '''+argv[0]+''' at '''+datetime.datetime.utcnow().isoformat()+'''
+    1 SUBM @fhiso_elf1@
+    1 GEDC 
+    2 VERS 5.5.1
+    2 FORM LINEAGE-LINKED
+    1 SCHMA
+    2 PRFX elf https://fhiso.org/elf/
+    2 PRFX elfm https://fhiso.org/elf/metadata/''')
+
+    for k in sorted(themap):
+        print('2 IRI', k)
+        for sup in sorted(themap[k]['isa']):
+            if sup != 'elf:Structure':
+                print('3 ISA', sup)
+        if 'tag' in themap[k] and themap[k]['tag'] is not None:
+            print('3 TAG', themap[k]['tag'], ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
+    print('''0 @fhiso_elf1@ SUBM
+    1 NAME FHISO Extended Legacy Format, version 1
+    0 TRLR''')
+elif 0:
+    print('| {:30} | {:30} | {:5} |'.format('$I$', '$S$', '$T$'))
+    print('|:'+ '-'*30 +'-|:'+ '-'*30 +'-|:'+ '-'*5 +'-|')
+    for k in sorted(themap):
+        if 'tag' in themap[k] and themap[k]['tag'] is not None:
+            for sup in sorted(themap[k]['within']):
+                print('| {:30} | {:30} | {:5} |'.format(k, sup, themap[k]['tag']))
+    
+else:
+    tis = []
+    for k in sorted(themap):
+        if 'tag' in themap[k] and themap[k]['tag'] is not None:
+            for sup in sorted(themap[k]['within']):
+                tis.append((themap[k]['tag'], k, sup))
+    tis.sort()
+    for t,i,s in tis:
+        print(t,i)

@@ -823,7 +823,7 @@ Payload
 :   A pointer to an `[elf:INDIVIDUAL_RECORD]`
 
 Default tag
-:   `HSUB`
+:   `HUSB`
 
 
 ### `elf:PARENT2_POINTER`
@@ -1754,7 +1754,7 @@ Payload
     If the payload is none, there *should* be a `[elf:NOTE_STRUCTURE]` describing where the information described by the containing structure can be found.
 
 Default tag
-:   `SOUR`
+:   `REPO`
 
 ### `elf:SPOUSE_TO_FAMILY_LINK`
 
@@ -2826,7 +2826,7 @@ Payload
     The base name (i.e., not a full path) of a file.
 
 Default tag
-:   `EVEN`
+:   `FILE`
 
 ### `elf:GEDCOM_CONTENT_DESCRIPTION`
 
@@ -3302,7 +3302,7 @@ Payload
     The group or entity that was responsible for this event or data.
 
 Default tag
-:   `ROMN`
+:   `AGNC`
 
 ### `elf:RESTRICTION_NOTICE`
 
@@ -3398,7 +3398,7 @@ Payload
 
 
 Default tag
-:   `ROLE`
+:   `SEX`
 
 ### `elf:SOURCE_CALL_NUMBER`
 
