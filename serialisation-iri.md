@@ -315,9 +315,9 @@ the IRI `https://fhiso.org/elf/ADDRESS` may be abbreviated as `elf:ADDRESS`.
 
 Assign each *record* an **identifier** matching production ID:
 
-        ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
+    ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
 
-    Within a given dataset, each *record*'s *identifier* *must* be unique.
+Within a given dataset, each *record*'s *identifier* *must* be unique.
     
 {.note} The production `ID` is an alphanum followed by any number of non-control non-`@` 7-bit ASCII characters.  This is more limited than GEDCOM (which also allows the non-ASCII characters in ANSEL), but I am unaware of any GEDCOM implementation that uses those extra characters.
 
