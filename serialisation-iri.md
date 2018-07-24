@@ -201,7 +201,7 @@ but distinct $T$s for the same $I$ *may* be used to aid in merging datasets usin
 
 No *tag mapping*'s $T$ value may be "`CONC`" or "`CONT`", as those are special values reserved for pseudo-structures that may appear almost anywhere.
 
-All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A] are added to the table.
+All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A](#appendix-a) are added to the table.
 
 ### Tag to structure type {#from-tag}
 
@@ -620,7 +620,7 @@ The following two operations *shall* be repeated until no *extended line*s with 
 {.ednote} Insert missing steps here
 
 
-## Appendix A: Known Tags {#Appendix A}
+## Appendix A: Known Tags                                       {#appendix-a}
 
 The following lists *tag mappings* for all concrete types listed in [Elf-DataModel].
 
