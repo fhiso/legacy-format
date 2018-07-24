@@ -440,6 +440,47 @@ A *structure type* *must not* inherit from a set of *supertypes* that contain co
 
 {.ednote} The above text is overly vague and needs tightening up.
 
+{.ednote ...} Working notes on inheritance semantics:
+
+A subtype could inherit
+
+- its supertype's substructures (1)
+    - and their tags (1a)
+    - with optional substructures made required (1b)
+    - with new substructures added (1c)
+- its supertype's payload (2)
+    - with additional constraints (2a)
+    - with addition of payload to payload-lacking structures (2b)
+- its supertype's superstructures (3)
+    - and the supertype's tag within each superstructure (3a)
+    - with a provided different tag within each superstructure (3b)
+
+However, not all of these can be provided and maintain consistency.
+My current belief is we cannot have (3a) and I'm not sure about (3b).
+
+I'm confident (3a) cannot work because tags are the only provided means of determining the type of a substructure.
+
+I think (3b) can work, but it raises a question when a structure has a required substructure and that substructure type has a subtype. GEDCOM expects every `1 EVEN` to contain a `2 TYPE`; if there is instead a `2 XYZ` where `XYZ` is a subtype of `TYPE`, GEDCOM parsers may reject the data as ill-formed. My gut is to only permit (3b) if the supertype is abstract. Without either (3a) or (3b), (3) is meaningless.
+
+A few constraints to make inheritance work:
+
+1. If an application finds a subtype it does not understand, but does understand its supertype, it *must not* create or edit an instance of the subtype using its knowledge of the supertype. Doing so would violate (1b), (1c), (2a), and (2b).
+
+1. No structure type may inherit from two or more supertypes that share a common substructure unless all of the following are met:
+    
+    - Each supertype uses the same tag for the substructure. This is required because tags are lost on deserialisation so the association of particular substructures with particular supertypes via tag are not preserved.
+    - The semantic meaning of the substructure type is identical in each supertype. This is required because all substructure values will be shared by both supertypes, so any difference will create conflict.
+    
+    It may be simpler to forbid common-substructure supertypes altogether...
+
+1. As a corollary, if a new structure type defines itself as a substructure of two different superstructures, it *must* define itself as having the same tag and same semantics in both (to avoid creating conflicts with other multiple inheritance situations) *unless* no substructure could inherit from both because of one of the other constraints listed here.
+
+1. No structure type may inherit from two or more supertypes that have the same tag for distinct substructure types.
+
+I am not fully convinced that the above limitations are sufficient, but do not have counter-examples for them (yet).
+{/}
+
+
 Some *structure type*s are **abstract**, meaning they *must not* be identified as the *structure type* of any *structure*.
 Their purpose is to provide inherited semantics via being used as *supertypes*.
 
