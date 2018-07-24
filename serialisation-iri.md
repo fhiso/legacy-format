@@ -199,7 +199,7 @@ If two entries in the *tag mapping table* have the same $T$, then
 It is *recommended* that all mappings with the same $I$ have the same $T$;
 but distinct $T$s for the same $I$ *may* be used to aid in merging datasets using distinct tags for the same structure type.
 
-No *tag mapping*'s $T$ value may be a *pseudo-structure* *tag*.
+No *tag mapping*'s $T$ value may be "`CONC`" or "`CONT`", as those are special values reserved for pseudo-structures that may appear almost anywhere.
 
 All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A] are added to the table.
 
@@ -229,9 +229,89 @@ This *should* be the "preferred" mapping as indicated by serialization order of 
 
 ## Serialisation
 
-To serialize a dataset, do the following steps:
+To serialise a dataset,
 
-### Assign identifiers
+1. Assign a tag for each structure to populate the *tag mapping table*.
+2. Populate the `SCHMA` and `CHAR` *pseudo-structure*s of the `elfm:HEADER`.
+3. Serialise the `elfm:HEADER`.
+4. Assign identifiers to all *records*.
+5. Serialise all *records* (in any order).
+6. Serialise a `TRLR` *pseudo-structure*
+
+Each of the serialization steps includes several substeps:
+
+a. Convert each structure to an *extended line*.
+b. Identify split points and add `CONT` and `CONC` *psuedo-structures* as needed.
+c. Convert everything from characters to octets.
+d. Order and serialize any *substructures*
+
+### Assign tags
+
+Assign each *structure* a **tag**, as defined in {§to-tag}.
+As this may result in adding new *tag mappings* to the *tag mapping table*, it should be performed in full before serialising that table.
+
+### Add header pseudo-structures
+
+The first *pseudo-structure* in every ELF serialisation *must* be an `elfm:HEADER`.
+Its *level* is 0, its *tag* is `HEAD`, and it has no *identifier* nor *payload string*.
+
+Each `elfm:HEADER` has several data-model-level metadata *substructures*, as outlined in [ELF-DataModel].
+In addition, it has several two serialisation-specific metadata *pseudo-substructure* which *shall* be added as part of serialisation:
+exactly one `CHAR` and at most one `SCHMA`.
+
+#### CHAR
+
+The `CHAR` *pseudo-structure* has a payload taken from the following four options:
+
+------    --------------------------------------------------------------------------
+Encoding  Description
+------    --------------------------------------------------------------------------
+`ASCII`   The US version of ASCII defined in [ASCII].
+
+`ANSEL`   The extended Latin character set for bibliographic use defined
+          in [ANSEL].
+
+`UNICODE` Either the UTF-16LE or the UTF-16BE encodings of Unicode
+          defined in [ISO 10646].
+
+`UTF-8`   The UTF-8 encodings of Unicode defined in [ISO 10646].
+------    --------------------------------------------------------------------------
+
+The character encoding selected
+MUST be able to encode all code points in all payloads in every *structure* within the dataset.
+It is RECOMMENDED that `UTF-8` be used for all datasets.
+
+The payload of the `CHAR` *pseudo-structure* *must* correctly represent the character encoding used to convert the dataset into bytes, as described in {§bytes}.
+
+#### SCHMA
+
+The`SCHMA` *pseudo-structure* has no payload and may contain any number of `PRFX` *pseudo-substructures* followed by any number of `IRI` *pseudo-substructures*.
+
+##### Prefix abbreviation {#prefix}
+
+A `PRFX` *pseudo-structure* has no substructures, and its payload matched production `Prefix`:
+
+    Prefix ::= PfxName ' ' IRI
+    PfxName ::= [A-Za-z_] ([A-Za-z0-9_#x2D#x2E])*
+
+where `IRI` is the `IRI` production in §2.2 of
+&#x5B;[RFC 3987](https://tools.ietf.org/html/rfc3987)]. 
+
+{.note} `PfxName` is more restrictive than `NCName` in §3 of &#x5B;[Names]], being limited to 7-bit ASCII to reduce serialisation order dependency.
+
+Each `PRFX` payload defines an IRI-shortening prefix.
+If an IRI begins with an IRI in a `PRFX` payload,
+that prefix may be replaced with that payload's PfxName and a colon.
+
+{.example ...} Given a `PRFX`
+
+    2 PRFX elf https://fhiso.org/elf/
+
+the IRI `https://fhiso.org/elf/ADDRESS` may be abbreviated as `elf:ADDRESS`.
+{/}
+
+
+### Assign record identifiers
 
 Assign each *record* an **identifier** matching production ID:
 
@@ -251,10 +331,8 @@ Assign each *record* an **identifier** matching production ID:
 While implementations are welcome to use such patterns themselves, they MUST NOT rely on them being true in imported data.
 {/}
 
-### Assign tags
 
-Assign each *structure* a **tag**, as defined in {§to-tag}.
-As this may result in adding new *tag mappings* to the *tag mapping table*, it should be performed in full before serialising that table.
+
 
 ### Convert structures to extended lines
 
@@ -280,6 +358,8 @@ the order of *substructures* with different *structure type*s may be selected ar
 
 {.note} Only the order of identical *structure type*s are constrained by the dataset itself; distinct subtypes of a common supertype may be ordered arbitrarily.
 
+Each *substructure* of a *structure* is serialized immediately after the *extended line* of the *structure*.
+
 ### Split lines using CONT and CONC pseudo-structures
 
 Identify a (possibly empty) set of split points in each *payload string*.
@@ -303,7 +383,7 @@ The portion of the *payload string* preceding the first split point (or the enti
 {.example ...}
 Suppose a structure's *extended line* was *level* = 2, *tag* = `NOTE`, and *payload string* "`This is a test\nwith one line break`".
 This *payload string* requires at least one split point (because it contains one *line break*) and may contain more.
-It could be serialized in many ways, such as
+It could be serialised in many ways, such as
 
 ````gedcom
 2 NOTE This is a test
@@ -320,13 +400,57 @@ or
 ````
 {/}
 
+
+Any `CONT` and/or `CONC` *pseudo-substructures* of a *structure* *must* be serialized before any of the *structure*'s other *substructures*.
+
 ### Escape `@`
 
 Replace any COMMERCIAL AT (U+0040, `@`) in a *payload string* that is not the initial or final character of a substring matching the `Escape` production with two adjacent COMMERCIAL ATs (i.e., "`@@`")
 
-### Add header pseudo-structures
+### Convert to a string
 
-TO DO: add the remaining sections.
+For each *extended line* (whether a *structure* or *pseudo-structure*, it's *line string* is
+
+1. The *level* as a base-10 integer with no leading 0
+2. If there is an *identifier*,
+    1. A SPACE character U+0200
+    2. A COMMERCIAL AT chracter U+040 `@`
+    3. The characters of the *identifier*
+    4. A COMMERCIAL AT chracter U+040 `@`
+3. A SPACE character U+0200
+4. The characters of the *tag*
+5. If there is a *payload*,
+    1. A SPACE character U+0200
+    2. The characters of the *payload string*
+6. A **line break**, being a *string* matching the production `LB`:
+
+        LB  ::=  #xD #xA? | #xA
+    
+    The same *line break* *should* be used at the end of each *line string*.
+
+
+
+
+
+## Deserialisation
+
+To deserialise a dataset,
+
+1. Detect the character encoding used.
+2. Populate the *tag mapping table* from the `SCHMA` *pseudo-structure*s of the `elfm:HEADER`.
+3. Deserialise the `elfm:HEADER`.
+4. Deserialise each *record*.
+
+
+Each of the serialization steps includes several substeps:
+
+a. Covert octets to characters.
+b. Convert each *line string* into an *extended line*.
+d. Associate *substructures* with their *superstructures*.
+c. Remove any `CONT` and `CONC` *psuedo-substructures*.
+
+
+{.ednote} TO DO: continue writing from here
 
 
 
@@ -337,10 +461,7 @@ TO DO: add the remaining sections.
 
 
 
-
-
-
-## String to/from octets
+## String to/from octets {#bytes}
 
 ### String to octets  {#string2octet}
 
@@ -544,7 +665,7 @@ The following lists *tag mappings* for all concrete types listed in [Elf-DataMod
 | elf:EVENT_OR_FACT_CLASSIFICATION | elf:Event                      | TYPE  |
 | elf:EVENT_TYPE_CITED_FROM      | elf:SOURCE_CITATION            | EVEN  |
 | elf:FAM_RECORD                 | elfm:Document                  | FAM   |
-| elf:FILE_NAME                  | elfm:HEADER                    | EVEN  |
+| elf:FILE_NAME                  | elfm:HEADER                    | FILE  |
 | elf:FIRST_COMMUNION            | elf:INDIVIDUAL_RECORD          | FCOM  |
 | elf:GEDCOM_CONTENT_DESCRIPTION | elfm:HEADER                    | NOTE  |
 | elf:GEDCOM_FORM                | elf:GEDCOM_FORMAT              | FORM  |
@@ -603,7 +724,7 @@ The following lists *tag mappings* for all concrete types listed in [Elf-DataMod
 | elf:NOTE_STRUCTURE             | elf:SPOUSE_TO_FAMILY_LINK      | NOTE  |
 | elf:OCCUPATION                 | elf:INDIVIDUAL_RECORD          | OCCU  |
 | elf:ORDINATION                 | elf:INDIVIDUAL_RECORD          | ORDN  |
-| elf:PARENT1_POINTER            | elf:FAM_RECORD                 | HSUB  |
+| elf:PARENT1_POINTER            | elf:FAM_RECORD                 | HUSB  |
 | elf:PARENT2_POINTER            | elf:FAM_RECORD                 | WIFE  |
 | elf:PEDIGREE_LINKAGE_TYPE      | elf:CHILD_TO_FAMILY_LINK       | PEDI  |
 | elf:PERSONAL_NAME_STRUCTURE    | elf:INDIVIDUAL_RECORD          | NAME  |
@@ -640,7 +761,7 @@ The following lists *tag mappings* for all concrete types listed in [Elf-DataMod
 | elf:ROMANIZED_TYPE             | elf:NAME_ROMANIZED_VARIATION   | TYPE  |
 | elf:ROMANIZED_TYPE             | elf:PLACE_ROMANIZED_VARIATION  | TYPE  |
 | elf:SCHOLASTIC_ACHIEVEMENT     | elf:INDIVIDUAL_RECORD          | EDUC  |
-| elf:SEX_VALUE                  | elf:INDIVIDUAL_RECORD          | ROLE  |
+| elf:SEX_VALUE                  | elf:INDIVIDUAL_RECORD          | SEX   |
 | elf:SOCIAL_SECURITY_NUMBER     | elf:INDIVIDUAL_RECORD          | SSN   |
 | elf:SOURCE_CALL_NUMBER         | elf:SOURCE_REPOSITORY_CITATION | CALN  |
 | elf:SOURCE_CITATION            | elf:ASSOCIATION_STRUCTURE      | SOUR  |
@@ -675,13 +796,19 @@ The following lists *tag mappings* for all concrete types listed in [Elf-DataMod
 | elf:USER_REFERENCE_TYPE        | elf:USER_REFERENCE_NUMBER      | TYPE  |
 | elf:VERSION_NUMBER             | elf:DOCUMENT_SOURCE            | VERS  |
 | elf:VERSION_NUMBER             | elf:GEDCOM_FORMAT              | VERS  |
+| elf:VERSION_NUMBER             | elfm:CHARACTER_SET             | VERS  |
 | elf:WHERE_WITHIN_SOURCE        | elf:SOURCE_CITATION            | PAGE  |
 | elf:WILL                       | elf:INDIVIDUAL_RECORD          | WILL  |
 | elf:WITHIN_FAMILY              | elf:BIRTH                      | FAMC  |
 | elf:WITHIN_FAMILY              | elf:CHRISTENING                | FAMC  |
+| elfm:CHARACTER_SET             | elfm:HEADER                    | CHAR  |
+| elfm:ELF_SCHEMA                | elfm:HEADER                    | SCHMA |
+| elfm:EXTENDS                   | elfm:STRUCTURE_TYPE            | ISA   |
 | elfm:HEADER                    | elfm:Document                  | HEAD  |
-
-
+| elfm:IRI_PREFIX                | elfm:ELF_SCHEMA                | PRFX  |
+| elfm:STRUCTURE_TYPE            | elfm:ELF_SCHEMA                | IRI   |
+| elfm:TAG                       | elfm:STRUCTURE_TYPE            | TAG   |
+| elfm:Trailer                   | elfm:Document                  | TRLR  |
 
 
 

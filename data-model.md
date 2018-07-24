@@ -3960,6 +3960,7 @@ Supertype
 Superstructures
 :   `[elf:DOCUMENT_SOURCE]`
 :   `[elf:GEDCOM_FORMAT]`
+:   `[elfm:CHARACTER_SET]`
 
 Substructure
 :   None
@@ -4023,7 +4024,83 @@ Default tag
 :   `FAMC`
 
 
+## Pseudo-structures
+
+The following are not *structures* in the normal sense;
+that is, they do not discuss the dataset itself.
+However, they are useful in describing how the data is transmitted
+and providing anchors for other information.
+
+### `elfm:CHARACTER_SET`                                 {#elfm:CHARACTER_SET}
+
+A pseudostructure provided to assist serialisations in identifying 
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elf:VERSION_NUMBER]` ?
+
+Payload
+:   A *string*, typically taken from an enumerated set specified by a particular serialisation format.
+
+Default tag
+:   `CHAR`
+
+### `elfm:Document`                                           {#elfm:Document}
+
+Not a structure at all, `elfm:Document` is a special IRI used as the *structure type identifier* of the *superstructure* of a *structure* that does not have a *superstructure* but instead is directly included in the dataset.
+
+### `elfm:ELF_SCHEMA`                                       {#elfm:ELF_SCHEMA}
+
+A holder for minimal information needed to correctly parse tag-based serialisations of extension types.
+
+{.note} Discussions on adding more discovery metadata in the schema are ongoing, and may be included in a future release.
+
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elfm:IRI_PREFIX]` \*
+:   `[elfm:STRUCTURE_TYPE]` \*
+
+Default tag
+:   `SCHMA`
+
+
+### `elfm:EXTENDS`                                             {#elfm:EXTENDS}
+
+Identifies the supertype of a type
+
+Superstructures
+:   `[elfm:STRUCTURE_TYPE]`
+
+Payload
+:   The *structure type identifier* of *supertype* of the *type* identified by the *superstructure*, possibly shortened in a serialisation-specific way.
+
+Default tag
+:   `ISA`
+
+
+### `elfm:IRI_PREFIX`                                       {#elfm:IRI_PREFIX}
+
+An abbreviation mechanism, similar to a CURIE, with specific format and syntax defined on a per-serialisation-format basis.
+
+Superstructures
+:   `[elfm:ELF_SCHEMA]`
+
+Payload
+:   a shortened form and an IRI, with details specified per serialisation format.
+
+Default tag
+:   `PRFX`
+
+
+
 ### `elfm:HEADER`                                               {#elfm:HEADER}
+
+The header is a place to store various metadata about the dataset as a whole.
 
 Superstructures
 :   `[elfm:Document]`
@@ -4039,9 +4116,54 @@ Substructures
 :   `[elf:LANGUAGE_OF_TEXT]` ?
 :   `[elf:DEFAULT_PLACE_FORMAT]` ?
 :   `[elf:GEDCOM_CONTENT_DESCRIPTION]` ?
+:   `[elfm:ELF_SCHEMA]` ?
+:   `[elfm:CHARACTER_SET]` !
 
 Default tag
 :   `HEAD`
+
+### `elfm:STRUCTURE_TYPE`                               {#elfm:STRUCTURE_TYPE}
+
+An holder for metadata about one particular structure type.
+
+Superstructures
+:   `[elfm:ELF_SCHEMA]`
+
+Substructures
+:   `[elfm:TAG]` \*
+:   `[elfm:EXTENDS]` ?
+
+Payload
+:   The *structure type identifier* of a *strucuture type*, possibly shortened in a serialisation-specific way.
+
+Default tag
+:   `IRI`
+
+
+### `elfm:TAG`                                                     {#elfm:TAG}
+
+Contains (possibly superstructure-specific) information about how a structure is identified within a specific serialisation format.
+
+Superstructures
+:   `[elfm:STRUCTURE_TYPE]`
+
+Payload
+:   Defined by serialisation format
+
+Default tag
+:   `TAG`
+
+
+### `elfm:Trailer`                                             {#elfm:Trailer}
+
+The trailer is a placeholder to mark the end of a dataset. It has no semantic meaning.
+
+Superstructures
+:   `[elfm:Document]`
+
+Default tag
+:   `TRLR`
+
 
 
 
