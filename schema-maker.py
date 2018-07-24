@@ -14,7 +14,7 @@ with open(md_file) as f:
     txt = f.read()
     bits = re.split(r' *###+ *',txt)
     for bit in bits:
-        name = bit[:bit.find('\n')].strip()[1:-1]
+        name = bit[:bit.find('{#')].strip()[1:-1]
         if ' ' in name: continue
         isa = []
         within = []
@@ -99,20 +99,20 @@ for i in range(3): # short-circuit fixed point
                 v['within'] = list(sorted(set(v['within'] + themap[sup]['within'])))
 
 
-if 0:
+if 1:
     import datetime
 
     print('''0 HEAD
-    1 SOUR https://fhiso.org/elf/
-    1 NOTE This file was automatically generated from '''+md_file+'''
-    2 CONT by '''+argv[0]+''' at '''+datetime.datetime.utcnow().isoformat()+'''
-    1 SUBM @fhiso_elf1@
-    1 GEDC 
-    2 VERS 5.5.1
-    2 FORM LINEAGE-LINKED
-    1 SCHMA
-    2 PRFX elf https://fhiso.org/elf/
-    2 PRFX elfm https://fhiso.org/elf/metadata/''')
+1 SOUR https://fhiso.org/elf/
+1 NOTE This file was automatically generated from '''+md_file+'''
+2 CONT by '''+argv[0]+''' at '''+datetime.datetime.utcnow().isoformat()+'''
+1 SUBM @fhiso_elf1@
+1 GEDC 
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 SCHMA
+2 PRFX elf https://fhiso.org/elf/
+2 PRFX elfm https://fhiso.org/elf/metadata/''')
 
     for k in sorted(themap):
         print('2 IRI', k)
@@ -122,9 +122,9 @@ if 0:
         if 'tag' in themap[k] and themap[k]['tag'] is not None:
             print('3 TAG', themap[k]['tag'], ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
     print('''0 @fhiso_elf1@ SUBM
-    1 NAME FHISO Extended Legacy Format, version 1
-    0 TRLR''')
-elif 0:
+1 NAME FHISO Extended Legacy Format, version 1
+0 TRLR''')
+elif 1:
     print('| {:30} | {:30} | {:5} |'.format('$I$', '$S$', '$T$'))
     print('|:'+ '-'*30 +'-|:'+ '-'*30 +'-|:'+ '-'*5 +'-|')
     for k in sorted(themap):
