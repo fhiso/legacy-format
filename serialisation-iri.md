@@ -167,6 +167,8 @@ A dataset consists of **structures**; as part of encoding as a *string*, these a
 
 A *record* is a *structure* that has, as its *superstructure*, the dataset itself (which has the *structure type identifier* `elf:Document`).
 
+Each *structure type* may have any number of *supertype*s, as defined by the data model.
+A *structure type identifier* $X$ is an **eventual supertype** of a *structure* $Y$ if $X = Y$ or $X$ is an *eventual supertype* of a *supertype* of $Y$.
 
 ### Pseudo-structures
 
@@ -174,6 +176,55 @@ A **pseudo-structure** is a *structure*-like construct introduced to encode meta
 *Pseudo-structures* are not part of the dataset, but are part of the serialised dataset.
 
 All of the serialisation content in this document that refers to a *structure* also applies to a *pseudo-structure*.
+
+
+## Tag Mapping Table {#tag-table}
+
+The **tag mapping table**, used in both serialisation and deserialisation, is a set of **tag mappings**:
+triples $(I, S, T)$ where $I$ and $S$ are *structure type identifier*s
+and $T$ matches production Tag:
+
+    Tag  ::= [0-9a-zA-Z_]+
+
+Every entry in the *tag mapping table* *must* have $I$ be the *structure type identifier* of a *concrete type*.
+
+If two entries in the *tag mapping table* have the same $T$, then
+
+- they *must* have distinct $S$s, and
+- their $S$s *must not* identify types where one is an *eventual supertype* of the other, and
+- if both $S$ identify *abstract types* and have the same $I$, then both *must* have the same *T*.
+
+{.ednote} The third constraint above is intended to prevent multiple inheritance from getting the same substructure with different tags from different supertypes. It assumes you cannot inherit from two concrete types. It also might not prove necessary; consider removing it.
+
+It is *recommended* that all mappings with the same $I$ have the same $T$;
+but distinct $T$s for the same $I$ *may* be used to aid in merging datasets using distinct tags for the same structure type.
+
+No *tag mapping*'s $T$ value may be a *pseudo-structure* *tag*.
+
+All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A] are added to the table.
+
+### Tag to structure type {#from-tag}
+
+Given a *structure* with *tag* $T$ in a superstructure with *structure type identifier* $S'$,
+the *structure*'s *structure type identifier* is the $I$ of the *tag mapping* $(I, S, T)$ where either $S = S'$ or $S$ is an *eventual supertype* of $S'$.
+
+If there is no such *tag mapping*, the *structure* is an **undocumented extension type** and *should* be treated like an *extension type* with which the implementation is unfamiliar.
+The tag $T$ *should* be preserved and re-used on export of the data.
+
+If there is more than one such *tag mapping* then the *tag mapping table* is *non-conformant* and the application may terminate or proceed in an implementation-defined manner.
+Applications that proceed *should* alert the user that data loss may result due to non-conformant input.
+
+## Structure type to tag {#to-tag}
+
+Given a *structure* with *structure type identifier* $I$ in a superstructure with *structure type identifier* $S'$,
+the *structure*'s *tag* is the $T$ of the a *tag mapping* $(I, S, T)$ where either $S = S'$ or $S$ is an *eventual supertype* of $S'$.
+
+If there is no such *tag mapping*, a suitable *tag mapping* *must* be added to the *tag mapping table*, conforming to all limitations on the *tag mapping table*.
+This new *tag* *should* begin with an underscore (U+005F, `_`) and be at least two characters long.
+It is *recommended* that implementations consistently generate the same *tag* for a given *structure type* each time that *structure type* is serialised across all datasets.
+
+If there are two or more such *tag mappings*, each implementation *must* consistently chose the same one each time.
+This *should* be the "preferred" mapping as indicated by serialization order of the *tag mapping table*, but *may* be a different mapping provided that the same mapping is chosen throughout the serialisation process.
 
 
 ## Serialisation
@@ -193,41 +244,17 @@ Assign each *record* an **identifier** matching production ID:
 {.note ...} Some software have traditionally made additional assumptions of identifiers, such as
  
 -   identifier strings are durable, expressing historical identity
--   having all .`[NOTE]`'s identifiers match `N[1-9][0-9]*`
--   using a specific custom identifier for the `[INDI]` representing the user
+-   having all `elf:NOTE_RECORD`'s identifiers match `N[1-9][0-9]*`
+-   using a specific custom identifier for the `elf:INDIVIDUAL_RECORD` representing the user
 
 ... and so on.
-As nothing in GEDCOM nor this document justifies implementations relying on any such patterns or rules having been followed by creating software.
+While implementations are welcome to use such patterns themselves, they MUST NOT rely on them being true in imported data.
 {/}
 
 ### Assign tags
 
-A **tag mapping** is a triple $(I, S, T)$,
-where $I$ and $S$ are *structure type identifier*s
-and $T$ matches production Tag:
-
-    Tag  ::= [0-9a-zA-Z_]+
-
-As part of serialisation, create a set of *tag mappings*.
-This set is constrained by the following:
-
-- For any two *tag mappings* with the same $S$, the two *must* have distinct $T$s.
-- For each *structure* in the dataset, there *must* be a *tag mapping* where both
-    - $I$ is the *structure type identifier* of the *structure* and
-    - $S$ is the *structure type identifier* of the *structure*'s *superstructure*.
-- For each *tag mapping* where and $I$ and $S$ are in the table Known Tags in [Appendix A], that *tag mapping* *must* be one from that table.
-- For each *tag mapping* where and $S$ and $T$ are in the table Known Tags in [Appendix A], that *tag mapping* *must* be one from that table.
-
-{.note} The first two items guarantees unambiguous *tag* : *structure type* mappings. The latter two guarantee that GEDCOM parsers can understand ELF documents.
-
-In addition, the following are *recommended*:
-
-- For any two *tag mappings* with the same $S$, the two *should* have distinct $I$s.
-- All of the *tag mappings* with the same $S$ *should* have the same $T$ if this is compatible with other constraints.
-
-{.note} The first recommendation is against having tags with aliased meaning within a single serialisation (e.g., when serialising `elf:ADDRESS_EMAIL` either use `EMAI` or `EMAIL`, but not both). The second is against having unnecessary context-dependent tags for the same structure type.
-
-{.ednote} We could *require* the one-tag-per-structure-type rule; I see very few potential conflicts with re-using GEDCOM tags in new contexts. I suppose a HEADER might want to be able to store both a DOCUMENT_SOURCE and a SOURCE_CITATION or both a GEDCOM_CONTENT_DESCRIPTION and a NOTE_STRUCTURE... but I suspect we'll find many more of this sort once extensions are considered.
+Assign each *structure* a **tag**, as defined in {§to-tag}.
+As this may result in adding new *tag mappings* to the *tag mapping table*, it should be performed in full before serialising that table.
 
 ### Convert structures to extended lines
 
@@ -241,8 +268,7 @@ The **payload string** of a *structure* is determined based on the kind of paylo
 | *string*| the *payload* itself                                               |
 |*pointer*| the *identifier* assigned to the pointed-to *structure*, surrounded by U+0040 (`@`) |
 
-The **tag** of a *structure* is the $T$ value of a *tag mapping* $(I, S, T)$ where $I$ is the *structure type identifier* of the *structure* and $S$ is the *structure type identifier* of its *superstructure*.
-If more than one *tag mapping* has a matching $I$ and $S$, pick just one's $T$ to be the *structure*'s *tag*.
+The **tag** of a *structure* is determined by its *type* and *superstructure* and the *tag mapping table*, as defined in {§to-tag}.
 
 A *structure*'s **extended line** consists of its *level*, *identifier* if any, *tag*, and *payload string*.
 
@@ -252,14 +278,11 @@ For each *structure*, create an ordered list of *substructures*.
 The order of *substructures* with the same *structure type* are defined by the dataset;
 the order of *substructures* with different *structure type*s may be selected arbitrarily.
 
+{.note} Only the order of identical *structure type*s are constrained by the dataset itself; distinct subtypes of a common supertype may be ordered arbitrarily.
+
 ### Split lines using CONT and CONC pseudo-structures
 
-
-... fixme: update from here
-
-
-
-Identify a set of split points in each *payload string*.
+Identify a (possibly empty) set of split points in each *payload string*.
 A split point *must* be placed at each *line break*,
 *must not* be placed in the *payload string* created from a *pointer*-valued *payload*,
 and *may* be added between any two non-*whitespace* characters
@@ -267,551 +290,43 @@ that are not part of a substring matching the `Escape` production.
 
     Escape  ::= "@#" [^#x40#xA#xD]* "@"
 
- 
+It is *recommended* that split points be identified at least once every 240 characters.
 
+{.ednote} Jones asserts that leading white-space on a line is supported, even though GEDCOM suggests it is not. The above matches GEDCOM. We should probably investigate the prevalence of leading whitespace in practice before committing to this.
 
-Some *payload strings* are split into several parts,
-with most parts stored in *pseudo-structure* *substructures*, as outlined below.
+For each split point identified, add a *pseudo-substructure* to the *structure*,
+with a *payload string* of the characters following that split point and preceding the next split point.
+If the split point was placed at a *line break*, the *pseudo-structure*'s *tag* is `CONT`;
+otherwise it is `CONC`.
+The portion of the *payload string* preceding the first split point (or the entire string if there are no split points) is used as the new *payload string* of the *structure*.
 
-Each *payload string* *must* be split on all *line break*s,
-and may also be split between any two non-*whitespace* characters
-that are not part of a substring matching the `Escape` production.
+{.example ...}
+Suppose a structure's *extended line* was *level* = 2, *tag* = `NOTE`, and *payload string* "`This is a test\nwith one line break`".
+This *payload string* requires at least one split point (because it contains one *line break*) and may contain more.
+It could be serialized in many ways, such as
 
-    
-The portion before the first split point (or the entire *payload string* if there are no splits)
-is encoded as the *payload line* of the *structure*'s line;
-the remaining portions are encoded in order
-as the *payload line*s of pseudo-substructures of the *structure*:
-a `[CONT]` *pseudo-structure* if the split point was a *line break*
-and a `[CONC]` *pseudo-structure* otherwise.
+````gedcom
+2 NOTE This is a test
+3 CONT with one line break
+````
 
-    It is RECOMMENDED that all payloads be split as needed
-    to ensure that no *line* containing a portion of the *payload*
-    exceeds 255 characters in length.
+or
 
-
-Each *line* ends with a **line break** which is defined to be a carriage
-return, a line feed, or a carriage return followed by a line feed.  It
-matches the production `LB`:
-
-    LB  ::=  #xD #xA? | #xA
-
-{.note} This includes the form of line breaks used on Windows (U+000D
-U+000A), the form used on Unix, Linux and modern Mac OS (U+000A), and
-the traditional Mac OS form (U+000D).  However this standard makes no
-requirement that an application running on one of these operating
-systems should use the native form of line break.
-
-Applications *should* use the same form of *line break* throughout any
-given serialisation.
-
+````gedcom
+2 NOTE This i
+3 CONC s a test
+3 CONT with on
+3 CONC e line break
+````
+{/}
 
 ### Escape `@`
 
+Replace any COMMERCIAL AT (U+0040, `@`) in a *payload string* that is not the initial or final character of a substring matching the `Escape` production with two adjacent COMMERCIAL ATs (i.e., "`@@`")
+
 ### Add header pseudo-structures
 
-
-
-
-
-
-
---------------------------------------------------------------------------------
-
-Serialized string-valued payloads MUST NOT include line breaks and SHOULD NOT exceed 240 characters.
-
-
-
-Encode
-
-1.  add HEAD.CHAR
-2.  add HEAD.SCHMA
-3.  encode 0 HEAD
-4.  encode each record
-5.  encode 0 TRLR
-
-
-
-
---------------------------------------------------------------------------------
-
-
-
-
-
-
-
-## Encoding/Decoding a dataset
-
-### Encoding a dataset
-
-To encode a *dataset*,
-
-1.  Determine a character encoding.
-    The character encoding MUST be taken from the following options:
-
-    ------    --------------------------------------------------------------------------
-    Encoding  Description
-    ------    --------------------------------------------------------------------------
-    `ASCII`   The US version of ASCII defined in [ASCII].
-
-    `ANSEL`   The extended Latin character set for bibliographic use defined
-              in [ANSEL].
-
-    `UNICODE` Either the UTF-16LE or the UTF-16BE encodings of Unicode
-              defined in [ISO 10646].
-
-    `UTF-8`   The UTF-8 encodings of Unicode defined in [ISO 10646].
-    ------    --------------------------------------------------------------------------
-
-    The character encoding selected
-    MUST be able to encode all code points in all payloads in every *structure* within the dataset.
-    It is RECOMMENDED that UTF-8 be used for all datasets.
-    
-1.  Add a `[CHAR]` *pseudo-structure* to the *head* with the encoding as its *payload*.
-
-1.  Create an [*IRI dictionary*](#IRI-dictionary) that can map all *structure type identifiers* in the data into *tag*s.
-
-1.  Add `[PRFX]` and `[DEFN]` *pseudo-structures* to the *head* to [encode the *IRI dictionary*](#IRI)
-
-1.  Create a *string* by
-
-    1.  Converting the *head* [into a *string*](#struct-string).
-    1.  Appending to that *string* the *string* created by converting each *record* [into a *string*](#struct-string).
-    1.  Appending the [*string* representation](#struct-string) of a trailer *pseudo-structure* (*level* 0, *tag* `TRLR`, no *payload*).
-
-    If the encoding is either `UNICODE` or `UTF-8`,
-    it is RECOMMENDED that the byte-order mark U+FEFF be prepended to the *string*.
-
-1.  [Convert the *string* into a sequence of octets](#string2octet).
-
-### Decoding a dataset
-
-To decode a *dataset*,
-
-1.  [Convert the sequence of octets into a *string*](#octet2string).
-
-1.  Inspect the portion of the *string* that encodes the *head*,
-    ignoring all lines other than those encoding `[PRFX]` and `[DEFN]` *pseudo-structures*.
-    Use those `[PRFX]` and `[DEFN]` *pseudo-structures* to populate an [*IRI dictionary*](#IRI-dictionary).
-
-1.  [Convert each line into a *structure* or *pseudo-structure*](#struct-string).
-    The first *structure* is the dataset's *head*;
-    each remaining *structure* is either one of the dataset's *records*
-    or a substructure of another strucure or *pseudo-structure*.
-    
-    *Pseudo-structures* provide metadata or modify other *structures*
-    and are not part of from the resulting dataset.
-    Substructures of *pseudo-structures* have no meaning and SHALL be ignored.
-
-{.ednote} Substrutures of pseudo-structures are *ignored* rather than *forbidden* because GEDCOM listed the `CHAR` pseudo-structure as having an optional `VERS` substructure with no defined semantics and because non-conformant GEDCOM producers might have placed substructures under any line.
-
-
-## Structure to/from String  {#struct-string}
-
-Each *structure* is mapped to a *string* through the intermediate form of a *line*.
-
-### Lines     {#Line}
-
-A **line** is a *string* that matches the following `Line` production.
-
-    Line  ::=  Delim? Number Delim (XRef Delim)? Tag (Delim PLine)? Delim? LB
-
-The components of a *line* are each separated by a *whitespace*
-**delimiter**, defined as one or more space *characters* or
-tabs.  It matches the production `Delim`:
-
-    Delim  ::=  (#x20 | #x9)+
-
-When creating a *line*, a *conformant* application *shall* use a single
-space *character* (U+0020) for each required *delimiter* and *shall not*
-use a *delimiter* where it is *optional* in grammar.
-
-{.note} This requires an application to be permissive about where
-*whitespace* is permitted when reading a *line*, but conservative in
-where *whitespace* is placed when writing a *line*.  This ensures
-maximum compatibility with existing applications, regardless of whether
-they strictly conform to the [GEDCOM 5.5.1] standard.
-
-Each *line* ends with a **line break** which is defined to be a carriage
-return, a line feed, or a carriage return followed by a line feed.  It
-matches the production `LB`:
-
-    LB  ::=  #xD #xA? | #xA
-
-{.note} This includes the form of line breaks used on Windows (U+000D
-U+000A), the form used on Unix, Linux and modern Mac OS (U+000A), and
-the traditional Mac OS form (U+000D).  However this standard makes no
-requirement that an application running on one of these operating
-systems should use the native form of line break.
-
-Applications *should* use the same form of *line break* throughout any
-given serialisation.
-
-The non-*whitespace* components of a *line* have the following forms: 
-
-
-1.  The **level**: a base-ten integer matching the production `Number`:
-    
-        Number  ::= "0" | [1-9] [0-9]*
-
-2.  An *optional* **xref_id**: an identifier surrounded by at-signs, matching the production `XRef`:
-    
-        XRef  ::= "@" [a-zA-Z0-9_] [^#x40#xA#xD]* "@"
-
-3.  A **tag**: a *string* (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
-    
-        Tag  ::= [0-9a-zA-Z_]+
-
-4.  An *optional* **payload line**: a *string* matching the production `PLine`:
-    
-        PLine   ::= PItem ((PItem | #x20 | #x9)* PItem)? | XRef
-        PItem   ::= [^#x40#x20#x9#xA#xD] | "@@" | Escape
-        Escape  ::= "@#" [^#x40#xA#xD]* "@"
-
-{.note}  The `PLine` production appears quite complicated when written
-in EBNF.  In fact, it allows an arbitrary *string* except that it *must
-not* begin or end with *whitespace*, and that any `@` sign must either
-be doubled (to represent a literal `@`) or be part of an escape
-sequence.  Writing the grammar like this avoides ambiguity as to whether
-*whitespace* is part of the *payload line* or the *delimiter*.
-
-### Structure to/from line(s)
-
-Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more lines as follows:
-
-1.  The *level* of the *head*, of each *record*, and of the `[TRLR]` pseudo-structure is `0`.
-    The *level* of a substructure is 1 greater than the *level* of its superstructure.
-    
-    For example,
-    a substructure of the *head* has level `1`;
-    a substructure of a substructure of the *head* has level `2`.
-
-2.  If the *structure* has an *identifier*, that identifier surrounded by U+0040 (`@`) is the *xref_id*; otherwise, there is no *xref_id*.
-    
-    For example, the *xref_id* of a *structure* with *identifier* "S23" is `@S23@`.
-
-3.  The *tag* is a sting which will map to the *structure*'s *structure type identifier*
-    using the [IRI dictionary](#tag2iri).
-
-    For example, the *tag* of an `http://terms.fhiso.org/elf/ADDR` *structure* is `ADDR`.
-
-4.  The *payload line* has several possibilities:
-    
-    -   If the *payload* of the *structure* is None, there is no *payload line*.
-    
-    -   If the *payload* of the *structure* is a pointer, the *payload line* is the *identifier* of the pointed-to *structure* surrounded by U+0040 (`@`).
-        
-        For example, if the *payload* of a .`INDI`.`ALIA` points to an `INDI` with identifier "I45", the *payload line* is `@I45@`.
-    
-    -   If the *payload* of the *structure* is a *string*, the *payload line* is a prefix of the *payload* determined and encoded as described in [Payload String Encoding].
-
-    If there is no *payload line* but the *structure* expects a *string*-valued *payload*, the *payload* is a string of length 0.
-    If there is a *payload line* of length 0 but the *structure* expects no *payload*, there is no *payload*.
-
-{.ednote} The length-0 passage above deals with the case were "`1 CONT`" should be parsed as a blank line, not as an error because it lacks the required *payload line*.
-
-The [line(s)](#Line) encoding a *structure* is followed immediately by lines encoding each of its substructures and pseudo-substructures.
-The order of substructures of different *structure type identifier*s is arbitrary, but the order of substructures with the same *structure type identifier* MUST be preserved.
-It is RECOMMENDED that all substructures with the same *structure type identifier* be placed adjacent to one another.
-
-{.example ...}
-The following are all equivalent:
-
-````gedcom
-0 @jane@ SUBM
-1 NAME Jane Doe
-1 LANG Gujarati
-1 LANG English
-````
-
-````gedcom
-0 @jane@ SUBM
-1 LANG Gujarati
-1 NAME Jane Doe
-1 LANG English
-````
-
-````gedcom
-0 @jane@ SUBM
-1 LANG Gujarati
-1 LANG English
-1 NAME Jane Doe
-````
-
-... though the second ordering places a `NAME` between two `LANG`s and is thus not recommended.
-The following is *not* equivalent to any of the above:
-
-````gedcom
-0 @jane@ SUBM
-1 NAME Jane Doe
-1 LANG English
-1 LANG Gujarati
-````
-{/}
-
-{.example ...} It is the *structure type identifier* that determines if order must be preserved;
-thus, the order of the two notes in the following must be preserved
-even though one has a pointer as its *payload* and the other has a string:
-
-````gedcom
-1 NAME Jno. /Banks/
-2 NOTE @N34@
-2 NOTE This is probably an abbreviation for John
-````
-{/}
-
-
-### Payload String Encoding
-
-A *string*-valued *payload* is encoded into a *payload line* as follows:
-
-1.  The *payload* is split on all *line break*s,
-    and may also be split between any two non-*whitespace* characters
-    that are not part of a substring matching the `Escape` production.
-
-        Escape  ::= "@#" [^#x40#xA#xD]* "@"
-    
-    The portion before the first split point
-    (or the entire *payload* if there are no splits)
-    is encoded as the *payload line* of the *structure*'s line;
-    the remaining portions are encoded in order
-    as the *payload line*s of pseudo-substructures of the *structure*:
-    a `[CONT]` *pseudo-structure* if the split point was a *line break*
-    and a `[CONC]` *pseudo-structure* otherwise.
-
-    It is RECOMMENDED that all payloads be split as needed
-    to ensure that no *line* containing a portion of the *payload*
-    exceeds 255 characters in length.
-
-1.  Each U+0040 `@` in a *payload*
-    which is not part of a substring that matches production `Escape`
-    is replaced by two adjacent U+0040s `@@`.
-
-1.  Each *delimiter* character that begins or ends a *payload*
-    MUST be replaced by an escape sequence consisting of:
-
-    1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
-    1.  A hexadecimal encoding of the code point of the *delimiter* character (i.e., either `20` or `9`)
-    1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
-
-{.note} Delimiter escaping will never be used with any of the *structures* documented in [ELF-DM]
-because all *payload*s there are either *whitespace normalised* or *line break normalised*.
-Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
-
-{.ednote} The above leaves out the ability to split next to a space or tab, meaning *strings* of hundreds of spaces or tabs will of necessity exceed the 255-character limit.
-
-{.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes  \n supported."`, the `NOTE` could be encoded as
-
-````gedcom
-1 NOTE Example:
-2 CONT multi-line notes
-2 CONT supported.
-````
-
-or as
-
-````gedcom
-1 NOTE Example:
-2 CONT mult
-2 CONC i-lin
-2 CONC e notes
-2 CONT supported.
-````
-
-but *not* as
-
-````gedcom
-1 NOTE Example:
-2 CONT multi-line
-2 CONC notes
-2 CONT supported.
-````
-{/}
-
-
-### Payload String Decoding
-
-A the *payload line*s
-of a *structure*'s line
-and all its `[CONT]` and `[CONC]` pseudo-substructure lines
-are combined to create the *structure*'s *payload* as follows:
-
-1.  Each adjacent pair of U+0040 in each *payload line* is replaced by a single U+0040.
-
-1.  *Whitespace* at the beginning or end of each *payload line* is removed
-
-1.  The *payload* is created by concatenating all *payload line*s in order;
-    if a *payload line* is of a `[CONT]` *pseudo-structure*,
-    it is preceded by a single *line break* prior to concatenation.
-
-{.ednote} There is a problem with the above,
-where "`@@#x@@`", "`@@#x@`", "`@#x@@`", and "`@#x@`" will all decode as the same *payload*.
-The only solution to this that I have come up with involves moving the escapes to the data model.
-
-
-
-
-
-
-## IRI to/from Tag
-
-Each *structure type identifier* in a dataset
-is represented by a **tag** in the serialisation format.
-The mapping between *tag*s and *structure type identifier*s is handled by an **IRI dictionary**.
-The *IRI dictionary* may also define a set of alternate IRIs for a *tag*.
-
-{.note} The intent of the set of alternate IRIs
-is to aid implementations in handling unknown extensions
-without the overhead of a full discovery mechanism.
-
-{.example ...} Suppose that `http://terms.fhiso.org/sources/authorName` is a subtype of `http://terms.fhiso.org/elf/AUTH` that provides additional structural information within the *payload*.  An implementation might create the mapping 
-
-| Tag  | IRIs                                        |
-|------|---------------------------------------------|
-|`AUTH`|`http://terms.fhiso.org/sources/authorName` <br> `http://terms.fhiso.org/elf/AUTH`|
-
-to inform implementations that lines tagged `AUTH`
-are `authorName`s, 
-but can be treated like `AUTH`s
-if full `authorName` semantics are not understood.
-{/}
-
-
-### IRI dictionary format  {#IRI-dictionary}
-
-The IRI dictionary contains any mix of
-
--   zero or one *default namespace definition*,
--   zero or more *namespace definitions*, and
--   zero or more *individual tag mappings*.
-
-The *default namespace definition* specifies an absolute IRI.
-
-Each *namespace definition* maps a key matching the production `Prefix` to an absolute IRI.
-No two *namespace definition*s within a single dataset may share a key.
-
-    Prefix  ::= [0-9A-Za-z]* "_"
-
-Each *individual tag mapping* maps a key matching the production `Tag` to an ordered sequence of absolute IRIs.
-No two *individual tag mapping*s within a single dataset may share a key.
-
-
-### Tag to IRI {#tag2iri}
-
-To convert a *tag* to an IRI, the following checks are performed in order; the first one that matches is used.
-
-1.  If the *tag* is one of `CHAR`, `CONC`, `CONT`, `DEFN`, `PRFX`, or `TRLR`,
-    the *tag* is identifying a *pseudo-structure* and does not map to an IRI.
-
-1.  Otherwise, if the *tag* is a key of an *individual tag mapping*,
-    the IRI associated with that *tag* is the first IRI in the IRI sequence of that mapping.
-    Additional IRIs in that sequence provide *hints* to implementations that *structures* with this IRI MAY be treated like *structures* with other IRIs in the sequence, with a *preference* for the first usable IRI.
-
-1.  Otherwise, if the *tag* contains one or more underscores,
-    let *p* be the substring of the *tag* up to and including the first underscore
-    and *s* be the substring after the first underscore.
-    If *p* is a key in the prefix dictionary,
-    the IRI associated with the *tag* 
-    is the value associated with *p* concatenated with *s*.
-
-1.  Otherwise, if there is a *default namespace definition*,
-    the IRI associated with the *tag*
-    is the IRI of the *default namespace definition* concatenated with the *tag*.
-
-1.  Otherwise, the IRI associated with the *tag*
-    is `http://terms.fhiso.org/elf/` concatenated with the *tag*.
-
-{.example ...} Given the following namespace mappings dictionary entries:
-
-Key     Value
-------  ---------------------------------------------------------------
-`X_`    `http://example.com/extensions/`
-`_`     `http://example.com/old_extensions.html#`
-
-and the following individual tag mapping:
-
-Key     Value
-------  -------------------------------------------
-`_UID`  `http://example.com/UUID` <br> `http://purl.org/dc/terms/identifier`
-
-the following tags convert to the following IRIs:
-
-Tag         IRI
-----------  ------------------------------------------------
-`HEAD`      `http://terms.fhiso.org/elf/HEAD`
-`X_LAT`     `http://example.com/extensions/LAT`
-`_LOC`      `http://example.com/old_extensions.html#LOC`
-`_UID`      `http://example.com/UUID`
-
-Note that `http://purl.org/dc/terms/identifier` is *not* the IRI of `_UID`:
-even if an implementation does not understand `http://example.com/UUID`,
-the first element in the IRI sequence is always the IRI of a tag,
-the others being instead hints about how to treat that type.
-{/}
-
-
-### IRI to Tag {#iri2tag}
-
-Every *structure* type IRI MUST be replaced by a *tag* as part of serialisation,
-and every such replacement MUST be reversible via the IRI dictionary.
-The simplest technique to accomplish this is to create an *individual tag mapping* for every IRI with a unique key for each.
-However, it is RECOMMENDED that more compact *namespace definition*s be used;
-in particular, implementations SHOULD
-
--   use the default prefix for all *structure* types documented in the [Elf-DM].
--   use one *namespace definition* for each *namespace* (as defined in [Vocabularies]),
-    with a key of two or more characters.
--   use just-underscore keys only for compatibility communication with implementations that expect particular *tag*s.
--   provide additional IRIs for extensions that extend *structure* types documented in the [Elf-DM].
-
-{.ednote} Should we say "implementations MUST NOT use any of the six pseudo-structure tags" or add contexts to the definition of pseudo-structures?  In other words, is .INDI.NOTE.DEFN a pseudo-structure or can it be defined as a structure?
-
-### IRI dictionary encoding {#IRI}
-
-The IRI dictionary is encoded as a set pseudo-substructures of the *head*.
-
-Each *namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
-and *payload* consisting of
-the key of the *namespace definition*, a *delimiter*, and the absolute IRI of the *namespace definition*.
-
-Each *default namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
-and *payload* consisting of
-the absolute IRI of the *default namespace definition*.
-
-Each *individual tag mapping* is encoded as a *pseudo-structure* with *tag* `[DEFN]`
-and a *payload* consisting of
-the key of the *individual tag mapping*, a *delimiter*, and the sequence of absolute IRIs of the *individual tag mapping* separated by *whitespace*.
-
-{.note} The permission of *whitespace* separation allows either all IRIs to be encoded in a single line or some to be encoded in `[CONT]` lines.
-
-{.example ...} Given the following namespace mappings dictionary entries:
-
-Key     Value
-------  ---------------------------------------------------------------
-`X_`    `http://example.com/extensions/`
-`_`     `http://example.com/old_extensions.html#`
-
-and the following individual tag mapping:
-
-Key     Value
-------  ---------------------------------------------------------------
-`_UID`  `http://example.com/UUID` <br> `http://purl.org/dc/terms/identifier`
-
-the serialisation could begin
-
-````
-0 HEAD
-1 CHAR UTF-8
-1 DEFN _UID http://example.com/UUID
-2 CONT http://purl.org/dc/terms/identifier
-1 PRFX X_ http://example.com/extensions/
-1 PRFX _ http://example.com/old_extensions.html#
-````
-{/}
-
-
-
+TO DO: add the remaining sections.
 
 
 
