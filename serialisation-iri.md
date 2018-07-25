@@ -286,9 +286,16 @@ The payload of the `CHAR` *pseudo-structure* *must* correctly represent the char
 #### GEDC
 
 If the data model being serialised is that given in [ELF-DataModel],
-then the `GEDC` *pseudo-structure* has no payload and two *substructures*: one with *tag* `FORM` and *payload* "`LINEAGE-LINKED`" and one with *tag* `VERS` and *payload* `5.5.1`.
+then the `GEDC` *pseudo-structure* has no payload and three *substructures*:
+
+- one with *tag* `FORM` and *payload* "`LINEAGE-LINKED`";
+- one with *tag* `VERS` and *payload* "`5.5.1`"; and
+- one with *tag* `ELF` and *payload* "`1.0.0`".
 
 {.note} This specification intentionally does not address what value to put for other data models.
+
+{.ednote} We could instead define the `ELF` version string in [ELF-DataModel] and have [ELF-Serialisation] only say "one with *tag* `ELF` and *payload* equal to the version of the data model being serialised"
+
 
 #### SCHMA
 
@@ -661,6 +668,8 @@ then the *tag mapping table* contains all of the *tag mappings* in [Appendix A](
 
 {.note} This specification intentionally leaves undefined what, if any, initial *tag mapping table* is used in other cases.
 
+{.ednote} We should probably add `2 ELF 1.0.0` to the `GEDC`, but I am not sure what constraints to put upon it. Doe `2 ELF 1.0.1` suggest we do not use Appendix A?
+
 If the *header* has a *substructure* with *tag* `SCHMA`, all of its *substructures* with *tag* `PRFX` *shall* be processed first, followed by all its *substructures* with *tag* `IRI`.
 
 #### PRFX processing
@@ -1001,6 +1010,7 @@ The following is a minimal ELF file with a `SCHMA` containing all *tag mappings*
 1 GEDC 
 2 VERS 5.5.1
 2 FORM LINEAGE-LINKED
+2 ELF 1.0.0
 1 SCHMA
 2 PRFX elf https://terms.fhiso.org/elf/
 2 PRFX elfm https://terms.fhiso.org/elf/metadata/
