@@ -201,7 +201,7 @@ but distinct $T$s for the same $I$ *may* be used to aid in merging datasets usin
 
 No *tag mapping*'s $T$ value may be "`CONC`" or "`CONT`", as those are special values reserved for pseudo-structures that may appear almost anywhere.
 
-All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A] are added to the table.
+All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A](#appendix-a) are added to the table.
 
 ### Tag to structure type {#from-tag}
 
@@ -281,7 +281,7 @@ The character encoding selected
 MUST be able to encode all code points in all payloads in every *structure* within the dataset.
 It is RECOMMENDED that `UTF-8` be used for all datasets.
 
-The payload of the `CHAR` *pseudo-structure* *must* correctly represent the character encoding used to convert the dataset into bytes, as described in {§bytes}.
+The payload of the `CHAR` *pseudo-structure* *must* correctly represent the character encoding used to convert the dataset into octets.
 
 #### SCHMA
 
@@ -315,9 +315,9 @@ the IRI `https://fhiso.org/elf/ADDRESS` may be abbreviated as `elf:ADDRESS`.
 
 Assign each *record* an **identifier** matching production ID:
 
-        ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
+    ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
 
-    Within a given dataset, each *record*'s *identifier* *must* be unique.
+Within a given dataset, each *record*'s *identifier* *must* be unique.
     
 {.note} The production `ID` is an alphanum followed by any number of non-control non-`@` 7-bit ASCII characters.  This is more limited than GEDCOM (which also allows the non-ASCII characters in ANSEL), but I am unaware of any GEDCOM implementation that uses those extra characters.
 
@@ -428,42 +428,7 @@ For each *extended line* (whether a *structure* or *pseudo-structure*, it's *lin
     
     The same *line break* *should* be used at the end of each *line string*.
 
-
-
-
-
-## Deserialisation
-
-To deserialise a dataset,
-
-1. Detect the character encoding used.
-2. Populate the *tag mapping table* from the `SCHMA` *pseudo-structure*s of the `elfm:HEADER`.
-3. Deserialise the `elfm:HEADER`.
-4. Deserialise each *record*.
-
-
-Each of the serialization steps includes several substeps:
-
-a. Covert octets to characters.
-b. Convert each *line string* into an *extended line*.
-d. Associate *substructures* with their *superstructures*.
-c. Remove any `CONT` and `CONC` *psuedo-substructures*.
-
-
-{.ednote} TO DO: continue writing from here
-
-
-
-
-
-
-
-
-
-
-## String to/from octets {#bytes}
-
-### String to octets  {#string2octet}
+### Convert to octets
 
 Given a *string* and character encoding, the *string* is converted into a sequence of octets as specified by that encoding.
 It is RECOMMENDED that the encoding used should be able to represent all code points within the *string*.
@@ -480,6 +445,26 @@ GEDCOM also does not define what is done with unknown code points, so the above 
 
 {.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
 
+
+
+
+## Deserialisation
+
+To deserialise a dataset,
+
+1. Detect the character encoding used.
+2. Populate the *tag mapping table* from the `SCHMA` *pseudo-structure*s of the `elfm:HEADER`.
+3. Deserialise the `elfm:HEADER`.
+4. Deserialise each *record*.
+
+
+Each of the serialization steps includes several substeps:
+
+a. Covert octets to a string.
+b. Convert each *line string* into an *extended line*.
+d. Associate *substructures* with their *superstructures*.
+c. Remove any `CONT` and `CONC` *psuedo-substructures*.
+
 ### Octets to string   {#octet2string}
 
 In order to parse an ELF document, an application must determine how to
@@ -487,7 +472,7 @@ map the raw stream of octets read from the network or disk into
 characters.  This is mapping is called the **character encoding** of
 the document.  Determining it is a two-stage process, with the first
 stage is to determine the **detected character encoding** of the
-document per §7.2.1.
+document per {§chardetect}.
 
 {.note}  The *detected character encoding* might not be the actual
 *character encoding* used in the document, but if the document is
@@ -495,7 +480,7 @@ document per §7.2.1.
 parsing as basic ASCII *character* will be correctly identified.
 
 
-#### Detected character encoding
+#### Detected character encoding                        {#chardetect}
 
 If a character encoding is specified via any supported external means,
 such as an HTTP `Content-Type` header, this *should* be the *detected
@@ -586,9 +571,56 @@ consisting of just a single space *character*.
 
 
 
+### Extended line parsing
+
+The *string* resulting from character decoding *shall* be split on every LINE FEED U+000A and CARRIAGE RETURN U+000D, creating a list of **line**s.
+Any *line* containing only characters matching production `S` from &#x5B;[XML](https://www.w3.org/TR/xml11/)] *shall* be discarded.
+
+    S  ::=  (#x20 | #x9 | #xD | #xA)+
+
+Each *line* shall be converted to an *extended line* as follows:
+
+1. Strip off the leading decimal integer and its following SPACE U+0020.
+    This integer is the *level* of the *extended line*.
+
+2. If the next character is U+0040 (`@` COMMERCIAL AT) then the *extended line*'s *identifier* is the substring of the *line* between that U+0040 and the following U+0040.
+    Strip off this identifier, its surrounding `@`, and the U+0020 following it.
+    
+    Otherwise, the *line* has no *identifier*.
+
+3. The next part of the *line* matches the production `Tag` and is the *tag* of the *extended line*.
+
+    Strip off this *tag* and its following U+0020.
+
+4. The remainder of the *line* is the *extended line*'s *payload string*.
+    
+If any *line* cannot be processed as listed above (e.g., it does not begin with an integer and a space, it does not have a tag, it has a malformed identifier, etc.) then the dataset is not valid ELF and *should* be rejected.
+
+If the first *extended line*'s *level* is not 0
+or any *extended line*'s level is more than 1 larger than the *level* of the preceding *extended line*
+then the dataset is not valid ELF and *should* be rejected.
+
+{.ednote} It is not clear if we should add a "strip leading and trailing whitespace" here or not. GEDCOM suggests implementations should assume whitespace could have been stripped, but also does not suggest that white space should be stripped.
+
+### Extending lines
+
+If an *extended line* with level $n$ has as its *tag* `CONT` or `CONC`, and the line before is neither a `CONT`- or `CONC`-tagged line with *level* $n$ nor a line with a different *tag* with *level* $n-1$
+then the dataset is not valid ELF and *should* be rejected.
+
+{.ednote} It is also an error to have a pointer-valued payload followed by a `CONT` or `CONC`. Is this worth trying to add to this specification?
 
 
-## Appendix A: Known Tags {#Appendix A}
+The following two operations *shall* be repeated until no *extended line*s with *tags* `CONT` and `CONC` remain:
+
+- If an *extended line* with level $n$ is followed by an *extended line* with level $n+1$ and *tag* `CONC`, the *payload string* of the `CONC` line *shall* be appended to the *payload string* of the preceding line and the `CONC` line removed.
+
+- If an *extended line* with level $n$ is followed by an *extended line* with level $n+1$ and *tag* `CONT`, a *line break* followed by the *payload string* of the `CONT` line *shall* be appended to the *payload string* of the preceding line and the `CONT` line removed.
+
+
+{.ednote} Insert missing steps here
+
+
+## Appendix A: Known Tags                                       {#appendix-a}
 
 The following lists *tag mappings* for all concrete types listed in [Elf-DataModel].
 
