@@ -1002,8 +1002,8 @@ The following is a minimal ELF file with a `SCHMA` containing all *tag mappings*
 2 VERS 5.5.1
 2 FORM LINEAGE-LINKED
 1 SCHMA
-2 PRFX elf https://fhiso.org/elf/
-2 PRFX elfm https://fhiso.org/elf/metadata/
+2 PRFX elf https://terms.fhiso.org/elf/
+2 PRFX elfm https://terms.fhiso.org/elf/metadata/
 2 IRI elf:ADDRESS
 3 TAG ADDR elf:Agent elf:Event
 2 IRI elf:ADDRESS_CITY
