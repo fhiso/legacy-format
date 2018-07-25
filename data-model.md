@@ -144,7 +144,7 @@ by zero or more space *characters* or tabs.  It matches the production
 
 **Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant.
 
-{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trialing *may* be removed on a system-by-system basis, suggesting `PLB ::= (#x20 | #x9)* LB`; but page 85 states that both initial an trailing spaces *must* be removed, which is what is documented above. If we stick to what is provided above, there is no simple way to permit indented text in a blockstring.
+{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trailing *may* be removed on a system-by-system basis, suggesting `PLB ::= (#x20 | #x9)* LB`; but page 85 states that both initial an trailing spaces *must* be removed, which is what is documented above. If we stick to what is provided above, there is no simple way to permit indented text in a blockstring.
 
 A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed.
 
@@ -418,7 +418,7 @@ Superstructure
     A *structure* *must not* be *within* itself.
 
 Substructures
-:   Each *structure* may contain any number of **substrutures**;
+:   Each *structure* may contain any number of **substructures**;
     by definition, X is a *substructure* of Y if and only if Y is the *superstructure* of X.
     
     If a *structure* contains more than one *substructure* with the same *structure type*,
@@ -1956,7 +1956,7 @@ Default tag
 
 Used to record couple and parent/child relationships.
 
-Because of the social context in which GEDCOM was first created and because `elf:FAM_RECORD`s are used in some software applications to present binary ancestry trees and *n*-arry descendancy trees, each `elf:FAM_RECORD` is limited to having at most one "first-position" parent; at most one "second-position" parent; and any number of ordered children. GEDCOM explicitly stated that the first-position parent was male and the second-position parent was female; that is not true of how GEDCOM has been used in practice and MUST NOT be assumed by any conformant ELF implementation.
+Because of the social context in which GEDCOM was first created and because `elf:FAM_RECORD`s are used in some software applications to present binary ancestry trees and *n*-ary descendancy trees, each `elf:FAM_RECORD` is limited to having at most one "first-position" parent; at most one "second-position" parent; and any number of ordered children. GEDCOM explicitly stated that the first-position parent was male and the second-position parent was female; that is not true of how GEDCOM has been used in practice and MUST NOT be assumed by any conformant ELF implementation.
 
 Supertype
 :   `[elf:Record]`
@@ -4136,7 +4136,7 @@ Substructures
 :   `[elfm:EXTENDS]` ?
 
 Payload
-:   The *structure type identifier* of a *strucuture type*, possibly shortened in a serialisation-specific way.
+:   The *structure type identifier* of a *structure type*, possibly shortened in a serialisation-specific way.
 
 Default tag
 :   `IRI`

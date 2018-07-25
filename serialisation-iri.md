@@ -428,9 +428,9 @@ For each *extended line* (whether a *structure* or *pseudo-structure*, it's *lin
 1. The *level* as a base-10 integer with no leading 0
 2. If there is an *identifier*,
     1. A SPACE character U+0200
-    2. A COMMERCIAL AT chracter U+040 `@`
+    2. A COMMERCIAL AT character U+040 `@`
     3. The characters of the *identifier*
-    4. A COMMERCIAL AT chracter U+040 `@`
+    4. A COMMERCIAL AT character U+040 `@`
 3. A SPACE character U+0200
 4. The characters of the *tag*
 5. If there is a *payload*,
@@ -454,7 +454,7 @@ Any code points that cannot be directly represented as octets within the charact
     1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 1.  Encode the *string* with the character encoding
 
-{.note} While GEDCOM has no provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
+{.note} While GEDCOM has no provision for escaping unencodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
 GEDCOM also does not define what is done with unknown code points, so the above definition does not violate what GEDCOM requires.
 
 {.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
