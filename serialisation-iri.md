@@ -256,8 +256,8 @@ The first *pseudo-structure* in every ELF serialisation *must* be an `elfm:HEADE
 Its *level* is 0, its *tag* is `HEAD`, and it has no *identifier* nor *payload string*.
 
 Each `elfm:HEADER` has several data-model-level metadata *substructures*, as outlined in [ELF-DataModel].
-In addition, it has several two serialisation-specific metadata *pseudo-substructure* which *shall* be added as part of serialisation:
-exactly one `CHAR` and at most one `SCHMA`.
+In addition, it has several serialisation-specific metadata *pseudo-substructure* which *shall* be added as part of serialisation:
+one `CHAR`, one `GEDC`, and at most one `SCHMA`.
 
 #### CHAR
 
@@ -282,6 +282,13 @@ MUST be able to encode all code points in all payloads in every *structure* with
 It is RECOMMENDED that `UTF-8` be used for all datasets.
 
 The payload of the `CHAR` *pseudo-structure* *must* correctly represent the character encoding used to convert the dataset into octets.
+
+#### GEDC
+
+If the data model being serialised is that given in [ELF-DataModel],
+then the `GEDC` *pseudo-structure* has no payload and two *substructures*: one with *tag* `FORM` and *payload* "`LINEAGE-LINKED`" and one with *tag* `VERS` and *payload* `5.5.1`.
+
+{.note} This specification intentionally does not address what value to put for other data models.
 
 #### SCHMA
 
@@ -594,21 +601,20 @@ Each *line* shall be converted to an *extended line* as follows:
 
 4. The remainder of the *line* is the *extended line*'s *payload string*.
     
-If any *line* cannot be processed as listed above (e.g., it does not begin with an integer and a space, it does not have a tag, it has a malformed identifier, etc.) then the dataset is not valid ELF and *should* be rejected.
+If any *line* cannot be processed as listed above (e.g., it does not begin with an integer and a space, it does not have a tag, it has a malformed identifier, etc.) then the serialisation is not valid ELF and *should* be rejected.
 
 If the first *extended line*'s *level* is not 0
 or any *extended line*'s level is more than 1 larger than the *level* of the preceding *extended line*
-then the dataset is not valid ELF and *should* be rejected.
+then the serialisation is not valid ELF and *should* be rejected.
 
 {.ednote} It is not clear if we should add a "strip leading and trailing whitespace" here or not. GEDCOM suggests implementations should assume whitespace could have been stripped, but also does not suggest that white space should be stripped.
 
 ### Extending lines
 
 If an *extended line* with level $n$ has as its *tag* `CONT` or `CONC`, and the line before is neither a `CONT`- or `CONC`-tagged line with *level* $n$ nor a line with a different *tag* with *level* $n-1$
-then the dataset is not valid ELF and *should* be rejected.
+then the serialisation is not valid ELF and *should* be rejected.
 
 {.ednote} It is also an error to have a pointer-valued payload followed by a `CONT` or `CONC`. Is this worth trying to add to this specification?
-
 
 The following two operations *shall* be repeated until no *extended line*s with *tags* `CONT` and `CONC` remain:
 
@@ -616,8 +622,56 @@ The following two operations *shall* be repeated until no *extended line*s with 
 
 - If an *extended line* with level $n$ is followed by an *extended line* with level $n+1$ and *tag* `CONT`, a *line break* followed by the *payload string* of the `CONT` line *shall* be appended to the *payload string* of the preceding line and the `CONT` line removed.
 
+### Nesting and Pointing
 
-{.ednote} Insert missing steps here
+Create a **tagged structure** for each *extended line*, where a *tagged structure* has a *tag* and no *structure type*.
+
+For each *extended line* with *level* $n > 0$, make that line's *tagged structure* a *substructure* of the last preceding line with *level* $n - 1$.
+
+For each *tagged structure* whose *payload string* matches production `IDPointer`, replace the *tagged structure*'s *payload* with a pointer to the *tagged structure* with the matching *id*. If there is no such *tagged structure* or if there are more than one then the serialisation is not valid ELF.
+
+    IDPointer ::= '@' ID '@'
+
+Once no further *payload strings* matching production `IDPointer` exist, all *tagged structure* *id*s may be discarded.
+
+### Removing tags
+
+If the first *tagged structure* does not have *tag* `HEAD`, the serialisation is not valid ELF. Otherwise, call that *tagged structure* the  **header**.
+
+If the *header* has a *substructure* with *tag* `GEDC`,
+and if the `GEDC` *tagged structure* has (at least) two *substructures*,
+one with *tag* `FORM` and *payload string* "`LINEAGE-LINKED`"
+and one with *tag* `VERS` and a *payload string* beginning `5.5`,
+then the *tag mapping table* contains all of the *tag mappings* in [Appendix A](#appendix-a).
+
+{.note} This specification intentionally leaves undefined what, if any, initial *tag mapping table* is used in other cases.
+
+If the *header* has a *substructure* with *tag* `SCHMA`, all of its *substructures* with *tag* `PRFX` *shall* be processed first, followed by all its *substructures* with *tag* `IRI`.
+
+#### PRFX processing
+
+Each `PRFX`'s payload consist of two whitespace-separated tokens:
+the first is a **prefix** and the second is that *prefix*'s corresponding IRI.
+To **prefix expand** a *string*, if that *string* begins with one of the *prefixes* followed by a colon (U+003A `:`) then replace that *prefix* and colon with the *prefix*'s corresponding IRI.
+
+#### IRI processing
+
+The *payload* of each *tagged structure* with *tag* `IRI` *shall* be *prefix expanded* to create a *structure type identifier* $I$.
+
+If the `IRI` *tagged structure* has a *substructure* with *tag* `ISA`,
+the *payload* of that *substructure* *shall* be *prefix expanded* to create a *structure type identifier* $I'$.
+$I$'s *supertype* is $I'$, which will impact the tag to structure type process as outlined in {§from-tag}.
+
+For each of the *substructure*s of the `IRI` *tagged structure* with *tag* `TAG`,
+
+1. Split the *payload* into tokens on whitespace
+2. Call the first token $T$
+3. For each token other than the first, *prefix expand* the token to get $S$ and add *tag mapping* $(I, S, T)$ to the *tag mapping table*.
+
+#### Removing tags
+
+Once the *tag mapping table* is fully populated,
+convert each *tagged structure* to a *structure* with the *structure type* given by its *tag* using the process outlined in {§from-tag}.
 
 
 ## Appendix A: Known Tags                                       {#appendix-a}

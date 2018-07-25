@@ -2034,47 +2034,6 @@ Default tag
 :   `NOTE`
 
 
-### `elf:GEDCOM_FORMAT`                                   {#elf:GEDCOM_FORMAT}
-
-{.ednote} GEDCOM_FORMAT seems like a pseudo-structure?
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elfm:HEADER]`
-
-Substructures
-:   `[elf:GEDCOM_FORM]`
-:   `[elf:VERSION_NUMBER]`
-
-Payload
-:   None
-
-Default tag
-:   `GEDC`
-
-
-### `elf:GEDCOM_FORM`                                       {#elf:GEDCOM_FORM}
-
-{.ednote} GEDCOM_FORM seems like a pseudo-structure?
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:GEDCOM_FORMAT]`
-
-Substructures
-:   None
-
-Payload
-:   The exact string `LINEAGE-LINKED`.
-
-Default tag
-:   `FORM`
-
-
 ### `elf:GRADUATION`                                         {#elf:GRADUATION}
 
 The conclusion of formal education.
@@ -4083,19 +4042,45 @@ Default tag
 :   `ISA`
 
 
-### `elfm:IRI_PREFIX`                                       {#elfm:IRI_PREFIX}
+### `elfm:GEDCOM_FORMAT`                                 {#elfm:GEDCOM_FORMAT}
 
-An abbreviation mechanism, similar to a CURIE, with specific format and syntax defined on a per-serialisation-format basis.
+A holder for formatting and version information.
+
+Supertype
+:   `[elf:Structure]`
 
 Superstructures
-:   `[elfm:ELF_SCHEMA]`
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elfm:GEDCOM_FORM]`
+:   `[elf:VERSION_NUMBER]`
 
 Payload
-:   a shortened form and an IRI, with details specified per serialisation format.
+:   None
 
 Default tag
-:   `PRFX`
+:   `GEDC`
 
+
+### `elfm:GEDCOM_FORM`                                      {elfm:GEDCOM_FORM}
+
+A holder for formatting and version information.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:GEDCOM_FORMAT]`
+
+Substructures
+:   None
+
+Payload
+:   The exact string `LINEAGE-LINKED`.
+
+Default tag
+:   `FORM`
 
 
 ### `elfm:HEADER`                                               {#elfm:HEADER}
@@ -4112,7 +4097,7 @@ Substructures
 :   `[elf:SUBMITTER_POINTER]` !
 :   `[elf:FILE_NAME]` ?
 :   `[elf:COPYRIGHT_GEDCOM_FILE]` ?
-:   `[elf:GEDCOM_FORMAT]` !
+:   `[elfm:GEDCOM_FORMAT]` !
 :   `[elf:LANGUAGE_OF_TEXT]` ?
 :   `[elf:DEFAULT_PLACE_FORMAT]` ?
 :   `[elf:GEDCOM_CONTENT_DESCRIPTION]` ?
@@ -4121,6 +4106,21 @@ Substructures
 
 Default tag
 :   `HEAD`
+
+
+### `elfm:IRI_PREFIX`                                       {#elfm:IRI_PREFIX}
+
+An abbreviation mechanism, similar to a CURIE, with specific format and syntax defined on a per-serialisation-format basis.
+
+Superstructures
+:   `[elfm:ELF_SCHEMA]`
+
+Payload
+:   a shortened form and an IRI, with details specified per serialisation format.
+
+Default tag
+:   `PRFX`
+
 
 ### `elfm:STRUCTURE_TYPE`                               {#elfm:STRUCTURE_TYPE}
 
