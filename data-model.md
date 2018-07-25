@@ -3918,7 +3918,7 @@ Supertype
 
 Superstructures
 :   `[elf:DOCUMENT_SOURCE]`
-:   `[elf:GEDCOM_FORMAT]`
+:   `[elfm:GEDCOM_FORMAT]`
 :   `[elfm:CHARACTER_SET]`
 
 Substructure
@@ -4042,6 +4042,26 @@ Default tag
 :   `ISA`
 
 
+### `elfm:GEDCOM_FORM`                                     {#elfm:GEDCOM_FORM}
+
+A holder for formatting and version information.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:GEDCOM_FORMAT]`
+
+Substructures
+:   None
+
+Payload
+:   The exact string `LINEAGE-LINKED`
+
+Default tag
+:   `FORM`
+
+
 ### `elfm:GEDCOM_FORMAT`                                 {#elfm:GEDCOM_FORMAT}
 
 A holder for formatting and version information.
@@ -4061,26 +4081,6 @@ Payload
 
 Default tag
 :   `GEDC`
-
-
-### `elfm:GEDCOM_FORM`                                      {elfm:GEDCOM_FORM}
-
-A holder for formatting and version information.
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elfm:GEDCOM_FORMAT]`
-
-Substructures
-:   None
-
-Payload
-:   The exact string `LINEAGE-LINKED`.
-
-Default tag
-:   `FORM`
 
 
 ### `elfm:HEADER`                                               {#elfm:HEADER}

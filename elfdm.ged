@@ -1,8 +1,5 @@
 0 HEAD
-1 SOUR https://fhiso.org/elf/
-1 NOTE This file was automatically generated from data-model.md
-2 CONT by schema-maker.py at 2018-07-24T18:45:43.123346
-1 SUBM @fhiso_elf1@
+1 CHAR UTF-8
 1 GEDC 
 2 VERS 5.5.1
 2 FORM LINEAGE-LINKED
@@ -178,10 +175,6 @@
 3 ISA elf:Event
 2 IRI elf:GEDCOM_CONTENT_DESCRIPTION
 3 TAG NOTE elfm:HEADER
-2 IRI elf:GEDCOM_FORM
-3 TAG FORM elf:GEDCOM_FORMAT
-2 IRI elf:GEDCOM_FORMAT
-3 TAG GEDC elfm:HEADER
 2 IRI elf:GRADUATION
 3 ISA elf:IndividualEvent
 3 TAG GRAD elf:INDIVIDUAL_RECORD
@@ -407,7 +400,7 @@
 2 IRI elf:USER_REFERENCE_TYPE
 3 TAG TYPE elf:USER_REFERENCE_NUMBER
 2 IRI elf:VERSION_NUMBER
-3 TAG VERS elf:DOCUMENT_SOURCE elf:GEDCOM_FORMAT elfm:CHARACTER_SET
+3 TAG VERS elf:DOCUMENT_SOURCE elfm:CHARACTER_SET elfm:GEDCOM_FORMAT
 2 IRI elf:WHERE_WITHIN_SOURCE
 3 TAG PAGE elf:SOURCE_CITATION
 2 IRI elf:WILL
@@ -422,6 +415,10 @@
 3 TAG SCHMA elfm:HEADER
 2 IRI elfm:EXTENDS
 3 TAG ISA elfm:STRUCTURE_TYPE
+2 IRI elfm:GEDCOM_FORM
+3 TAG FORM elfm:GEDCOM_FORMAT
+2 IRI elfm:GEDCOM_FORMAT
+3 TAG GEDC elfm:HEADER
 2 IRI elfm:HEADER
 3 TAG HEAD elfm:Document
 2 IRI elfm:IRI_PREFIX
@@ -432,7 +429,10 @@
 3 TAG TAG elfm:STRUCTURE_TYPE
 2 IRI elfm:Trailer
 3 TAG TRLR elfm:Document
-2 IRI tructure
+1 SOUR https://fhiso.org/elf/
+1 NOTE This file was automatically generated from data-model.md
+2 CONT by schema-maker.py at 2018-07-25T13:24:22.530154
+1 SUBM @fhiso_elf1@
 0 @fhiso_elf1@ SUBM
 1 NAME FHISO Extended Legacy Format, version 1
 0 TRLR
