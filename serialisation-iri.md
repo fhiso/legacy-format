@@ -256,8 +256,8 @@ The first *pseudo-structure* in every ELF serialisation *must* be an `elfm:HEADE
 Its *level* is 0, its *tag* is `HEAD`, and it has no *identifier* nor *payload string*.
 
 Each `elfm:HEADER` has several data-model-level metadata *substructures*, as outlined in [ELF-DataModel].
-In addition, it has several two serialisation-specific metadata *pseudo-substructure* which *shall* be added as part of serialisation:
-exactly one `CHAR` and at most one `SCHMA`.
+In addition, it has several serialisation-specific metadata *pseudo-substructure* which *shall* be added as part of serialisation:
+one `CHAR`, one `GEDC`, and at most one `SCHMA`.
 
 #### CHAR
 
@@ -282,6 +282,20 @@ MUST be able to encode all code points in all payloads in every *structure* with
 It is RECOMMENDED that `UTF-8` be used for all datasets.
 
 The payload of the `CHAR` *pseudo-structure* *must* correctly represent the character encoding used to convert the dataset into octets.
+
+#### GEDC
+
+If the data model being serialised is that given in [ELF-DataModel],
+then the `GEDC` *pseudo-structure* has no payload and three *substructures*:
+
+- one with *tag* `FORM` and *payload* "`LINEAGE-LINKED`";
+- one with *tag* `VERS` and *payload* "`5.5.1`"; and
+- one with *tag* `ELF` and *payload* "`1.0.0`".
+
+{.note} This specification intentionally does not address what value to put for other data models.
+
+{.ednote} We could instead define the `ELF` version string in [ELF-DataModel] and have [ELF-Serialisation] only say "one with *tag* `ELF` and *payload* equal to the version of the data model being serialised"
+
 
 #### SCHMA
 
@@ -594,21 +608,35 @@ Each *line* shall be converted to an *extended line* as follows:
 
 4. The remainder of the *line* is the *extended line*'s *payload string*.
     
-If any *line* cannot be processed as listed above (e.g., it does not begin with an integer and a space, it does not have a tag, it has a malformed identifier, etc.) then the dataset is not valid ELF and *should* be rejected.
+If any *line* cannot be processed as listed above (e.g., it does not begin with an integer and a space, it does not have a tag, it has a malformed identifier, etc.) then the serialisation is not valid ELF and *should* be rejected.
 
 If the first *extended line*'s *level* is not 0
 or any *extended line*'s level is more than 1 larger than the *level* of the preceding *extended line*
-then the dataset is not valid ELF and *should* be rejected.
+then the serialisation is not valid ELF and *should* be rejected.
 
 {.ednote} It is not clear if we should add a "strip leading and trailing whitespace" here or not. GEDCOM suggests implementations should assume whitespace could have been stripped, but also does not suggest that white space should be stripped.
+
+### Unescape `@`
+
+Replace any pair of COMMERCIAL AT (U+0040 twice, `@@`) in a *payload string* with a single COMMERCIAL AT.
+
+{.ednote ...} The whole `@` thing is messier than this, really.
+
+The above turns `@@#yes@@` into `@#yes@` and thus into an escape, which it is not meant to be. I believe semantically we are supposed to have a *string* be a sequence of *characters* and escapes, and turn escape strings into escapes before dealing with doubled `@@`, but that is truly messy because we're no longer dealing with strings at all.
+
+I also expect that if there are proper escape-handling implementations out there, some of them would see `@@#yes@@` as (`@`, escape, `@`) instead of (`@`, `#yes`, `@`)., though I have yet to convince myself that such systems do exists.
+
+I'd be far happier if we could demonstrate that GEDCOM in the wild never uses escapes except at the beginning of strings and change their place-in-string behavior to property-of-string instead, but unfortunately the date microformat allows things like `FROM @#DJULIAN@ 13 JUN 1503 TO @#DGREGORIAN@ 11 JUN 1900`.
+
+Escapes are supposed to introduce a more-than-just-string semantics, and any effort to reduce them to just simple strings without the need for post-processing of `@@` is destined to fail.
+{/}
 
 ### Extending lines
 
 If an *extended line* with level $n$ has as its *tag* `CONT` or `CONC`, and the line before is neither a `CONT`- or `CONC`-tagged line with *level* $n$ nor a line with a different *tag* with *level* $n-1$
-then the dataset is not valid ELF and *should* be rejected.
+then the serialisation is not valid ELF and *should* be rejected.
 
 {.ednote} It is also an error to have a pointer-valued payload followed by a `CONT` or `CONC`. Is this worth trying to add to this specification?
-
 
 The following two operations *shall* be repeated until no *extended line*s with *tags* `CONT` and `CONC` remain:
 
@@ -616,231 +644,60 @@ The following two operations *shall* be repeated until no *extended line*s with 
 
 - If an *extended line* with level $n$ is followed by an *extended line* with level $n+1$ and *tag* `CONT`, a *line break* followed by the *payload string* of the `CONT` line *shall* be appended to the *payload string* of the preceding line and the `CONT` line removed.
 
+### Nesting and Pointing
 
-{.ednote} Insert missing steps here
+Create a **tagged structure** for each *extended line*, where a *tagged structure* has a *tag* and no *structure type*.
+
+For each *extended line* with *level* $n > 0$, make that line's *tagged structure* a *substructure* of the last preceding line with *level* $n - 1$.
+
+For each *tagged structure* whose *payload string* matches production `IDPointer`, replace the *tagged structure*'s *payload* with a pointer to the *tagged structure* with the matching *id*. If there is no such *tagged structure* or if there are more than one then the serialisation is not valid ELF.
+
+    IDPointer ::= '@' ID '@'
+
+Once no further *payload strings* matching production `IDPointer` exist, all *tagged structure* *id*s may be discarded.
+
+### Removing tags
+
+If the first *tagged structure* does not have *tag* `HEAD`, the serialisation is not valid ELF. Otherwise, call that *tagged structure* the  **header**.
+
+If the *header* has a *substructure* with *tag* `GEDC`,
+and if the `GEDC` *tagged structure* has (at least) two *substructures*,
+one with *tag* `FORM` and *payload string* "`LINEAGE-LINKED`"
+and one with *tag* `VERS` and a *payload string* beginning `5.5`,
+then the *tag mapping table* contains all of the *tag mappings* in [Appendix A](#appendix-a).
+
+{.note} This specification intentionally leaves undefined what, if any, initial *tag mapping table* is used in other cases.
+
+{.ednote} We should probably add `2 ELF 1.0.0` to the `GEDC`, but I am not sure what constraints to put upon it. Doe `2 ELF 1.0.1` suggest we do not use Appendix A?
+
+If the *header* has a *substructure* with *tag* `SCHMA`, all of its *substructures* with *tag* `PRFX` *shall* be processed first, followed by all its *substructures* with *tag* `IRI`.
+
+#### PRFX processing
+
+Each `PRFX`'s payload consist of two whitespace-separated tokens:
+the first is a **prefix** and the second is that *prefix*'s corresponding IRI.
+To **prefix expand** a *string*, if that *string* begins with one of the *prefixes* followed by a colon (U+003A `:`) then replace that *prefix* and colon with the *prefix*'s corresponding IRI.
+
+#### IRI processing
+
+The *payload* of each *tagged structure* with *tag* `IRI` *shall* be *prefix expanded* to create a *structure type identifier* $I$.
+
+If the `IRI` *tagged structure* has a *substructure* with *tag* `ISA`,
+the *payload* of that *substructure* *shall* be *prefix expanded* to create a *structure type identifier* $I'$.
+$I$'s *supertype* is $I'$, which will impact the tag to structure type process as outlined in {§from-tag}.
+
+For each of the *substructure*s of the `IRI` *tagged structure* with *tag* `TAG`,
+
+1. Split the *payload* into tokens on whitespace
+2. Call the first token $T$
+3. For each token other than the first, *prefix expand* the token to get $S$ and add *tag mapping* $(I, S, T)$ to the *tag mapping table*.
+
+#### Removing tags
+
+Once the *tag mapping table* is fully populated,
+convert each *tagged structure* to a *structure* with the *structure type* given by its *tag* using the process outlined in {§from-tag}.
 
 
-## Appendix A: Known Tags                                       {#appendix-a}
-
-The following lists *tag mappings* for all concrete types listed in [Elf-DataModel].
-
-| $I$                            | $S$                            | $T$   |
-|:-------------------------------|:-------------------------------|:------|
-| elf:ADDRESS                    | elf:Agent                      | ADDR  |
-| elf:ADDRESS                    | elf:Event                      | ADDR  |
-| elf:ADDRESS_CITY               | elf:ADDRESS                    | CITY  |
-| elf:ADDRESS_COUNTRY            | elf:ADDRESS                    | CTRY  |
-| elf:ADDRESS_EMAIL              | elf:Agent                      | EMAIL |
-| elf:ADDRESS_FAX                | elf:Agent                      | FAX   |
-| elf:ADDRESS_LINE1              | elf:ADDRESS                    | ADR1  |
-| elf:ADDRESS_LINE2              | elf:ADDRESS                    | ADR2  |
-| elf:ADDRESS_LINE3              | elf:ADDRESS                    | ADR3  |
-| elf:ADDRESS_POSTAL_CODE        | elf:ADDRESS                    | POST  |
-| elf:ADDRESS_STATE              | elf:ADDRESS                    | STAE  |
-| elf:ADDRESS_WEB_PAGE           | elf:Agent                      | WWW   |
-| elf:ADOPTED_BY_WHICH_PARENT    | elf:ADOPTIVE_FAMILY            | ADOP  |
-| elf:ADOPTION                   | elf:INDIVIDUAL_RECORD          | ADOP  |
-| elf:ADOPTIVE_FAMILY            | elf:ADOPTION                   | FAMC  |
-| elf:ADULT_CHRISTENING          | elf:INDIVIDUAL_RECORD          | CHRA  |
-| elf:AGE_AT_EVENT               | elf:IndividualEvent            | AGE   |
-| elf:AGE_AT_EVENT               | elf:Parent1Age                 | AGE   |
-| elf:AGE_AT_EVENT               | elf:Parent2Age                 | AGE   |
-| elf:ALIAS_POINTER              | elf:INDIVIDUAL_RECORD          | ALIA  |
-| elf:ANCESTOR_INTEREST_POINTER  | elf:INDIVIDUAL_RECORD          | ANCI  |
-| elf:ANNULMENT                  | elf:FAM_RECORD                 | ANUL  |
-| elf:ASSOCIATION_STRUCTURE      | elf:INDIVIDUAL_RECORD          | ASSO  |
-| elf:ATTRIBUTE_DESCRIPTOR       | elf:INDIVIDUAL_RECORD          | FACT  |
-| elf:AUTOMATED_RECORD_ID        | elf:Record                     | RIN   |
-| elf:BAPTISM                    | elf:INDIVIDUAL_RECORD          | BAPM  |
-| elf:BAR_MITZVAH                | elf:INDIVIDUAL_RECORD          | BARM  |
-| elf:BAS_MITZVAH                | elf:INDIVIDUAL_RECORD          | BASM  |
-| elf:BINARY_OBJECT              | elf:MULTIMEDIA_RECORD          | BLOB  |
-| elf:BIRTH                      | elf:INDIVIDUAL_RECORD          | BIRT  |
-| elf:BLESSING                   | elf:INDIVIDUAL_RECORD          | BLES  |
-| elf:BURIAL                     | elf:INDIVIDUAL_RECORD          | BRI   |
-| elf:CASTE_NAME                 | elf:INDIVIDUAL_RECORD          | CAST  |
-| elf:CAUSE_OF_EVENT             | elf:Event                      | CAUS  |
-| elf:CENSUS#Family              | elf:FAM_RECORD                 | CENS  |
-| elf:CENSUS#Individual          | elf:INDIVIDUAL_RECORD          | CENS  |
-| elf:CERTAINTY_ASSESSMENT       | elf:SOURCE_CITATION            | QUAY  |
-| elf:CHANGE_DATE                | elf:Record                     | CHAN  |
-| elf:CHANGE_DATE_DATE           | elf:CHANGE_DATE                | DATE  |
-| elf:CHILD_LINKAGE_STATUS       | elf:CHILD_TO_FAMILY_LINK       | STAT  |
-| elf:CHILD_POINTER              | elf:FAM_RECORD                 | CHIL  |
-| elf:CHILD_TO_FAMILY_LINK       | elf:INDIVIDUAL_RECORD          | FAMC  |
-| elf:CHRISTENING                | elf:INDIVIDUAL_RECORD          | CHR   |
-| elf:CONFIRMATION               | elf:INDIVIDUAL_RECORD          | CONF  |
-| elf:CONTINUED_BINARY_OBJECT    | elf:MULTIMEDIA_RECORD          | OBJE  |
-| elf:COPYRIGHT_GEDCOM_FILE      | elfm:HEADER                    | COPR  |
-| elf:COPYRIGHT_SOURCE_DATA      | elf:NAME_OF_SOURCE_DATA        | COPR  |
-| elf:COUNT_OF_CHILDREN#Family   | elf:FAM_RECORD                 | NCHI  |
-| elf:COUNT_OF_CHILDREN#Individual | elf:INDIVIDUAL_RECORD          | NCHI  |
-| elf:COUNT_OF_MARRIAGES         | elf:INDIVIDUAL_RECORD          | NMR   |
-| elf:CREMATION                  | elf:INDIVIDUAL_RECORD          | CREM  |
-| elf:DATE_PERIOD                | elf:EVENTS_RECORDED            | DATE  |
-| elf:DATE_VALUE                 | elf:Event                      | DATE  |
-| elf:DEATH                      | elf:INDIVIDUAL_RECORD          | DEAT  |
-| elf:DEFAULT_PLACE_FORMAT       | elfm:HEADER                    | PLAC  |
-| elf:DESCENDANT_INTEREST_POINTER | elf:INDIVIDUAL_RECORD          | DESI  |
-| elf:DESCRIPTIVE_TITLE          | elf:MULTIMEDIA_FILE_REFERENCE  | TITL  |
-| elf:DESCRIPTIVE_TITLE          | elf:MULTIMEDIA_LINK            | TITL  |
-| elf:DESCRIPTIVE_TITLE          | elf:MULTIMEDIA_RECORD          | TITL  |
-| elf:DIVORCE                    | elf:FAM_RECORD                 | DIV   |
-| elf:DIVORCE_FILED              | elf:FAM_RECORD                 | DIVF  |
-| elf:DOCUMENT_SOURCE            | elfm:HEADER                    | SOUR  |
-| elf:EMIGRATION                 | elf:INDIVIDUAL_RECORD          | EMIG  |
-| elf:ENGAGEMENT                 | elf:FAM_RECORD                 | ENGA  |
-| elf:ENTRY_RECORDING_DATE       | elf:SOURCE_CITATION_DATA       | DATE  |
-| elf:EVENT#Family               | elf:FAM_RECORD                 | EVEN  |
-| elf:EVENT#Individual           | elf:INDIVIDUAL_RECORD          | EVEN  |
-| elf:EVENTS_RECORDED            | elf:SOURCE_RECORD_DATA         | EVEN  |
-| elf:EVENT_OR_FACT_CLASSIFICATION | elf:Event                      | TYPE  |
-| elf:EVENT_TYPE_CITED_FROM      | elf:SOURCE_CITATION            | EVEN  |
-| elf:FAM_RECORD                 | elfm:Document                  | FAM   |
-| elf:FILE_NAME                  | elfm:HEADER                    | FILE  |
-| elf:FIRST_COMMUNION            | elf:INDIVIDUAL_RECORD          | FCOM  |
-| elf:GEDCOM_CONTENT_DESCRIPTION | elfm:HEADER                    | NOTE  |
-| elf:GEDCOM_FORM                | elf:GEDCOM_FORMAT              | FORM  |
-| elf:GEDCOM_FORMAT              | elfm:HEADER                    | GEDC  |
-| elf:GRADUATION                 | elf:INDIVIDUAL_RECORD          | GRAD  |
-| elf:IMMIGRATION                | elf:INDIVIDUAL_RECORD          | IMMI  |
-| elf:INDIVIDUAL_RECORD          | elfm:Document                  | INDI  |
-| elf:LANGUAGE_OF_TEXT           | elfm:HEADER                    | LANG  |
-| elf:LANGUAGE_PREFERENCE        | elf:SUBMITTER_RECORD           | LANG  |
-| elf:MAP_COORDINATES            | elf:PLACE_STRUCTURE            | MAP   |
-| elf:MARRIAGE                   | elf:FAM_RECORD                 | MARR  |
-| elf:MARRIAGE_BANN              | elf:FAM_RECORD                 | MARB  |
-| elf:MARRIAGE_CONTRACT          | elf:FAM_RECORD                 | MARC  |
-| elf:MARRIAGE_LICENSE           | elf:FAM_RECORD                 | MARL  |
-| elf:MARRIAGE_SETTLEMENT        | elf:FAM_RECORD                 | MARS  |
-| elf:MULTIMEDIA_FILE_REFERENCE  | elf:MULTIMEDIA_LINK            | FILE  |
-| elf:MULTIMEDIA_FILE_REFERENCE  | elf:MULTIMEDIA_RECORD          | FILE  |
-| elf:MULTIMEDIA_FORMAT          | elf:MULTIMEDIA_FILE_REFERENCE  | FORM  |
-| elf:MULTIMEDIA_FORMAT          | elf:MULTIMEDIA_LINK            | FORM  |
-| elf:MULTIMEDIA_FORMAT          | elf:MULTIMEDIA_RECORD          | FORM  |
-| elf:MULTIMEDIA_LINK            | elf:Event                      | OBJE  |
-| elf:MULTIMEDIA_LINK            | elf:FAM_RECORD                 | OBJE  |
-| elf:MULTIMEDIA_LINK            | elf:INDIVIDUAL_RECORD          | OBJE  |
-| elf:MULTIMEDIA_LINK            | elf:SOURCE_CITATION            | OBJE  |
-| elf:MULTIMEDIA_LINK            | elf:SOURCE_RECORD              | OBJE  |
-| elf:MULTIMEDIA_LINK            | elf:SUBMITTER_RECORD           | OBJE  |
-| elf:MULTIMEDIA_RECORD          | elfm:Document                  | OBJE  |
-| elf:NAME_OF_BUSINESS           | elf:DOCUMENT_SOURCE            | CORP  |
-| elf:NAME_OF_PRODUCT            | elf:DOCUMENT_SOURCE            | NAME  |
-| elf:NAME_OF_REPOSITORY         | elf:REPOSITORY_RECORD          | NAME  |
-| elf:NAME_OF_SOURCE_DATA        | elf:DOCUMENT_SOURCE            | DATA  |
-| elf:NAME_PHONETIC_VARIATION    | elf:PERSONAL_NAME_STRUCTURE    | FONE  |
-| elf:NAME_PIECE_GIVEN           | elf:PersonalName               | GIVN  |
-| elf:NAME_PIECE_NICKNAME        | elf:PersonalName               | NICK  |
-| elf:NAME_PIECE_PREFIX          | elf:PersonalName               | NPFX  |
-| elf:NAME_PIECE_SUFFIX          | elf:PersonalName               | NSFX  |
-| elf:NAME_PIECE_SURNAME         | elf:PersonalName               | SURN  |
-| elf:NAME_PIECE_SURNAME_PREFIX  | elf:PersonalName               | SPFX  |
-| elf:NAME_ROMANIZED_VARIATION   | elf:PERSONAL_NAME_STRUCTURE    | ROMN  |
-| elf:NAME_TYPE                  | elf:PERSONAL_NAME_STRUCTURE    | TYPE  |
-| elf:NATIONAL_ID_NUMBER         | elf:INDIVIDUAL_RECORD          | IDNO  |
-| elf:NATIONAL_OR_TRIBAL_ORIGIN  | elf:INDIVIDUAL_RECORD          | NATI  |
-| elf:NATURALIZATION             | elf:INDIVIDUAL_RECORD          | NATU  |
-| elf:NOBILITY_TYPE_TITLE        | elf:INDIVIDUAL_RECORD          | TITL  |
-| elf:NOTE_RECORD                | elfm:Document                  | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:ASSOCIATION_STRUCTURE      | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:CHANGE_DATE                | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:CHILD_TO_FAMILY_LINK       | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:Event                      | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:PLACE_STRUCTURE            | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:PersonalName               | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:Record                     | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:SOURCE_CITATION            | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:SOURCE_RECORD_DATA         | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:SOURCE_REPOSITORY_CITATION | NOTE  |
-| elf:NOTE_STRUCTURE             | elf:SPOUSE_TO_FAMILY_LINK      | NOTE  |
-| elf:OCCUPATION                 | elf:INDIVIDUAL_RECORD          | OCCU  |
-| elf:ORDINATION                 | elf:INDIVIDUAL_RECORD          | ORDN  |
-| elf:PARENT1_POINTER            | elf:FAM_RECORD                 | HUSB  |
-| elf:PARENT2_POINTER            | elf:FAM_RECORD                 | WIFE  |
-| elf:PEDIGREE_LINKAGE_TYPE      | elf:CHILD_TO_FAMILY_LINK       | PEDI  |
-| elf:PERSONAL_NAME_STRUCTURE    | elf:INDIVIDUAL_RECORD          | NAME  |
-| elf:PHONETIC_TYPE              | elf:NAME_PHONETIC_VARIATION    | TYPE  |
-| elf:PHONETIC_TYPE              | elf:PLACE_PHONETIC_VARIATION   | TYPE  |
-| elf:PHONE_NUMBER               | elf:Agent                      | PHON  |
-| elf:PHYSICAL_DESCRIPTION       | elf:INDIVIDUAL_RECORD          | DSCR  |
-| elf:PLACE_HIERARCHY            | elf:DEFAULT_PLACE_FORMAT       | FORM  |
-| elf:PLACE_HIERARCHY            | elf:PLACE_STRUCTURE            | FORM  |
-| elf:PLACE_LATITUDE             | elf:MAP_COORDINATES            | LATI  |
-| elf:PLACE_LONGITUDE            | elf:MAP_COORDINATES            | LONG  |
-| elf:PLACE_PHONETIC_VARIATION   | elf:PLACE_STRUCTURE            | FONE  |
-| elf:PLACE_ROMANIZED_VARIATION  | elf:PLACE_STRUCTURE            | ROMN  |
-| elf:PLACE_STRUCTURE            | elf:Event                      | PLAC  |
-| elf:POSSESSIONS                | elf:INDIVIDUAL_RECORD          | PROP  |
-| elf:PROBATE                    | elf:INDIVIDUAL_RECORD          | PROB  |
-| elf:PUBLICATION_DATE           | elf:NAME_OF_SOURCE_DATA        | DATE  |
-| elf:Parent1Age                 | elf:FamilyEvent                | HUSB  |
-| elf:Parent2Age                 | elf:FamilyEvent                | WIFE  |
-| elf:RECEIVING_SYSTEM_NAME      | elfm:HEADER                    | DEST  |
-| elf:RELATION_IS_DESCRIPTOR     | elf:ASSOCIATION_STRUCTURE      | RELA  |
-| elf:RELIGIOUS_AFFILIATION      | elf:Event                      | RELI  |
-| elf:RELIGIOUS_AFFILIATION#Individual | elf:INDIVIDUAL_RECORD          | RELI  |
-| elf:REPOSITORY_RECORD          | elfm:Document                  | REPO  |
-| elf:RESIDENCE                  | elf:FAM_RECORD                 | RESI  |
-| elf:RESIDES_AT                 | elf:INDIVIDUAL_RECORD          | RESI  |
-| elf:RESPONSIBLE_AGENCY         | elf:Event                      | AGNC  |
-| elf:RESPONSIBLE_AGENCY         | elf:SOURCE_RECORD_DATA         | AGNC  |
-| elf:RESTRICTION_NOTICE         | elf:Event                      | RESN  |
-| elf:RESTRICTION_NOTICE         | elf:FAM_RECORD                 | RESN  |
-| elf:RESTRICTION_NOTICE         | elf:INDIVIDUAL_RECORD          | RESN  |
-| elf:RETIREMENT                 | elf:INDIVIDUAL_RECORD          | RETI  |
-| elf:ROLE_IN_EVENT              | elf:EVENT_TYPE_CITED_FROM      | ROLE  |
-| elf:ROMANIZED_TYPE             | elf:NAME_ROMANIZED_VARIATION   | TYPE  |
-| elf:ROMANIZED_TYPE             | elf:PLACE_ROMANIZED_VARIATION  | TYPE  |
-| elf:SCHOLASTIC_ACHIEVEMENT     | elf:INDIVIDUAL_RECORD          | EDUC  |
-| elf:SEX_VALUE                  | elf:INDIVIDUAL_RECORD          | SEX   |
-| elf:SOCIAL_SECURITY_NUMBER     | elf:INDIVIDUAL_RECORD          | SSN   |
-| elf:SOURCE_CALL_NUMBER         | elf:SOURCE_REPOSITORY_CITATION | CALN  |
-| elf:SOURCE_CITATION            | elf:ASSOCIATION_STRUCTURE      | SOUR  |
-| elf:SOURCE_CITATION            | elf:Event                      | SOUR  |
-| elf:SOURCE_CITATION            | elf:FAM_RECORD                 | SOUR  |
-| elf:SOURCE_CITATION            | elf:INDIVIDUAL_RECORD          | SOUR  |
-| elf:SOURCE_CITATION            | elf:PersonalName               | SOUR  |
-| elf:SOURCE_CITATION_DATA       | elf:SOURCE_CITATION            | DATA  |
-| elf:SOURCE_DESCRIPTIVE_TITLE   | elf:SOURCE_RECORD              | TITL  |
-| elf:SOURCE_FILED_BY_ENTRY      | elf:SOURCE_RECORD              | ABBR  |
-| elf:SOURCE_JURISDICTION_PLACE  | elf:EVENTS_RECORDED            | PLAC  |
-| elf:SOURCE_MEDIA_TYPE          | elf:MULTIMEDIA_FORMAT          | MEDI  |
-| elf:SOURCE_MEDIA_TYPE          | elf:SOURCE_CALL_NUMBER         | MEDI  |
-| elf:SOURCE_ORIGINATOR          | elf:SOURCE_RECORD              | AUTH  |
-| elf:SOURCE_PUBLICATION_FACTS   | elf:SOURCE_RECORD              | PUBL  |
-| elf:SOURCE_RECORD              | elfm:Document                  | SOUR  |
-| elf:SOURCE_RECORD_DATA         | elf:SOURCE_RECORD              | DATA  |
-| elf:SOURCE_REPOSITORY_CITATION | elf:SOURCE_RECORD              | REPO  |
-| elf:SPOUSE_TO_FAMILY_LINK      | elf:INDIVIDUAL_RECORD          | FAMS  |
-| elf:SUBMITTER_NAME             | elf:SUBMITTER_RECORD           | NAME  |
-| elf:SUBMITTER_POINTER          | elf:FAM_RECORD                 | SUBM  |
-| elf:SUBMITTER_POINTER          | elf:INDIVIDUAL_RECORD          | SUBM  |
-| elf:SUBMITTER_POINTER          | elfm:HEADER                    | SUBM  |
-| elf:SUBMITTER_RECORD           | elfm:Document                  | SUBM  |
-| elf:TEXT_FROM_SOURCE           | elf:SOURCE_CITATION            | TEXT  |
-| elf:TEXT_FROM_SOURCE           | elf:SOURCE_CITATION_DATA       | TEXT  |
-| elf:TEXT_FROM_SOURCE           | elf:SOURCE_RECORD              | TEXT  |
-| elf:TIME_VALUE                 | elf:CHANGE_DATE_DATE           | TIME  |
-| elf:TIME_VALUE                 | elf:TRANSMISSION_DATE          | TIME  |
-| elf:TRANSMISSION_DATE          | elfm:HEADER                    | DATE  |
-| elf:USER_REFERENCE_NUMBER      | elf:Record                     | REFN  |
-| elf:USER_REFERENCE_TYPE        | elf:USER_REFERENCE_NUMBER      | TYPE  |
-| elf:VERSION_NUMBER             | elf:DOCUMENT_SOURCE            | VERS  |
-| elf:VERSION_NUMBER             | elf:GEDCOM_FORMAT              | VERS  |
-| elf:VERSION_NUMBER             | elfm:CHARACTER_SET             | VERS  |
-| elf:WHERE_WITHIN_SOURCE        | elf:SOURCE_CITATION            | PAGE  |
-| elf:WILL                       | elf:INDIVIDUAL_RECORD          | WILL  |
-| elf:WITHIN_FAMILY              | elf:BIRTH                      | FAMC  |
-| elf:WITHIN_FAMILY              | elf:CHRISTENING                | FAMC  |
-| elfm:CHARACTER_SET             | elfm:HEADER                    | CHAR  |
-| elfm:ELF_SCHEMA                | elfm:HEADER                    | SCHMA |
-| elfm:EXTENDS                   | elfm:STRUCTURE_TYPE            | ISA   |
-| elfm:HEADER                    | elfm:Document                  | HEAD  |
-| elfm:IRI_PREFIX                | elfm:ELF_SCHEMA                | PRFX  |
-| elfm:STRUCTURE_TYPE            | elfm:ELF_SCHEMA                | IRI   |
-| elfm:TAG                       | elfm:STRUCTURE_TYPE            | TAG   |
-| elfm:Trailer                   | elfm:Document                  | TRLR  |
 
 
 
@@ -919,3 +776,672 @@ The following lists *tag mappings* for all concrete types listed in [Elf-DataMod
 [ELF-DM]
 :   FHISO (Family History Information Standards Organisation)
     *Extended Legacy Format (ELF): Data Model.*
+
+
+## Appendix A: Known Tags                                       {#appendix-a}
+
+The following lists *tag mappings* for all types listed in [Elf-DataModel].
+
+| $I$                                  | $S$                            | $T$   |
+|:-------------------------------------|:-------------------------------|:------|
+| elf:ADDRESS                          | elf:Agent                      | ADDR  |
+| elf:ADDRESS                          | elf:Event                      | ADDR  |
+| elf:ADDRESS_CITY                     | elf:ADDRESS                    | CITY  |
+| elf:ADDRESS_COUNTRY                  | elf:ADDRESS                    | CTRY  |
+| elf:ADDRESS_EMAIL                    | elf:Agent                      | EMAIL |
+| elf:ADDRESS_FAX                      | elf:Agent                      | FAX   |
+| elf:ADDRESS_LINE1                    | elf:ADDRESS                    | ADR1  |
+| elf:ADDRESS_LINE2                    | elf:ADDRESS                    | ADR2  |
+| elf:ADDRESS_LINE3                    | elf:ADDRESS                    | ADR3  |
+| elf:ADDRESS_POSTAL_CODE              | elf:ADDRESS                    | POST  |
+| elf:ADDRESS_STATE                    | elf:ADDRESS                    | STAE  |
+| elf:ADDRESS_WEB_PAGE                 | elf:Agent                      | WWW   |
+| elf:ADOPTED_BY_WHICH_PARENT          | elf:ADOPTIVE_FAMILY            | ADOP  |
+| elf:ADOPTION                         | elf:INDIVIDUAL_RECORD          | ADOP  |
+| elf:ADOPTIVE_FAMILY                  | elf:ADOPTION                   | FAMC  |
+| elf:ADULT_CHRISTENING                | elf:INDIVIDUAL_RECORD          | CHRA  |
+| elf:AGE_AT_EVENT                     | elf:IndividualEvent            | AGE   |
+| elf:AGE_AT_EVENT                     | elf:Parent1Age                 | AGE   |
+| elf:AGE_AT_EVENT                     | elf:Parent2Age                 | AGE   |
+| elf:ALIAS_POINTER                    | elf:INDIVIDUAL_RECORD          | ALIA  |
+| elf:ANCESTOR_INTEREST_POINTER        | elf:INDIVIDUAL_RECORD          | ANCI  |
+| elf:ANNULMENT                        | elf:FAM_RECORD                 | ANUL  |
+| elf:ASSOCIATION_STRUCTURE            | elf:INDIVIDUAL_RECORD          | ASSO  |
+| elf:ATTRIBUTE_DESCRIPTOR             | elf:INDIVIDUAL_RECORD          | FACT  |
+| elf:AUTOMATED_RECORD_ID              | elf:Record                     | RIN   |
+| elf:BAPTISM                          | elf:INDIVIDUAL_RECORD          | BAPM  |
+| elf:BAR_MITZVAH                      | elf:INDIVIDUAL_RECORD          | BARM  |
+| elf:BAS_MITZVAH                      | elf:INDIVIDUAL_RECORD          | BASM  |
+| elf:BINARY_OBJECT                    | elf:MULTIMEDIA_RECORD          | BLOB  |
+| elf:BIRTH                            | elf:INDIVIDUAL_RECORD          | BIRT  |
+| elf:BLESSING                         | elf:INDIVIDUAL_RECORD          | BLES  |
+| elf:BURIAL                           | elf:INDIVIDUAL_RECORD          | BRI   |
+| elf:CASTE_NAME                       | elf:INDIVIDUAL_RECORD          | CAST  |
+| elf:CAUSE_OF_EVENT                   | elf:Event                      | CAUS  |
+| elf:CENSUS#Family                    | elf:FAM_RECORD                 | CENS  |
+| elf:CENSUS#Individual                | elf:INDIVIDUAL_RECORD          | CENS  |
+| elf:CERTAINTY_ASSESSMENT             | elf:SOURCE_CITATION            | QUAY  |
+| elf:CHANGE_DATE                      | elf:Record                     | CHAN  |
+| elf:CHANGE_DATE_DATE                 | elf:CHANGE_DATE                | DATE  |
+| elf:CHILD_LINKAGE_STATUS             | elf:CHILD_TO_FAMILY_LINK       | STAT  |
+| elf:CHILD_POINTER                    | elf:FAM_RECORD                 | CHIL  |
+| elf:CHILD_TO_FAMILY_LINK             | elf:INDIVIDUAL_RECORD          | FAMC  |
+| elf:CHRISTENING                      | elf:INDIVIDUAL_RECORD          | CHR   |
+| elf:CONFIRMATION                     | elf:INDIVIDUAL_RECORD          | CONF  |
+| elf:CONTINUED_BINARY_OBJECT          | elf:MULTIMEDIA_RECORD          | OBJE  |
+| elf:COPYRIGHT_GEDCOM_FILE            | elfm:HEADER                    | COPR  |
+| elf:COPYRIGHT_SOURCE_DATA            | elf:NAME_OF_SOURCE_DATA        | COPR  |
+| elf:COUNT_OF_CHILDREN#Family         | elf:FAM_RECORD                 | NCHI  |
+| elf:COUNT_OF_CHILDREN#Individual     | elf:INDIVIDUAL_RECORD          | NCHI  |
+| elf:COUNT_OF_MARRIAGES               | elf:INDIVIDUAL_RECORD          | NMR   |
+| elf:CREMATION                        | elf:INDIVIDUAL_RECORD          | CREM  |
+| elf:DATE_PERIOD                      | elf:EVENTS_RECORDED            | DATE  |
+| elf:DATE_VALUE                       | elf:Event                      | DATE  |
+| elf:DEATH                            | elf:INDIVIDUAL_RECORD          | DEAT  |
+| elf:DEFAULT_PLACE_FORMAT             | elfm:HEADER                    | PLAC  |
+| elf:DESCENDANT_INTEREST_POINTER      | elf:INDIVIDUAL_RECORD          | DESI  |
+| elf:DESCRIPTIVE_TITLE                | elf:MULTIMEDIA_FILE_REFERENCE  | TITL  |
+| elf:DESCRIPTIVE_TITLE                | elf:MULTIMEDIA_LINK            | TITL  |
+| elf:DESCRIPTIVE_TITLE                | elf:MULTIMEDIA_RECORD          | TITL  |
+| elf:DIVORCE                          | elf:FAM_RECORD                 | DIV   |
+| elf:DIVORCE_FILED                    | elf:FAM_RECORD                 | DIVF  |
+| elf:DOCUMENT_SOURCE                  | elfm:HEADER                    | SOUR  |
+| elf:EMIGRATION                       | elf:INDIVIDUAL_RECORD          | EMIG  |
+| elf:ENGAGEMENT                       | elf:FAM_RECORD                 | ENGA  |
+| elf:ENTRY_RECORDING_DATE             | elf:SOURCE_CITATION_DATA       | DATE  |
+| elf:EVENT#Family                     | elf:FAM_RECORD                 | EVEN  |
+| elf:EVENT#Individual                 | elf:INDIVIDUAL_RECORD          | EVEN  |
+| elf:EVENTS_RECORDED                  | elf:SOURCE_RECORD_DATA         | EVEN  |
+| elf:EVENT_OR_FACT_CLASSIFICATION     | elf:Event                      | TYPE  |
+| elf:EVENT_TYPE_CITED_FROM            | elf:SOURCE_CITATION            | EVEN  |
+| elf:FAM_RECORD                       | elfm:Document                  | FAM   |
+| elf:FILE_NAME                        | elfm:HEADER                    | FILE  |
+| elf:FIRST_COMMUNION                  | elf:INDIVIDUAL_RECORD          | FCOM  |
+| elf:GEDCOM_CONTENT_DESCRIPTION       | elfm:HEADER                    | NOTE  |
+| elf:GRADUATION                       | elf:INDIVIDUAL_RECORD          | GRAD  |
+| elf:IMMIGRATION                      | elf:INDIVIDUAL_RECORD          | IMMI  |
+| elf:INDIVIDUAL_RECORD                | elfm:Document                  | INDI  |
+| elf:LANGUAGE_OF_TEXT                 | elfm:HEADER                    | LANG  |
+| elf:LANGUAGE_PREFERENCE              | elf:SUBMITTER_RECORD           | LANG  |
+| elf:MAP_COORDINATES                  | elf:PLACE_STRUCTURE            | MAP   |
+| elf:MARRIAGE                         | elf:FAM_RECORD                 | MARR  |
+| elf:MARRIAGE_BANN                    | elf:FAM_RECORD                 | MARB  |
+| elf:MARRIAGE_CONTRACT                | elf:FAM_RECORD                 | MARC  |
+| elf:MARRIAGE_LICENSE                 | elf:FAM_RECORD                 | MARL  |
+| elf:MARRIAGE_SETTLEMENT              | elf:FAM_RECORD                 | MARS  |
+| elf:MULTIMEDIA_FILE_REFERENCE        | elf:MULTIMEDIA_LINK            | FILE  |
+| elf:MULTIMEDIA_FILE_REFERENCE        | elf:MULTIMEDIA_RECORD          | FILE  |
+| elf:MULTIMEDIA_FORMAT                | elf:MULTIMEDIA_FILE_REFERENCE  | FORM  |
+| elf:MULTIMEDIA_FORMAT                | elf:MULTIMEDIA_LINK            | FORM  |
+| elf:MULTIMEDIA_FORMAT                | elf:MULTIMEDIA_RECORD          | FORM  |
+| elf:MULTIMEDIA_LINK                  | elf:Event                      | OBJE  |
+| elf:MULTIMEDIA_LINK                  | elf:FAM_RECORD                 | OBJE  |
+| elf:MULTIMEDIA_LINK                  | elf:INDIVIDUAL_RECORD          | OBJE  |
+| elf:MULTIMEDIA_LINK                  | elf:SOURCE_CITATION            | OBJE  |
+| elf:MULTIMEDIA_LINK                  | elf:SOURCE_RECORD              | OBJE  |
+| elf:MULTIMEDIA_LINK                  | elf:SUBMITTER_RECORD           | OBJE  |
+| elf:MULTIMEDIA_RECORD                | elfm:Document                  | OBJE  |
+| elf:NAME_OF_BUSINESS                 | elf:DOCUMENT_SOURCE            | CORP  |
+| elf:NAME_OF_PRODUCT                  | elf:DOCUMENT_SOURCE            | NAME  |
+| elf:NAME_OF_REPOSITORY               | elf:REPOSITORY_RECORD          | NAME  |
+| elf:NAME_OF_SOURCE_DATA              | elf:DOCUMENT_SOURCE            | DATA  |
+| elf:NAME_PHONETIC_VARIATION          | elf:PERSONAL_NAME_STRUCTURE    | FONE  |
+| elf:NAME_PIECE_GIVEN                 | elf:PersonalName               | GIVN  |
+| elf:NAME_PIECE_NICKNAME              | elf:PersonalName               | NICK  |
+| elf:NAME_PIECE_PREFIX                | elf:PersonalName               | NPFX  |
+| elf:NAME_PIECE_SUFFIX                | elf:PersonalName               | NSFX  |
+| elf:NAME_PIECE_SURNAME               | elf:PersonalName               | SURN  |
+| elf:NAME_PIECE_SURNAME_PREFIX        | elf:PersonalName               | SPFX  |
+| elf:NAME_ROMANIZED_VARIATION         | elf:PERSONAL_NAME_STRUCTURE    | ROMN  |
+| elf:NAME_TYPE                        | elf:PERSONAL_NAME_STRUCTURE    | TYPE  |
+| elf:NATIONAL_ID_NUMBER               | elf:INDIVIDUAL_RECORD          | IDNO  |
+| elf:NATIONAL_OR_TRIBAL_ORIGIN        | elf:INDIVIDUAL_RECORD          | NATI  |
+| elf:NATURALIZATION                   | elf:INDIVIDUAL_RECORD          | NATU  |
+| elf:NOBILITY_TYPE_TITLE              | elf:INDIVIDUAL_RECORD          | TITL  |
+| elf:NOTE_RECORD                      | elfm:Document                  | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:ASSOCIATION_STRUCTURE      | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:CHANGE_DATE                | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:CHILD_TO_FAMILY_LINK       | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:Event                      | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:PLACE_STRUCTURE            | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:PersonalName               | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:Record                     | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:SOURCE_CITATION            | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:SOURCE_RECORD_DATA         | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:SOURCE_REPOSITORY_CITATION | NOTE  |
+| elf:NOTE_STRUCTURE                   | elf:SPOUSE_TO_FAMILY_LINK      | NOTE  |
+| elf:OCCUPATION                       | elf:INDIVIDUAL_RECORD          | OCCU  |
+| elf:ORDINATION                       | elf:INDIVIDUAL_RECORD          | ORDN  |
+| elf:PARENT1_POINTER                  | elf:FAM_RECORD                 | HUSB  |
+| elf:PARENT2_POINTER                  | elf:FAM_RECORD                 | WIFE  |
+| elf:PEDIGREE_LINKAGE_TYPE            | elf:CHILD_TO_FAMILY_LINK       | PEDI  |
+| elf:PERSONAL_NAME_STRUCTURE          | elf:INDIVIDUAL_RECORD          | NAME  |
+| elf:PHONETIC_TYPE                    | elf:NAME_PHONETIC_VARIATION    | TYPE  |
+| elf:PHONETIC_TYPE                    | elf:PLACE_PHONETIC_VARIATION   | TYPE  |
+| elf:PHONE_NUMBER                     | elf:Agent                      | PHON  |
+| elf:PHYSICAL_DESCRIPTION             | elf:INDIVIDUAL_RECORD          | DSCR  |
+| elf:PLACE_HIERARCHY                  | elf:DEFAULT_PLACE_FORMAT       | FORM  |
+| elf:PLACE_HIERARCHY                  | elf:PLACE_STRUCTURE            | FORM  |
+| elf:PLACE_LATITUDE                   | elf:MAP_COORDINATES            | LATI  |
+| elf:PLACE_LONGITUDE                  | elf:MAP_COORDINATES            | LONG  |
+| elf:PLACE_PHONETIC_VARIATION         | elf:PLACE_STRUCTURE            | FONE  |
+| elf:PLACE_ROMANIZED_VARIATION        | elf:PLACE_STRUCTURE            | ROMN  |
+| elf:PLACE_STRUCTURE                  | elf:Event                      | PLAC  |
+| elf:POSSESSIONS                      | elf:INDIVIDUAL_RECORD          | PROP  |
+| elf:PROBATE                          | elf:INDIVIDUAL_RECORD          | PROB  |
+| elf:PUBLICATION_DATE                 | elf:NAME_OF_SOURCE_DATA        | DATE  |
+| elf:Parent1Age                       | elf:FamilyEvent                | HUSB  |
+| elf:Parent2Age                       | elf:FamilyEvent                | WIFE  |
+| elf:RECEIVING_SYSTEM_NAME            | elfm:HEADER                    | DEST  |
+| elf:RELATION_IS_DESCRIPTOR           | elf:ASSOCIATION_STRUCTURE      | RELA  |
+| elf:RELIGIOUS_AFFILIATION            | elf:Event                      | RELI  |
+| elf:RELIGIOUS_AFFILIATION#Individual | elf:INDIVIDUAL_RECORD          | RELI  |
+| elf:REPOSITORY_RECORD                | elfm:Document                  | REPO  |
+| elf:RESIDENCE                        | elf:FAM_RECORD                 | RESI  |
+| elf:RESIDES_AT                       | elf:INDIVIDUAL_RECORD          | RESI  |
+| elf:RESPONSIBLE_AGENCY               | elf:Event                      | AGNC  |
+| elf:RESPONSIBLE_AGENCY               | elf:SOURCE_RECORD_DATA         | AGNC  |
+| elf:RESTRICTION_NOTICE               | elf:Event                      | RESN  |
+| elf:RESTRICTION_NOTICE               | elf:FAM_RECORD                 | RESN  |
+| elf:RESTRICTION_NOTICE               | elf:INDIVIDUAL_RECORD          | RESN  |
+| elf:RETIREMENT                       | elf:INDIVIDUAL_RECORD          | RETI  |
+| elf:ROLE_IN_EVENT                    | elf:EVENT_TYPE_CITED_FROM      | ROLE  |
+| elf:ROMANIZED_TYPE                   | elf:NAME_ROMANIZED_VARIATION   | TYPE  |
+| elf:ROMANIZED_TYPE                   | elf:PLACE_ROMANIZED_VARIATION  | TYPE  |
+| elf:SCHOLASTIC_ACHIEVEMENT           | elf:INDIVIDUAL_RECORD          | EDUC  |
+| elf:SEX_VALUE                        | elf:INDIVIDUAL_RECORD          | SEX   |
+| elf:SOCIAL_SECURITY_NUMBER           | elf:INDIVIDUAL_RECORD          | SSN   |
+| elf:SOURCE_CALL_NUMBER               | elf:SOURCE_REPOSITORY_CITATION | CALN  |
+| elf:SOURCE_CITATION                  | elf:ASSOCIATION_STRUCTURE      | SOUR  |
+| elf:SOURCE_CITATION                  | elf:Event                      | SOUR  |
+| elf:SOURCE_CITATION                  | elf:FAM_RECORD                 | SOUR  |
+| elf:SOURCE_CITATION                  | elf:INDIVIDUAL_RECORD          | SOUR  |
+| elf:SOURCE_CITATION                  | elf:PersonalName               | SOUR  |
+| elf:SOURCE_CITATION_DATA             | elf:SOURCE_CITATION            | DATA  |
+| elf:SOURCE_DESCRIPTIVE_TITLE         | elf:SOURCE_RECORD              | TITL  |
+| elf:SOURCE_FILED_BY_ENTRY            | elf:SOURCE_RECORD              | ABBR  |
+| elf:SOURCE_JURISDICTION_PLACE        | elf:EVENTS_RECORDED            | PLAC  |
+| elf:SOURCE_MEDIA_TYPE                | elf:MULTIMEDIA_FORMAT          | MEDI  |
+| elf:SOURCE_MEDIA_TYPE                | elf:SOURCE_CALL_NUMBER         | MEDI  |
+| elf:SOURCE_ORIGINATOR                | elf:SOURCE_RECORD              | AUTH  |
+| elf:SOURCE_PUBLICATION_FACTS         | elf:SOURCE_RECORD              | PUBL  |
+| elf:SOURCE_RECORD                    | elfm:Document                  | SOUR  |
+| elf:SOURCE_RECORD_DATA               | elf:SOURCE_RECORD              | DATA  |
+| elf:SOURCE_REPOSITORY_CITATION       | elf:SOURCE_RECORD              | REPO  |
+| elf:SPOUSE_TO_FAMILY_LINK            | elf:INDIVIDUAL_RECORD          | FAMS  |
+| elf:SUBMITTER_NAME                   | elf:SUBMITTER_RECORD           | NAME  |
+| elf:SUBMITTER_POINTER                | elf:FAM_RECORD                 | SUBM  |
+| elf:SUBMITTER_POINTER                | elf:INDIVIDUAL_RECORD          | SUBM  |
+| elf:SUBMITTER_POINTER                | elfm:HEADER                    | SUBM  |
+| elf:SUBMITTER_RECORD                 | elfm:Document                  | SUBM  |
+| elf:TEXT_FROM_SOURCE                 | elf:SOURCE_CITATION            | TEXT  |
+| elf:TEXT_FROM_SOURCE                 | elf:SOURCE_CITATION_DATA       | TEXT  |
+| elf:TEXT_FROM_SOURCE                 | elf:SOURCE_RECORD              | TEXT  |
+| elf:TIME_VALUE                       | elf:CHANGE_DATE_DATE           | TIME  |
+| elf:TIME_VALUE                       | elf:TRANSMISSION_DATE          | TIME  |
+| elf:TRANSMISSION_DATE                | elfm:HEADER                    | DATE  |
+| elf:USER_REFERENCE_NUMBER            | elf:Record                     | REFN  |
+| elf:USER_REFERENCE_TYPE              | elf:USER_REFERENCE_NUMBER      | TYPE  |
+| elf:VERSION_NUMBER                   | elf:DOCUMENT_SOURCE            | VERS  |
+| elf:VERSION_NUMBER                   | elfm:CHARACTER_SET             | VERS  |
+| elf:VERSION_NUMBER                   | elfm:GEDCOM_FORMAT             | VERS  |
+| elf:WHERE_WITHIN_SOURCE              | elf:SOURCE_CITATION            | PAGE  |
+| elf:WILL                             | elf:INDIVIDUAL_RECORD          | WILL  |
+| elf:WITHIN_FAMILY                    | elf:BIRTH                      | FAMC  |
+| elf:WITHIN_FAMILY                    | elf:CHRISTENING                | FAMC  |
+| elfm:CHARACTER_SET                   | elfm:HEADER                    | CHAR  |
+| elfm:ELF_SCHEMA                      | elfm:HEADER                    | SCHMA |
+| elfm:EXTENDS                         | elfm:STRUCTURE_TYPE            | ISA   |
+| elfm:GEDCOM_FORM                     | elfm:GEDCOM_FORMAT             | FORM  |
+| elfm:GEDCOM_FORMAT                   | elfm:HEADER                    | GEDC  |
+| elfm:HEADER                          | elfm:Document                  | HEAD  |
+| elfm:IRI_PREFIX                      | elfm:ELF_SCHEMA                | PRFX  |
+| elfm:STRUCTURE_TYPE                  | elfm:ELF_SCHEMA                | IRI   |
+| elfm:TAG                             | elfm:STRUCTURE_TYPE            | TAG   |
+| elfm:Trailer                         | elfm:Document                  | TRLR  |
+
+## Appendix B: Default Schema                                      {#appendix-b}
+
+The following is a minimal ELF file with a `SCHMA` containing all *tag mappings* and *supertype* relationships listed in [Elf-DataModel].
+
+````gedcom
+0 HEAD
+1 CHAR UTF-8
+1 GEDC 
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+2 ELF 1.0.0
+1 SCHMA
+2 PRFX elf https://terms.fhiso.org/elf/
+2 PRFX elfm https://terms.fhiso.org/elf/metadata/
+2 IRI elf:ADDRESS
+3 TAG ADDR elf:Agent elf:Event
+2 IRI elf:ADDRESS_CITY
+3 TAG CITY elf:ADDRESS
+2 IRI elf:ADDRESS_COUNTRY
+3 TAG CTRY elf:ADDRESS
+2 IRI elf:ADDRESS_EMAIL
+3 TAG EMAIL elf:Agent
+2 IRI elf:ADDRESS_FAX
+3 TAG FAX elf:Agent
+2 IRI elf:ADDRESS_LINE1
+3 TAG ADR1 elf:ADDRESS
+2 IRI elf:ADDRESS_LINE2
+3 TAG ADR2 elf:ADDRESS
+2 IRI elf:ADDRESS_LINE3
+3 TAG ADR3 elf:ADDRESS
+2 IRI elf:ADDRESS_POSTAL_CODE
+3 TAG POST elf:ADDRESS
+2 IRI elf:ADDRESS_STATE
+3 TAG STAE elf:ADDRESS
+2 IRI elf:ADDRESS_WEB_PAGE
+3 TAG WWW elf:Agent
+2 IRI elf:ADOPTED_BY_WHICH_PARENT
+3 TAG ADOP elf:ADOPTIVE_FAMILY
+2 IRI elf:ADOPTION
+3 ISA elf:IndividualEvent
+3 TAG ADOP elf:INDIVIDUAL_RECORD
+2 IRI elf:ADOPTIVE_FAMILY
+3 TAG FAMC elf:ADOPTION
+2 IRI elf:ADULT_CHRISTENING
+3 ISA elf:IndividualEvent
+3 TAG CHRA elf:INDIVIDUAL_RECORD
+2 IRI elf:AGE_AT_EVENT
+3 TAG AGE elf:IndividualEvent elf:Parent1Age elf:Parent2Age
+2 IRI elf:ALIAS_POINTER
+3 TAG ALIA elf:INDIVIDUAL_RECORD
+2 IRI elf:ANCESTOR_INTEREST_POINTER
+3 TAG ANCI elf:INDIVIDUAL_RECORD
+2 IRI elf:ANNULMENT
+3 ISA elf:FamilyEvent
+3 TAG ANUL elf:FAM_RECORD
+2 IRI elf:ASSOCIATION_STRUCTURE
+3 TAG ASSO elf:INDIVIDUAL_RECORD
+2 IRI elf:ATTRIBUTE_DESCRIPTOR
+3 ISA elf:IndividualAttribute
+3 TAG FACT elf:INDIVIDUAL_RECORD
+2 IRI elf:AUTOMATED_RECORD_ID
+3 TAG RIN elf:Record
+2 IRI elf:Agent
+2 IRI elf:BAPTISM
+3 ISA elf:IndividualEvent
+3 TAG BAPM elf:INDIVIDUAL_RECORD
+2 IRI elf:BAR_MITZVAH
+3 ISA elf:IndividualEvent
+3 TAG BARM elf:INDIVIDUAL_RECORD
+2 IRI elf:BAS_MITZVAH
+3 ISA elf:IndividualEvent
+3 TAG BASM elf:INDIVIDUAL_RECORD
+2 IRI elf:BINARY_OBJECT
+3 TAG BLOB elf:MULTIMEDIA_RECORD
+2 IRI elf:BIRTH
+3 ISA elf:IndividualEvent
+3 TAG BIRT elf:INDIVIDUAL_RECORD
+2 IRI elf:BLESSING
+3 ISA elf:IndividualEvent
+3 TAG BLES elf:INDIVIDUAL_RECORD
+2 IRI elf:BURIAL
+3 ISA elf:IndividualEvent
+3 TAG BRI elf:INDIVIDUAL_RECORD
+2 IRI elf:CASTE_NAME
+3 ISA elf:IndividualAttribute
+3 TAG CAST elf:INDIVIDUAL_RECORD
+2 IRI elf:CAUSE_OF_EVENT
+3 TAG CAUS elf:Event
+2 IRI elf:CENSUS#Family
+3 ISA elf:FamilyEvent
+3 TAG CENS elf:FAM_RECORD
+2 IRI elf:CENSUS#Individual
+3 ISA elf:IndividualEvent
+3 TAG CENS elf:INDIVIDUAL_RECORD
+2 IRI elf:CERTAINTY_ASSESSMENT
+3 TAG QUAY elf:SOURCE_CITATION
+2 IRI elf:CHANGE_DATE
+3 TAG CHAN elf:Record
+2 IRI elf:CHANGE_DATE_DATE
+3 TAG DATE elf:CHANGE_DATE
+2 IRI elf:CHILD_LINKAGE_STATUS
+3 TAG STAT elf:CHILD_TO_FAMILY_LINK
+2 IRI elf:CHILD_POINTER
+3 TAG CHIL elf:FAM_RECORD
+2 IRI elf:CHILD_TO_FAMILY_LINK
+3 TAG FAMC elf:INDIVIDUAL_RECORD
+2 IRI elf:CHRISTENING
+3 ISA elf:IndividualEvent
+3 TAG CHR elf:INDIVIDUAL_RECORD
+2 IRI elf:CONFIRMATION
+3 ISA elf:IndividualEvent
+3 TAG CONF elf:INDIVIDUAL_RECORD
+2 IRI elf:CONTINUED_BINARY_OBJECT
+3 TAG OBJE elf:MULTIMEDIA_RECORD
+2 IRI elf:COPYRIGHT_GEDCOM_FILE
+3 TAG COPR elfm:HEADER
+2 IRI elf:COPYRIGHT_SOURCE_DATA
+3 TAG COPR elf:NAME_OF_SOURCE_DATA
+2 IRI elf:COUNT_OF_CHILDREN#Family
+3 TAG NCHI elf:FAM_RECORD
+2 IRI elf:COUNT_OF_CHILDREN#Individual
+3 ISA elf:IndividualAttribute
+3 TAG NCHI elf:INDIVIDUAL_RECORD
+2 IRI elf:COUNT_OF_MARRIAGES
+3 ISA elf:IndividualAttribute
+3 TAG NMR elf:INDIVIDUAL_RECORD
+2 IRI elf:CREMATION
+3 ISA elf:IndividualEvent
+3 TAG CREM elf:INDIVIDUAL_RECORD
+2 IRI elf:DATE_PERIOD
+3 TAG DATE elf:EVENTS_RECORDED
+2 IRI elf:DATE_VALUE
+3 TAG DATE elf:Event
+2 IRI elf:DEATH
+3 ISA elf:IndividualEvent
+3 TAG DEAT elf:INDIVIDUAL_RECORD
+2 IRI elf:DEFAULT_PLACE_FORMAT
+3 TAG PLAC elfm:HEADER
+2 IRI elf:DESCENDANT_INTEREST_POINTER
+3 TAG DESI elf:INDIVIDUAL_RECORD
+2 IRI elf:DESCRIPTIVE_TITLE
+3 TAG TITL elf:MULTIMEDIA_FILE_REFERENCE elf:MULTIMEDIA_LINK elf:MULTIMEDIA_RECORD
+2 IRI elf:DIVORCE
+3 ISA elf:FamilyEvent
+3 TAG DIV elf:FAM_RECORD
+2 IRI elf:DIVORCE_FILED
+3 ISA elf:FamilyEvent
+3 TAG DIVF elf:FAM_RECORD
+2 IRI elf:DOCUMENT_SOURCE
+3 TAG SOUR elfm:HEADER
+2 IRI elf:EMIGRATION
+3 ISA elf:IndividualEvent
+3 TAG EMIG elf:INDIVIDUAL_RECORD
+2 IRI elf:ENGAGEMENT
+3 ISA elf:FamilyEvent
+3 TAG ENGA elf:FAM_RECORD
+2 IRI elf:ENTRY_RECORDING_DATE
+3 TAG DATE elf:SOURCE_CITATION_DATA
+2 IRI elf:EVENT#Family
+3 ISA elf:FamilyEvent
+3 TAG EVEN elf:FAM_RECORD
+2 IRI elf:EVENT#Individual
+3 ISA elf:IndividualEvent
+3 TAG EVEN elf:INDIVIDUAL_RECORD
+2 IRI elf:EVENTS_RECORDED
+3 TAG EVEN elf:SOURCE_RECORD_DATA
+2 IRI elf:EVENT_OR_FACT_CLASSIFICATION
+3 TAG TYPE elf:Event
+2 IRI elf:EVENT_TYPE_CITED_FROM
+3 TAG EVEN elf:SOURCE_CITATION
+2 IRI elf:Event
+2 IRI elf:FAM_RECORD
+3 ISA elf:Record
+3 TAG FAM elfm:Document
+2 IRI elf:FILE_NAME
+3 TAG FILE elfm:HEADER
+2 IRI elf:FIRST_COMMUNION
+3 ISA elf:IndividualEvent
+3 TAG FCOM elf:INDIVIDUAL_RECORD
+2 IRI elf:FamilyEvent
+3 ISA elf:Event
+2 IRI elf:GEDCOM_CONTENT_DESCRIPTION
+3 TAG NOTE elfm:HEADER
+2 IRI elf:GRADUATION
+3 ISA elf:IndividualEvent
+3 TAG GRAD elf:INDIVIDUAL_RECORD
+2 IRI elf:IMMIGRATION
+3 ISA elf:IndividualEvent
+3 TAG IMMI elf:INDIVIDUAL_RECORD
+2 IRI elf:INDIVIDUAL_RECORD
+3 ISA elf:Record
+3 TAG INDI elfm:Document
+2 IRI elf:IndividualAttribute
+3 ISA elf:Event
+2 IRI elf:IndividualEvent
+3 ISA elf:Event
+2 IRI elf:LANGUAGE_OF_TEXT
+3 TAG LANG elfm:HEADER
+2 IRI elf:LANGUAGE_PREFERENCE
+3 TAG LANG elf:SUBMITTER_RECORD
+2 IRI elf:MAP_COORDINATES
+3 TAG MAP elf:PLACE_STRUCTURE
+2 IRI elf:MARRIAGE
+3 ISA elf:FamilyEvent
+3 TAG MARR elf:FAM_RECORD
+2 IRI elf:MARRIAGE_BANN
+3 ISA elf:FamilyEvent
+3 TAG MARB elf:FAM_RECORD
+2 IRI elf:MARRIAGE_CONTRACT
+3 ISA elf:FamilyEvent
+3 TAG MARC elf:FAM_RECORD
+2 IRI elf:MARRIAGE_LICENSE
+3 ISA elf:FamilyEvent
+3 TAG MARL elf:FAM_RECORD
+2 IRI elf:MARRIAGE_SETTLEMENT
+3 ISA elf:FamilyEvent
+3 TAG MARS elf:FAM_RECORD
+2 IRI elf:MULTIMEDIA_FILE_REFERENCE
+3 TAG FILE elf:MULTIMEDIA_LINK elf:MULTIMEDIA_RECORD
+2 IRI elf:MULTIMEDIA_FORMAT
+3 TAG FORM elf:MULTIMEDIA_FILE_REFERENCE elf:MULTIMEDIA_LINK elf:MULTIMEDIA_RECORD
+2 IRI elf:MULTIMEDIA_LINK
+3 TAG OBJE elf:Event elf:FAM_RECORD elf:INDIVIDUAL_RECORD elf:SOURCE_CITATION elf:SOURCE_RECORD elf:SUBMITTER_RECORD
+2 IRI elf:MULTIMEDIA_RECORD
+3 ISA elf:Record
+3 TAG OBJE elfm:Document
+2 IRI elf:NAME_OF_BUSINESS
+3 ISA elf:Agent
+3 TAG CORP elf:DOCUMENT_SOURCE
+2 IRI elf:NAME_OF_PRODUCT
+3 TAG NAME elf:DOCUMENT_SOURCE
+2 IRI elf:NAME_OF_REPOSITORY
+3 TAG NAME elf:REPOSITORY_RECORD
+2 IRI elf:NAME_OF_SOURCE_DATA
+3 TAG DATA elf:DOCUMENT_SOURCE
+2 IRI elf:NAME_PHONETIC_VARIATION
+3 ISA elf:PersonalName
+3 TAG FONE elf:PERSONAL_NAME_STRUCTURE
+2 IRI elf:NAME_PIECE_GIVEN
+3 TAG GIVN elf:PersonalName
+2 IRI elf:NAME_PIECE_NICKNAME
+3 TAG NICK elf:PersonalName
+2 IRI elf:NAME_PIECE_PREFIX
+3 TAG NPFX elf:PersonalName
+2 IRI elf:NAME_PIECE_SUFFIX
+3 TAG NSFX elf:PersonalName
+2 IRI elf:NAME_PIECE_SURNAME
+3 TAG SURN elf:PersonalName
+2 IRI elf:NAME_PIECE_SURNAME_PREFIX
+3 TAG SPFX elf:PersonalName
+2 IRI elf:NAME_ROMANIZED_VARIATION
+3 ISA elf:PersonalName
+3 TAG ROMN elf:PERSONAL_NAME_STRUCTURE
+2 IRI elf:NAME_TYPE
+3 TAG TYPE elf:PERSONAL_NAME_STRUCTURE
+2 IRI elf:NATIONAL_ID_NUMBER
+3 ISA elf:IndividualAttribute
+3 TAG IDNO elf:INDIVIDUAL_RECORD
+2 IRI elf:NATIONAL_OR_TRIBAL_ORIGIN
+3 ISA elf:IndividualAttribute
+3 TAG NATI elf:INDIVIDUAL_RECORD
+2 IRI elf:NATURALIZATION
+3 ISA elf:IndividualEvent
+3 TAG NATU elf:INDIVIDUAL_RECORD
+2 IRI elf:NOBILITY_TYPE_TITLE
+3 ISA elf:IndividualAttribute
+3 TAG TITL elf:INDIVIDUAL_RECORD
+2 IRI elf:NOTE_RECORD
+3 ISA elf:Record
+3 TAG NOTE elfm:Document
+2 IRI elf:NOTE_STRUCTURE
+3 TAG NOTE elf:ASSOCIATION_STRUCTURE elf:CHANGE_DATE elf:CHILD_TO_FAMILY_LINK elf:Event elf:PLACE_STRUCTURE elf:PersonalName elf:Record elf:SOURCE_CITATION elf:SOURCE_RECORD_DATA elf:SOURCE_REPOSITORY_CITATION elf:SPOUSE_TO_FAMILY_LINK
+2 IRI elf:OCCUPATION
+3 ISA elf:IndividualAttribute
+3 TAG OCCU elf:INDIVIDUAL_RECORD
+2 IRI elf:ORDINATION
+3 ISA elf:IndividualEvent
+3 TAG ORDN elf:INDIVIDUAL_RECORD
+2 IRI elf:PARENT1_POINTER
+3 ISA elf:ParentPointer
+3 TAG HUSB elf:FAM_RECORD
+2 IRI elf:PARENT2_POINTER
+3 ISA elf:ParentPointer
+3 TAG WIFE elf:FAM_RECORD
+2 IRI elf:PEDIGREE_LINKAGE_TYPE
+3 TAG PEDI elf:CHILD_TO_FAMILY_LINK
+2 IRI elf:PERSONAL_NAME_STRUCTURE
+3 ISA elf:PersonalName
+3 TAG NAME elf:INDIVIDUAL_RECORD
+2 IRI elf:PHONETIC_TYPE
+3 TAG TYPE elf:NAME_PHONETIC_VARIATION elf:PLACE_PHONETIC_VARIATION
+2 IRI elf:PHONE_NUMBER
+3 TAG PHON elf:Agent
+2 IRI elf:PHYSICAL_DESCRIPTION
+3 ISA elf:IndividualAttribute
+3 TAG DSCR elf:INDIVIDUAL_RECORD
+2 IRI elf:PLACE_HIERARCHY
+3 TAG FORM elf:DEFAULT_PLACE_FORMAT elf:PLACE_STRUCTURE
+2 IRI elf:PLACE_LATITUDE
+3 TAG LATI elf:MAP_COORDINATES
+2 IRI elf:PLACE_LONGITUDE
+3 TAG LONG elf:MAP_COORDINATES
+2 IRI elf:PLACE_PHONETIC_VARIATION
+3 TAG FONE elf:PLACE_STRUCTURE
+2 IRI elf:PLACE_ROMANIZED_VARIATION
+3 TAG ROMN elf:PLACE_STRUCTURE
+2 IRI elf:PLACE_STRUCTURE
+3 TAG PLAC elf:Event
+2 IRI elf:POSSESSIONS
+3 ISA elf:IndividualAttribute
+3 TAG PROP elf:INDIVIDUAL_RECORD
+2 IRI elf:PROBATE
+3 ISA elf:IndividualEvent
+3 TAG PROB elf:INDIVIDUAL_RECORD
+2 IRI elf:PUBLICATION_DATE
+3 TAG DATE elf:NAME_OF_SOURCE_DATA
+2 IRI elf:Parent1Age
+3 TAG HUSB elf:FamilyEvent
+2 IRI elf:Parent2Age
+3 TAG WIFE elf:FamilyEvent
+2 IRI elf:ParentPointer
+2 IRI elf:PersonalName
+2 IRI elf:RECEIVING_SYSTEM_NAME
+3 TAG DEST elfm:HEADER
+2 IRI elf:RELATION_IS_DESCRIPTOR
+3 TAG RELA elf:ASSOCIATION_STRUCTURE
+2 IRI elf:RELIGIOUS_AFFILIATION
+3 TAG RELI elf:Event
+2 IRI elf:RELIGIOUS_AFFILIATION#Individual
+3 ISA elf:IndividualAttribute
+3 TAG RELI elf:INDIVIDUAL_RECORD
+2 IRI elf:REPOSITORY_RECORD
+3 ISA elf:Agent
+3 ISA elf:Record
+3 TAG REPO elfm:Document
+2 IRI elf:RESIDENCE
+3 ISA elf:FamilyEvent
+3 TAG RESI elf:FAM_RECORD
+2 IRI elf:RESIDES_AT
+3 ISA elf:IndividualAttribute
+3 TAG RESI elf:INDIVIDUAL_RECORD
+2 IRI elf:RESPONSIBLE_AGENCY
+3 TAG AGNC elf:Event elf:SOURCE_RECORD_DATA
+2 IRI elf:RESTRICTION_NOTICE
+3 TAG RESN elf:Event elf:FAM_RECORD elf:INDIVIDUAL_RECORD
+2 IRI elf:RETIREMENT
+3 ISA elf:IndividualEvent
+3 TAG RETI elf:INDIVIDUAL_RECORD
+2 IRI elf:ROLE_IN_EVENT
+3 TAG ROLE elf:EVENT_TYPE_CITED_FROM
+2 IRI elf:ROMANIZED_TYPE
+3 TAG TYPE elf:NAME_ROMANIZED_VARIATION elf:PLACE_ROMANIZED_VARIATION
+2 IRI elf:Record
+2 IRI elf:SCHOLASTIC_ACHIEVEMENT
+3 ISA elf:IndividualAttribute
+3 TAG EDUC elf:INDIVIDUAL_RECORD
+2 IRI elf:SEX_VALUE
+3 TAG SEX elf:INDIVIDUAL_RECORD
+2 IRI elf:SOCIAL_SECURITY_NUMBER
+3 ISA elf:IndividualAttribute
+3 TAG SSN elf:INDIVIDUAL_RECORD
+2 IRI elf:SOURCE_CALL_NUMBER
+3 TAG CALN elf:SOURCE_REPOSITORY_CITATION
+2 IRI elf:SOURCE_CITATION
+3 TAG SOUR elf:ASSOCIATION_STRUCTURE elf:Event elf:FAM_RECORD elf:INDIVIDUAL_RECORD elf:PersonalName
+2 IRI elf:SOURCE_CITATION_DATA
+3 TAG DATA elf:SOURCE_CITATION
+2 IRI elf:SOURCE_DESCRIPTIVE_TITLE
+3 TAG TITL elf:SOURCE_RECORD
+2 IRI elf:SOURCE_FILED_BY_ENTRY
+3 TAG ABBR elf:SOURCE_RECORD
+2 IRI elf:SOURCE_JURISDICTION_PLACE
+3 TAG PLAC elf:EVENTS_RECORDED
+2 IRI elf:SOURCE_MEDIA_TYPE
+3 TAG MEDI elf:MULTIMEDIA_FORMAT elf:SOURCE_CALL_NUMBER
+2 IRI elf:SOURCE_ORIGINATOR
+3 TAG AUTH elf:SOURCE_RECORD
+2 IRI elf:SOURCE_PUBLICATION_FACTS
+3 TAG PUBL elf:SOURCE_RECORD
+2 IRI elf:SOURCE_RECORD
+3 ISA elf:Record
+3 TAG SOUR elfm:Document
+2 IRI elf:SOURCE_RECORD_DATA
+3 TAG DATA elf:SOURCE_RECORD
+2 IRI elf:SOURCE_REPOSITORY_CITATION
+3 TAG REPO elf:SOURCE_RECORD
+2 IRI elf:SPOUSE_TO_FAMILY_LINK
+3 TAG FAMS elf:INDIVIDUAL_RECORD
+2 IRI elf:SUBMITTER_NAME
+3 TAG NAME elf:SUBMITTER_RECORD
+2 IRI elf:SUBMITTER_POINTER
+3 TAG SUBM elf:FAM_RECORD elf:INDIVIDUAL_RECORD elfm:HEADER
+2 IRI elf:SUBMITTER_RECORD
+3 ISA elf:Agent
+3 ISA elf:Record
+3 TAG SUBM elfm:Document
+2 IRI elf:Structure
+2 IRI elf:TEXT_FROM_SOURCE
+3 TAG TEXT elf:SOURCE_CITATION elf:SOURCE_CITATION_DATA elf:SOURCE_RECORD
+2 IRI elf:TIME_VALUE
+3 TAG TIME elf:CHANGE_DATE_DATE elf:TRANSMISSION_DATE
+2 IRI elf:TRANSMISSION_DATE
+3 TAG DATE elfm:HEADER
+2 IRI elf:USER_REFERENCE_NUMBER
+3 TAG REFN elf:Record
+2 IRI elf:USER_REFERENCE_TYPE
+3 TAG TYPE elf:USER_REFERENCE_NUMBER
+2 IRI elf:VERSION_NUMBER
+3 TAG VERS elf:DOCUMENT_SOURCE elfm:CHARACTER_SET elfm:GEDCOM_FORMAT
+2 IRI elf:WHERE_WITHIN_SOURCE
+3 TAG PAGE elf:SOURCE_CITATION
+2 IRI elf:WILL
+3 ISA elf:IndividualEvent
+3 TAG WILL elf:INDIVIDUAL_RECORD
+2 IRI elf:WITHIN_FAMILY
+3 TAG FAMC elf:BIRTH elf:CHRISTENING
+2 IRI elfm:CHARACTER_SET
+3 TAG CHAR elfm:HEADER
+2 IRI elfm:Document
+2 IRI elfm:ELF_SCHEMA
+3 TAG SCHMA elfm:HEADER
+2 IRI elfm:EXTENDS
+3 TAG ISA elfm:STRUCTURE_TYPE
+2 IRI elfm:GEDCOM_FORM
+3 TAG FORM elfm:GEDCOM_FORMAT
+2 IRI elfm:GEDCOM_FORMAT
+3 TAG GEDC elfm:HEADER
+2 IRI elfm:HEADER
+3 TAG HEAD elfm:Document
+2 IRI elfm:IRI_PREFIX
+3 TAG PRFX elfm:ELF_SCHEMA
+2 IRI elfm:STRUCTURE_TYPE
+3 TAG IRI elfm:ELF_SCHEMA
+2 IRI elfm:TAG
+3 TAG TAG elfm:STRUCTURE_TYPE
+2 IRI elfm:Trailer
+3 TAG TRLR elfm:Document
+1 SOUR https://fhiso.org/elf/
+1 NOTE This file was automatically generated from data-model.md
+2 CONT by schema-maker.py at 2018-07-25T13:24:22.530154
+1 SUBM @fhiso_elf1@
+0 @fhiso_elf1@ SUBM
+1 NAME FHISO Extended Legacy Format, version 1
+0 TRLR
+````

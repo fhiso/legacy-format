@@ -144,6 +144,8 @@ by zero or more space *characters* or tabs.  It matches the production
 
 **Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant.
 
+{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trialing *may* be removed on a system-by-system basis, suggesting `PLB ::= (#x20 | #x9)* LB`; but page 85 states that both initial an trailing spaces *must* be removed, which is what is documented above. If we stick to what is provided above, there is no simple way to permit indented text in a blockstring.
+
 A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed.
 
 {.note} This allows applications to store *strings* internally with any
@@ -2034,47 +2036,6 @@ Default tag
 :   `NOTE`
 
 
-### `elf:GEDCOM_FORMAT`                                   {#elf:GEDCOM_FORMAT}
-
-{.ednote} GEDCOM_FORMAT seems like a pseudo-structure?
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elfm:HEADER]`
-
-Substructures
-:   `[elf:GEDCOM_FORM]`
-:   `[elf:VERSION_NUMBER]`
-
-Payload
-:   None
-
-Default tag
-:   `GEDC`
-
-
-### `elf:GEDCOM_FORM`                                       {#elf:GEDCOM_FORM}
-
-{.ednote} GEDCOM_FORM seems like a pseudo-structure?
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:GEDCOM_FORMAT]`
-
-Substructures
-:   None
-
-Payload
-:   The exact string `LINEAGE-LINKED`.
-
-Default tag
-:   `FORM`
-
-
 ### `elf:GRADUATION`                                         {#elf:GRADUATION}
 
 The conclusion of formal education.
@@ -3959,7 +3920,7 @@ Supertype
 
 Superstructures
 :   `[elf:DOCUMENT_SOURCE]`
-:   `[elf:GEDCOM_FORMAT]`
+:   `[elfm:GEDCOM_FORMAT]`
 :   `[elfm:CHARACTER_SET]`
 
 Substructure
@@ -4083,19 +4044,45 @@ Default tag
 :   `ISA`
 
 
-### `elfm:IRI_PREFIX`                                       {#elfm:IRI_PREFIX}
+### `elfm:GEDCOM_FORM`                                     {#elfm:GEDCOM_FORM}
 
-An abbreviation mechanism, similar to a CURIE, with specific format and syntax defined on a per-serialisation-format basis.
+A holder for formatting and version information.
+
+Supertype
+:   `[elf:Structure]`
 
 Superstructures
-:   `[elfm:ELF_SCHEMA]`
+:   `[elfm:GEDCOM_FORMAT]`
+
+Substructures
+:   None
 
 Payload
-:   a shortened form and an IRI, with details specified per serialisation format.
+:   The exact string `LINEAGE-LINKED`
 
 Default tag
-:   `PRFX`
+:   `FORM`
 
+
+### `elfm:GEDCOM_FORMAT`                                 {#elfm:GEDCOM_FORMAT}
+
+A holder for formatting and version information.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elfm:GEDCOM_FORM]`
+:   `[elf:VERSION_NUMBER]`
+
+Payload
+:   None
+
+Default tag
+:   `GEDC`
 
 
 ### `elfm:HEADER`                                               {#elfm:HEADER}
@@ -4112,7 +4099,7 @@ Substructures
 :   `[elf:SUBMITTER_POINTER]` !
 :   `[elf:FILE_NAME]` ?
 :   `[elf:COPYRIGHT_GEDCOM_FILE]` ?
-:   `[elf:GEDCOM_FORMAT]` !
+:   `[elfm:GEDCOM_FORMAT]` !
 :   `[elf:LANGUAGE_OF_TEXT]` ?
 :   `[elf:DEFAULT_PLACE_FORMAT]` ?
 :   `[elf:GEDCOM_CONTENT_DESCRIPTION]` ?
@@ -4121,6 +4108,21 @@ Substructures
 
 Default tag
 :   `HEAD`
+
+
+### `elfm:IRI_PREFIX`                                       {#elfm:IRI_PREFIX}
+
+An abbreviation mechanism, similar to a CURIE, with specific format and syntax defined on a per-serialisation-format basis.
+
+Superstructures
+:   `[elfm:ELF_SCHEMA]`
+
+Payload
+:   a shortened form and an IRI, with details specified per serialisation format.
+
+Default tag
+:   `PRFX`
+
 
 ### `elfm:STRUCTURE_TYPE`                               {#elfm:STRUCTURE_TYPE}
 
