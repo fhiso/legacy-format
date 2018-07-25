@@ -144,6 +144,8 @@ by zero or more space *characters* or tabs.  It matches the production
 
 **Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant.
 
+{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trialing *may* be removed on a system-by-system basis, suggesting `PLB ::= (#x20 | #x9)* LB`; but page 85 states that both initial an trailing spaces *must* be removed, which is what is documented above. If we stick to what is provided above, there is no simple way to permit indented text in a blockstring.
+
 A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed.
 
 {.note} This allows applications to store *strings* internally with any
