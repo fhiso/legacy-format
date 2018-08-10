@@ -41,7 +41,7 @@ form the initial suite of ELF standards:
 
 * **ELF: Serialisation Format**.  This standard defines a
   general-purpose serialisation format based on the GEDCOM data format
-  which encodes a *dataset* as a hierarchical series of *lines*, and
+  which encodes a *dataset* as a hierarchical series of *extended lines*, and
   provides low-level facilities such as escaping and extensibility
   mechanisms.
 
@@ -149,15 +149,15 @@ preceding *line* with a *level* `0`.
 
 ## Structures and pseudo-structures
 
-A dataset consists of **structures**; as part of encoding as a *string*, these are augmented by a set of **pseudo-structures**, *structure*-like constructs that are not part of the data model.
+A dataset consists of *structures*; as part of encoding as a *string*, these are augmented by a set of *pseudo-structures*, *structure*-like constructs that are not part of the data model.
 
 ### Structures   {#Structure}
 
 **Structures**, as defined in [ELF-DataModel], each have
 
--   a *structure type*; each *structure type* has
+-   a **structure type**; each *structure type* has
     
-    -   a unique *structure type identifier*, which is a *term name* and
+    -   a unique **structure type identifier**, which is a *term name* and
     -   a (possibly empty) set of *supertypes*
 
 -   a *superstructure* (which may be a *structure* or the dataset itself).
@@ -203,10 +203,28 @@ No *tag mapping*'s $T$ value may be "`CONC`" or "`CONT`", as those are special v
 
 All constraints on the *tag mapping table* must remain satisfied if all *tag mappings* in [Appendix A](#appendix-a) are added to the table.
 
+{.note} When used with the [ELF-DataModel], Appendix A will always be part of
+the tag mapping table. This final constraint is present to prevent namespace
+reuse by extensions not conformant with [ELF-DataModel] which might otherwise
+confuse GEDCOM toolsets not aware of ELF.
+
 ### Tag to structure type {#from-tag}
 
 Given a *structure* with *tag* $T$ in a superstructure with *structure type identifier* $S'$,
 the *structure*'s *structure type identifier* is the $I$ of the *tag mapping* $(I, S, T)$ where either $S = S'$ or $S$ is an *eventual supertype* of $S'$.
+
+{.example ...} Suppose a substructure of an `elf:ADOPTIVE_FAMILY` structure
+has tag "`ADOP`"; then its structure type identifier is 
+`elf:ADOPTED_BY_WHICH_PARENT` because the tag mapping table contains the tag 
+mapping (`elf:ADOPTED_BY_WHICH_PARENT`, `elf:ADOPTIVE_FAMILY`, `ADOP`).
+{/}
+
+{.example ...} Suppose a substructure of an `elf:RESIDENCE` structure
+has tag "`HUSB`"; then its structure type identifier is 
+`elf:Parent1Age` because the tag mapping table contains the tag 
+mapping (`elf:Parent1Age`, `elf:FamilyEvent`, `HUSB`)
+and `elf:FamilyEvent` is an eventual supertype of `elf:RESIDENCE`
+{/}
 
 If there is no such *tag mapping*, the *structure* is an **undocumented extension type** and *should* be treated like an *extension type* with which the implementation is unfamiliar.
 The tag $T$ *should* be preserved and re-used on export of the data.
@@ -214,20 +232,42 @@ The tag $T$ *should* be preserved and re-used on export of the data.
 If there is more than one such *tag mapping* then the *tag mapping table* is *non-conformant* and the application may terminate or proceed in an implementation-defined manner.
 Applications that proceed *should* alert the user that data loss may result due to non-conformant input.
 
-## Structure type to tag {#to-tag}
+### Structure type to tag {#to-tag}
 
 Given a *structure* with *structure type identifier* $I$ in a superstructure with *structure type identifier* $S'$,
 the *structure*'s *tag* is the $T$ of the a *tag mapping* $(I, S, T)$ where either $S = S'$ or $S$ is an *eventual supertype* of $S'$.
+
+{.note} Each *structure type* in [Appendix A](#appendix-a) has a single *tag*,
+no matter what *superstructure* the *structure* appears within.
+However, this is not guaranteed to be true for extension types
+and superstructure-sensitive tag mapping is required of all *conformant* applications.
+
+{.ednote} I have not yet identified an example of a structure type
+using different tags in different contexts. I have seen, e.g., `_UID` and 
+`_UUID` both being used for the same concept, but not in context-sensitive ways.
+Should we add a "one tag per structure type on export" rule?
 
 If there is no such *tag mapping*, a suitable *tag mapping* *must* be added to the *tag mapping table*, conforming to all limitations on the *tag mapping table*.
 This new *tag* *should* begin with an underscore (U+005F, `_`) and be at least two characters long.
 It is *recommended* that implementations consistently generate the same *tag* for a given *structure type* each time that *structure type* is serialised across all datasets.
 
 If there are two or more such *tag mappings*, each implementation *must* consistently chose the same one each time.
-This *should* be the "preferred" mapping as indicated by serialization order of the *tag mapping table*, but *may* be a different mapping provided that the same mapping is chosen throughout the serialisation process.
+This *should* be the "preferred" mapping as indicated by serialisation order of the *tag mapping table*, but *may* be a different mapping provided that the same mapping is chosen throughout the serialisation process.
 
+{.ednote} Is there a technical reason (besides tidiness) to require consistent selection?
+
+{.ednote} Should we require applications to use the tags in [Appendix A](#appendix-a)?
+Currently this is just suggested by the tag mapping table serialisation order,
+and we currently don't have language to prevent that being re-ordered.
 
 ## Serialisation
+
+{.note} This section contains process specifications that will result in a
+conformant serialisation. However, it is the resulting serialisation, and not
+the specific process used to reach it, that is defined by this document.
+Conformant applications are welcome to achieve the serialisation via other
+processes so long as the final octet string is equivalent to one created by
+the processes defined here.
 
 To serialise a dataset,
 
@@ -238,17 +278,17 @@ To serialise a dataset,
 5. Serialise all *records* (in any order).
 6. Serialise a `TRLR` *pseudo-structure*
 
-Each of the serialization steps includes several substeps:
+Each of the "serialise" steps includes several substeps:
 
 a. Convert each structure to an *extended line*.
 b. Identify split points and add `CONT` and `CONC` *psuedo-structures* as needed.
 c. Convert everything from characters to octets.
-d. Order and serialize any *substructures*
+d. Order and serialise any *substructures*
 
 ### Assign tags
 
 Assign each *structure* a **tag**, as defined in {§to-tag}.
-As this may result in adding new *tag mappings* to the *tag mapping table*, it should be performed in full before serialising that table.
+As this process may result in adding new *tag mappings* to the *tag mapping table*, it should be performed in full before serialising that table.
 
 ### Add header pseudo-structures
 
@@ -281,6 +321,8 @@ The character encoding selected
 MUST be able to encode all code points in all payloads in every *structure* within the dataset.
 It is RECOMMENDED that `UTF-8` be used for all datasets.
 
+{.ednote} The above requirement means `@#U...@` escapes are never needed except for trailing spaces and control characters. Was that intentional?
+
 The payload of the `CHAR` *pseudo-structure* *must* correctly represent the character encoding used to convert the dataset into octets.
 
 #### GEDC
@@ -301,9 +343,12 @@ then the `GEDC` *pseudo-structure* has no payload and three *substructures*:
 
 The`SCHMA` *pseudo-structure* has no payload and may contain any number of `PRFX` *pseudo-substructures* followed by any number of `IRI` *pseudo-substructures*.
 
+{.note} To facilitate single-pass processing of the schema, `PRFX` *must* come before `IRI`.
+This is an exception to the usual rule that order of different-type substructures is irrelevant and unconstrained.
+
 ##### Prefix abbreviation {#prefix}
 
-A `PRFX` *pseudo-structure* has no substructures, and its payload matched production `Prefix`:
+A `PRFX` *pseudo-structure* has no substructures, and its payload matches production `Prefix`:
 
     Prefix ::= PfxName ' ' IRI
     PfxName ::= [A-Za-z_] ([A-Za-z0-9_#x2D#x2E])*
@@ -311,7 +356,7 @@ A `PRFX` *pseudo-structure* has no substructures, and its payload matched produc
 where `IRI` is the `IRI` production in §2.2 of
 &#x5B;[RFC 3987](https://tools.ietf.org/html/rfc3987)]. 
 
-{.note} `PfxName` is more restrictive than `NCName` in §3 of &#x5B;[Names]], being limited to 7-bit ASCII to reduce serialisation order dependency.
+{.note} `PfxName` is similar to `NCName` in §3 of &#x5B;[Names]], but is limited to 7-bit ASCII to reduce serialisation order dependency.
 
 Each `PRFX` payload defines an IRI-shortening prefix.
 If an IRI begins with an IRI in a `PRFX` payload,
@@ -333,7 +378,9 @@ Assign each *record* an **identifier** matching production ID:
 
 Within a given dataset, each *record*'s *identifier* *must* be unique.
     
-{.note} The production `ID` is an alphanum followed by any number of non-control non-`@` 7-bit ASCII characters.  This is more limited than GEDCOM (which also allows the non-ASCII characters in ANSEL), but I am unaware of any GEDCOM implementation that uses those extra characters.
+{.note} The production `ID` is an alphanum followed by any number of non-control non-`@` 7-bit ASCII characters.
+This is more limited than GEDCOM (which also allows the non-ASCII characters in ANSEL) as support for non-ASCII `ID`s is not consistently implemented.
+Implementations are *recommended* to support parsing a larger set of identifiers, but *must not* output them.
 
 {.note ...} Some software have traditionally made additional assumptions of identifiers, such as
  
@@ -372,7 +419,53 @@ the order of *substructures* with different *structure type*s may be selected ar
 
 {.note} Only the order of identical *structure type*s are constrained by the dataset itself; distinct subtypes of a common supertype may be ordered arbitrarily.
 
-Each *substructure* of a *structure* is serialized immediately after the *extended line* of the *structure*.
+Each *substructure* of a *structure* is serialised immediately after the *extended line* of the *structure*.
+
+{.example ...} Consider an `elf:INDIVIDUAL_RECORD` with three `elf:IndividualEvent`s: one `elf:BIRTH` and two `elf:GRADUATION`s.
+If the earlier graduation is listed first, then the following three are all valid orderings and any may be used:
+
+````gedcom
+0 @I1@ INDI
+1 BIRTH
+2 DATE 20 JUN 1881
+1 GRAD
+2 AGE 18
+1 GRAD
+2 AGE 22
+````
+
+````gedcom
+0 @I1@ INDI
+1 GRAD
+2 AGE 18
+1 BIRTH
+2 DATE 20 JUN 1881
+1 GRAD
+2 AGE 22
+````
+
+````gedcom
+0 @I1@ INDI
+1 GRAD
+2 AGE 18
+1 GRAD
+2 AGE 22
+1 BIRTH
+2 DATE 20 JUN 1881
+````
+
+However, the following puts the graduations in a different order than the dataset and is not permitted:
+
+````gedcom
+0 @I1@ INDI
+1 GRAD
+2 AGE 22
+1 BIRTH
+2 AGE 18
+1 GRAD
+2 DATE 20 JUN 1881
+````
+{/}
 
 ### Split lines using CONT and CONC pseudo-structures
 
@@ -415,11 +508,22 @@ or
 {/}
 
 
-Any `CONT` and/or `CONC` *pseudo-substructures* of a *structure* *must* be serialized before any of the *structure*'s other *substructures*.
+Any `CONT` and/or `CONC` *pseudo-substructures* of a *structure* *must* be serialised before any of the *structure*'s other *substructures*.
+
+{.example ...} The following arguably has unambiguous meaning, but MUST NOT be created because it violates the `CONT` and `CONC` first rule:
+
+````gedcom
+2 SOUR This is a
+3 NOTE You cannot put a substructure before a CONT or CONC
+3 CONC n illegal ordering
+````
+{/}
 
 ### Escape `@`
 
 Replace any COMMERCIAL AT (U+0040, `@`) in a *payload string* that is not the initial or final character of a substring matching the `Escape` production with two adjacent COMMERCIAL ATs (i.e., "`@@`")
+
+{.ednote} This step is required by GEDCOM, but is skipped by some implementations.
 
 ### Convert to a string
 
@@ -457,12 +561,20 @@ Any code points that cannot be directly represented as octets within the charact
 {.note} While GEDCOM has no provision for escaping unencodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
 GEDCOM also does not define what is done with unknown code points, so the above definition does not violate what GEDCOM requires.
 
-{.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
+{.ednote} We have language that REQUIRES an encoding that accepts all code points in use, so the unicode escape is only needed for control characters and trailing spaces.
 
 
 
 
 ## Deserialisation
+
+{.note} This section contains process specifications that will result in a
+conformant deserialisation. However, it is the resulting dataset, and not the
+specific process used to reach it, that is defined by this document. Conformant
+applications are welcome to achieve the deserialisation via other processes
+so long as the final dataset is equivalent to one created by the processes
+defined here.
+
 
 To deserialise a dataset,
 
@@ -472,7 +584,7 @@ To deserialise a dataset,
 4. Deserialise each *record*.
 
 
-Each of the serialization steps includes several substeps:
+Each of the "deserialise" steps includes several substeps:
 
 a. Covert octets to a string.
 b. Convert each *line string* into an *extended line*.
