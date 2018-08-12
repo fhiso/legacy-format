@@ -424,9 +424,9 @@ Substructures
     If a *structure* contains more than one *substructure* with the same *structure type*,
     those *substructures* are stored in a specific order.
     However, the order of *substructures* with different *structure types* is not preserved by their *superstructure*.
-    
-    Unless otherwise specified, *substructures* with the same *structure type*
-    shall be interpreted as being in preference order, with the first such substructure being most preferred.
+    Unless otherwise specified in the definition of a particular *structure*,
+    *substructures* with the same *structure type*
+    *shall* be interpreted as being in preference order, with the first such *substructure* being most preferred.
 
     {.example ...} Given the following data
     
@@ -439,6 +439,19 @@ Substructures
     a view using only a single name variant should use the first (Herman, not Harmon)
     because it comes first and is thus interpreted as being preferred.
     {/}
+
+{.note ...} The exact meaning of "preferred" is not defined either here nor in any known GEDCOM standard.
+For example, when seeing multiple names, one if preferred by virtue of being first
+but implementations *should not* infer that that one was preferred by the individual in question
+nor by any particular contributor to the dataset.
+
+When a specific order of *substructures* is suggested or required by the data model
+(for example, `[elf:CHILD_POINTER]`s should be in birth order)
+or when distinct semantics are present in each *substructure*
+(for example, `[elf:CHILD_TO_FAMILY_LINK]`s to both birth and adoptive families)
+user interfaces are *recommended* to either present all such information, not just the first listed;
+or to clearly indicate that additional information is being elided.
+{/}
 
 
 ### Supertypes and subtypes {#Inheritance}
@@ -1971,7 +1984,7 @@ Default tag
 
 Used to record couple and parent/child relationships.
 
-Because of the social context in which GEDCOM was first created and because `elf:FAM_RECORD`s are used in some software applications to present binary ancestry trees and *n*-ary descendancy trees, each `elf:FAM_RECORD` is limited to having at most one "first-position" parent; at most one "second-position" parent; and any number of ordered children. GEDCOM explicitly stated that the first-position parent was male and the second-position parent was female; that is not true of how GEDCOM has been used in practice and MUST NOT be assumed by any conformant ELF implementation.
+Because of the social context in which GEDCOM was first created and because `elf:FAM_RECORD`s are used in some software applications to present binary ancestry trees and *n*-ary descendancy trees, each `elf:FAM_RECORD` is limited to having at most one "first-position" parent; at most one "second-position" parent; and any number of ordered children. GEDCOM explicitly stated that the first-position parent was male and the second-position parent was female; that is not always true of how GEDCOM has been used in practice and MUST NOT be assumed by any conformant ELF implementation.
 
 Supertype
 :   `[elf:Record]`
