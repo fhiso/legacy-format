@@ -424,6 +424,21 @@ Substructures
     If a *structure* contains more than one *substructure* with the same *structure type*,
     those *substructures* are stored in a specific order.
     However, the order of *substructures* with different *structure types* is not preserved by their *superstructure*.
+    
+    Unless otherwise specified, *substructures* with the same *structure type*
+    shall be interpreted as being in preference order, with the first such substructure being most preferred.
+
+    {.example ...} Given the following data
+    
+    ````gedcom
+    0 @I1@ INDI
+    1 NAME Henry /Herman/
+    1 NAME Henry /Harmon/
+    ````
+    
+    a view using only a single name variant should use the first (Herman, not Harmon)
+    because it comes first and is thus interpreted as being preferred.
+    {/}
 
 
 ### Supertypes and subtypes {#Inheritance}
@@ -2799,7 +2814,7 @@ Substructures
 :   `[elf:NAME_ROMANIZED_VARIATION]`
 
 Payload
-:   A *line string* matching the [Language Tag](#language-tag) microformat.
+:   A *line string* matching the [Personal Name](#personal-name) microformat.
     It is RECOMMENDED that implementations support payloads of at least 120 characters.
     
     In the event that this payload disagrees with the substructures of this structure, the payload *should* be taken as more correct.
