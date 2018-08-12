@@ -2705,6 +2705,11 @@ Default tag
 
 ### `elf:NOTE_STRUCTURE`                                 {#elf:NOTE_STRUCTURE}
 
+{.ednote} We list here all *superstructures* where a `[elf:NOTE_STRUCTURE]` is listed in GEDCOM.
+We have discussed saying instead that a `[elf:NOTE_STRUCTURE]` can appear in any `[elf:Structure]`
+(including other `[elf:NOTE_STRUCTURE]` as we have use cases for notes about notes)
+but as that is technically a divergence from GEDCOM, we have refrained from adding it to this draft.
+
 Supertype
 :   `[elf:Structure]`
 
