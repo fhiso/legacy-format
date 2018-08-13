@@ -494,7 +494,7 @@ encoded using two bytes `C3 A9`.  A split point *must not* be placed
 between these bytes, as doing so would prevent the file from being
 a valid UTF-8 document.
 
-{.example}  The letter "é" can also be encoded using two characters,
+{.example}  The glyph "é" can also be encoded using two characters,
 a Latin letter "e" (U+0065) followed by a combining acute accent
 (U+0301), which are rendered as a single glyph, "é".  An application
 *should not* place a split point between these characters.
