@@ -483,7 +483,21 @@ that are not part of a substring matching the `Escape` production.
 
     Escape  ::= "@#" [^#x40#xA#xD]* "@"
 
-It is *recommended* that split points be identified at least once every 240 characters.
+It is *recommended* that split points be identified frequently enough to keep each line to less than 255 characters and less than 255 bytes when encoded in UTF-8.
+
+Split points *must* only be placed between between *characters* and
+*should not* be placed between two *characters* which represent part
+of the same glyph.
+
+{.example}  In the UTF-8 character set, the *character* "é" is
+encoded using two bytes `C3 A9`.  A split point *must not* be placed
+between these bytes, as doing so would prevent the file from being
+a valid UTF-8 document.
+
+{.example}  The glyph "é" can also be encoded using two characters,
+a Latin letter "e" (U+0065) followed by a combining acute accent
+(U+0301), which are rendered as a single glyph, "é".  An application
+*should not* place a split point between these characters.
 
 {.ednote} Jones asserts that leading white-space on a line is supported, even though GEDCOM suggests it is not. The above matches GEDCOM. We should probably investigate the prevalence of leading whitespace in practice before committing to this.
 
