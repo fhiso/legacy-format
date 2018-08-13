@@ -109,10 +109,11 @@ here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
 
 This standard uses *prefix notation* when discussing specific *terms*.
-The following *prefix* binding is assumed in this standard:
+The following *prefix* bindings are assumed in this standard:
 
 ------           -----------------------------------------------
 `elf`            `https://terms.fhiso.org/elf/`
+`elfm`           `https://terms.fhiso.org/elf/metadata/`
 ------           -----------------------------------------------
 
 {.note}  The particular *prefix* assigned above have no relevance
@@ -386,9 +387,9 @@ A *date value* may have any of a variety of formats:
 
 ## ELF Datasets
 
-Every Extended Legacy Format (ELF) dataset is two sets of *structure*s.
-The first, described as the `elf:Document`, is a set of `[elf:Record]`s which, with their *substructures*, provide the principle data of the dataset.
-The other, described as the `elf:Metadata`, is a set of additional structures which, with the *substructures*, provide metadata about the dataset as a whole.
+Every Extended Legacy Format (ELF) dataset is a set of *structure*s:
+exactly one `[elf:HEADER]` structure (containing metadata about the dataset)
+and any number of `[elf:Record]`s.
 
 ### Structures {#Structure}
 
@@ -736,15 +737,15 @@ Subtypes
 
 This is an abstract datatype and should not be used as the *structure type identifier* of any concrete structure.
 
-A **record** is a core element of the dataset.
-*Records* *must not* be substructures of any *structure*.
+A **records** is a core element of the dataset.
+A *record* *must not* be substructures of any *structure*.
 *Pointers* may only point to *records*.
 
 Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:AUTOMATED_RECORD_ID]` ?
@@ -772,10 +773,9 @@ This represents the top of the type hierarchy and has no semantics of its own.
 
 
 
-## Concrete data types
+## Concrete types
 
 The following concrete types are presented in alphabetical order.
-Metadata types are presented in the following section.
 
 ### `elf:ADDRESS_CITY`                                     {#elf:ADDRESS_CITY}
 
@@ -882,7 +882,7 @@ Payload
     It is RECOMMENDED that implementations support payloads of at least 60 characters.
     
     The first line of the address, preceding the city.
-.
+
 Default tag
 :   `ADR1`
 
@@ -1567,6 +1567,47 @@ Default tag
 :   `OBJE`
 
 
+### `elf:COPYRIGHT_GEDCOM_FILE`                   {#elf:COPYRIGHT_GEDCOM_FILE}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    Contains a copyright statement for the entire dataset.
+
+Default tag
+:   `COPR`
+
+
+### `elf:COPYRIGHT_SOURCE_DATA`                   {#elf:COPYRIGHT_SOURCE_DATA}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:NAME_OF_SOURCE_DATA]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+    
+    Contains a copyright statement for the source dataset described by the superstructure.
+
+Default tag
+:   `COPR`
+
+
 ### `elf:COUNT_OF_CHILDREN#Family`             {#elf:COUNT_OF_CHILDREN#Family}
 
 Supertype
@@ -1677,6 +1718,26 @@ Default tag
 :   `DEAT`
 
 
+### `elf:DEFAULT_PLACE_FORMAT`                     {#elf:DEFAULT_PLACE_FORMAT}
+
+Contains the default `[elf:PLACE_HIERARCHY]` for the full document stream.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elf:PLACE_HIERARCHY]` ?
+
+Payload
+:   None
+
+Default tag
+:   `PLAC`
+
+
 ### `elf:DESCENDANT_INTEREST_POINTER`       {#elf:DESCENDANT_INTEREST_POINTER}
 
 Supertype
@@ -1737,6 +1798,30 @@ Supertype
 
 Default tag
 :   `DIV`
+
+
+### `elf:DOCUMENT_SOURCE`                               {#elf:DOCUMENT_SOURCE}
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   `[elf:VERSION_NUMBER]`
+:   `[elf:NAME_OF_PRODUCT]`
+:   `[elf:NAME_OF_BUSINESS]`
+:   `[elf:NAME_OF_SOURCE_DATA]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+    In early GEDCOM, this was a unique string assigned to each product through a registration process.
+    That process no longer exists.
+
+{.ednote} Do we want to make a new recommendation for the contents of this payload? Perhaps an IRI + date pair? A UUID? A generic "UNREGISTERED_PRODUCT" string or the like?
+
+Default tag
+:   `SOUR`
 
 
 ### `elf:EMIGRATION`                                         {#elf:EMIGRATION}
@@ -1905,7 +1990,7 @@ Supertype
 :   `[elf:Record]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:RESTRICTION_NOTICE]` ?
@@ -1925,6 +2010,29 @@ Default tag
 :   `FAM`
 
 
+### `elf:FILE_NAME`                                           {#elf:FILE_NAME}
+
+{.ednote} What is the purpose of this structure? Clearly it cannot always match the name of the physical file, which can be renamed without editing; nor are there any limitations given on it in GEDCOM besides that it include an extension *if* the file containing it has an extension in its name. Without knowing its purpose, I don't know how to document this structure.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The base name (i.e., not a full path) of a file.
+
+Default tag
+:   `FILE`
+
+
 ### `elf:FIRST_COMMUNION`                               {#elf:FIRST_COMMUNION}
 
 First communion, a religious rite in many Christian denominations associated with first partaking of the communion of the Lord's Supper.
@@ -1934,6 +2042,26 @@ Supertype
 
 Default tag
 :   `FCOM`
+
+
+### `elf:GEDCOM_CONTENT_DESCRIPTION`         {#elf:GEDCOM_CONTENT_DESCRIPTION}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *block string* of arbitrary length.
+    
+    A description of the intended scope of the contents of the dataset.
+
+Default tag
+:   `NOTE`
 
 
 ### `elf:GRADUATION`                                         {#elf:GRADUATION}
@@ -1966,7 +2094,7 @@ Supertype
 :   `[elf:Record]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:RESTRICTION_NOTICE]` ?
@@ -1991,6 +2119,28 @@ Payload
 
 Default tag
 :   `INDI`
+
+
+### `elf:LANGUAGE_OF_TEXT`                             {#elf:LANGUAGE_OF_TEXT}
+
+{.ednote} Should this really be a pseudo-structure? If we re-work this as having language-tagged strings as payloads, then it is; but if we leave the strings in this document as non-language-tagged then it is data instead.
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string* matching the [Language Tag](#language-tag) microformat.
+    
+    Indicates the default language of the free-text payloads in the dataset.
+
+Default tag
+:   `LANG`
 
 
 ### `elf:LANGUAGE_PREFERENCE`                       {#elf:LANGUAGE_PREFERENCE}
@@ -2176,7 +2326,7 @@ Supertype
 :   `[elf:Record]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:MULTIMEDIA_FILE_REFERENCE]` \* -- GEDCOM 5.5.1
@@ -2190,6 +2340,45 @@ Payload
 
 Default tag
 :   `OBJE`
+
+
+### `elf:NAME_OF_BUSINESS`                             {#elf:NAME_OF_BUSINESS}
+
+Supertype
+:   `[elf:Agent]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of the entity that produced the product described by the superstructure.
+
+Default tag
+:   `CORP`
+
+
+### `elf:NAME_OF_PRODUCT`                               {#elf:NAME_OF_PRODUCT}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of the product described by the superstructure.
+
+Default tag
+:   `NAME`
 
 
 ### `elf:NAME_OF_REPOSITORY`                         {#elf:NAME_OF_REPOSITORY}
@@ -2211,6 +2400,28 @@ Payload
 
 Default tag
 :   `NAME`
+
+
+### `elf:NAME_OF_SOURCE_DATA`                       {#elf:NAME_OF_SOURCE_DATA}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+
+Substructures
+:   `[elf:PUBLICATION_DATE]`
+:   `[elf:COPYRIGHT_SOURCE_DATA]`
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 90 characters.
+    
+    The name of an electronic data source from which this dataset was extracted.
+
+Default tag
+:   `DATA`
 
 
 ### `elf:NAME_PHONETIC_VARIATION`               {#elf:NAME_PHONETIC_VARIATION}
@@ -2481,7 +2692,7 @@ Supertype
 :   `[elf:Record]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Payload
 :   A *block string* of arbitrary length.
@@ -2864,6 +3075,26 @@ Default tag
 :   `PROB`
 
 
+### `elf:PUBLICATION_DATE`                             {#elf:PUBLICATION_DATE}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:NAME_OF_SOURCE_DATA]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string* matching the [Exact Date](#exact-date) microformat.
+        
+    Contains the date the source dataset (described by the superstructure) was published or created.
+
+Default tag
+:   `DATE`
+
+
 ### `elf:Parent1Age`                                         {#elf:Parent1Age}
 
 An intermediate structure to indicate the age of a spouse or parent at the time of an event.
@@ -2902,6 +3133,24 @@ Payload
 
 Default tag
 :   `WIFE`
+
+
+### `elf:RECEIVING_SYSTEM_NAME`                   {#elf:RECEIVING_SYSTEM_NAME}
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructures
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 20 characters.
+
+    Identifies the intended recipient software of this dataset.
+
+Default tag
+:   `DEST`
 
 
 ### `elf:RELATION_IS_DESCRIPTOR`                 {#elf:RELATION_IS_DESCRIPTOR}
@@ -2990,7 +3239,7 @@ Supertype
 :   `[elf:Agent]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:NAME_OF_REPOSITORY]` !
@@ -3464,7 +3713,7 @@ Supertype
 :   `[elf:Record]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:SOURCE_RECORD_DATA]` ?
@@ -3555,13 +3804,12 @@ Supertype
 Superstructures
 :   `[elf:FAM_RECORD]`
 :   `[elf:INDIVIDUAL_RECORD]`
-:   `[elf:Metadata]`
+:   `[elfm:HEADER]`
 
 Payload
 :   A pointer to an `[elf:SUBMITTER_RECORD]`
 
-    Indicates that the pointed-to `[elf:SUBMITTER_RECORD]` describes a contributor of information to the containing structure,
-    or the principle contributor of the entire dataset if in `[elf:Metadata]`.
+    Indicates that the pointed-to `[elf:SUBMITTER_RECORD]` describes a contributor of information to the containing structure.
 
 Default tag
 :   `SUBM`
@@ -3569,23 +3817,12 @@ Default tag
 
 ### `elf:SUBMITTER_RECORD`                             {#elf:SUBMITTER_RECORD}
 
-{.note ...} A `elf:SUBMITTER_RECORD` describes an individual engaged in genealogical reserch; an `[elf:INDIVIDUAL_RECORD]` describes a subject of that research.
-Datasets may contain both kind of record describing the same person.
-
-Although never permitted in its normative text, GEDCOM included at least one example
-(under the definition of RELATION_IS_DESCRIPTOR)
-where a pointer documented to point to an `[elf:INDIVIDUAL_RECORD]`
-pointed to a `elf:SUBMITTER_RECORD` instead.
-Implementations are encouraged to support reading datasets with that behavior,
-but *should not* create them.
-{/}
-
 Supertype
 :   `[elf:Record]`
 :   `[elf:Agent]`
 
 Superstructures
-:   `[elf:Document]`
+:   `[elfm:Document]`
 
 Substructures
 :   `[elf:SUBMITTER_NAME]` !
@@ -3596,10 +3833,10 @@ Substructures
 Payload
 :   None
 
+{.note} GEDCOM permitted a `SUBMITTER_REGISTERED_RFN` with tag `RFN`, the value of which needed to be preregistered with Ancestral File, a service that is no longer available. It has thus been removed from this specification, making it an extension tag.
+
 Default tag
 :   `SUBM`
-
-{.note} GEDCOM permitted a `SUBMITTER_REGISTERED_RFN` with tag `RFN`, the value of which needed to be preregistered with Ancestral File, a service that is no longer available. `RFN` has thus been removed from this specification, making it an extension tag.
 
 
 ### `elf:TEXT_FROM_SOURCE`                             {#elf:TEXT_FROM_SOURCE}
@@ -3650,6 +3887,26 @@ Default tag
 :   `TIME`
 
 
+### `elf:TRANSMISSION_DATE`                           {#elf:TRANSMISSION_DATE}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elfm:HEADER]`
+
+Substructure
+:   `[elf:TIME_VALUE]`
+
+Payload
+:   A string matching the [Exact Date](#exact-date) syntax.
+
+    The date that this dataset was created.
+
+Default tag
+:   `DATE`
+
+
 ### `elf:USER_REFERENCE_NUMBER`                   {#elf:USER_REFERENCE_NUMBER}
 
 Supertype
@@ -3687,6 +3944,29 @@ Payload
 
 Default tag
 :   `TYPE`
+
+
+### `elf:VERSION_NUMBER`                                 {#elf:VERSION_NUMBER}
+
+Supertype
+:   `[elf:Structure]`
+
+Superstructures
+:   `[elf:DOCUMENT_SOURCE]`
+:   `[elfm:GEDCOM_FORMAT]`
+:   `[elfm:CHARACTER_SET]`
+
+Substructure
+:   None
+
+Payload
+:   A *line string*.
+    It is RECOMMENDED that implementations support payloads of at least 15 characters.
+
+    A version identifier, with syntax and semantics varying by context.
+
+Default tag
+:   `VERS`
 
 
 ### `elf:WHERE_WITHIN_SOURCE`                       {#elf:WHERE_WITHIN_SOURCE}
@@ -3738,174 +4018,66 @@ Default tag
 :   `FAMC`
 
 
+## Pseudo-structures
 
-## Concrete metadata types
+The following are not *structures* in the normal sense;
+that is, they do not discuss the dataset itself.
+However, they are useful in describing how the data is transmitted
+and providing anchors for other information.
 
-The following concrete types are presented in alphabetical order.
-Data types are presented in the previous section.
+### `elfm:CHARACTER_SET`                                 {#elfm:CHARACTER_SET}
 
-### `elf:COPYRIGHT_GEDCOM_FILE`                   {#elf:COPYRIGHT_GEDCOM_FILE}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 90 characters.
-    
-    Contains a copyright statement for the entire dataset.
-
-Default tag
-:   `COPR`
-
-
-### `elf:COPYRIGHT_SOURCE_DATA`                   {#elf:COPYRIGHT_SOURCE_DATA}
-
-Supertype
-:   `[elf:Structure]`
+A pseudostructure provided to assist serialisations in identifying 
 
 Superstructures
-:   `[elf:NAME_OF_SOURCE_DATA]`
+:   `[elfm:HEADER]`
 
 Substructures
-:   None
+:   `[elf:VERSION_NUMBER]` ?
 
 Payload
-:   A *block string* of arbitrary length.
-    
-    Contains a copyright statement for the source dataset described by the superstructure.
+:   A *string*, typically taken from an enumerated set specified by a particular serialisation format.
 
 Default tag
-:   `COPR`
+:   `CHAR`
 
+### `elfm:Document`                                           {#elfm:Document}
 
-### `elf:DEFAULT_PLACE_FORMAT`                     {#elf:DEFAULT_PLACE_FORMAT}
+Not a structure at all, `elfm:Document` is a special IRI used as the *structure type identifier* of the *superstructure* of a *structure* that does not have a *superstructure* but instead is directly included in the dataset.
 
-Contains the default `[elf:PLACE_HIERARCHY]` for the full document stream.
+### `elfm:ELF_SCHEMA`                                       {#elfm:ELF_SCHEMA}
 
-Supertype
-:   `[elf:Structure]`
+A holder for minimal information needed to correctly parse tag-based serialisations of extension types.
+
+{.note} Discussions on adding more discovery metadata in the schema are ongoing, and may be included in a future release.
+
 
 Superstructures
-:   `[elf:Metadata]`
+:   `[elfm:HEADER]`
 
 Substructures
-:   `[elf:PLACE_HIERARCHY]` ?
-
-Payload
-:   None
+:   `[elfm:IRI_PREFIX]` \*
+:   `[elfm:STRUCTURE_TYPE]` \*
 
 Default tag
-:   `PLAC`
+:   `SCHMA`
 
 
-### `elf:DOCUMENT_SOURCE`                               {#elf:DOCUMENT_SOURCE}
+### `elfm:EXTENDS`                                             {#elfm:EXTENDS}
 
-Supertype
-:   `[elf:Structure]`
+Identifies the supertype of a type
 
 Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   `[elf:VERSION_NUMBER]`
-:   `[elf:NAME_OF_PRODUCT]`
-:   `[elf:NAME_OF_BUSINESS]`
-:   `[elf:NAME_OF_SOURCE_DATA]`
+:   `[elfm:STRUCTURE_TYPE]`
 
 Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 20 characters.
-
-    In early GEDCOM, this was a unique string assigned to each product through a registration process.
-    That process no longer exists.
-
-{.ednote} Do we want to make a new recommendation for the contents of this payload? Perhaps an IRI + date pair? A UUID? A generic "UNREGISTERED_PRODUCT" string or the like?
+:   The *structure type identifier* of *supertype* of the *type* identified by the *superstructure*, possibly shortened in a serialisation-specific way.
 
 Default tag
-:   `SOUR`
+:   `ISA`
 
 
-### `elf:ELF_VERSION`                                        {#elf:ELF_VERSION}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 12 characters.
-    
-    The version identifier of the ELF-dataset of this data.
-    This document describes ELF-dataset version "`1.0.0`".
-    
-    Unless otherwise specified in later versions,
-    this string uses &#x5B;[Semantic Versioning](https://semver.org)].
-    In particular, an application expecting one versions
-    and given a different one with the same initial number (as e.g. `1.18.3` instead of `1.0.0`)
-    should be able to process the data normally.
-
-Default tag
-:   `ELF_DM`
-
-
-
-
-### `elf:FILE_NAME`                                           {#elf:FILE_NAME}
-
-{.ednote} What is the purpose of this structure? Clearly it cannot always match the name of the physical file, which can be renamed without editing; nor are there any limitations given on it in GEDCOM besides that it include an extension *if* the file containing it has an extension in its name. Without knowing its purpose, I don't know how to document this structure.
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 90 characters.
-    
-    The base name (i.e., not a full path) of a file.
-
-Default tag
-:   `FILE`
-
-
-### `elf:GEDCOM_CONTENT_DESCRIPTION`         {#elf:GEDCOM_CONTENT_DESCRIPTION}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *block string* of arbitrary length.
-    
-    A description of the intended scope of the contents of the dataset.
-
-Default tag
-:   `NOTE`
-
-
-### `elf:GEDCOM_FORM`                                     {#elf:GEDCOM_FORM}
+### `elfm:GEDCOM_FORM`                                     {#elfm:GEDCOM_FORM}
 
 A holder for formatting and version information.
 
@@ -3913,7 +4085,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:GEDCOM_FORMAT]`
+:   `[elfm:GEDCOM_FORMAT]`
 
 Substructures
 :   None
@@ -3925,7 +4097,7 @@ Default tag
 :   `FORM`
 
 
-### `elf:GEDCOM_FORMAT`                                 {#elf:GEDCOM_FORMAT}
+### `elfm:GEDCOM_FORMAT`                                 {#elfm:GEDCOM_FORMAT}
 
 A holder for formatting and version information.
 
@@ -3933,10 +4105,10 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Dataset]`
+:   `[elfm:HEADER]`
 
 Substructures
-:   `[elf:GEDCOM_FORM]`
+:   `[elfm:GEDCOM_FORM]`
 :   `[elf:VERSION_NUMBER]`
 
 Payload
@@ -3946,189 +4118,88 @@ Default tag
 :   `GEDC`
 
 
-### `elf:LANGUAGE_OF_TEXT`                             {#elf:LANGUAGE_OF_TEXT}
+### `elfm:HEADER`                                               {#elfm:HEADER}
 
-{.ednote} Should this really be a pseudo-structure? If we re-work this as having language-tagged strings as payloads, then it is; but if we leave the strings in this document as non-language-tagged then it is data instead.
-
-Supertype
-:   `[elf:Structure]`
+The header is a place to store various metadata about the dataset as a whole.
 
 Superstructures
-:   `[elf:Metadata]`
+:   `[elfm:Document]`
 
 Substructures
-:   None
-
-Payload
-:   A *line string* matching the [Language Tag](#language-tag) microformat.
-    
-    Indicates the default language of the free-text payloads in the dataset.
-
-Default tag
-:   `LANG`
-
-
-### `elf:NAME_OF_BUSINESS`                             {#elf:NAME_OF_BUSINESS}
-
-Supertype
-:   `[elf:Agent]`
-
-Superstructures
-:   `[elf:DOCUMENT_SOURCE]`
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 90 characters.
-    
-    The name of the entity that produced the product described by the superstructure.
+:   `[elf:DOCUMENT_SOURCE]` !
+:   `[elf:RECEIVING_SYSTEM_NAME]` ?
+:   `[elf:TRANSMISSION_DATE]` ?
+:   `[elf:SUBMITTER_POINTER]` !
+:   `[elf:FILE_NAME]` ?
+:   `[elf:COPYRIGHT_GEDCOM_FILE]` ?
+:   `[elfm:GEDCOM_FORMAT]` !
+:   `[elf:LANGUAGE_OF_TEXT]` ?
+:   `[elf:DEFAULT_PLACE_FORMAT]` ?
+:   `[elf:GEDCOM_CONTENT_DESCRIPTION]` ?
+:   `[elfm:ELF_SCHEMA]` ?
+:   `[elfm:CHARACTER_SET]` !
 
 Default tag
-:   `CORP`
+:   `HEAD`
 
 
-### `elf:NAME_OF_PRODUCT`                               {#elf:NAME_OF_PRODUCT}
+### `elfm:IRI_PREFIX`                                       {#elfm:IRI_PREFIX}
 
-Supertype
-:   `[elf:Structure]`
+An abbreviation mechanism, similar to a CURIE, with specific format and syntax defined on a per-serialisation-format basis.
 
 Superstructures
-:   `[elf:DOCUMENT_SOURCE]`
+:   `[elfm:ELF_SCHEMA]`
+
+Payload
+:   a shortened form and an IRI, with details specified per serialisation format.
+
+Default tag
+:   `PRFX`
+
+
+### `elfm:STRUCTURE_TYPE`                               {#elfm:STRUCTURE_TYPE}
+
+An holder for metadata about one particular structure type.
+
+Superstructures
+:   `[elfm:ELF_SCHEMA]`
 
 Substructures
-:   None
+:   `[elfm:TAG]` \*
+:   `[elfm:EXTENDS]` ?
 
 Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 90 characters.
-    
-    The name of the product described by the superstructure.
+:   The *structure type identifier* of a *structure type*, possibly shortened in a serialisation-specific way.
 
 Default tag
-:   `NAME`
+:   `IRI`
 
 
-### `elf:NAME_OF_SOURCE_DATA`                       {#elf:NAME_OF_SOURCE_DATA}
+### `elfm:TAG`                                                     {#elfm:TAG}
 
-Supertype
-:   `[elf:Structure]`
+Contains (possibly superstructure-specific) information about how a structure is identified within a specific serialisation format.
 
 Superstructures
-:   `[elf:DOCUMENT_SOURCE]`
-
-Substructures
-:   `[elf:PUBLICATION_DATE]`
-:   `[elf:COPYRIGHT_SOURCE_DATA]`
+:   `[elfm:STRUCTURE_TYPE]`
 
 Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 90 characters.
-    
-    The name of an electronic data source from which this dataset was extracted.
+:   Defined by serialisation format
 
 Default tag
-:   `DATA`
+:   `TAG`
 
 
-### `elf:PUBLICATION_DATE`                             {#elf:PUBLICATION_DATE}
+### `elfm:Trailer`                                             {#elfm:Trailer}
 
-Supertype
-:   `[elf:Structure]`
+The trailer is a placeholder to mark the end of a dataset. It has no semantic meaning.
 
 Superstructures
-:   `[elf:NAME_OF_SOURCE_DATA]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string* matching the [Exact Date](#exact-date) microformat.
-        
-    Contains the date the source dataset (described by the superstructure) was published or created.
+:   `[elfm:Document]`
 
 Default tag
-:   `DATE`
+:   `TRLR`
 
 
-### `elf:RECEIVING_SYSTEM_NAME`                   {#elf:RECEIVING_SYSTEM_NAME}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 20 characters.
-
-    Identifies the intended recipient software of this dataset.
-
-Default tag
-:   `DEST`
-
-
-### `elf:SUBMITTER_POINTER`
-
-Used both in metadata and in data; see `[elf:SUBMITTER_POINTER]` for a discussion.
-
-
-### `elf:TRANSMISSION_DATE`                           {#elf:TRANSMISSION_DATE}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructure
-:   `[elf:TIME_VALUE]`
-
-Payload
-:   A string matching the [Exact Date](#exact-date) syntax.
-
-    The date that this dataset was created.
-
-Default tag
-:   `DATE`
-
-
-### `elf:VERSION_NUMBER`                                 {#elf:VERSION_NUMBER}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:DOCUMENT_SOURCE]`
-:   `[elf:GEDCOM_FORMAT]`
-
-Substructure
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 15 characters.
-
-    A version identifier, with syntax and semantics varying by context.
-    If the superstructure is `[elf:GEDCOM_FORMAT]`, the payload *should* be the exact string "`5.5.1`".
-
-Default tag
-:   `VERS`
-
-
-
-
-## Pseudo-structures
-
-### `elf:Document`                                           {#elf:Document}
-
-Not a structure at all, `elf:Document` is a special IRI used as the *structure type identifier* of the *superstructure* of a *structure* that does not have a *superstructure* but instead is directly included in the dataset.
-
-### `elf:Metadata`                                           {#elf:Metsdata}
-
-Not a structure at all, `elf:Metadata` is a special IRI used as the *structure type identifier* of the *superstructure* of a *structure* that does not have a *superstructure* but instead is directly included in the metadata of the dataset.
 
 
 
