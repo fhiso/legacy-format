@@ -177,6 +177,12 @@ A **pseudo-structure** is a *structure*-like construct introduced to encode meta
 
 All of the serialisation content in this document that refers to a *structure* also applies to a *pseudo-structure*.
 
+*Pseudo-structures* *must not* be generated with components not mentioned in this specification.
+Implementations encountering undocumented components of *pseudo-structures* *should* ignore them.
+
+{.example} The `CONC` pseudo-structure is defined to have a particular *level*, *tag*, and *payload string*.
+It thus *must not* be generated with a *pointer* *payload*, an *identifier*, or *substructures*.
+If an implementation imports a dataset where a `CONC` has any of these, they *should* be ignored.
 
 ## Tag Mapping Table {#tag-table}
 
