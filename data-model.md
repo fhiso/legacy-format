@@ -427,17 +427,17 @@ Substructures
     *substructures* with the same *structure type*
     *shall* be interpreted as being in preference order, with the first such *substructure* being most preferred.
 
-    {.example ...} Given the following data
-    
-    ````gedcom
-    0 @I1@ INDI
-    1 NAME Henry /Herman/
-    1 NAME Henry /Harmon/
-    ````
-    
-    a view using only a single name variant should use the first (Herman, not Harmon)
-    because it comes first and is thus interpreted as being preferred.
-    {/}
+{.example ...} Given the following data
+
+````gedcom
+0 @I1@ INDI
+1 NAME Henry /Herman/
+1 NAME Henry /Harmon/
+````
+
+a view using only a single name variant should use the first (Herman, not Harmon)
+because it comes first and is thus interpreted as being preferred.
+{/}
 
 {.note ...} The exact meaning of "preferred" is not defined either here nor in any known GEDCOM standard.
 For example, when seeing multiple names, one if preferred by virtue of being first
