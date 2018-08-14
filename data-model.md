@@ -53,6 +53,22 @@ form the initial suite of ELF standards:
   update to the GEDCOM data model, but rather a basis for future
   extension.
 
+## Version and IRI
+
+This document describes version "`1.0.0`" of the ELF data model.
+The version string uses the semantic versioning tradition outlined in <https://semver.org>:
+three integers, separated by periods, where an application expecting on version
+can process any other with the same first integer.
+
+The IRI for this any version of the ELF data model can be created
+by prepending `https://fhiso.org/TR/elf-data-model/v` to the version;
+for this document's version, that IRI is 
+
+    https://fhiso.org/TR/elf-data-model/v1.0.0
+
+{.ednote} This IRI was generated just as a placeholder; the correct IRI is not yet determined.
+
+
 ## General
 
 Where this standard gives a specific technical meaning to a word or
@@ -3873,36 +3889,6 @@ Payload
 
 Default tag
 :   `SOUR`
-
-
-### `elf:ELF_VERSION`                                        {#elf:ELF_VERSION}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 12 characters.
-    
-    The version identifier of the ELF-dataset of this data.
-    This document describes ELF-dataset version "`1.0.0`".
-    
-    Unless otherwise specified in later versions,
-    this string uses &#x5B;[Semantic Versioning](https://semver.org)].
-    In particular, an application expecting one versions
-    and given a different one with the same initial number (as e.g. `1.18.3` instead of `1.0.0`)
-    should be able to process the data normally.
-
-Default tag
-:   `ELF_DM`
-
-
 
 
 ### `elf:FILE_NAME`                                           {#elf:FILE_NAME}
