@@ -53,6 +53,22 @@ form the initial suite of ELF standards:
   update to the GEDCOM data model, but rather a basis for future
   extension.
 
+## Version and IRI
+
+This document describes version "`1.0.0`" of the ELF data model.
+The version string uses the semantic versioning tradition outlined in <https://semver.org>:
+three integers, separated by periods, where an application expecting on version
+can process any other with the same first integer.
+
+The IRI for this any version of the ELF data model can be created
+by prepending `https://fhiso.org/TR/elf-data-model/v` to the version;
+for this document's version, that IRI is 
+
+    https://fhiso.org/TR/elf-data-model/v1.0.0
+
+{.ednote} This IRI was generated just as a placeholder; the correct IRI is not yet determined.
+
+
 ## General
 
 Where this standard gives a specific technical meaning to a word or
@@ -135,21 +151,23 @@ a carriage return followed by a line feed.  It matches the production
 
     LB  ::=  #xD #xA? | #xA
 
-A **padded linebreak** is defined as a *linebreak* preceded and followed
-by zero or more space *characters* or tabs.  It matches the production
+A **padded linebreak** is defined as a *linebreak* preceded by zero or more space *characters* or tabs.  It matches the production
 `PLB`:
 
-    PLB  ::=  (#x20 | #x9)* LB (#x20 | #x9)*
+    PLB  ::=  (#x20 | #x9)* LB
 
-**Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant.
+**Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant,
+and removing any U+0020 (space) and U+0009 (tab) from the end of the string.
 
-{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trailing *may* be removed on a system-by-system basis, suggesting `PLB ::= (#x20 | #x9)* LB`; but page 85 states that both initial an trailing spaces *must* be removed, which is what is documented above. If we stick to what is provided above, there is no simple way to permit indented text in a blockstring.
+{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trailing are removed (on most systems), which is given in the above rules; however page 85 indicates states that both initial an trailing spaces are removed, albeit obliquely.
 
 A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed.
 
-{.note} This allows applications to store *strings* internally with any
-line ending.  It also removes the need to discuss lines within payloads
-in the data model, as it was in GEDCOM.
+{.note} *linebreak normalisation* is provide as a data model parallel
+to how lines are encoded with `CONT` tags in [ELF-Serialisation].
+It is possible that a future version of this standard might change
+this presentation, perhaps redefining *block string* as a list of
+*string*s, each representing a single conceptual "line".
 
 ### Structure type identifiers
 
@@ -390,6 +408,45 @@ Every Extended Legacy Format (ELF) dataset is two sets of *structure*s.
 The first, described as the `elf:Document`, is a set of `[elf:Record]`s which, with their *substructures*, provide the principle data of the dataset.
 The other, described as the `elf:Metadata`, is a set of additional structures which, with the *substructures*, provide metadata about the dataset as a whole.
 
+### Multiple versions of the truth
+
+{.note} This entire section is non-normative
+
+Sometimes a researcher encounters a state where the they are unsure which of a set of alternatives is true.
+GEDCOM did not provide guidance on how this state should be recorded, and hence neither does ELF.
+However, we are aware of several approaches that have been used,
+and with potential caveats associated with each,
+which ELF implementers should be aware of.
+
+Some researchers create one copy of each possible truth.
+While this is sometimes obvious (e.g., if a person is listed with two birth events),
+it is sometimes very much not obvious (e.g., a person listed with two residences
+might have lived in both places, or the researcher might be unsure which place is correct).
+Implementers should avoid suggesting either meaning was intended by the creators
+of data they import.
+
+Some researchers create multiple instances of a single-value substructure,
+such as an `[elf:Event]` with several `[elf:PLACE_STRUCTURE]`s,
+one for each possible location of the event.
+Depending on how you read it, this usage can be seen as prohibited by GEDCOM
+or permitted as an extension; it is definitely permitted as an extension in ELF.
+Because of this ambiguity in GEDCOM, some tools are likely to have trouble
+reading data in this format.
+Additionally, it is not unambiguously talking about uncertainty either;
+a researcher might believe that a single event occurred in two locations or the like.
+
+Some researchers include just one version in the data (or none at all)
+and add `[elf:NOTE_STRUCTURE]`s that describe the alternatives.
+Assuming decent writing style and shared language, these can be fairly unambiguous
+but almost never understandable by software.
+
+None of the above is clearly the right solution,
+nor does any one appear to be the most common in existing data.
+While a future version of this specification might include extensions to handle
+this common case, ELF 1.0.0 is intended to mirror GEDCOM closely
+and does not include any such extension.
+
+
 ### Structures {#Structure}
 
 A **structure** consists of the following parts:
@@ -426,6 +483,8 @@ Substructures
     Unless otherwise specified in the definition of a particular *structure*,
     *substructures* with the same *structure type*
     *shall* be interpreted as being in preference order, with the first such *substructure* being most preferred.
+
+
 
 {.example ...} Given the following data
 
@@ -516,6 +575,8 @@ Their purpose is to provide inherited semantics via being used as *supertypes*.
 ## Abstract types
 
 The following abstract types are presented in alphabetical order.
+
+{.ednote} To do: the meaning of ? ! and \* were not preserved and need to be re-added to this spec
 
 ### `elf:Agent`                                                   {#elf:Agent}
 
@@ -3830,36 +3891,6 @@ Payload
 
 Default tag
 :   `SOUR`
-
-
-### `elf:ELF_VERSION`                                        {#elf:ELF_VERSION}
-
-Supertype
-:   `[elf:Structure]`
-
-Superstructures
-:   `[elf:Metadata]`
-
-Substructures
-:   None
-
-Payload
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 12 characters.
-    
-    The version identifier of the ELF-dataset of this data.
-    This document describes ELF-dataset version "`1.0.0`".
-    
-    Unless otherwise specified in later versions,
-    this string uses &#x5B;[Semantic Versioning](https://semver.org)].
-    In particular, an application expecting one versions
-    and given a different one with the same initial number (as e.g. `1.18.3` instead of `1.0.0`)
-    should be able to process the data normally.
-
-Default tag
-:   `ELF_DM`
-
-
 
 
 ### `elf:FILE_NAME`                                           {#elf:FILE_NAME}
