@@ -390,6 +390,45 @@ Every Extended Legacy Format (ELF) dataset is two sets of *structure*s.
 The first, described as the `elf:Document`, is a set of `[elf:Record]`s which, with their *substructures*, provide the principle data of the dataset.
 The other, described as the `elf:Metadata`, is a set of additional structures which, with the *substructures*, provide metadata about the dataset as a whole.
 
+### Multiple versions of the truth
+
+{.note} This entire section is non-normative
+
+Sometimes a researcher encounters a state where the they are unsure which of a set of alternatives is true.
+GEDCOM did not provide guidance on how this state should be recorded, and hence neither does ELF.
+However, we are aware of several approaches that have been used,
+and with potential caveats associated with each,
+which ELF implementers should be aware of.
+
+Some researchers create one copy of each possible truth.
+While this is sometimes obvious (e.g., if a person is listed with two birth events),
+it is sometimes very much not obvious (e.g., a person listed with two residences
+might have lived in both places, or the researcher might be unsure which place is correct).
+Implementers should avoid suggesting either meaning was intended by the creators
+of data they import.
+
+Some researchers create multiple instances of a single-value substructure,
+such as an `[elf:Event]` with several `[elf:PLACE_STRUCTURE]`s,
+one for each possible location of the event.
+Depending on how you read it, this usage can be seen as prohibited by GEDCOM
+or permitted as an extension; it is definitely permitted as an extension in ELF.
+Because of this ambiguity in GEDCOM, some tools are likely to have trouble
+reading data in this format.
+Additionally, it is not unambiguously talking about uncertainty either;
+a researcher might believe that a single event occurred in two locations or the like.
+
+Some researchers include just one version in the data (or none at all)
+and add `[elf:NOTE_STRUCTURE]`s that describe the alternatives.
+Assuming decent writing style and shared language, these can be fairly unambiguous
+but almost never understandable by software.
+
+None of the above is clearly the right solution,
+nor does any one appear to be the most common in existing data.
+While a future version of this specification might include extensions to handle
+this common case, ELF 1.0.0 is intended to mirror GEDCOM closely
+and does not include any such extension.
+
+
 ### Structures {#Structure}
 
 A **structure** consists of the following parts:
@@ -426,6 +465,8 @@ Substructures
     Unless otherwise specified in the definition of a particular *structure*,
     *substructures* with the same *structure type*
     *shall* be interpreted as being in preference order, with the first such *substructure* being most preferred.
+
+
 
 {.example ...} Given the following data
 
@@ -516,6 +557,8 @@ Their purpose is to provide inherited semantics via being used as *supertypes*.
 ## Abstract types
 
 The following abstract types are presented in alphabetical order.
+
+{.ednote} To do: the meaning of ? ! and \* were not preserved and need to be re-added to this spec
 
 ### `elf:Agent`                                                   {#elf:Agent}
 
