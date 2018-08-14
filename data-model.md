@@ -151,21 +151,23 @@ a carriage return followed by a line feed.  It matches the production
 
     LB  ::=  #xD #xA? | #xA
 
-A **padded linebreak** is defined as a *linebreak* preceded and followed
-by zero or more space *characters* or tabs.  It matches the production
+A **padded linebreak** is defined as a *linebreak* preceded by zero or more space *characters* or tabs.  It matches the production
 `PLB`:
 
-    PLB  ::=  (#x20 | #x9)* LB (#x20 | #x9)*
+    PLB  ::=  (#x20 | #x9)* LB
 
-**Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant.
+**Linebreak normalisation** is the process of replacing each *padded linebreak* with a single *linebreak*, where all are replaced by the same *linebreak* variant,
+and removing any U+0020 (space) and U+0009 (tab) from the end of the string.
 
-{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trailing *may* be removed on a system-by-system basis, suggesting `PLB ::= (#x20 | #x9)* LB`; but page 85 states that both initial an trailing spaces *must* be removed, which is what is documented above. If we stick to what is provided above, there is no simple way to permit indented text in a blockstring.
+{.ednote} GEDCOM 5.5.1 is inconsistent on its definition of line break handling. Pages 10 and 37 state that initial spaces are preserved and trailing are removed (on most systems), which is given in the above rules; however page 85 indicates states that both initial an trailing spaces are removed, albeit obliquely.
 
 A **block string** is a *string* that SHALL be *linebreak-normalised* before being processed.
 
-{.note} This allows applications to store *strings* internally with any
-line ending.  It also removes the need to discuss lines within payloads
-in the data model, as it was in GEDCOM.
+{.note} *linebreak normalisation* is provide as a data model parallel
+to how lines are encoded with `CONT` tags in [ELF-Serialisation].
+It is possible that a future version of this standard might change
+this presentation, perhaps redefining *block string* as a list of
+*string*s, each representing a single conceptual "line".
 
 ### Structure type identifiers
 
