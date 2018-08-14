@@ -26,6 +26,10 @@ Following are the sections I have drafted so far.
 
 ### Structure to/from tagged structure
 
+{.ednote} This handles tags, identifiers/pointers, SCHMA;
+it introduces pseudo-structures and defines "undeclared extension".
+It does not address levels, CONT/CONC, escapes, or character sets.
+
 Each *structure* has
 
 - a *structure type*, which has a *structure type identifier*
@@ -86,6 +90,19 @@ The `IRI` *tagged structure* *must* have a *tagged substructure* for each of its
 each with *tag* `ISA` and *payload* of the *structure type identifier* of the *supertype*.
 Each *supertype* defined in an `ISA` *tagged structure* *must* also be defined in the *serialisation schema*.
 
+{.example ...} The `[elf:SUBMITTER_RECORD]` has two supertypes
+so it would have two `ISA` *tagged substructures*:
+
+````gedcom
+0 HEAD
+1 SCHMA
+2 IRI elf:SUBMITTER_RECORD
+3 ISA elf:Agent
+3 ISA elf:Record
+3 TAG SUBM elf:Document
+````
+{/}
+
 If the `IRI` *tagged structure* defines a type present in the data set,
 it *must* have at least one *tagged substructure* with *tag* `TAG`
 and a *payload* consisting of a white space-separated list of at least two tokens.
@@ -95,7 +112,64 @@ the remaining tokens are the *structure type identifiers* of *superstructures*
 
     Tag  ::= [0-9a-zA-Z_]+
 
+{.example ...} The `[elf:SOURCE_CITATION]` has several superstructures,
+with the same *tag* in each:
 
+````gedcom
+0 HEAD
+1 SCHMA
+2 IRI elf:SOURCE_CITATION
+3 TAG SOUR elf:ASSOCIATION_STRUCTURE elf:Event elf:FAM_RECORD elf:INDIVIDUAL_RECORD elf:PersonalName
+````
+{/}
+
+It *must not* be the case that two `IRI` *tagged structures*
+with distinct *payloads*
+contain `TAG` *tagged substructures* with the same first token in their *payloads*
+unless the set of *structure type identifier* tokens in the two `TAG`s,
+when extended to include all of their subtypes' identifiers,
+are disjoint sets.
+
+{.example ...} The `[elf:SOURCE_CITATION]` and  `[elf:SOURCE_RECORD]` both use the same *tag*:
+
+````gedcom
+0 HEAD
+1 SCHMA
+2 IRI elf:SOURCE_CITATION
+3 TAG SOUR elf:ASSOCIATION_STRUCTURE elf:Event elf:FAM_RECORD elf:INDIVIDUAL_RECORD elf:PersonalName
+2 IRI elf:SOURCE_RECORD
+3 ISA elf:Record
+3 TAG SOUR elf:Document
+````
+
+Even though these are
+
+a. two `IRI` *tagged structures*
+b. with distinct *payloads*
+c. contain `TAG` *tagged substructures* with the same first token in their *payloads*
+
+there is no conflict because `elf:Document` is neither a supertype nor subtype
+of any of the structure types where `elf:SOURCE_CITATION` may exist.
+
+If an extension decided that `elf:SOURCE_RECORD`s could also appear inside `elf:SCHOLASTIC_ACHIEVEMENT`s,
+there would be a conflict and the data invalid
+because `elf:Event` is an *eventual supertype* of `elf:SCHOLASTIC_ACHIEVEMENT`.
+
+````gedcom
+0 HEAD
+1 SCHMA
+2 IRI elf:SOURCE_CITATION
+3 TAG SOUR elf:ASSOCIATION_STRUCTURE elf:Event elf:FAM_RECORD elf:INDIVIDUAL_RECORD elf:PersonalName
+2 IRI elf:SOURCE_RECORD
+3 ISA elf:Record
+3 TAG SOUR elf:Document elf:SCHOLASTIC_ACHIEVEMENT
+3 NOTE The above is illegal, as it makes tag SOUR ambiguous inside elf:
+4 CONC SCHOLASTIC_ACHIEVEMENT: is it a SOURCE_RECORD or a SOURCE_CITATION?
+````
+
+{/}
+
+{.ednote} Ugh... this whole section is stilted and confusing. The example help, but...
 
 #### (Un)tagging
 
