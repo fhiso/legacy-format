@@ -24,11 +24,28 @@ Following are the sections I have drafted so far.
 {/}
 
 
+### Tagged structure to/from line
+
+{.ednote} This will handle levels, ordering, CONT/CONC, and escapes.
+
+Each *tagged structure* has
+
+- optionally, a *cross-reference identifier*
+- a *tag*
+- a *containing tagged structure*, which may be the *header* pseudo-structure or none
+- a (possibly empty) sequence of *contained tagged substructures*
+- optionally, a *payload*, which is a *string*
+
+Each *line* is a sequence of characters containing no line breaks.
+
+
+
+
 ### Structure to/from tagged structure
 
 {.ednote} This handles tags, identifiers/pointers, SCHMA;
 it introduces pseudo-structures and defines "undeclared extension".
-It does not address levels, CONT/CONC, escapes, or character sets.
+It does not address levels, ordering, CONT/CONC, escapes, or character sets.
 
 Each *structure* has
 
@@ -43,13 +60,15 @@ Each *tagged structure* has
 - optionally, a *cross-reference identifier*
 - a *tag*
 - a *containing tagged structure*, which may be the *header* pseudo-structure or none
-- a (possibly empty) sequence of *contained tagged substructures*
+- a (possibly empty) set of *contained tagged substructures*, where the order to *contained tagged substructures* with the same *tag* is known
 - optionally, a *payload*, which is a *string*
 
 The conversion between *structures* and *tagged structures* makes use of the *serialisation schema*
 which is a *tagged structure* with *tag* `SCHMA` contained in the *header*.
 
 #### Serialisation Schema {#schema}
+
+{.ednote} To do: add prefix shortening
 
 The *serialisation schema* contains the set of *structure type identifiers* in the data set,
 their inheritance relationships,
@@ -177,7 +196,30 @@ Each *structure* corresponds to a *tagged structure* as layed out in this sectio
 Each *tagged structure* corresponds either to a *structure* as layed out here,
 or is a *pseudo-structure*.
 
-{.ednote} To do: add more about pseudo-structures
+**Pseudo-structures** are *tagged structures* used only during serialisation,
+having no presence in the underlying data model itself.
+This specification makes use of the following *pseudo-structures*:
+
+- The **header**, a *pseudo-structure* with *tag* `HEAD` and no *payload*,
+    used to
+    
+    - mark the beginning of a data set.
+    - contain of serialisation-wide *pseudo-structures*.
+    - contain *structures* with *superstructure* `elf:Metadata`.
+
+- The **trailer**, a *pseudo-structure* with *tag* `TRLR` and no *payload* or *substructures*,
+    used to make the end of a data set.
+
+- The `CHAR` *substructure* of the *header*, used to identify the character encoding in use.
+
+- The *serialisation schema* substructure see  of the *header*
+    and all of its contained *tagged structures*,
+    used to identify serialisation particulars.
+    These are described in more detail in {§schema}.
+    
+
+- `CONC` and `CONT`, used to encode long and multi-line *payloads*.
+
 
 For the remainder of this section, let $S$ represent an arbitrary *structure* and $T$ represent its corresponding *tagged structure*.
 
@@ -256,3 +298,4 @@ If no *structure type identifier* for $S$ is defined by the *serialisation schem
 then $T$ is an **undefined extension structure**.
 Implementations *should* preserve $T$ as-is, but *may* discard it from the data set.
 They *must not* edit it in any other way.
+
