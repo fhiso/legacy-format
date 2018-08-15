@@ -24,28 +24,180 @@ Following are the sections I have drafted so far.
 {/}
 
 
-### Tagged structure to/from line
+
+
+### Split structure to/from line
 
 {.ednote} This will handle levels, ordering, CONT/CONC, and escapes.
 
-Each *tagged structure* has
+Each *split structure* has
 
 - optionally, a *cross-reference identifier*
 - a *tag*
 - a *containing tagged structure*, which may be the *header* pseudo-structure or none
-- a (possibly empty) sequence of *contained tagged substructures*
-- optionally, a *payload*, which is a *string*
+- a (possibly empty) sequence of *contained tagged structures*
+- optionally, a *payload*, which is a *string* with no *line breaks*
+
+The *split structures* of within a given *containing split structure* are held in a fixed order.
 
 Each *line* is a sequence of characters containing no line breaks.
+All *lines* are held in a fixed order.
+
+For the remainder of this section, let $T'$ represent an arbitrary *split structure*.
+
+The **level** of $T'$ is a non-negative integer, defined recursively as
+
+- 0 if $T$ has no *containing tagged structure*
+- 1 + the *level* of $T$'s *containing tagged structure* otherwise
+
+The **line** corresponding to $T'$ is a *string* consisting of the following components concatenated in order:
+
+1. The *level* of $T'$ encoded as a base-10 integer with no leading 0.
+2. A single space character (U+0020)
+3. If $T'$ has a *cross reference identifier*, then
+    a. a single COMMERCIAL AT character (U+0040)
+    b. the *cross reference identifier* of $T'$
+    c. a single COMMERCIAL AT character (U+0040)
+    d. a single space character (U+0020)
+4. The *tag* of $T'$
+5. If $T'$ has a *payload*, then 
+    a. a single space character (U+0020)
+    b. the *payload* of $T'$
+
+{.ednote} add about ordering of all lines
+
+
+
+
+
+
+### Split Structures
+
+A **split structure** is a *tagged structure* that either (a) has no *payload* or (b) has no *line breaks* in its payload,
+where a **line break** is a substring matching the production `LB`:
+
+    LB  ::=  #xD #xA? | #xA
+
+It is *recommended* that the *payload* of a *split structure* be short enough
+that its *line* be less than 255 bytes when encoded in UTF-8.
+
+{.note} GEDCOM *required* lines not exceed 255 *characters*;
+this does not seem to be a real restriction in most current applications,
+and hence has been reduced to *recommended* status.
+We recommend bytes in UTF-8 instead of *characters* because the implied 
+purpose of this limit (fixed-width buffers) would limit by bytes, not
+characters.
+
+
+#### Splitting
+
+Each *tagged structure* $T$ corresponds to a *split structure* $T'$
+that is identical to $T$ except
+
+- $T$ and $T'$ may differ in *payload*
+- $T'$ may contain additional *pseudo-structures* not present in $T$.
+
+If $T$ has no *payload*, $T$ and $T'$ are the same.
+Otherwise, there differences *must* be equivalent to ones that can be created by the following steps.
+
+Identify a (possibly empty) set of **split points** in the *payload* of $T$.
+This set *must* include each *line break*
+and *may* include any other position between two characters preceded by a non-*whitespace* character
+that is that are not part of a substring matching the `Escape` production.
+
+    Escape  ::= "@#" [^#x40#xA#xD]* "@"
+
+Split points *must* only be placed between between *characters* and
+*should not* be placed between two *characters* which represent part
+of the same glyph.
+
+{.example}  In the UTF-8 character set, the *character* "é" is
+encoded using two bytes `C3 A9`.  A split point *must not* be placed
+between these bytes, as doing so would prevent the file from being
+a valid UTF-8 document.
+
+{.example}  The glyph "é" can also be encoded using two characters,
+a Latin letter "e" (U+0065) followed by a combining acute accent
+(U+0301), which are rendered as a single glyph, "é".  An application
+*should not* place a split point between these characters.
+
+Initialize $T'$ to be equivalent to $T$ (including with the same *contained tagged structures*)
+except it's *payload* is the substring of $T$'s payload preceding the first *split point*.
+
+{.ednote ...} If a note structure's payload begins with a newline,
+it is visually encodes as, e.g.,
+
+````gedcom
+2 NOTE
+3 CONT text
+````
+
+It is not clear from GEDCOM if there should be a space after the tag NOTE (and empty-string payload)
+or not (no payload).
+As currently written, this specification implies the former.
+{/}
+
+For each split point identified, add a *pseudo-substructure* to $T'$
+with a *payload* of the characters following that split point and preceding the next split point (if any).
+If the split point was placed at a *line break*, the *pseudo-structure*'s *tag* is `CONT`;
+otherwise it is `CONC`.
+
+{.example ...}
+Suppose a structure's *extended line* was *level* = 2, *tag* = `NOTE`, and *payload string* "`This is a test\nwith one line break`".
+This *payload string* requires at least one split point (because it contains one *line break*) and may contain more.
+It could be serialised in many ways, such as
+
+````gedcom
+2 NOTE This is a test
+3 CONT with one line break
+````
+
+or
+
+````gedcom
+2 NOTE This i
+3 CONC s a test
+3 CONT with on
+3 CONC e line break
+````
+{/}
+
+These *pseudo-structures* *must* be placed before any other *contained tagged structures* of $T'$
+and *must* be placed in the same order as the *split points* they represent.
+
+{.example ...} The following arguably has unambiguous meaning, but MUST NOT be created because it violates the `CONT` and `CONC` first rule:
+
+````gedcom
+2 SOUR This is a
+3 NOTE You cannot put a substructure before a CONT or CONC
+3 CONC n illegal ordering
+````
+{/}
+
+
+##### Unsplitting
+
+{.ednote} rewrite this
+
+All `CONT` and `CONT` *pseudo-structures* must be removed as part of deserialisation.
+The result of such removal *shall* be the same as if the following two steps
+were repeatedly applied until not no `CONT` or `CONC` *pseudo-structures* remained:
+
+- If the first *contained tagged structure* $C$ of a $T$ *tag* `CONT`, append to the *payload* of $T$
+    a *line break*  followed by the payload of $C$, and remove $C$ from $T$.
+
+- If the first *contained tagged structure* $C$ of a $T$ *tag* `CONC`, append to the *payload* of $T$
+    the payload of $C$, and remove $C$ from $T$.
+
 
 
 
 
 ### Structure to/from tagged structure
 
-{.ednote} This handles tags, identifiers/pointers, SCHMA;
+{.ednote} This handles tags, identifiers/pointers, SCHMA, ordering;
 it introduces pseudo-structures and defines "undeclared extension".
-It does not address levels, ordering, CONT/CONC, escapes, or character sets.
+It does not address levels, CONT/CONC, escapes, or character sets.
 
 Each *structure* has
 
@@ -60,7 +212,7 @@ Each *tagged structure* has
 - optionally, a *cross-reference identifier*
 - a *tag*
 - a *containing tagged structure*, which may be the *header* pseudo-structure or none
-- a (possibly empty) set of *contained tagged substructures*, where the order to *contained tagged substructures* with the same *tag* is known
+- a (possibly empty) ordered sequence *contained tagged structures*
 - optionally, a *payload*, which is a *string*
 
 The conversion between *structures* and *tagged structures* makes use of the *serialisation schema*
@@ -81,7 +233,7 @@ and all *structure type descriptions* defined in each provided *data set IRI*.
 
 ##### Data set IRI
 
-A **data set IRI** is denoted by a *tagged substructure* of the *serialisation schema*
+A **data set IRI** is denoted by a *contained tagged structure* of the *serialisation schema*
 with *tag* `SCHMA` and payload the IRI of a defined data set.
 
 {.example ...} When using the [ELF-DataModel] version 1.0.0,
@@ -101,16 +253,16 @@ containing a *serialisation schema* defining the full data model in *structure t
 
 ##### Structure type description
 
-A **structure type description** is denoted by a *tagged substructure* of the *serialisation schema*
+A **structure type description** is denoted by a *contained tagged structure* of the *serialisation schema*
 with *tag* `IRI` and payload the *structure type identifier* of a particular *structure type*.
 
-The `IRI` *tagged structure* *must* have a *tagged substructure* for each of its direct *supertypes*
+The `IRI` *tagged structure* *must* have a *contained tagged structure* for each of its direct *supertypes*
 (excepting than `elf:Structure`),
 each with *tag* `ISA` and *payload* of the *structure type identifier* of the *supertype*.
 Each *supertype* defined in an `ISA` *tagged structure* *must* also be defined in the *serialisation schema*.
 
 {.example ...} The `[elf:SUBMITTER_RECORD]` has two supertypes
-so it would have two `ISA` *tagged substructures*:
+so it would have two `ISA` *contained tagged structures*:
 
 ````gedcom
 0 HEAD
@@ -123,7 +275,7 @@ so it would have two `ISA` *tagged substructures*:
 {/}
 
 If the `IRI` *tagged structure* defines a type present in the data set,
-it *must* have at least one *tagged substructure* with *tag* `TAG`
+it *must* have at least one *contained tagged structure* with *tag* `TAG`
 and a *payload* consisting of a white space-separated list of at least two tokens.
 The first token matches production `Tag`;
 the remaining tokens are the *structure type identifiers* of *superstructures*
@@ -144,7 +296,7 @@ with the same *tag* in each:
 
 It *must not* be the case that two `IRI` *tagged structures*
 with distinct *payloads*
-contain `TAG` *tagged substructures* with the same first token in their *payloads*
+contain `TAG` *contained tagged structures* with the same first token in their *payloads*
 unless the set of *structure type identifier* tokens in the two `TAG`s,
 when extended to include all of their subtypes' identifiers,
 are disjoint sets.
@@ -165,7 +317,7 @@ Even though these are
 
 a. two `IRI` *tagged structures*
 b. with distinct *payloads*
-c. contain `TAG` *tagged substructures* with the same first token in their *payloads*
+c. contain `TAG` *contained tagged structures* with the same first token in their *payloads*
 
 there is no conflict because `elf:Document` is neither a supertype nor subtype
 of any of the structure types where `elf:SOURCE_CITATION` may exist.
@@ -298,4 +450,28 @@ If no *structure type identifier* for $S$ is defined by the *serialisation schem
 then $T$ is an **undefined extension structure**.
 Implementations *should* preserve $T$ as-is, but *may* discard it from the data set.
 They *must not* edit it in any other way.
+
+##### Containment
+
+The *containing tagged structure* of $T$ is 
+
+- none if $S$'s *superstructure* is `elf:Document` or if $T$ is the *header*
+- the *header* if $S$'s *superstructure* is `elf:Metadata`
+- the *tagged structure* corresponding to the *superstructure* of $S$ otherwise
+
+The *superstructure* of $S$ is
+
+- `elf:Document` if $T$ has not *containing tagged superstructure*
+- `elf:Metadata` if $T$'s *containing tagged superstructure* is the *header*
+- the *structure* corresponding to the *containing tagged superstructure* of $T$ otherwise
+
+
+The *substructures* of $S$ are the *structures* corresponding to the *contained tagged structures* of $T$.
+*Substructures* with the same *structure type* are preserved in the same order as their corresponding *contained tagged structures*.
+
+The *contained tagged structures* of $T$ are the *tagged structures* corresponding to the *substructures* of $S$,
+together with any *pseudo-substructures* of $T$.
+*Contained tagged structures* with the same *tag* are preserved in the same order as their corresponding *substructures*.
+The order of *dontained tagged structures* with distinct *tags* may be selected arbitrarily,
+although some *pseudo-structures* impose additional ordering constraints.
 
