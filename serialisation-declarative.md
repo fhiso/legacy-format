@@ -1,34 +1,98 @@
 
-{.ednote ...} The goal of this document is to define how to move between adjacent abstraction levels.
-My initial list of abstraction levels and their correspondence was quite large:
+{.ednote} To Do: add in the opening boilerplate
 
-    bytes
-        character set
-    characters
-        line endings
-    lines
-        parts
-    tagged lines
-        levels
-    split structures
-        cont/conc
-    id'd structures
-        id
-    tagged structures
-        SCHMA
-    structures
+### Overview
 
-However, I believe several of these can fruitfully be combined.
+To serialise a dataset,
 
-Following are the sections I have drafted so far.
+1. Convert the *structures* to *tagged structures*,
+    which includes adding a *header* and *serialisation schema*,
+    changing pointers to identifiers,
+    and ordering the *tagged structures*.
+2. Convert the *tagged structures* to *split structures*
+    to encode line breaks and wrap long lines.
+3. Convert the *split structures* to *lines*
+    to encode nesting.
+4. Convert the *lines* to an octet stream.
+
+To deserialise a dataset
+
+1. Convert the octet stream to a sequence of *lines*
+2. Convert the *lines* into *split structures*
+    to recover nesting.
+3. Convert the *split structures* to *tagged structures*
+    to recover line breaks and unwrap long lines.
+4. Convert the *tagged structures* to *structures*,
+    which includes separating out metadata
+    and correctly connecting pointers.
+
+{.ednote ...} Escapes are not currently documented here
+because our tentative plan for serialisation-only escapes
+will not work.
+
+Either date escapes must exist as some sort not special escape in the data model or the serialisation must know to do something different with the payload of DATE tags it does not do with the payload of NOTE tags.
+
+In data model:
+
+* Always pass @@ through to DM
+    - (pro) GEDCOM's model
+    - (con) We know systems don't handle this properly now (single-@ common in wild)
+
+* Leave escapes alone, @@ other @s
+    - (con) no known set of rules for doing this that always works
+
+* Serialisation escapes = DM something else
+    - (pro) Can always be made to work
+    - (con) Date no longer a simple microformat
+    - (con) all proposals so far look odd
+
+* Deprecate special handling of @
+    - (pro) Simplest
+    - (con) Adds "payload cannot match production IdPointer" to data model
+    - (con) Means @@@@ becomes @ after repeated (de)serialisation
+    - (con) Departure from GEDCOM
+    - (con) Probably messes up some existing system (but I do not know of one)
+
+* A different data model escape syntax using C0 characters
+    - (pro) Can work?
+    - (con) Unlikely to be easier than always passing @@ to code correctly
+    - (con) Forces this problem on other serialisation formats too
+
+Serialisation aware of DATE:
+
+* Set of escapes to keep per structure type in SCHMA
+    - (pro) Contained, extensible
+    - (con) Unexpected tags lost
+    - (con) Forces this problem on other serialisation formats too
+
+* Some structures marked "keep escapes" in SCHMA
+    - (pro) Simple
+    - (con) Forces this problem on other serialisation formats too
+    - (con) What if data model put "@#U42@" in a payload marked this way?
+
+* List set of DATE structures explicitly in data model
+    - (pro) Makes "GEDCOM made a bad decision" very clear
+    - (con) There are 6 such structures, and maybe some extensions too
+    - (con) really doesn't belong there
+
+* Have a "this is a date-type payload" in the SCHMA
+    - (pro) Lets us use a different microformat in data model
+    - (con) opens the door for "this is a name-type payload", etc, in future
+    - (con) really doesn't belong there
+
+* Have non-string types in data model with custom serialisation
+    - (pro) General, extensible
+    - (con) complicated, especially for discovery
+    - (con) forces us to pick a date datatype before ELF is ready
 {/}
 
+### Character encoding                                              {#charset}
 
+{.ednote} To Do: Write this section
 
+### Split structure to/from line                                      {#lines}
 
-### Split structure to/from line
-
-{.ednote} This will handle levels, ordering, CONT/CONC, and escapes.
+{.ednote} This section handles levels and strings
 
 Each *split structure* has
 
@@ -64,14 +128,34 @@ The **line** corresponding to $T'$ is a *string* consisting of the following com
     a. a single space character (U+0020)
     b. the *payload* of $T'$
 
-{.ednote} add about ordering of all lines
+{.note} Per the above, if a structure has as its payload the empty string
+the line will end with a space; it will not if there is no payload.
+This distinction is implied only obliquely in GEDCOM; implementations
+*should* treat the two interchangably if the wrong one is encountered.
+
+*Lines* are ordered in the same order as their corresponding *split structures*,
+with the *lines* corresponding to their *contained split structures* preceding the *lines* corresponding to subsequent *split structures*.
+
+{.example ...} The following sequence of lines
+
+````gedcom
+0 @I1@ INDI
+1 BIRT
+2 DATE 01 Jan 1880
+1 NAME John /Doe/
+````
+
+corresponds to  a *split structure* with *tag* `INDI` and two *contained split structures*:
+first one with *tag* `BIRT` containing one further *tagged structure* with *tag* `DATE`;
+the second with *tag* `NAME`.
+{/}
 
 
 
 
+### Split Structures                                           {#split-struct}
 
-
-### Split Structures
+{.ednote} This section handles CONT and CONC
 
 A **split structure** is a *tagged structure* that either (a) has no *payload* or (b) has no *line breaks* in its payload,
 where a **line break** is a substring matching the production `LB`:
@@ -85,8 +169,8 @@ that its *line* be less than 255 bytes when encoded in UTF-8.
 this does not seem to be a real restriction in most current applications,
 and hence has been reduced to *recommended* status.
 We recommend bytes in UTF-8 instead of *characters* because the implied 
-purpose of this limit (fixed-width buffers) would limit by bytes, not
-characters.
+purpose of this limit (enabling code to use fixed-width buffers)
+would limit by bytes, not characters.
 
 
 #### Splitting
@@ -123,19 +207,6 @@ a Latin letter "e" (U+0065) followed by a combining acute accent
 
 Initialize $T'$ to be equivalent to $T$ (including with the same *contained tagged structures*)
 except it's *payload* is the substring of $T$'s payload preceding the first *split point*.
-
-{.ednote ...} If a note structure's payload begins with a newline,
-it is visually encodes as, e.g.,
-
-````gedcom
-2 NOTE
-3 CONT text
-````
-
-It is not clear from GEDCOM if there should be a space after the tag NOTE (and empty-string payload)
-or not (no payload).
-As currently written, this specification implies the former.
-{/}
 
 For each split point identified, add a *pseudo-substructure* to $T'$
 with a *payload* of the characters following that split point and preceding the next split point (if any).
@@ -177,25 +248,26 @@ and *must* be placed in the same order as the *split points* they represent.
 
 ##### Unsplitting
 
-{.ednote} rewrite this
+To convert a *split structure* $T'$ into a *tagged structure* $T$,
+repeat the following until it either (a) has no *contained tagged structures*
+or (b) it's first *contained tagged structure*'s *tag* is neither `CONT` nor `CONC`:
 
-All `CONT` and `CONT` *pseudo-structures* must be removed as part of deserialisation.
-The result of such removal *shall* be the same as if the following two steps
-were repeatedly applied until not no `CONT` or `CONC` *pseudo-structures* remained:
+- If the first *contained tagged structure* $C$ of $T'$ has *tag* `CONT`,
+    append to the *payload* of $T'$
+    a *line break* followed by
+    the payload of $C$, and remove $C$ from $T'$.
 
-- If the first *contained tagged structure* $C$ of a $T$ *tag* `CONT`, append to the *payload* of $T$
-    a *line break*  followed by the payload of $C$, and remove $C$ from $T$.
+- If the first *contained tagged structure* $C$ of $T'$ has *tag* `CONC`,
+    append to the *payload* of $T'$
+    the payload of $C$, and remove $C$ from $T'$.
 
-- If the first *contained tagged structure* $C$ of a $T$ *tag* `CONC`, append to the *payload* of $T$
-    the payload of $C$, and remove $C$ from $T$.
-
-
-
+$T$ is then the same as this modified $T'$ except all of its *contained tagged structures*
+have also been converted from *split structures* to *tagged structures*.
 
 
-### Structure to/from tagged structure
+### Structure to/from tagged structure                           {#tag-struct}
 
-{.ednote} This handles tags, identifiers/pointers, SCHMA, ordering;
+{.ednote} This section handles tags, identifiers/pointers, SCHMA, ordering;
 it introduces pseudo-structures and defines "undeclared extension".
 It does not address levels, CONT/CONC, escapes, or character sets.
 
@@ -340,7 +412,7 @@ because `elf:Event` is an *eventual supertype* of `elf:SCHOLASTIC_ACHIEVEMENT`.
 
 {/}
 
-{.ednote} Ugh... this whole section is stilted and confusing. The example help, but...
+{.ednote} Ugh... this whole section is stilted and confusing. The examples help, but...
 
 #### (Un)tagging
 
@@ -451,7 +523,7 @@ then $T$ is an **undefined extension structure**.
 Implementations *should* preserve $T$ as-is, but *may* discard it from the data set.
 They *must not* edit it in any other way.
 
-##### Containment
+##### Containment and order
 
 The *containing tagged structure* of $T$ is 
 
@@ -475,3 +547,10 @@ together with any *pseudo-substructures* of $T$.
 The order of *dontained tagged structures* with distinct *tags* may be selected arbitrarily,
 although some *pseudo-structures* impose additional ordering constraints.
 
+The *tagged structures* contained by the serialised data as a whole
+are ordered as
+
+1. the *header*.
+2. the *tagged structures* corresponding to the *substructures* of `elf:Document`,
+    in any order.
+3. the *trailer*.
