@@ -228,7 +228,7 @@ The component pieces of the microformat have the following meanings:
 | `[0-9]+ "d"` | a number of days                       |
 | `CHILD`      | a child (age range varies by culture)  |
 | `INFANT`     | an infant (age range varies by culture)|
-| `STILLBORN`  | just prior to, at, or near birth       |
+| `STILLBORN`  | prior to, at, or near birth            |
 
 Additional white space may be inserted between tokens without changing meaning.
 
@@ -242,7 +242,7 @@ When ages are specified in historical documents, the resolution, rounding assump
 
 Dates are represented using a somewhat involved syntax with three entry points, documented below.
 
-{.ednote ...} The following is nearly the EBNF for date payloads, but it (a) lacks semantics and (b) fails to permit additional whitespace
+{.ednote ...} The following is nearly the EBNF for date payloads, but it (a) lacks semantics and (b) fails to permit additional whitespace between tokens
 
     Date    ::= greg | juln | hebr | fren | future
 
