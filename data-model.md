@@ -242,7 +242,7 @@ When ages are specified in historical documents, the resolution, rounding assump
 
 Dates are represented using a somewhat involved syntax with three entry points, documented below.
 
-{.ednote ...} The following is the EBNF for date payloads, but it lacks semantics
+{.ednote ...} The following is nearly the EBNF for date payloads, but it (a) lacks semantics and (b) fails to permit additional whitespace
 
     Date    ::= greg | juln | hebr | fren | future
 
