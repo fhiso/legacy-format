@@ -197,6 +197,8 @@ A full name, presented in the order usually spoken and with the capitalization t
 
 The text *should not* include commas or digits.
 
+{.ednote} GEDCOM 5.5.1 (page 56) *requires* that names not include "commas, numbers, or special characters not considered diacritics". The above is less strict; should we instead require it, or remove it altogether?
+
 It *should* include exactly two U+002F SOLIDUS `/` characters, one on each side of the family name or surname if present, or adjacent to one another if no family name or surname name is known.
 
 Portions of the name *may* be elided and replaced by three U+002E FULL STOP `...`.
@@ -212,7 +214,7 @@ Principally to describe an age, but may also be used for any other quantity of t
 
 Matches the production `Age`:
 
-    Age  ::= [<>]? ([0-9]+ "y")? ([0-9]+ "m")? ([0-9]+ "d")? 
+    Age  ::= [<>]? ([0-9]+ ("y")?)? ([0-9]+ "m")? ([0-9]+ "d")? 
             | CHILD | INFANT | STILLBORN
 
 The component pieces of the microformat have the following meanings:
@@ -224,19 +226,23 @@ The component pieces of the microformat have the following meanings:
 | `[0-9]+ "y"` | a number of years                      |
 | `[0-9]+ "m"` | a number of months                     |
 | `[0-9]+ "d"` | a number of days                       |
-| `CHILD`      | `<8y`                                  |
-| `INFANT`     | `<1y`                                  |
-| `STILLBORN`  | just prior, at, or near birth; or `0y` |
+| `CHILD`      | a child (age range varies by culture)  |
+| `INFANT`     | an infant (age range varies by culture)|
+| `STILLBORN`  | just prior to, at, or near birth       |
 
 Additional white space may be inserted between tokens without changing meaning.
 
-{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be to assume that larger-resolution missing components are 0, but smaller are unknown. Thus, `2m` would be taken to mean  between `0y 2m 0d` and `0y 2m 30d`. However, this practice is not explicit in GEDCOM and data that violates it are likely present in the wild.
+When ages are specified in historical documents, the resolution, rounding assumptions, and calendar used are generally not specified. Barring additional information, implementations should refrain from assuming that these fit into any particular calendar system or are rounded in any particular direction.
+
+{.note} GEDCOM defined "child" as `<8y`, a reflection of internal policies about the age of baptism in the Church of Jesus Christ of Latter-Day Saints, the authoring organisation of GEDCOM. This does not appear to have been consistently used in practice, hence the cultural variation noted above.
+
+{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be to assume that larger-resolution missing components are 0, so that `2m` and `0y 2m` are synonyms; but the meaning of missing smaller components does not appear to have consistent meaning.
 
 ### Date formats
 
 Dates are represented using a somewhat involved syntax with three entry points, documented below.
 
-{.ednote ...} The following is the EBNF for date payloads, but it lacks semantics
+{.ednote ...} The following is nearly the EBNF for date payloads, but it (a) lacks semantics and (b) fails to permit additional whitespace
 
     Date    ::= greg | juln | hebr | fren | future
 
