@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date and Age Microformats
-date: 13 August 2018
+date: 10 December 2018
 numbersections: true
 ...
 
@@ -48,18 +48,18 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   provides low-level facilities such as escaping and extensibility
   mechanisms.
 
+* **ELF: Date and Age Microformats**.  This standard defines
+  microformats for representing dates and ages in arbitrary calendars,
+  together with how they are applied to the Gregorian, Julian, French
+  Republican and Hebrew calendars.  These formats are largely identical
+  to those used in GEDCOM, but the framework should serve as a basis for
+  future work on calendars.
+
 * **ELF: Data Model**.  This standard defines a data model based on the
   lineage-linked GEDCOM form, reformulated in terms of the
   serialisation model described in this document.  It is not a major
   update to the GEDCOM data model, but rather a basis for future
   extension.
-
-* **ELF: Date and Age Microformats**.  This standard defines a general
-  set of generic microformats for representing dates and ages in
-  arbitrary calendars, together with details of how to apply these to
-  the four calendars supported by GEDCOM.  The resulting microformats
-  are largely identical to those used in GEDCOM, but the framework
-  should serve as a basis for future work on calendars.
 
 ## Introduction
 
@@ -185,6 +185,11 @@ event the *calendar day* after their death.
 
 A **date** is a way of identifying a particular *calendar day*.
 
+{.note}  ELF *dates* do not include an indication of either the time zone
+or the locale which leaves some ambiguity into the exact points in time
+that are meant.  The [ISO 8601] concept of a *date* has the same
+ambiguity.
+
 {.note}  The definitions of an *instant*, a *time interval*, a
 *duration*, a *calendar day* and a *date* given here are intended to be
 fully compatible with the definitions of these concepts in [ISO 8601].
@@ -205,7 +210,7 @@ of *calendar days* which have elapsed since a particular day zero.  The
 most popular such *calendar* is called the Julian Day (which is 
 unconnected to the similar-sounding Julian Calendar).  Its day zero
 is 24 November 4714 BC in the proleptic Gregorian Calendar, a day
-chosen to be before all of recorded history.  Written as a Julian Day, 1
+chosen to be before all recorded history.  Written as a Julian Day, 1
 January 2000 can be represented by the integer 2451545.  Such
 *calendars* are not commonly used for writing historical *dates* as they
 are cumbersome and error-prone.
@@ -394,7 +399,7 @@ X, for example, uses a format more closely based on [ISO 8601], and in
 early discussion on *dates* and in the call for paper submissions, we
 were erring in that direction too.  
 
-If we end up with one *date* format of ELF, another for GEDCOM X, and
+If we end up with one *date* format for ELF, another for GEDCOM X, and
 possibly even a third one for a future format of our own, we will want
 to make sure we don't end up with *dates* formatted for GEDCOM X
 appearing in ELF, or vice versa, otherwise an ELF application will need
@@ -448,10 +453,10 @@ does by recording number of *calendar years*, *calendar months* and
 The *lexical space* of this *datatype* is the set of *strings*
 which match the following `Age` production:
 
-    Age      ::= Duration | AgeWord
-    Duration ::= ( [<>] S? )? 
-                 ( [0-9]+ | [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
+    Age      ::= ( [<>] S? )? ( Duration | BareYear ) | AgeWord
+    Duration ::= [0-9]+ | [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
                  | [0-9]+ "m" ( S? [0-9]+ "d" )? | [0-9]+ "d"
+    BareYear ::= [0-9]+
     AgeWord  ::= "CHILD" | "INFANT" | "STILLBORN"
 
 {.note}  These productions are case-sensitive, so the *string* "`17y`"
@@ -477,43 +482,27 @@ be maximally compliant with current GEDCOM application which typically
 use a single space *character*.
 
 An *age* which uses the `elf:Age` *datatype* *shall* either consist of a
-quantitative *duration* conforming to the `Duration` production, or an
-qualitative *age* keyword conforming to the `AgeWord` production.
+quantitative *duration* conforming to the `Duration` or `BareYear`
+productions, or an qualitative *age* keyword conforming to the `AgeWord`
+production.
 
-When an *age* is a quantitative *duration* it *shall* consist of one,
-two or three integers, each followed by a "`y`", "`m`" or "`d`" suffix
-to denote a number of *calendar years*, *calendar months* or *calendar
-days*, respectively, the sum of which is the *age*.
+When an *age* is a quantitative *duration* matching the `Duration`
+production, it *shall* contain of one, two or three integers, each
+followed by a "`y`", "`m`" or "`d`" suffix to denote a number of
+*calendar years*, *calendar months* or *calendar days*, respectively,
+the sum of which is the *age*.
 
 {.example} The *age* "`15y 2m`" represents a *duration* of 15 years and
-2 months.
+2 months.  
 
-An *age* which includes a (possibly zero) number of *calendar days*
-*may* be assumed to have a *precision* of a few *calendar days*; an
-*age* which includes a (possibly zero) number of *calendar months*, but
-no explicit number of *calendar days*, *may* be assumed to have a
-*precision* of a few *calendar months*; an *age* containing only a
-number of *calendar years* *may* be assumed to have a *precision* of a
-few *calendar years*.
-
-
-The precise meaning of an *age* which is  quantitative *duration* is
-dependent on context, cultural considerations and the *calendar* in use.
-
-*Ages* *should* be rounded down when expressed using just a number of
-*calendar years*, or using a number *calendar years* and *calendar
-months*, but an application *must not* assume this is   
-
-An *age* containing only a number of *calendar years* is not necessarily
-accurate to the ner
-
-the number of *calendar years*, *calendar months*
-and *calendar days* in a 
-
-
-If there is only a number of *calendar years* present, the `Duration`
+If there is only a number of *calendar years* present, the `BareYear`
 production allows the "`y`" suffix to be omitted, though this is 
 *not recommended*.
+
+{.example} The *age* "`42y`" only specifies a number of *calendar years*
+and so can be written "`42`" without the "`y`" suffix.  The *age* "`15y
+2m`" *must not* be written "`15 2m`" as this *duration* includes both a
+number of *calendar years* and *calendar months*.
 
 {.note ...} Allowing the "`y`" suffix to be omitted as shown in the
 `Duration` production is a change from [GEDCOM 5.5.1] where it was
@@ -523,27 +512,84 @@ contain lines like the following, despite them being illegal:
     2 AGE 58
 {/}
 
+An *age* which is written including a (possibly zero) number of
+*calendar days* *may* be assumed to have a *precision* of a few
+*calendar days*; an *age* which includes a (possibly zero) number of
+*calendar months*, but no explicit number of *calendar days*, *may* be
+assumed to have a *precision* of a few *calendar months*; an *age*
+containing only a number of *calendar years* *may* be assumed to have a
+*precision* of a few *calendar years*.
 
-Except when an *age* matches the `AgeWord` production, it *may* be 
-prefixed with with a "`<`" or a "`>`"
+{.example ...}  The *age* "`40y`" *may* be assumed to have a *precision*
+of a few years.  The actual *precision* will depend on context.  In many
+situations the *precision* will be exactly one year, and so assuming the
+*age* has been given correctly, the individual was born at least 40
+years ago but not as long as 41 years ago.  
 
-The optional prefixes "`<`" and 
+At other times, a lower *precision* may apply.  For example, on the 1841
+census of Britain, adults were asked to round their *age* down to the
+previous multiple of five years.  In such a context, an *age* of "`40y`"
+means the individual was born at least 40 years ago but not as long
+as 45 years ago.  As ELF does not provide a means of stating a range of
+years in an *age*, nor of explicitly stating the *precision*, an *age*
+recorded as "40" on the 1841 census *should* be encoded in ELF as
+"`40y`".
+{/}
+
+The precise meaning of an *age* which is quantitative *duration* is
+dependent on context, cultural considerations and the *calendar* in use.
+
+{.example}  The previous example gave an example of how the
+interpretation of "`40y`" depended on context, due to different
+*precisions*.
+
+{.example}  An elderly person reckoning their age using the Islamic 
+calendar could consider their age in years to be several years greater 
+than if they were reckoning their age using the Gregorian calendar
+because the Islamic *calendar year* is around 11 *calendar days* shorter
+than the Gregorian *calendar year*.  ELF does not provide a means of
+specifying which *calendar* was when recording an *age*.
+
+*Ages* *should* generally be rounded down when expressed using just a
+number of *calendar years*, or using a number *calendar years* and
+*calendar months*, but an application *should not* assume this is
+necessarily the case without additional information.
+
+*Ages* which are quantitative *durations* *may* be prefixed with with a
+"`<`" or a "`>`".  These are interpreted as meaning the individual is
+at most the specified *age*, or is at least the specified *age*,
+respectively.
+
+{.note ...} This means the "`<`" and "`>`" token are actually interpretted
+as ≤ and ≥ operators.  In common usage, a person may be said to over 21
+as soon as they've had their 21st birthday, at which point they would
+normally round their age down to 21.  ELF allows for this usage, and "`>
+21y`" may be used to refer to someone whose *age* is exactly 21.  This
+may seem to be a deviation from [GEDCOM 5.5.1] which defines them as
+meaning less than or greater than the specified *age*, respectively, but
+because of the uncertainty in the intended *precision* of an *age*,
+there is little practical difference.  
+
+The case for interpreting "`<`" as less than or equal to is weaker,
+but there seem to current examples where "`<`" has been used on *ages*
+inferred from an *age* given a few months later.
+{/}  
+
+{.example} If a source gives an individual's *age* as 52 in
+March, their *age* might be inferred to be "`< 52y`" the preceeding
+January.  In practice they might be 51 or 52, asuming the source is
+*accurate*.  However, it is normally best not to infer *ages* and only
+to record *ages* when they are given in sources.
 
 The component pieces of the microformat have the following meanings:
 
 | Symbol        | Meaning                                |
 |---------------|----------------------------------------|
-| `>`           | greater than indicated age             |
-| `<`           | less than indicated age                |
-| `[0-9]+ "y"?` | a number of years                      |
-| `[0-9]+ "m"`  | a number of months                     |
-| `[0-9]+ "d"`  | a number of days                       |
 | `CHILD`       | `<8y`                                  |
 | `INFANT`      | `<1y`                                  |
 | `STILLBORN`   | just prior, at, or near birth; or `0y` |
 
 
-{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be to assume that larger-resolution missing components are 0, but smaller are unknown. Thus, `2m` would be taken to mean  between `0y 2m 0d` and `0y 2m 30d`. However, this practice is not explicit in GEDCOM and data that violates it are likely present in the wild.
 
 A *conformant* application *may* remove any leading zeros preceding a
 non-zero digit, change how *whitespace* is used in an *age*, or append
