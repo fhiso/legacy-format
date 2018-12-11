@@ -641,9 +641,10 @@ Abstract         `false`
 ------           -----------------------------------------------
 
 {.note} The *pattern* in the table above has been split on to three
-lines in table above for convenience of presentation; it is, however,
-really one single line.  Any functional difference between the `Age`
-production and the *pattern* specified above is unintentional.
+lines for convenience of presentation; it is, however, really one
+*pattern* and contains no *whitespace* or line breaks.
+Any functional difference between the `Age` production and the *pattern*
+specified above is unintentional.
 
 ## Date formats 
 
@@ -993,10 +994,17 @@ datatype* which has the following *properties*:
 ------           -----------------------------------------------
 Name             `https://terms.fhiso.org/elf/Time`
 Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
-Pattern          `([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](\.[0-9]+)?)?`
+Pattern          `(([01][0-9]|2[0-3]):[0-5][0-9](:([0-5][0-9]|60)(\.[0-9]+)?)?`
+                 `|24:00:00(\.0+)?)(Z|(\+|-)([01][0-9]|2[0-3]):[0-5][0-9])?`
 Supertype        *No non-trivial supertypes*
 Abstract         `false`
 ------           -----------------------------------------------
+
+{.note} The *pattern* in the table above has been split on to two
+lines for convenience of presentation; it is, however, really one
+*pattern* and contains no *whitespace* or line breaks.
+really one single line.  Any functional difference between the `Time`
+production and the *pattern* specified above is unintentional.
 
 ## References
 
