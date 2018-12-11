@@ -61,7 +61,7 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   update to the GEDCOM data model, but rather a basis for future
   extension.
 
-## Introduction
+## General
 
 ### Conventions used
 
@@ -269,6 +269,14 @@ the Annunciation (25 March, sometimes called Lady Day)?  These are not
 strictly separate *calendars*, but it could be convenient to consider
 them as such in ELF if it is considered desirable for ELF to preserve
 the fact that the dates were recorded in these forms.
+
+A **time** is a way of identifying an instant within a *calendar day*,
+done by dividing an ordinary *calendar day* into 24 **hours**, each of
+which is subdivded into 60 **minutes**, each of which is further divided
+into 60 **seconds**.
+
+{.note}  A *calendar days* may exceptionally be divided differently if a
+leap second is inserted or deleted, or when the local time zone changes.
 
 The **precision** of a value, such as a *date* or *duration*, is a
 measure of how exactly the value has been specified: the more exactly,
@@ -581,15 +589,30 @@ January.  In practice they might be 51 or 52, asuming the source is
 *accurate*.  However, it is normally best not to infer *ages* and only
 to record *ages* when they are given in sources.
 
-The component pieces of the microformat have the following meanings:
+Instead of a quantitative *duration*, an *age* *may* be expressed
+qualitatively using an **age word** which matches the `AgeWord`
+production.  This standard defines three *age words*: `CHILD`, `INFANT`
+and `STILLBORN`.  These *should* be used when a source describes an
+individual as a child, an infant, or stillborn, respectively, or
+in using other words which are largely equivalent.  They *should not* be
+used when a source describes an individual using a quantitative *age*.  
 
-| Symbol        | Meaning                                |
-|---------------|----------------------------------------|
-| `CHILD`       | `<8y`                                  |
-| `INFANT`      | `<1y`                                  |
-| `STILLBORN`   | just prior, at, or near birth; or `0y` |
+{.note}  The meanings of words "child", "infant" and "stillborn" are to
+some extent culturally dependent.  A modern source might describe a
+15-year-old as a child, while in mediæval times they a person of this
+age was unlikely to be described in that way.  This standard does not
+therefore put firm limits on the *ages* meant by these terms.  This is a
+deviation from [GEDCOM 5.5.1] which states that a child is less than 8
+years old, an infant is less than 1 year old, and a stillborn invididual
+is approximately 0 days old.  Nevertheless, these ages may be useful in
+deciding whether a foreign word or phrase can reasonably be translated
+as one of these word.
 
-
+{.note}  The word "stillborn" is more than just an *age*: it also
+conveys the fact that the baby died just prior to, at, or immediately
+after the time of birth.  The `STILLBORN` *age word* *must not* be used
+to refer to infants on or around the day of their birth unless they
+died around the time of birth.
 
 A *conformant* application *may* remove any leading zeros preceding a
 non-zero digit, change how *whitespace* is used in an *age*, or append
@@ -623,6 +646,26 @@ really one single line.  Any functional difference between the `Age`
 production and the *pattern* specified above is unintentional.
 
 ## Date formats 
+
+ELF has three different *datatypes* to represent *dates*, depending on
+the context.
+
+* `elf:DateValue` is used for historical dates.
+* `elf:DateExact` is used in change dates, etc.
+* `elf:DatePeriod` is used to record the range of dates in a source.
+
+{.ednote}  We may want to add separate *datatype* for historical dates
+which *may* be periods and those which *must not* be.
+
+### Generic date syntax
+
+    CalEsc ::= "@#D" [^@]+ "@"
+    Day    ::= [0-9]+
+    Month  ::= [A-Z][A-Z][A-Z]+
+    Year   ::= [0-9]+ ( "/" [0-9]+ )?
+    Epoch  ::= [A-Z.]+
+
+    Date   ::= (CalEsc S?)? ((Day S)? Month S)? Year (S Epoch)?
 
 ### The `elf:Date` datatype  {#date-datatype}
 
@@ -803,6 +846,136 @@ the Gregorian calendar until 1752.  The date of the event *should*
 therefore be recorded in ELF using the Julian calendar and not converted
 to the Gregorian calendar.
 
+## The `elf:Time` datatype {#time}
+
+ELF uses the `elf:Time` *datatype* to represent *times* using the 24-hour
+clock in *hours*, *minutes* and *seconds*, with these components
+separated by a colon (U+003A).  The *hours* and *minutes* components are
+*required*, and the *seconds* component *should* be provided.  A
+fractional *seconds* component *may* be provided.  
+
+{.example}  The value "`15:30:00`" is a valid *time*, represented using
+the `elf:Time` *datatype*.  It represents half past three in the
+afternoon.
+
+*Strings* in the *lexical space* of the `elf:Time` *datatype* *shall*
+match the following `Time` production, as well as the other constraints
+given here on the numerical value of each component.  *Whitespace* is
+not permitted anywhere in an `elf:Time` value.
+
+    HH       ::= [0-9] [0-9]
+    MM       ::= [0-9] [0-9]
+    SS       ::= [0-9] [0-9] ("." [0-9]+)?
+    TZD      ::= "Z" | ("+" | "-") HH ":" MM
+    Time     ::=  HH ":" MM (":" SS)? TZD?  
+
+The `HH` production encodes the *hours* component of the *time*,
+zero-padded to two digits.  It *shall* be a decimal integer between `00`
+and `24`, inclusive.  Values outside this range are outside the *lexical
+space* of `elf:Time`.  The *hours* component *shall* only be `24` if the
+*minutes* and *seconds* components are both zero or absent; any other
+uses of `24` as an *hours* component is outside the *lexical space* of
+the *datatype*.
+
+{.example}  The *strings* "`30:00`" and "`24:30`" are both outside the
+*lexical space* of this *datatype*.  The former is invalid because the
+*hours* component of `30` is not between `00` to `24`; the latter is
+invalid because it has an *hours* component of `24` and a non-zero
+*minutes* component.
+
+The *string* "`24:00:00`" is the **end-of-day instant** and denote the
+final *instant* of a *calendar day*.  It is the same *instant* as the
+first *instant* of the following *calendar day* (which is denoted
+`00:00:00`).  *Conformant* applications *must* accept *end-of-day
+instants* as valid input but *must not* create new instances of them.
+A *conformant* application *may* convert an *end-of-day instant* to
+`00:00:00`, but only if it simultaneously increments the associated
+*date*.
+
+{.note} [GEDCOM 5.5.1] does not specify whether or not the *end-of-day
+instant* is legal, and existing applications are unlikely to produce it.
+It is supported by `elf:Time` for compatibility with [ISO 8601] and the
+`xsd:time` *datatype* defined in [XSD Pt2].
+
+The `MM` production encodes the *minutes* component of the *time*,
+zero-padded to two digits.  It *shall* be a decimal integer between `00`
+and `59`, inclusive.  Values outside this range are outside the *lexical
+space* of `elf:Time`. 
+
+The `SS` production encodes the *seconds* component of the *time*,
+zero-padded to two digits and followed by an *optional* fractional
+component.  It *shall* be a decimal greater than or equal to `00` and
+strictly less than `61`.  Values outside this range are outside the
+*lexical space* of `elf:Time`.
+
+Applications *must* preserve at least the first three decimal digits of
+a fractional *seconds* component, but *may* truncate or round the
+fractional part of the *seconds* component beyond that.  Applications
+*may* add or remove trailing zeros on the frational part of the
+*seconds* component, and *should* add a *seconds* component of `:00` if
+none was given.
+
+{.note}  These provisions allows applications to process *times* using
+the standard data structures and facilities provided in many program
+languages, without preserving the original lexical form of the *time*.
+
+{.note}  A future version of this standard is likely to make the
+*seconds* component *required* to make this *datatype* fully compatible
+with the `xsd:time` *datatype* defined in [XSD Pt2].  
+
+A *seconds* component greater than or equal to `60`, and strictly less
+than `61` is a **leap second** component.  Any use of a *leap second*
+component is part of the *lexical space* of `elf:Time`, but *leap
+second* components *shall* only be used to represent a leap seconds
+inserted by the International Earth Rotation Service or its successor.
+
+*Conformant* applications encountering a *leap seconds* component *may*
+convert it to an ordinary *seconds* component by subtracting one from
+its value.  This *should not* be done if the application is aware of
+leap seconds and knows the specified *time* was a leap second.
+
+{.example}  The *string* "`12:56:60.800`" is in the *lexical space* of
+this *datatype* and has a *leap second* component of `60.800`.  As leap
+seconds are always been inserted at midnight UTC and there is no
+timezone in which this *time* is midnight UTC, this *time* could not
+arise in practice and therefore *conformant* applications *must not*
+generate such a *time*.  *Conformant* applications *must* accept such
+*times* but *may* subtract one second to convert it to "`12:56:59.800`".
+
+{.note}  [GEDCOM 5.5.1] makes no mention of leap seconds, but existing
+applications are likely to generate such *times* if they happen to save
+a file during the inserted leap second.  Leap seconds are also supported
+in [ISO 8601] and the `xsd:time` *datatype* defined in [XSD Pt2].  These
+rules allow compatibility with these standards and with possible
+existing use, while also allowing applications to ignore the leap
+second.
+
+The *lexical space* of the `elf:Time` *datatype* allows the inclusion of
+a **time zone designator** matching the `TZD` production.  *Conformant*
+applications *must* accept *time zone designators* on *dates* in input,
+but *should* ignore them and *may* remove them.  *Conformant*
+applications *must not* include *time zone designators* on newly
+generated *times*.
+
+{.note}  Syntactic support for *time zone designators* is an extention to
+[GEDCOM 5.5.1], and is included in ELF for forwards compatibility. This
+standard does not specify the meaning conveyed by a *time zone
+designator*, but the syntax used is compatible with [ISO 8601] and the
+`xsd:time` *datatype* defined in [XSD Pt2], and a future version of this
+standard is likely to define by reference to the latter standard.
+
+Formally, the `elf:Time` *datatype* is a *structured non-language-tagged
+datatype* which has the following *properties*:
+
+: Datatype definition
+
+------           -----------------------------------------------
+Name             `https://terms.fhiso.org/elf/Time`
+Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
+Pattern          `([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](\.[0-9]+)?)?`
+Supertype        *No non-trivial supertypes*
+Abstract         `false`
+------           -----------------------------------------------
 
 ## References
 
@@ -842,3 +1015,10 @@ to the Gregorian calendar.
 [GEDCOM 5.5.1]
 :   The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
+
+[XSD Pt2]
+:   W3C (World Wide Web Consortium). *W3C XML Schema Definition Language 
+    (XSD) 1.1 Part 2: Datatypes*.  David Peterson, Shudi Gao (高殊镝),
+    Ashok Malhotra, C. M. Sperberg-McQueen and Henry S. Thompson, ed., 2012.
+    W3C Recommendation.  (See <https://www.w3.org/TR/xmlschema11-2/>.)
+
