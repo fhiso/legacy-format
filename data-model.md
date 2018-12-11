@@ -39,13 +39,20 @@ backward-compatible reformulation of GEDCOM under the name ELF, the new
 name having been chosen to avoid confusion with any other updates or
 extensions to GEDCOM, or any future use of the term by The Church of
 Jesus Christ of Latter-day Saints.  This document is one of two that
-form the initial suite of ELF standards:
+form the initial suite of ELF standards, known collectively as ELF 1.0.0:
 
 * **ELF: Serialisation Format**.  This standard defines a
   general-purpose serialisation format based on the GEDCOM data format
   which encodes a *dataset* as a hierarchical series of *lines*, and
   provides low-level facilities such as escaping and extensibility
   mechanisms.
+
+* **ELF: Date, Age and Time Microformats**.  This standard defines
+  microformats for representing dates, ages and times in arbitrary calendars,
+  together with how they are applied to the Gregorian, Julian, French
+  Republican and Hebrew calendars.  These formats are largely identical
+  to those used in GEDCOM, but the framework should serve as a basis for
+  future work on calendars.
 
 * **ELF: Data Model**.  This standard defines a data model based on the
   lineage-linked GEDCOM form, reformulated in terms of the
@@ -70,6 +77,8 @@ for this document's version, that IRI is
 
 
 ## General
+
+### Conventions used
 
 Where this standard gives a specific technical meaning to a word or
 phrase, that word or phrase is formatted in bold text in its initial
@@ -207,206 +216,6 @@ This *should* only be done if part of a name is known to exist but its content i
 ### Language tag format {#language-tag}
 
 {.ednote} TO DO: fill this section using the "either GEDCOM or IANA" concept outlined in `languages.tsv`.
-
-### Age format {#age}
-
-Principally to describe an age, but may also be used for any other quantity of time.
-
-Matches the production `Age`:
-
-    Age  ::= [<>]? ([0-9]+ ("y")?)? ([0-9]+ "m")? ([0-9]+ "d")? 
-            | CHILD | INFANT | STILLBORN
-
-The component pieces of the microformat have the following meanings:
-
-| Symbol       | Meaning                                |
-|--------------|----------------------------------------|
-| `>`          | greater than indicated age             |
-| `<`          | less than indicated age                |
-| `[0-9]+ "y"` | a number of years                      |
-| `[0-9]+ "m"` | a number of months                     |
-| `[0-9]+ "d"` | a number of days                       |
-| `CHILD`      | a child (age range varies by culture)  |
-| `INFANT`     | an infant (age range varies by culture)|
-| `STILLBORN`  | prior to, at, or near birth            |
-
-Additional white space may be inserted between tokens without changing meaning.
-
-When ages are specified in historical documents, the resolution, rounding assumptions, and calendar used are generally not specified. Barring additional information, implementations should refrain from assuming that these fit into any particular calendar system or are rounded in any particular direction.
-
-{.note} GEDCOM defined "child" as `<8y`, a reflection of internal policies about the age of baptism in the Church of Jesus Christ of Latter-Day Saints, the authoring organisation of GEDCOM. This does not appear to have been consistently used in practice, hence the cultural variation noted above.
-
-{.note} GEDCOM did not define if a missing component should be taken to mean 0 or unknown. Common practice appears to be to assume that larger-resolution missing components are 0, so that `2m` and `0y 2m` are synonyms; but the meaning of missing smaller components does not appear to have consistent meaning.
-
-### Date formats
-
-Dates are represented using a somewhat involved syntax with three entry points, documented below.
-
-{.ednote ...} The following is nearly the EBNF for date payloads, but it (a) lacks semantics and (b) fails to permit additional whitespace between tokens
-
-    Date    ::= greg | juln | hebr | fren | future
-
-    Exact   ::= [1-9] [0-9]? month year_g
-
-    Value   ::= Date | Period | range | approx
-                | ( "INT" Date )? "(" String ")"
-
-    Period  ::= "FROM" Date ( "TO" Date )? | "TO" Date
-
-    approx  ::= ( "ABT" | "CAL" | "EST" ) Date
-    range   ::= ( "BEF" | "AFT" ) Date | "BET" Date "AND" Date
-    
-    greg    ::= ("@#DGREGORIAN@" #x20)? d_greg
-    juln    ::= "@#DJULIAN@" #x20 d_juln
-    hebr    ::= "@#DHEBREW@" #x20 d_hebr
-    fren    ::= "@#DFRENCH R@" #x20 d_fren
-    future  ::= "@#D" ( "ROMAN" | "UNKNOWN" ) "@" #x20 String
-    
-    d_fren  ::= ( ( [1-9] [0-9]? )? month_f )? year
-    d_greg  ::= ( ( [1-9] [0-9]? )? month )? year_g
-    d_hebr  ::= ( ( [1-9] [0-9]? )? month_h )? year
-    d_juln  ::= ( ( [1-9] [0-9]? )? month )? year
-    
-    year_g  ::= [1-9] [0-9]* ( "/" [0-9] [0-9] )? "(B.C.)"?
-    year    ::= [1-9] [0-9]* "(B.C.)"?
-    
-    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
-                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
-
-    month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
-                | "FLOR" | "PRAI" | "MESS" | "THER" | "FRUC" | "COMP"
-
-    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
-                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
-    
-{/}
-
-#### Date {#date-format}
-
-At the core of the date syntax is a calendared date.
-This consists of an optional *calendar escape* followed by the content of the date.
-
-The *calendar escape* is a substring beginning `@#D` and ending `@`, between which is a calendar identifier; known calendar identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
-If no calendar escape is given, `GREGORIAN` is assumed.
-
-{.ednote} Should we move the escape syntax to [ELF-Serialization] and change the above to describe an abstract notion of "an escape"?
-
-{.note} Some dates (in particular the [Period](#date-period) and [Value](#date-value) productions) may have multiple [Date](#date-format) values; it is not known if current implementations can handle situations where the dates are from different calendars, nor if they assume an uncalendared date paired with a calendared date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calendar be used for both Dates in such payloads.
-
-The `ROMAN` and `UNKNOWN` calendars's date formats are not defined in this specification.
-
-`GREGORIAN`, `FRENCH R`, `HEBREW`, and `JULIAN` dates all have the format "day month year", separated by spaces; the day may be omitted; if the day is omitted, the month may be omitted as well.
-The three pieces are formatted as follows:
-    
-day
-:   A decimal number of one or two digits.
-    This SHOULD NOT be zero or greater than the number of days in the appropriate month.
-    This specification does not specify whether single-digit days should begin with a zero or not.
-
-{.ednote} Should we specify leading 0s are preferred?
-
-month
-:   Each calendar has a set of strings that may be used.
-    
-    `GREGORIAN` or `JULIAN`
-    :   One of the following three-character strings:
-        `JAN`, `FEB`, `MAR`, `APR`, `M‌AY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`
-    
-    `FRENCH R`
-    :   One of the following four-character strings:
-        `VEND`, `BRUM`, `FRIM`, `NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER`, `FRUC`, `COMP`
-    
-    `HEBREW`
-    :   One of the following three-character strings:
-        `TSH`, `CSH`, `KSL`, `TVT`, `SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`
-
-year
-:   A decimal number.
-    
-    For `GREGORIAN` (only), the number may be optionally followed by either or both of the following year suffixes:
-    
-    Alternate Year
-    :   Represented as a `/` and two additional decimal digits, with no spaces.
-        Shows the possible date alternatives brought about when the beginning of the year changed from `MAR` to `JAN`: for example, `15 APR 1699/00`.
-        
-        The `/` MUST NOT have a space on either side.
-    
-    BCE
-    :   Represented as `(B.C.)`, which SHOULD be preceded by a space.
-        Indicates a date before the birth of Christ.
-    
-    If both suffixes are present, `(B.C.)` comes last.
-
-#### Exact Date {#exact-date}
-
-An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additional constraints:
-
--   They MUST NOT include a *calendar escape*
--   They MUST include the day and month
--   They MUST NOT have either year suffix
-
-#### Date Period {#date-period}
-
-A *date period* is one of the following three forms:
-
--   `FROM` [Date](#date-format)
--   `TO` [Date](#date-format)
--   `FROM` [Date](#date-format) `TO` [Date](#date-format)
-
-#### Date Value {#date-value}
-
-A *date value* may have any of a variety of formats:
-
-| Format               | Meaning                                                           |
-|----------------------|-------------------------------------------------------------------|
-| [Date](#date-format) | |
-| [Date Period](#date-period) | |
-| `BEF` [Date](#date-format) | before the given date |
-| `AFT` [Date](#date-format) | after the given date |
-| `BET` [Date](#date-format) `AND` [Date](#date-format) | between the given dates; the first date SHOULD be earlier than the second date |
-| `ABT` [Date](#date-format) | about; the given date is not exact |
-| `CAL` [Date](#date-format) | calculated mathematically, for example, from an event date and age |
-| `EST` [Date](#date-format) | estimated based on some other event date |
-| `INT` [Date](#date-format) `(`arbitrary text`)` | interpreted from knowledge about the associated date phrase included in parentheses |
-| `(`arbitrary text`)` | information about when an event occurred that is not recognizable to a date parser |
-
-{.ednote} Is the above table or the below list more understandable? We definitely don't need both...
-
--   [Date](#date-format)
--   [Date Period](#date-period)
--   `BEF` [Date](#date-format)
-    
-    Meaning: before the given date.
--   `AFT` [Date](#date-format)
-    
-    Meaning: after the given date.
--   `BET` [Date](#date-format) `AND` [Date](#date-format) 
-    
-    Meaning: between the given dates.
-
-    The first date SHOULD be earlier than the second date.
--   `ABT` [Date](#date-format)
-    
-    Meaning: about; the given date is not exact.
--   `CAL` [Date](#date-format)
-    
-    Meaning: calculated mathematically, for example, from an event date and age.
--   `EST` [Date](#date-format)
-
-    Meaning: estimated based on some other event date.
--   `INT` [Date](#date-format) `(`arbitrary text`)`
-
-    Meaning: interpreted from knowledge about the associated date phrase included in parentheses.
--   `(`arbitrary text`)`
-    
-    The text gives information about when an event occurred but is not recognizable to a date parser.
-
-
-
-
-
-
-
 
 ## ELF Datasets
 
@@ -1169,7 +978,8 @@ Superstructures
 :   `[elf:Parent2Age]`
 
 Payload
-:   A *line string* matching the [Age](#age) microformat.
+:   A *line string* in the *lexical space* of the `elf:Age` *datatype*
+    defined in §2 of [ELF Dates].
 
 Default tag
 :   `AGE`
@@ -3703,15 +3513,9 @@ Superstructures
 Substructures
 :   None
 
-:   A *line string*.
-    It is RECOMMENDED that implementations support payloads of at least 12 characters.
-    
-    The string *should* match the `Time` production:
-    
-        Time    ::= hour ":" minute ( ":" second )?
-        hour    ::= [01] [0-9] | "2" [0-3]
-        minute  ::= [0-5] [0-9]
-        second  ::=  [0-5] [0-9] ( "." [0-9]+ )?
+Payload
+:   A *line string* in the *lexical space* of the `elf:Time`
+    *datatype* defined in §4 of [ELF Dates].
 
 Default tag
 :   `TIME`
@@ -4204,6 +4008,12 @@ If the implementation discovers the meaning of `http://example.com/WEALTH`, it i
 :   FHISO (Family History Information Standards Organisation).
     *Basic Concepts for Genealogical Standards*.  First public draft.
     (See <https://fhiso.org/TR/basic-concepts>.)
+
+[ELF Dates]
+:   FHISO (Family History Information Standards Organisation).
+    *Extended Legacy Format (ELF): Date, Age and Time Microformats*.  
+    Exploratory draft.
+    (See <https://fhiso.org/TR/elf-dates>.)
 
 [RFC 2119]
 :   IETF (Internet Engineering Task Force).

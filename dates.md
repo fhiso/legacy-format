@@ -1,14 +1,14 @@
 ---
 title: "Extended Legacy Format (ELF)"
-subtitle: Date and Age Microformats
-date: 10 December 2018
+subtitle: Date, Age and Time Microformats
+date: 11 December 2018
 numbersections: true
 ...
 
 # Extended Legacy Format (ELF):<br/> Date and Age Microformats
 
 {.ednote ...} This is an **exploratory draft** of the microformats used
-for dates and ages in FHISO's proposed suite of Extended Legacy Format
+for dates, ages and times in FHISO's proposed suite of Extended Legacy Format
 (ELF) standards.  This document is not endorsed by the FHISO membership,
 and may be updated, replaced or obsoleted by other documents at any
 time.
@@ -48,8 +48,8 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   provides low-level facilities such as escaping and extensibility
   mechanisms.
 
-* **ELF: Date and Age Microformats**.  This standard defines
-  microformats for representing dates and ages in arbitrary calendars,
+* **ELF: Date, Age and Time Microformats**.  This standard defines
+  microformats for representing dates, ages and times in arbitrary calendars,
   together with how they are applied to the Gregorian, Julian, French
   Republican and Hebrew calendars.  These formats are largely identical
   to those used in GEDCOM, but the framework should serve as a basis for
@@ -858,6 +858,23 @@ fractional *seconds* component *may* be provided.
 the `elf:Time` *datatype*.  It represents half past three in the
 afternoon.
 
+The `elf:Time` *datatype* is typically used in conjunction with a value
+of type `elf:DateExact` called its **associated date**.
+
+{.example ...}  In [ELF Data Model], *times* are found as `TIME`
+subelements of a `DATE` element which has a payload of *datatype*
+`elf:DateExact`.
+
+    2 DATE 10 DEC 2018
+    3 TIME 13:52:00
+
+In this example, "`10 DEC 2018`" is the *associated date* for the time
+"`13:52:00`".
+{/}
+
+{.note}  As specified here, the *associated date* will always be
+expressed in the Gregorian calendar.
+
 *Strings* in the *lexical space* of the `elf:Time` *datatype* *shall*
 match the following `Time` production, as well as the other constraints
 given here on the numerical value of each component.  *Whitespace* is
@@ -889,8 +906,12 @@ first *instant* of the following *calendar day* (which is denoted
 `00:00:00`).  *Conformant* applications *must* accept *end-of-day
 instants* as valid input but *must not* create new instances of them.
 A *conformant* application *may* convert an *end-of-day instant* to
-`00:00:00`, but only if it simultaneously increments the associated
-*date*.
+`00:00:00`, but only if it has an *associated date* and that is
+simultaneously incremented by one day.
+
+{.example} A *time* of "`24:00:00`" with an *associated date* of "`30
+NOV 2018`" *may* be converted to a *time* of "`00:00:00`" with an
+*associated date* of "`1 DEC 2018`".
 
 {.note} [GEDCOM 5.5.1] does not specify whether or not the *end-of-day
 instant* is legal, and existing applications are unlikely to produce it.
@@ -985,6 +1006,11 @@ Abstract         `false`
 :   FHISO (Family History Information Standards Organisation).
     *Basic Concepts for Genealogical Standards*.  First public draft.
     (See <https://fhiso.org/TR/basic-concepts>.)
+
+[ELF Data Model]
+:   FHISO (Family History Information Standards Organisation).
+    *Extended Legacy Format (ELF): Data Model*.  Exploratory draft.
+    (See <https://fhiso.org/TR/elf-data-model>.)
 
 [ISO 8601]
 :   ISO (International Organization for Standardization).  *ISO
