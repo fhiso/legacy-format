@@ -953,7 +953,7 @@ inserted by the International Earth Rotation Service or its successor.
 
 *Conformant* applications encountering a *leap seconds* component *may*
 convert it to an ordinary *seconds* component by subtracting one from
-its value.  This *should not* be done if the application is aware of
+its value.  This *should not* be done if the application supports
 leap seconds and knows the specified *time* was a leap second.
 
 {.example}  The *string* "`12:56:60.800`" is in the *lexical space* of
@@ -967,8 +967,8 @@ generate such a *time*.  *Conformant* applications *must* accept such
 {.note}  [GEDCOM 5.5.1] makes no mention of leap seconds, but existing
 applications are likely to generate such *times* if they happen to save
 a file during the inserted leap second.  Leap seconds are also supported
-in [ISO 8601] and the `xsd:time` *datatype* defined in [XSD Pt2].  These
-rules allow compatibility with these standards and with possible
+in [ISO 8601], but not in the `xsd:time` *datatype* defined in [XSD Pt2].
+These rules allow compatibility with these standards and with possible
 existing use, while also allowing applications to ignore the leap
 second.
 
