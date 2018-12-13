@@ -1032,6 +1032,15 @@ epoch name** for the calendar.
 {.example}  The Julian calendar defined in {§julian} provides the
 "`A.D.`" *epoch name* to serve as its *default epoch name*.
 
+{.ednote}  This specification of *epoch names* is designed to be usable
+to implement regnal years.  In such a scheme, the *instant* of
+accession of each monarch would be an *epoch*, and a *forwards epoch
+name* would be used to reference it, for example "`25 OCT 3 HENRY_V`".
+To accommodate monarachs without a regnal number, we might want to allow
+an additional *character* which could serve as a sigil for epoch names,
+and then allow arbitrary characters, e.g. "`$昭和`" for the Shōwa
+period in Japan.
+
 ### The `elf:Date` datatype  {#date-datatype}
 
 In ELF, *dates* are represented using the `elf:Date` *datatype*, which
