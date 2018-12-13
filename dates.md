@@ -5,7 +5,7 @@ date: 13 December 2018
 numbersections: true
 ...
 
-# Extended Legacy Format (ELF):<br/> Date and Age Microformats
+# Extended Legacy Format (ELF):<br/> Date, Age and Time Microformats
 
 {.ednote ...} This is an **exploratory draft** of the microformats used
 for dates, ages and times in FHISO's proposed suite of Extended Legacy Format
