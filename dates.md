@@ -131,10 +131,9 @@ outside this standard document as *prefix notation* is not used in the
 formal data model defined by this standard.  This notation is simply a
 notational convenience to make the standard easier to read.
 
+### Basic time concepts
 
-### Basic definitions
-
-{.ednote}  It is likely that these concepts will be moved to [Basic
+{.ednote}  It is anticipated that this section will be moved to [Basic
 Concepts] in a future draft of these documents.
 
 An **instant** is defined as an infinitesimally brief point in time.  
@@ -281,17 +280,176 @@ into 60 **seconds**.
 {.note}  A *calendar days* may exceptionally be divided differently if a
 leap second is inserted or deleted, or when the local time zone changes.
 
-The **precision** of a value, such as a *date* or *duration*, is a
-measure of how exactly the value has been specified: the more exactly,
-the greater the *precision*.  The **accuracy** of a value is a measure
-of how close the specified value is to the true value: the further away,
-the less *accurate* the value.
+### Uncertainty
 
-{.note}  The *precision* of a value is unrelated to its *accuracy*.
-An estimate of the *precision* of a value can often be obtained from
-how the value has been written, while knowledge of the accuracy can
-only be obtained by finding other evidence, or by understanding the
-likely accuracy of the source containing the value.
+{.ednote}  It is anticipated that this section will be moved to [Basic
+Concepts] in a future draft of these documents.
+
+The **precision** of a stated value, such as a *date*, is a measure of
+how specificity with which the value has been specified: the more
+specifically, the greater the *precision*.  Values with relatively high
+or low *precision* may be described as relatively **precise** or
+**imprecise**, respectively.
+
+{.example ...}  It is more *precise* to say that the Battle of Agincourt
+was on St Crispin's Day, 1415, than it is to say that the battle occured
+during Henry V's reign.  Both statements are true, but the former has
+greater *precision* because it identifies the specific day of the
+battle, while the latter identifies it only as falling within that
+nine-year reign.  
+
+Saying the battle was in the autumn of 1415 has an intermediate level of
+*precision*.  This year might described as *precise* in comparision to
+the whole of Henry V's reign, or as *imprecise* when compared to the
+specific day.
+{/}
+
+{.note} Values are stated *imprecisely* for many reasons, including when
+a more *precise* value is not known and when greater *precision* is
+considered irrelevant.  Another reason is when the value being stated is
+inherently ambiguous.
+
+When the value being stated is *instant* at which some entity changes
+state, it is common for to this *instant* not to be defined with
+arbitrary *precision* because there is a *time interval* during the
+transition when it is not well-defined what the state is.  The
+*duration* of this *time interval* is known as the **inherent
+ambiguity** of the *instant* of the change.
+
+{.example}  Depending on the jurisdiction, the *precise* *instant*
+during a wedding when the couple become married may be ill-defined as
+there are several obvious possibiliies.  It could be argued to occur
+when the couple complete their vows, or when the priest declares the
+couple husband and wife; or it might be when the last signature is put
+on marriage certificate has been completed, or when the ceremony ends.
+If there is no single accepted definition, then there is likely several
+minutes of *inherent ambiguity* between the first and the last
+possibilities.  This would be true even if the wedding had been videoed
+and carefully timed, as it is not due to lack of information on what
+happened and when.
+
+A stated value is either **exactly stated** or **approximately stated**.
+An *exactly stated* value is one where it is well-defined exactly what
+values are considered to be consistent with the stated value.
+
+{.example ...}  The *date* of the Battle of Agincourt was stated in
+three different ways in the earlier example.  In order of decreasing
+*precision* these were "St Crispin's Day, 1415", "the autumn of 1415",
+and "during Henry V's reign".  The meaning of St Cripin's Day is
+well-defined: it is 25 October.  Had the Battle of Agincourt in fact
+occurred on 24 October 1415, for example, this would not be consistent
+with the statement that it happened on St Crispin's Day.  "St Crispin's
+Day, 1415" is therefore an *exactly stated* value.  "During Henry V's
+reign" is similarly *exactly stated*.
+
+"The autumn of 1415" is very likely not well-defined.  Some people
+define it as stretching from the autumnal equinox (in late September) to
+the winter solstice (in late December), but this definition is by no
+means universal.  Often it is used a more vague manner to refer to the
+later part of the year in the northern hemisphere.  Unless context makes
+it clear that a specific, well-defined meaning of word "autumn" was
+intended, this is not an *exactly stated* value: it is therefore an
+*approximately stated* value.
+
+The battle might also be described as happening in about 1415.  This
+statement is true as the battle did in fact occur in 1415, but it is an
+*approximately stated* value.  Had the battle actually been in 1414,
+would this be consistent with the description "about 1415"?  Probably.
+But what about 1411?  Or 1401?  There is no general answer, and as a
+result "about 1415" is an *approximately stated* value.
+{/}
+
+{.example}  These concepts do not only apply to quantitative values.  It
+is more *precise* to say that a person was born in the commune of
+Coutances, than to say say that person was born in metropolitan France.
+"The commune of Coutances" and "metropolitan France" are both *exactly
+stated* values.  The person might also be described as born in northern
+France, which would normally be interpreted as an *approximately stated*
+value.
+
+The **precision range** of an exactly stated value is defined as the set
+of values which would be considered consistent with the stated value.  
+One specific measure of *precision* is the **precision range width**,
+which is defined as the difference between the two most widely separated
+values in the *precision range*.  When the value being specified is an
+*instant*, its *precision range* is a *time interval*, and its
+*precision range width* is a *duration*.
+
+{.example}  If a person is said to have died in 1967, this is consistent
+with the *instant* of their death being at any time between midnight at
+the start of 1 January 1967 and midnight at the end of 31 December 1967.
+The *time interval* between these two *instants* is the *precision
+range* and is a *calendar year*.  In this example, the stated value is
+1967 and its *precison range* is the *duration* 1 year.
+
+{.example}  If a person is said to have married in the 1910s, it is
+fairly clear this refers to a decade and therefore the *precision range*
+is 10 years.  However if the person was said to have married in the
+1900s, this might mean the decade or the century.  Without further
+context, the intended *precision range* is unclear.
+
+The **accuracy** of a value is a measure of how close a stated value is
+to the true value.  A *exactly stated* value is said to **accurate** if
+the true value lies within the *precision range* of the stated value,
+and **inaccurate** otherwise.  For an *approximately stated* value,
+the *accuracy* is relative: the further the stated value is from the
+true value, the less *accurate* or more *inaccurate* the stated value. 
+
+{.note}  The *precision* of a value is unrelated to its *accuracy*.  A
+value may be *precise* or *imprecise* independently of whether it is
+*accurate* or *inaccurate*.  
+
+{.example ...}  The following table gives example *instants* of birth
+for Queen Victoria which are variously *precise* or *imprecise*, and
+*accurate* or *inaccurate*. 
+
+-----------  -----------   -----------------------
+Precise      Accurate      24 May 1819 at 4am
+Precise      Inaccurate    19 Jun 1833 at 9pm
+Imprecise    Accurate      During the 1810s
+Imprecise    Inaccurate    During the 1790s
+-----------  -----------   -----------------------
+
+It is generally accepted that Queen Victoria was in fact born at 4.15am
+on 24 May 1819.
+{/}
+
+{.note}  In principle, the *accuracy* of any stated value is unknowable,
+though in practice some facts are so well established they can be
+regarded as proven for all practical purposes as the alternative would
+require there to have been a vast conspiracy.  Much of the time the
+situation is not so clear.
+
+The likelihood that a stated value is *accurate* is referred to as its
+**reliability**.
+
+{.note}  Although this is in theory a probability, *reliabilities* are
+usually described comparatively or quantitatively.  A researcher may
+gauge the *reliability* of a stated value by considering the reliability
+of the sources in which it is stated, and the corroborating or
+contradicting evidence.  Different researchers might reasonably reach
+different conclusions on the *reliability* of a stated value.
+
+{.note} A stated value can be considered *unreliable* by virtue of being
+stated with excessive *precision*.  
+
+{.example ...}  Suppose a man was last seen on 1 January and his corpse
+found on 31 January.  The coroner determined the man had been dead for
+one to two weeks when found, but that no more *precise* date of death
+could be established.  A newspaper obituary simply said he died in
+January, but a gravestone was erected giving his date of death as 21
+January.  A researcher might conclude the obituary is *reliable* as the
+less *precise* "in January" is almost certainly *accurate* as it it
+consistent with the other evidence.  The gravestone might be *accurate*
+and it is not contradicted by the other evidence, but if the researcher
+believes the *date* "21 January" was made up in order to be able to put
+something on the grave, it might be judged *unreliable*.
+
+This is not an example of *inherent ambiguity*.  Depending on the
+circumstances of the death, there may have been a few minutes of
+*inherent ambiguity* as the man's life slowly ebbed away, but the bulk
+of the uncertainty is from lack of knowledge of what happened and when.
+{/}
 
 ### Datatypes
 
@@ -653,13 +811,13 @@ also omitted.  It matches the `Date` production.
 {.example ...}  The following are examples of *dates* which match the
 `Date` production:
 
-    63 BC
+    63 B.C.
     21 JAN 1793
     @#DJULIAN@ 29 MAY 1453
 
 The first of these includes only a *calendar year* and *epoch*.  The
-following two all have a *calendar day*, *calendar month* and *calendar
-year*, and none specify an *epoch*; only the third date includes a
+following two both have a *calendar day*, *calendar month* and *calendar
+year*, and neither specifies an *epoch*; only the third date includes a
 *calendar escape*.
 {/}
 
@@ -852,6 +1010,10 @@ described in {§french}, these are abbreviated `VEND`, `BRUM`, `FRIM`,
 days, or jours complémentaires, which were not part of any month.  For
 the purposes of representing this calendar in ELF, the intercalary days
 are considered a thirteenth month, `COMP`.
+
+{.note} *Month names* are always upper-case, a constraint guaranteed by
+the `Month` production.  Lower-case, mixed-case, or non-ASCII *month
+names* *must not* be used.
 
 {.note}  *Month names* are *required* to be at least three *characters*
 long to avoid conflicting with *epoch* names.
