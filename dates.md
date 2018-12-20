@@ -732,7 +732,7 @@ ELF uses three different *datatypes* to represent *dates*, depending on
 the context.
 
 * `elf:DateValue` is used for historical *dates*.
-* `elf:DatePeriod` is used to record the range of *dates* in a source.
+* `elf:DatePeriod` is used to record the period of coverage a source.
 * `elf:DateExact` is used to record the creation or modification *date* 
   of various objects in the data model.
 
@@ -791,7 +791,7 @@ of ELF will give us time to do give suitable consideration to the
 options available.
 {/}
 
-### Generic date syntax
+### Generic date syntax                                       {#generic}
 
 A *date* is represented in the generic *date* syntax as a sequence of five
 components: a *calendar escape*, followed by encodings of the *calendar
@@ -1203,67 +1203,262 @@ an additional *character* which could serve as a sigil for epoch names,
 and then allow arbitrary characters, e.g. "`$昭和`" for the Shōwa
 period in Japan.
 
-### The `elf:Date` datatype  {#date-datatype}
+### Lower precision formats
 
-In ELF, *dates* are represented using the `elf:Date` *datatype*, which
-allows 
+The generic *date* syntax described in {§generic} provides a means of
+specifying a particular *date*, but does not provide a way of describing
+*dates* with less *precision*.  ELF provides several extensions to the 
+generic *date* syntax to provide this functionality.
 
-Dates are represented using a somewhat involved syntax with three entry points, documented below.
+{.ednote}  This draft, like [GECOM 5.5.1], does not allow more than one
+of these facilities to be used on the same *date*.  It seems potentially
+useful to remove this restriction, for example by allowing "`FROM ABT
+1798 TO 2 JAN 1842`".  Thebe no ambiguity in the grammar with
+such constructs and their meaning would generally be well defined.
+Backwards compatibility could be handled by saying that applications
+*should not* produce such constructs but *must* be able to read them.
+This would also allow constructs such as "`EST ABT 1881`", which the
+GEDCOM grammar does not allow but which appears as an example in [GEDCOM
+5.5.1], albeit as an example of an unnecessary circumlocution.
+Should ELF support such things?
 
-{.ednote ...} The following is the EBNF for date payloads, but it lacks semantics
 
-    Date    ::= greg | juln | hebr | fren | future
+#### Approximated dates
 
-    Exact   ::= [1-9] [0-9]? month year_g
+A *date* *may* be preceded by one of the tokens `ABT`, `CAL` or `EST`,
+as shown in the following `DateApprox` production:
 
-    Value   ::= Date | Period | range | approx
-                | ( "INT" Date )? "(" String ")"
+    DateApprox  ::= ( "ABT" | "CAL" | "EST" ) S Date
 
-    Period  ::= "FROM" Date ( "TO" Date )? | "TO" Date
+The `ABT` token indicates that the *date* is *approximately stated*, and
+that its *precision* is lower than would have been the case without the
+`ABT` token.  It is typically used when there is evidence that the
+*date* given is roughly correct, and *should not* be used when the
+*date* is estimated using statistical likelihoods or cultural norms.
 
-    approx  ::= ( "ABT" | "CAL" | "EST" ) Date
-    range   ::= ( "BEF" | "AFT" ) Date | "BET" Date "AND" Date
-    
-    greg    ::= ("@#DGREGORIAN@" #x20)? d_greg
-    juln    ::= "@#DJULIAN@" #x20 d_juln
-    hebr    ::= "@#DHEBREW@" #x20 d_hebr
-    fren    ::= "@#DFRENCH R@" #x20 d_fren
-    future  ::= "@#D" ( "ROMAN" | "UNKNOWN" ) "@" #x20 String
-    
-    d_fren  ::= ( ( [1-9] [0-9]? )? month_f )? year
-    d_greg  ::= ( ( [1-9] [0-9]? )? month )? year_g
-    d_hebr  ::= ( ( [1-9] [0-9]? )? month_h )? year
-    d_juln  ::= ( ( [1-9] [0-9]? )? month )? year
-    
-    year_g  ::= [1-9] [0-9]* ( "/" [0-9] [0-9] )? "(B.C.)"?
-    year    ::= [1-9] [0-9]* "(B.C.)"?
-    
-    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
-                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+{.example}  If it is known that the first and third children in a family
+were born in 1897 and 1900, the second child's birth *may* be recorded
+as `ABT 1899` as the *date* of birth is fairly well bounded, even if
+twins were involved.  
 
-    month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
-                | "FLOR" | "PRAI" | "MESS" | "THER" | "FRUC" | "COMP"
+{.note}  The `ABT` token is currently by far the most commonly used of
+the three approximated tokens.
 
-    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
-                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
-    
+The `EST` token also indicates that *date* is *approximately stated*,
+and is only an estimate perhaps based only on stastical likelihoods or
+cultural norms.  An application *may* assume a *date* written with the
+`EST` token has lower *precision* than one with the `ABT` token.
+
+{.example}  If it is known that the first three children in a family of
+four were born between 1897 and 1900, a researcher might conclude that
+it is probable that next child was born shortly afterwards and estimate
+the *date* of birth as `EST 1903`.  The `ABT` token *should not* be used
+in this case, unless there is additional evidence that the fourth child
+was not much younger.
+
+{.example}  It can sometimes be useful to provide a crude estimate of
+an individual's *date* of birth.  If a baptism register records a
+baptism in 1692 and gives the father's name, a researcher might wish to
+record an estimate of the father's *date* of birth, perhaps to help
+disambiguate him from other people of the same name.  If such an
+estimate is to recorded, it should use the `EST` token, for example,
+`EST 1660`.
+
+The `CAL` token is used to record a *date* that is not directly stated
+in a source, but instead has been calculated from other known values,
+typically another *date* and the *duration* separating the two *dates*.
+An application *may* assume a *date* written with the `CAL` token has a
+similar or higher *precision* than one written with the `ABT` token.
+
+{.example}  If a newspaper reports on a golden wedding celebration in
+the summer of 1948, this is evidence that the wedding happened 50 years
+previously, and the date of the marriage *may* be entered as `CAL 1898`.
+
+When a *date* is calculated from another *date* and an *imprecise*
+*duration* separating them, use of the `ABT` token is *recommended*
+instead of the `CAL` token. 
+
+{.example}  Like many censuses, the 1880 census of Iceland records
+individuals' *ages* on their most recent birthday.  A person recorded as
+72 could have been born in 1807 or 1808.  Because the *age* has been
+rounded down and is therefore somewhat *imprecise*, it is *recommended*
+that the *date* of birth be recorded as `ABT 1808` rather than `CAL
+1808`.
+
+{.note}  A `CAL` token might sometimes be an indicator that the *date*
+is of lower *reliability* than one without this token, all other things
+being equal, due to it not being directly stated.
+
+{.ednote}  Should FHISO deprecate the `CAL` token and allow uses of it
+to be replaced with `ABT`?  It's not clear it adds anything useful.
+
+#### Date phrases and interpreted dates
+
+ELF allows *dates* to be recorded in natural language.  The natural
+language description of a *date* is called a **date phrases** and is
+written between parentheses (U+0028 and U+0029).
+
+    DateInterp  ::= ( "INT" S Date S )? "(" DatePhrase ")"
+    DatePhrase  ::= [^#xA#xD()]*
+
+The *date phrase* is an arbitrary *language-tagged* *string* except that
+it *must not* contain parentheses (U+0028 or U+0029), line feeds
+(U+000A) or carriage returns (U+000D).
+
+{.note}  [GEDCOM 5.5.1] only requires that *date phrases* be "enclosed
+in matching parentheses", which could be interpreted as requiring that any
+parentheses in the *date phrase* be balanced.  ELF goes further and
+prohibits parentheses from occurring in *date phrases* at all.
+
+{.ednote}  The prohibition on these *characters* is not strictly needed,
+at least while the grammar does not allow *date phrases* within *date
+ranges* or *date periods*, though that is a possible extension which
+might be made in a future version of ELF.  A data model layer escape
+mechanism along the lines of the `%{`&hellip;`}` syntax used in FHISO's
+draft Creator's Name microformat could allow arbitrary *characters* to
+appear in it.
+
+A *date phrase* *should* be a fragment of text quoted from a source,
+possibly in translation, and *should* only normally be used if the text
+cannot readily be converted into a *date*, or where that conversion
+would lose useful information.  *Date phrases* *should not* be used for
+arbitrary annotations or commentary, and *must not* be used in a
+negative sense to say the event did not occur.
+
+{.example}  If a source describes an event as happening on "The Feast of
+St John" in a particular year, this might be recorded in a *date phrase*
+if there was insufficient context to establish whether it referred to
+the Feast of Nativity of St John the Baptist on 24 June, or the Feast of
+St John the Evangelist on 27 December.
+
+{.note}  Historically, some applications have used a *date phrase* like
+"Not married" to indicate a marriage did not occur.  Such usage is
+prohibited in ELF, and applications are permitted to assume a *date
+phrase* describes an actual *date*, even if the *date phrase* cannot be
+interpreted.  Fortunately, such usage is almost entirely confined to
+[GEDCOM 5.3] and earlier which omitted the parentheses around *date
+phrases*.  *Date phrases* written without parentheses will not normally
+match the generic *date* syntax, and will therefore not be parsed as
+*dates* in ELF.
+
+The *date phrase* *may* be accompanied by a *date* in the generic *date*
+syntax preceded by the `INT` token.   The combination is called
+an **interpreted date** and its *date* *should* be an interpretation
+of the associated *date phrase* in the context of source containing it.
+
+{.example}  "`INT @#DJULIAN@ 18 JUNE 1502 (Saturday before the Feast of
+the Nativity of St John the Baptist)`" is a valid *interpreted date*.
+In this case the *date phrase* does not mention the year; perhaps it
+was inferred from the context or stated elsewhere in the document.
+
+{.note}  An *interpreted date* might sometimes be of lower *reliability*
+than if the *date* were written without a *date phrase*, as the presence
+of a *data phrase* typically indicates some subtlety in interpreting the
+*date*.
+
+#### Date ranges
+
+A **date range** is a *time interval* used to record an unknown *date*
+which can be placed within certain bounds.  A *date range* *may* be
+bounded from below, from above, or both.  It matches the `DateRange`
+production:
+
+    DateRange   ::= ( "BEF" | "AFT" ) S Date | "BET" S Date S "AND" S Date
+
+A *date range* beginning with a `BEF` token represents an unknown
+*instant* on or before the specified *date*.  A *date range* beginning
+with a `AFT` token represents an unknown *instant* on or after the
+specified *date*.  
+
+It is *recommended* that the `BEF` and `AFT` forms of *date ranges* are
+only used if it is believe the specified *date* is probably within a few
+years of the unknown *date* being represented.
+
+{.example}  If an individual was elected mayor of a city in 1745 and the
+cultural norms of the time mean the person was almost certainly an
+adult, and probably in middle age, their *date* of birth *should not* be
+recorded as `BEF 1745`.  Even though this would literally be true
+insofar as the person was indeed born before 1745 and this
+representation is not prohibited, it is *not recommended*.  The person
+could well have been born in the previous century which would be
+stretching the definition of "a few years".  If there is need to give a
+date of birth, a crude estimate given with the `EST` token might be
+preferable.
+
+A *date range* using the `BET` &hellip; `AND` construct represents an
+unknown *instant* on or after the first specified *date*, and on or
+before the second specified *date*.  In this form of *date range*, the
+first specified *date* *should be* be no later than the second specified
+*date*.
+
+{.note}  The `BET` &hellip; `AND` form of *date range* is a *precision
+range* of the unknown *date*.
+
+{.example}  If someone's *age* is recorded as 26 on a census conducted
+on 3 April 1881, their *date* of birth could be recorded as `BET 4 APR
+1854 AND 3 APR 1855`.  However current practice is to record this as
+`ABT 1855`.
+
+{.ednote}  Should ELF encourage users to prefer the *date range* form? 
+
+
+#### Date periods
+
+A **date period** is a *time interval* used to record a state of being
+that persisted throughout the stated *time interval*; they are also used
+to record the period of coverage of a source.  It matches the following
+`DatePeriod` production:
+ 
+    DatePeriod  ::= "FROM" S Date ( S "TO" S Date )? | "TO" S Date
+
+Use of a *date period* does not necessarily mean the state was believed
+to have begun on the specified "from" *date*, nor that it ended on the
+specified "to" *date*, though where possible this is *recommended*.
+Either the start *date* or the end *date* *may* be omitted from the
+*date period*, in which case the missing *date* is interpreted as being
+*date*.  
+
+{.example}  Abraham Lincoln was President of the United States from
+1861 to 1865.  This could recorded using the *date period* "`FROM 1861
+TO 1865`", or more *precisely* as "`FROM 4 MAR 1861 TO 15 APR 1865`".
+If it were unknown when Lincoln's presidency began, it could be written
+"`TO 15 APR 1865`".
+
+{.note}  The difference between a *date range* and a *date period* is
+sometimes misunderstood and applications should be alert to the wrong
+representation being used.  A *date range* is used to record an
+*instant*, or an event of short duration, when its *date* is not
+precisely known, whereas a *date period* is used to record a state that
+held throughout the specified period.
+
+{.example ...}  Civil birth, marriage and death registrations in England
+and Wales are indexed in quarterly volumes which do not list the
+*precise* *date* of the event.  The coverage of this source is
+represented in ELF using a *date period*:
+
+    0 @S1@ SOUR
+    1 TITL GRO Marriages Index 
+    1 DATA
+    2 EVEN MARR 
+    3 DATE FROM 1 JAN 1898 TO 31 MAR 1898
+
+However the event itself *must not* be recorded using a *date period*
+because the marriage did not take place over an extended period: it
+happened on one particular *date* which is not *precisely* known.  For
+this purpose a *date range* *should* be used.
+
+    0 FAM
+    1 MARR
+    2 DATE BET 1 JAN 1898 AND 31 MAR 1898
+
+A less *precise* alternative would be to just give a year.
 {/}
+
 
 ### Date {#date-format}
 
-At the core of the date syntax is a calendared date.
-This consists of an optional *calendar escape* followed by the content of the date.
-
-The *calendar escape* is a substring beginning `@#D` and ending `@`, between which is a calendar identifier; known calendar identifiers are `GREGORIAN`, `FRENCH R`, `HEBREW`, `JULIAN`, `ROMAN`, and `UNKNOWN`.
-If no calendar escape is given, `GREGORIAN` is assumed.
-
-{.ednote} Should we move the escape syntax to [ELF-Serialization] and change the above to describe an abstract notion of "an escape"?
-
 {.note} Some dates (in particular the [Period](#date-period) and [Value](#date-value) productions) may have multiple [Date](#date-format) values; it is not known if current implementations can handle situations where the dates are from different calendars, nor if they assume an uncalendared date paired with a calendared date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calendar be used for both Dates in such payloads.
 
-The `ROMAN` and `UNKNOWN` calendars's date formats are not defined in this specification.
-
-`GREGORIAN`, `FRENCH R`, `HEBREW`, and `JULIAN` dates all have the format "day month year", separated by spaces; the day may be omitted; if the day is omitted, the month may be omitted as well.
 The three pieces are formatted as follows:
     
 day
@@ -1273,101 +1468,39 @@ day
 
 {.ednote} Should we specify leading 0s are preferred?
 
-month
-:   Each calendar has a set of strings that may be used.
-    
-    `GREGORIAN` or `JULIAN`
-    :   One of the following three-character strings:
-        `JAN`, `FEB`, `MAR`, `APR`, `M‌AY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`
-    
-    `FRENCH R`
-    :   One of the following four-character strings:
-        `VEND`, `BRUM`, `FRIM`, `NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER`, `FRUC`, `COMP`
-    
-    `HEBREW`
-    :   One of the following three-character strings:
-        `TSH`, `CSH`, `KSL`, `TVT`, `SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`
-
 year
 :   A decimal number.
-    
-    For `GREGORIAN` (only), the number may be optionally followed by either or both of the following year suffixes:
-    
-    Alternate Year
-    :   Represented as a `/` and two additional decimal digits, with no spaces.
-        Shows the possible date alternatives brought about when the beginning of the year changed from `MAR` to `JAN`: for example, `15 APR 1699/00`.
-        
-        The `/` MUST NOT have a space on either side.
     
     BCE
     :   Represented as `(B.C.)`, which SHOULD be preceded by a space.
         Indicates a date before the birth of Christ.
-    
-    If both suffixes are present, `(B.C.)` comes last.
 
-### Exact Date {#exact-date}
+
+### Datatypes
+
+#### The `elf:DateValue` datatype                           {#DateValue}
+
+The `elf:DateValue` *datatype* is used to record historical *dates*.  
+
+    DateValue ::= Date | DateRange | DatePeriod | DateApprox | DateInterp
+
+
+#### The `elf:DatePeriod` datatype                         {#DatePeriod}
+
+The `elf:DatePeriod` *datatype* is used to represent an extended period
+of history.
+
+
+#### The `elf:DateExact` datatype                           {#DateExact}
+
+The `elf:DateExact` *datatype* is used to record the creation or modification
+*date* of various objects in the ELF data model.
 
 An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additional constraints:
 
 -   They MUST NOT include a *calendar escape*
 -   They MUST include the day and month
 -   They MUST NOT have either year suffix
-
-### Date Period {#date-period}
-
-A *date period* is one of the following three forms:
-
--   `FROM` [Date](#date-format)
--   `TO` [Date](#date-format)
--   `FROM` [Date](#date-format) `TO` [Date](#date-format)
-
-### Date Value {#date-value}
-
-A *date value* may have any of a variety of formats:
-
-| Format               | Meaning                                                           |
-|----------------------|-------------------------------------------------------------------|
-| [Date](#date-format) | |
-| [Date Period](#date-period) | |
-| `BEF` [Date](#date-format) | before the given date |
-| `AFT` [Date](#date-format) | after the given date |
-| `BET` [Date](#date-format) `AND` [Date](#date-format) | between the given dates; the first date SHOULD be earlier than the second date |
-| `ABT` [Date](#date-format) | about; the given date is not exact |
-| `CAL` [Date](#date-format) | calculated mathematically, for example, from an event date and age |
-| `EST` [Date](#date-format) | estimated based on some other event date |
-| `INT` [Date](#date-format) `(`arbitrary text`)` | interpreted from knowledge about the associated date phrase included in parentheses |
-| `(`arbitrary text`)` | information about when an event occurred that is not recognizable to a date parser |
-
-{.ednote} Is the above table or the below list more understandable? We definitely don't need both...
-
--   [Date](#date-format)
--   [Date Period](#date-period)
--   `BEF` [Date](#date-format)
-    
-    Meaning: before the given date.
--   `AFT` [Date](#date-format)
-    
-    Meaning: after the given date.
--   `BET` [Date](#date-format) `AND` [Date](#date-format) 
-    
-    Meaning: between the given dates.
-
-    The first date SHOULD be earlier than the second date.
--   `ABT` [Date](#date-format)
-    
-    Meaning: about; the given date is not exact.
--   `CAL` [Date](#date-format)
-    
-    Meaning: calculated mathematically, for example, from an event date and age.
--   `EST` [Date](#date-format)
-
-    Meaning: estimated based on some other event date.
--   `INT` [Date](#date-format) `(`arbitrary text`)`
-
-    Meaning: interpreted from knowledge about the associated date phrase included in parentheses.
--   `(`arbitrary text`)`
-    
-    The text gives information about when an event occurred but is not recognizable to a date parser.
 
 
 ## The `elf:Time` datatype {#time}
@@ -1540,6 +1673,12 @@ Dual years are not allowed.
 
 *Epoch names*:  BC, B.C., AD, A.D.
 
+    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
+                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+
+One of the following three-character strings: `JAN`, `FEB`, `MAR`, `APR`,
+`MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`.
+ 
 ### The Julian calendar                                              {#julian}
 
 Dual years are only allowed when they differ by exactly plus or minus
@@ -1549,11 +1688,23 @@ one to allow for different year starts.
 
 ### The Hebrew calendar                                              {#hebrew}
 
+    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
+                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
+
+One of the following three-character strings: `TSH`, `CSH`, `KSL`, `TVT`,
+`SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`.
+
 ### The French Republican calendar                                   {#french}
 
 {.ednote}  Should it only be defined for the years 1 to 14, and
 exceptionally the year 79?  Leap years were 3, 7 and 11 at first, but
 contradictory rules make it unclear how this would have continued.
+
+    month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
+                | "FLOR" | "PRAI" | "MESS" | "THER" | "FRUC" | "COMP"
+
+One of the following four-character strings: `VEND`, `BRUM`, `FRIM`, `NIVO`,
+`PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER`, `FRUC`, `COMP`.
 
 ## References
 
@@ -1589,6 +1740,10 @@ contradictory rules make it unclear how this would have continued.
 :   FHISO (Family History Information Standards Organisation).
     *Extended Legacy Format (ELF): Serialisation Format*.  Exploratory draft.
     (See <https://fhiso.org/TR/elf-serialisation>.)
+
+[GEDCOM 5.3]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.3.  4 Nov 1993.
 
 [GEDCOM 5.5]
 :   The Church of Jesus Christ of Latter-day Saints.
