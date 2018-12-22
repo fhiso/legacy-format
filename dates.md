@@ -638,10 +638,44 @@ because the Islamic *calendar year* is around 11 *calendar days* shorter
 than the Gregorian *calendar year*.  ELF does not provide a means of
 specifying which *calendar* was when recording an *age*.
 
+{.ednote}  A future version of ELF may add facilities to specify the
+*calendar* being used for *ages* and also to give an explicit
+*precision*, for example to say that an *age* has been given within a
+five-year *age* bracket.
+
 *Ages* *should* generally be rounded down when expressed using just a
 number of *calendar years*, or using a number *calendar years* and
 *calendar months*, but an application *should not* assume this is
 necessarily the case without additional information.
+
+A *conformant* application *may* remove any leading zeros preceding a
+non-zero digit, change how *whitespace* is used in an *age*, or append
+any omitted "`y`" suffix, but *must not* otherwise alter the *age*.
+In particular, applications *must not* insert or remove zero components,
+nor convert between days, months and years.  
+
+{.example} "`2y 0m`", "`2y`" and "`24m`" are all distinct *ages* and
+applications *must not* rewrite one to another. However an *conformant*
+application *may* convert "`2`" to "`2y`", adding the `y` suffix; *may*
+convert "`02y`" to "`2y`", removing leading zero; and *may* convert
+"`2y0m`" to "`2y 0m`", a simple change in *whitespace*.
+
+In addition, a *conformant* application *may* insert or remove 
+components which are the number zero followed by "`y`", "`m`" or "`d`"
+suffix, providing doing so does not alter the *precision* of the *age*.
+
+{.example ...}  The *ages* "`2y 0m`" and "`2y`" have different *precisions*:
+the former has a *precision* of a few months, while the latter has a
+*precision* of a few years.  Converting one to the other by inserting or
+removing a "`0m`" component would change the *precision* of the *age*,
+and of this reason a *conformant* application *must not* do it.   
+
+However it is only the least significant component present (representing
+the smallest unit of duration) which affects the *precision*, and other
+zero components *may* be inserted or removed.  For example, "`2m`" and
+"`0y 2m`" are equivalent in ELF, and applications *may* convert either
+one to the other.
+{/}
 
 *Ages* which are quantitative *durations* *may* be prefixed with with a
 "`<`" or a "`>`".  These are interpreted as meaning the individual is
@@ -649,15 +683,18 @@ at most the specified *age*, or is at least the specified *age*,
 respectively.
 
 {.note ...} This means the "`<`" and "`>`" token are actually interpretted
-as ≤ and ≥ operators.  In common usage, a person may be said to over 21
-as soon as they've had their 21st birthday, at which point they would
-normally round their age down to 21.  ELF allows for this usage, and "`>
-21y`" may be used to refer to someone whose *age* is exactly 21.  This
-may seem to be a deviation from [GEDCOM 5.5.1] which defines them as
-meaning less than or greater than the specified *age*, respectively, but
-because of the uncertainty in the intended *precision* of an *age*,
-there is little practical difference.  
+as ≤ and ≥ operators, though in practice the *precision* of *ages* in
+ELF is such that difference between ≤ and <, or between ≥ and > does not
+matter.
 
+In common usage, a person may be said to over 21 as soon as they've had
+their 21st birthday, at which point they would normally round their age
+down to 21.  ELF allows for this usage, and "`> 21y`" may be used to
+refer to someone whose *age* is exactly 21.  This may seem to be a
+deviation from [GEDCOM 5.5.1] which defines them as meaning less than or
+greater than the specified *age*, respectively, but because of the
+uncertainty in the intended *precision* of an *age*, there is little
+practical difference.  
 The case for interpreting "`<`" as less than or equal to is weaker,
 but there seem to current examples where "`<`" has been used on *ages*
 inferred from an *age* given a few months later.
@@ -677,8 +714,9 @@ individual as a child, an infant, or stillborn, respectively, or
 in using other words which are largely equivalent.  They *should not* be
 used when a source describes an individual using a quantitative *age*.  
 
-{.note}  The meanings of words "child", "infant" and "stillborn" are to
-some extent culturally dependent.  A modern source might describe a
+{.note}  The words "child", "infant" and "stillborn" can be considered
+societal roles which are to some extent culturally dependent, rather
+than well-defined *age* brackets.  A modern source might describe a
 15-year-old as a child, while in mediæval times they a person of this
 age was unlikely to be described in that way.  This standard does not
 therefore put firm limits on the *ages* meant by these terms.  This is a
@@ -694,16 +732,11 @@ immediately after the time of birth.  This *age word* *must not* be used
 to refer to infants whose *age* is about 0 days unless they died around
 the time of birth.
 
-A *conformant* application *may* remove any leading zeros preceding a
-non-zero digit, change how *whitespace* is used in an *age*, or append
-any omitted "`y`" suffix, but *must not* otherwise alter the *age*.
-In particular, applications *must not* insert or remove zero components,
-nor convert between days, months and years.  
-
-{.example} "`2y 0m`", "`2y`" and "`24m`" are all distinct *ages* and
-applications *must not* rewrite one to another, however an *conformant*
-application *may* convert "`2`" to "`2y`", and *may* also convert
-"`2y0m`" to "`2y 0m`".
+{.ednote}  Having exactly three *age words* seems unsatisfactory as it
+fails to cope with other descriptions that might occur in a source,
+such as "ancient".  The TSC have discussed whether *age words* should be
+deprecated, or whether they should be developed into a more general and
+extensible *age word* mechanism, but have reached no conclusion so far.
 
 Formally, the `elf:Age` *datatype* is a *structured non-language-tagged
 datatype* which has the following *properties*:
@@ -725,6 +758,11 @@ lines for convenience of presentation; it is, however, really one
 *pattern* and contains no *whitespace* or line breaks.
 Any functional difference between the `Age` production and the *pattern*
 specified above is unintentional.
+
+{.ednote} Depending on the details of how the ELF data model is
+specified, it may make sense to split this into two *datatypes*: the
+`elf:Age` one which would be restricted to just quantitative *ages*, and
+a separate `elf:AgeWord` *datatype*.
 
 ## Date formats 
 
@@ -1468,13 +1506,6 @@ day
 
 {.ednote} Should we specify leading 0s are preferred?
 
-year
-:   A decimal number.
-    
-    BCE
-    :   Represented as `(B.C.)`, which SHOULD be preceded by a space.
-        Indicates a date before the birth of Christ.
-
 
 ### Datatypes
 
@@ -1672,6 +1703,8 @@ Dual years are not allowed.
 {.note} Deviation from [GEDCOM 5.5.1].
 
 *Epoch names*:  BC, B.C., AD, A.D.
+
+B.C. indicates a date before the birth of Christ.
 
     month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
                 | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
