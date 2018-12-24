@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 13 December 2018
+date: 24 December 2018
 numbersections: true
 ...
 
@@ -230,7 +230,7 @@ leap second is inserted or deleted, or when the local time zone changes.
 
 Many different systems for reckoning *dates* have been used throughout
 history and in different parts of the world. Such systems are called
-**calenders**, and ELF allows historical *dates* to be reckoned using
+**calendars**, and ELF allows historical *dates* to be reckoned using
 many different *calendars*.
 
 {.example}  The simplest form of *calendar* is to count the number
@@ -876,6 +876,14 @@ complication and the facilitity was removed.  The framework is still
 flexible enough to handle Roman day reckoning by using separate month
 components for the kalends, nones and ides, thus giving 28 August a
 representation similar to "`5 KSEP`".
+
+{.ednote}  Should there be a requirement that days numbers increase
+monotonically?  Roman day reckoning, which counts days backwards, can
+still be supported if negative day numbers are allowed: e.g. "`-5
+KSEP`".  This has the advantage of allowing applications to sort
+*calendar days* without knowing the calendar, and all that would be
+required to sort days completely would be to know the order of *month
+names* and *epoch names*.
 
 #### Months
 
@@ -1907,21 +1915,111 @@ specification.
 
 ### The Gregorian calendar                                        {#gregorian}
 
-Dual years are not allowed.  
+{.note} The Gregorian *calendar* is the name given to the now ubiquitous
+*calendar* introduced by Pope Gregory XIII in 1582 to correct the Julian
+*calendar* which was slowly drifting relative to the seasons.  It is
+represented by the `@#DGREGORIAN@` *calendar escape*, and is also ELF's
+default *calendar*, used whenever a *date* has no *calendar escape* and
+is a *well-formed date* in the Gregorian *calendar*.
 
-{.note} Deviation from [GEDCOM 5.5.1].
+The Gregorian *calendar* has an *epoch* at the start of the *calendar
+day* 1 January 1&nbsp;AD, and two *epoch names* relative to that
+*epoch*: a *reverse epoch name* "`B.C.`", and a *forwards epoch name*
+"`A.D.`".  The latter is the *default epoch name* for the *calendar*,
+and *should* be omitted.
 
-*Epoch names*:  B.C., A.D.
+{.example}  The *date* "`24 DEC 2018 A.D.`" is equivalent to "`24 DEC
+2018`".  The latter is *recommended* for compatibility with [GEDCOM
+5.5.1] which does not support the "`A.D.`" *epoch name*.
 
-{.ednote} Do we want B.C.E. and C.E. as aliases?
+{.ednote} Do we want "`B.C.E.`" and "`C.E.`" (standing for Before Common
+Era and Common Era, respectively) as aliases?  There is no technical
+justification for adding them.
 
-B.C. indicates a date before the birth of Christ.
+*Dual years* *must not* be used.
 
-    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
-                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+{.note} This is a deviation from [GEDCOM 5.5.1] which allows *dual
+years* only on Gregorian *dates*.  In this standard, a *date* with a
+*dual year* is not a *well-formed date* in the Gregorian *calendar*.
+This means a *date* using a *dual year* and no explicit *calendar
+escape* will be assigned the `@#DUNKNOWN@` *calendar escape*.
 
-One of the following three-character strings: `JAN`, `FEB`, `MAR`, `APR`,
-`MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`.
+{.ednote}  In practice there is a very strong likelihood that the Julian
+*calendar* is intended.  This draft could have altered the default
+*calendar* rules in {§cal-escapes} so that *dates* using *dual years*
+and no explicit *calendar escape* were automatically labelled
+`@#DJULIAN@`.  The reason this was not done is that an ELF file
+containing such *dates* is likely to have many other miscalendared
+*dates* but which are *well-formed dates* in the Gregorian *calendar*
+and so go undetected.  Flagging those with *dual years* with
+`@#DUNKNOWN@` will hopefully bring this to the researcher's attention.
+
+Regardless of *epoch name*, the *logical year* *shall* be an integer
+greater than 0.
+
+{.note}  This prohibits negative or zero year numbers as they are not
+needed.  The year before "`1 A.D.`" is "`1 B.C.`".
+
+{.note}  [GEDCOM 5.5.1] says that *logical years* *must* be 3 or 4
+digits long, and presumably requires dates in the first century to be
+zero padded.  This standard has no such requirement, and many current
+applications do not enforce this requirement.
+
+Every *calendar year* in the Gregorian *calendar* consists of 12
+*calendar months*.  Their *month names* are given in the table below in
+order of their occurence in the *calendar year*.  The table also gives
+the usual form of their name in English, and the number of *calendar
+days* in each month.  The *calendar days* in each *calendar month* are
+numbered sequentially starting with 1.
+
+-------  ----------   -----------------------------
+`JAN`    January      31 days
+`FEB`    February     28 or 29 days &mdash; see below
+`MAR`    March        31 days
+`APR`    April        30 days
+`MAY`    May          31 days
+`JUN`    June         30 days
+`JUL`    July         31 days
+`AUG`    August       31 days
+`SEP`    September    30 days
+`OCT`    October      31 days
+`NOV`    November     30 days
+`DEC`    December     31 days
+-------  ----------   -----------------------------
+
+The number of *calendar days* in February varies depending on the
+*logical year*.  The rules for determining this number for years with
+the "`A.D.`" *epoch name* are as follows:
+
+*  If the *logical year* number is exactly divisible by 400, 
+   then February has 29 days.
+*  Otherwise, if the *logical year* number is exactly divisible by 100,
+   then February has 28 days.
+*  Otherwise, if the *logical year* number is exactly divisble by 4,
+   then February has 29 days.
+*  Otherwise, February has 28 days.
+
+For years with the "`B.C.`" *epoch name*, the *logical year* number is
+subtracted from one to get zero or a negative number, which is then used
+in place of the *logical year* in the preceding rules.
+
+{.example}  The year 5~BC was a leap year in the proleptic Gregorian
+*calendar*, meaning February had 29 *calendar days*.  This is because
+subtracting 5 from 1 gives -4 which is exactly divisble by 4.
+
+{.note}  Although the Gregorian *calendar* was first introduced in 1582,
+ELF allows its use proleptically, including for *dates* BC.  This is a
+partial departure from [GEDCOM 5.5.1] which only allows *incomplete
+dates* referencing only a *calendar year* to use the "`B.C.`" *epoch
+name*.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.
+
+{.example}  The *date* "`29 FEB 2018`" is not a *well-formed date* in
+the Gregorian *calendar* because Febuary only had 28 days in 2018 due to
+2018 not being exactly divisble by 4.
 
 #### The `elf:DateExact` datatype                           {#DateExact}
 
