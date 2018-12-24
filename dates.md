@@ -120,6 +120,28 @@ here, but non-conforming syntax *may* be accepted and processed by a
 This standard uses the `S` production defined in §2 of [Basic Concepts]
 to match any non-empty sequence of *whitespace* *characters*.
 
+This standard defines five *datatypes* to represent time-related
+concepts, each of which is identified by a *term name*, which is simply
+an IRI.  The concept of a *datatype*, as used by FHISO, is defined in §
+6 of [Basic Concepts], and the definition of each *datatype* in this
+standard includes a table listing its formal *properties*.
+
+{.note}  These *properties* include a formal statement that the
+*datatype* is *datatype*, define the *pattern* and *non-trivial
+supertypes* of the *datatype*, and say whether it is an *abstract
+datatype*.  These concepts are defined in §6.1, §6.2 and §6.3 of [Basic
+Concept]s.  The *pattern* is a regular expression written in FHISO's
+`types:Pattern` *datatype* defined in [Patterns].  This information
+forms part of an abstraction which allows applications to use a
+*discovery* mechanism to find out about unknown components, thus
+allowing them to be processed in more sophisticated ways than could be
+done with a truly unknown component.  To support this, FHISO's webserver
+has been configured to provide [Triples Discovery] on all *terms*
+defined in this standard.  Such functionality is outside the scope of
+this standard, and is entirely *optional* in ELF.  Most readers can
+safely ignore this formalism and the tables of *properties* given for
+each *datatype*.
+
 This standard uses the *prefix notation*, as defined in §4.3 of [Basic
 Concepts], when discussing specific *terms*.  The following *prefix*
 bindings are assumed in this standard:
@@ -127,6 +149,7 @@ bindings are assumed in this standard:
 ------           -----------------------------------------------
 `elf`            `https://terms.fhiso.org/elf/`
 `xsd`            `http://www.w3.org/2001/XMLSchema#`
+`types`          `https://terms.fhiso.org/types/`
 ------           -----------------------------------------------
 
 {.note}  The particular *prefix* assigned above have no relevance
@@ -134,7 +157,7 @@ outside this standard document as *prefix notation* is not used in the
 formal data model defined by this standard.  This notation is simply a
 notational convenience to make the standard easier to read.
 
-## Basic&nbsp;Concepts                                 {#basic-concepts}
+## Basic&nbsp;concepts                                 {#basic-concepts}
 
 {.ednote}  It is anticipated that this section will be moved to [Basic
 Concepts] in a future draft of these documents.
@@ -2268,9 +2291,20 @@ One of the following four-character strings: `VEND`, `BRUM`, `FRIM`, `NIVO`,
     8601-2:2009.  Data elements and interchange formats — Information
     interchange — Part 2: Extensions*.  Draft, 15 Feb 2016.
 
+[Patterns]
+:   FHISO (Family History Information Standards Organisation).
+    *The Pattern Datatype*.  First public draft.
+    (See <https://fhiso.org/TR/patterns>.)
+
 [XSD Pt2]
 :   W3C (World Wide Web Consortium). *W3C XML Schema Definition Language 
     (XSD) 1.1 Part 2: Datatypes*.  David Peterson, Shudi Gao (高殊镝),
     Ashok Malhotra, C. M. Sperberg-McQueen and Henry S. Thompson, ed., 2012.
     W3C Recommendation.  (See <https://www.w3.org/TR/xmlschema11-2/>.)
+
+[Triples Discovery]
+:   FHISO (Family History Information Standards Organisation).
+    *Simple Triples Discovery Mechanism*.  First public draft.
+    (See <https://fhiso.org/TR/triples-discovery>.)
+
 

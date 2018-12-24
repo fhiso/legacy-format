@@ -2,6 +2,8 @@
 # It contains all the RDF triples implied by [ELF Serialisation],
 # [ELF Data Model] and [ELF Dates].
 
+# Note that backslashes in patterns need to be escaped from Turtle.
+
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix types: <https://terms.fhiso.org/types/> .
@@ -9,7 +11,7 @@
 
 elf:DateValue
 	rdf:type rdfs:Datatype ;
-	types:pattern "((ABT|CAL|EST|BEF|AFT|TO)[ \t\r\n]+)?(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+)|(INT[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+)[ \t\r\n]+?)\([^\r\n()]*\)|BET[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+)[ \t\r\n]+AND[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+)|FROM[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+)([ \t\r\n]+TO[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+))?" ;
+	types:pattern "((ABT|CAL|EST|BEF|AFT|TO)[ \\t\\r\\n]+)?(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+)|(INT[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+)[ \\t\\r\\n]+?)\\([^\\r\\n()]*\\)|BET[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+)[ \\t\\r\\n]+AND[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+)|FROM[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+)([ \\t\\r\\n]+TO[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+))?" ;
 	types:nonTrivialSupertypeCount 1 ;
 	types:nonTrivialSupertype rdf:langString ;
 	types:isAbstract false ;
@@ -17,7 +19,7 @@ elf:DateValue
 
 elf:DatePeriod
 	rdf:type rdfs:Datatype ;
-	types:pattern "FROM[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+)([ \t\r\n]+TO[ \t\r\n]+(@#D[A-Z][A-Z ]*@[ \t\r\n]+)?(([0-9]+[ \t\r\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \t\r\n]+)?-?[0-9]+(/-?[0-9]+)?([ \t\r\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\$[^ #x9#xA#xD]+))?" ;
+	types:pattern "FROM[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+)([ \\t\\r\\n]+TO[ \\t\\r\\n]+(@#D[A-Z][A-Z ]*@[ \\t\\r\\n]+)?(([0-9]+[ \\t\\r\\n]+)?[A-Z][A-Z0-9][A-Z0-9]+[ \\t\\r\\n]+)?-?[0-9]+(/-?[0-9]+)?([ \\t\\r\\n]*([A-Z]([A-Z]|[A-Z0-9._]*[._][A-Z0-9._]*)|\\$[^ #x9#xA#xD]+))?" ;
 	types:nonTrivialSupertypeCount 1 ;
 	types:nonTrivialSupertype rdf:langString ;
 	types:isAbstract false ;
@@ -25,21 +27,21 @@ elf:DatePeriod
 
 elf:DateExact
 	rdf:type rdfs:Datatype ;
-	types:pattern "[0-9]{1,2}[ \t\r\n](JAN|FEB|MAR|ARP|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[ \t\r\n][0-9]{4}" ;
+	types:pattern "[0-9]{1,2}[ \\t\\r\\n](JAN|FEB|MAR|ARP|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[ \\t\\r\\n][0-9]{4}" ;
 	types:nonTrivialSupertypeCount 0 ;
 	types:isAbstract false ;
         rdfs:isDefinedBy <https://fhiso.org/TR/elf-dates#DateExact> .
 
 elf:Time
 	rdf:type rdfs:Datatype ;
-	types:pattern "(([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\.[0-9]+)?|24:00:00(\.0+)?)(Z|(\+|-)([01][0-9]|2[0-3]):[0-5][0-9])?" ;
+	types:pattern "(([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?|24:00:00(\\.0+)?)(Z|(\\+|-)([01][0-9]|2[0-3]):[0-5][0-9])?" ;
 	types:nonTrivialSupertypeCount 0 ;
 	types:isAbstract false ;
         rdfs:isDefinedBy <https://fhiso.org/TR/elf-dates#time> .
 
 elf:Age
 	rdf:type rdfs:Datatype ;
-	types:pattern "([<>][ \t\r\n]*)?([0-9]+|[0-9]+y([ \t\r\n]*[0-9]+m)?([ \t\r\n]*[0-9]+d)?|[0-9]+m([ \t\r\n]*[0-9]+d)?|[0-9]+d)|CHILD|INFANT|STILLBORN" ;
+	types:pattern "([<>][ \\t\\r\\n]*)?([0-9]+|[0-9]+y([ \\t\\r\\n]*[0-9]+m)?([ \\t\\r\\n]*[0-9]+d)?|[0-9]+m([ \\t\\r\\n]*[0-9]+d)?|[0-9]+d)|CHILD|INFANT|STILLBORN" ;
 	types:nonTrivialSupertypeCount 0 ;
 	types:isAbstract false ;
         rdfs:isDefinedBy <https://fhiso.org/TR/elf-dates#age> .
