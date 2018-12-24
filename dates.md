@@ -2023,16 +2023,60 @@ the Gregorian *calendar* because Febuary only had 28 days in 2018 due to
 
 #### The `elf:DateExact` datatype                           {#DateExact}
 
-The `elf:DateExact` *datatype* is used to record the creation or modification
-*date* of various objects in the ELF data model.
+The `elf:DateExact` *datatype* is used to record the creation or
+modification *date* of various objects in the ELF data model using the
+Gregorian *calendar*.  The *lexical space* of this *datatype* is the set
+of *strings* which match the following `GregDate` production and which
+are additionally *well-formed dates* in the Gregorian *calendar* defined
+in {§gregorian}.
 
-An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additional constraints:
+    GregDate  ::= GregDay S GregMonth S GregYear
 
--   They MUST NOT include a *calendar escape*
--   They MUST include the day and month
--   They MUST NOT have either year suffix
+    GregDay   ::= [0-9] [0-9]?
+    GregMonth ::= "JAN" | "FEB" | "MAR" | "ARP" | "MAY" | "JUN" | "JUL"
+                  | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+    GregYear  ::= [0-9] [0-9] [0-9] [0-9]
 
- 
+{.example}  The *string* "`24 DEC 2018`" is a matches the `GregDate`
+production and is a *well-formed date* in the Gregorian *calendar*.  It
+is therefore in the *lexical space* of `elf:DateExact`.  "`54 NOV 2018`"
+is not in the *lexical space* of `elf:DateExact` despite matching the
+`GregDate` production because it is not a *well-formed date* in the
+Gregorian *calendar* due to November only having 30 days. 
+
+{.note ...} This *datatype* is more restricted than a Gregorian *date*
+written in the generic *date* syntax due to the following additional
+constraints:
+
+*   There *must not* be a *calendar escape*.
+*   There *calendar day* and *calendar month* *must* be present.
+*   The *calendar year* component *must* be four digits long.
+*   The *epoch name* *must* be omitted.
+{/}
+Formally, the `elf:DateExact` *datatype* is a *structured
+non-language-tagged datatype* which has the following *properties*:
+
+: Datatype definition
+
+------           -----------------------------------------------
+Name             `https://terms.fhiso.org/elf/DateExact`
+Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
+Pattern          `[0-9]{1,2}[ \t\r\n](JAN|FEB|MAR|ARP|`<!-- -->`MAY|JUN|JUL|AUG|SEP|OCT`
+                 `|NOV|DEC)[ \t\r\n][0-9]{4}`
+Supertype        *No non-trivial supertypes*
+Abstract         `false`
+------           -----------------------------------------------
+
+{.note} The *pattern* in the table above has been split on to three
+lines for convenience of presentation; it is, however, really one
+*pattern* and contains no *whitespace* or line breaks.
+Any functional difference between the `GregDate` production and the
+*pattern* specified above is unintentional.
+
+{.note}  The `elf:DateExact` *datatype* is not specified as a *subtype*
+of the `elf:DateValue` *datatype* because the latter is a
+*language-tagged datatype*.
+
 ### The Julian calendar                                        {#julian}
 
 {.note}  The Julian *calendar* is the name given to the *calendar*

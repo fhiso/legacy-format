@@ -23,6 +23,13 @@ elf:DatePeriod
 	types:isAbstract false ;
         rdfs:isDefinedBy <https://fhiso.org/TR/elf-dates#DatePeriod> .
 
+elf:DateExact
+	rdf:type rdfs:Datatype ;
+	types:pattern "[0-9]{1,2}[ \t\r\n](JAN|FEB|MAR|ARP|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[ \t\r\n][0-9]{4}" ;
+	types:nonTrivialSupertypeCount 0 ;
+	types:isAbstract false ;
+        rdfs:isDefinedBy <https://fhiso.org/TR/elf-dates#DateExact> .
+
 elf:Time
 	rdf:type rdfs:Datatype ;
 	types:pattern "(([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\.[0-9]+)?|24:00:00(\.0+)?)(Z|(\+|-)([01][0-9]|2[0-3]):[0-5][0-9])?" ;

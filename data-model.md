@@ -1297,7 +1297,8 @@ Substructures
 :   `[elf:TIME_VALUE]` ?
 
 Payload
-:   A string matching the [Exact Date](#exact-date) syntax.
+:   A *line string* in the *lexical space* of the `elf:DateExact` 
+    *datatype* defined in §6.1.1 of [ELF Dates].
     
     Indicates the last change to the containing structure.
 
@@ -3885,7 +3886,8 @@ Substructures
 :   None
 
 Payload
-:   A *line string* matching the [Exact Date](#exact-date) microformat.
+:   A *line string* in the *lexical space* of the `elf:DateExact` 
+    *datatype* defined in §6.1.1 of [ELF Dates].
         
     Contains the date the source dataset (described by the superstructure) was published or created.
 
@@ -3931,7 +3933,8 @@ Substructure
 :   `[elf:TIME_VALUE]`
 
 Payload
-:   A string matching the [Exact Date](#exact-date) syntax.
+:   A *line string* in the *lexical space* of the `elf:DateExact` 
+    *datatype* defined in §6.1.1 of [ELF Dates].
 
     The date that this dataset was created.
 
