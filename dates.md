@@ -1911,9 +1911,9 @@ principle this works fine when the *default datatypes* have disjoint
 *lexical spaces*, as they would here, but it would need careful
 specification.
 
-## Calendar definitions                                           {#calendars}
+## Calendar definitions                                     {#calendars}
 
-### The Gregorian calendar                                        {#gregorian}
+### The Gregorian calendar                                  {#gregorian}
 
 {.note} The Gregorian *calendar* is the name given to the now ubiquitous
 *calendar* introduced by Pope Gregory XIII in 1582 to correct the Julian
@@ -1923,10 +1923,10 @@ default *calendar*, used whenever a *date* has no *calendar escape* and
 is a *well-formed date* in the Gregorian *calendar*.
 
 The Gregorian *calendar* has an *epoch* at the start of the *calendar
-day* 1 January 1&nbsp;AD, and two *epoch names* relative to that
-*epoch*: a *reverse epoch name* "`B.C.`", and a *forwards epoch name*
-"`A.D.`".  The latter is the *default epoch name* for the *calendar*,
-and *should* be omitted.
+day* 1 January 1&nbsp;AD, as expressed in the Gregorian *calendar*,
+and two *epoch names* relative to that *epoch*: a *reverse epoch name*
+"`B.C.`", and a *forwards epoch name* "`A.D.`".  The latter is the
+*default epoch name* for the *calendar*, and *should* be omitted.
 
 {.example}  The *date* "`24 DEC 2018 A.D.`" is equivalent to "`24 DEC
 2018`".  The latter is *recommended* for compatibility with [GEDCOM
@@ -1936,7 +1936,18 @@ and *should* be omitted.
 Era and Common Era, respectively) as aliases?  There is no technical
 justification for adding them.
 
-*Dual years* *must not* be used.
+Regardless of *epoch name*, the *logical year* *shall* be an integer
+greater than 0.
+
+{.note}  This prohibits negative or zero year numbers as they are not
+needed.  The year before "`1 A.D.`" is "`1 B.C.`".
+
+{.note}  [GEDCOM 5.5.1] says that *logical years* *must* be 3 or 4
+digits long, and presumably requires dates in the first century to be
+zero padded.  This standard has no such requirement, and many current
+applications do not enforce this requirement.
+
+*Dual years* *must not* be used in the Gregorian *calendar*.
 
 {.note} This is a deviation from [GEDCOM 5.5.1] which allows *dual
 years* only on Gregorian *dates*.  In this standard, a *date* with a
@@ -1953,17 +1964,6 @@ containing such *dates* is likely to have many other miscalendared
 *dates* but which are *well-formed dates* in the Gregorian *calendar*
 and so go undetected.  Flagging those with *dual years* with
 `@#DUNKNOWN@` will hopefully bring this to the researcher's attention.
-
-Regardless of *epoch name*, the *logical year* *shall* be an integer
-greater than 0.
-
-{.note}  This prohibits negative or zero year numbers as they are not
-needed.  The year before "`1 A.D.`" is "`1 B.C.`".
-
-{.note}  [GEDCOM 5.5.1] says that *logical years* *must* be 3 or 4
-digits long, and presumably requires dates in the first century to be
-zero padded.  This standard has no such requirement, and many current
-applications do not enforce this requirement.
 
 Every *calendar year* in the Gregorian *calendar* consists of 12
 *calendar months*.  Their *month names* are given in the table below in
@@ -1988,7 +1988,7 @@ numbered sequentially starting with 1.
 -------  ----------   -----------------------------
 
 The number of *calendar days* in February varies depending on the
-*logical year*.  The rules for determining this number for years with
+*logical year*.  The rules for determining this number in years with
 the "`A.D.`" *epoch name* are as follows:
 
 *  If the *logical year* number is exactly divisible by 400, 
@@ -2033,12 +2033,100 @@ An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additi
 -   They MUST NOT have either year suffix
 
  
-### The Julian calendar                                              {#julian}
+### The Julian calendar                                        {#julian}
 
-Dual years are only allowed when they differ by exactly plus or minus
-one to allow for different year starts.
+{.note}  The Julian *calendar* is the name given to the *calendar*
+introduced by Julius Caesar in 45&nbsp;BC and subsequently amended by
+Augustus in about 8&nbsp;BC to correct an error in the application of
+its leap year rule during its first three decades.  The Augustan form of
+the Julian *calendar* is represented by the `@#DJULIAN@` *calendar
+escape*.  Because the Gregorian *calendar* derived from the Julian
+*calendar*, many of details here are the same as those in {§gregorian}.
 
-{.note} Deviation from [GEDCOM 5.5.1].
+The Julian *calendar* has an *epoch* at the start of the *calendar
+day* 1 January 1&nbsp;AD, as expressed in the Julian *calendar*, or 30
+December 1&nbsp;BC, as expressed in the proleptic Gregorian *calendar*.
+The Julian *calendar* has the same two *epoch names*, "`B.C.`" and
+"`A.D.`", as the Gregorian *calendar*, but defined relative to the
+Julian *epoch* instead of the Gregorian *epoch*.  The "`A.D.`" *epoch
+name* is the *default epoch name* for the *calendar*, and *should* be
+omitted.
+
+As for the Gregorian *calendar*, regardless of *epoch name*, the
+*logical year* *shall* be an integer greater than 0.
+
+*Dual years* are only allowed when the *logical year* and the
+*historical year* differ by exactly one year.  They are used to
+represent the differing conventions for the first day of the year.
+
+{.note} This is a deviation from [GEDCOM 5.5.1] where *dual years* are
+not permitted with the Julian *calendar*.   
+
+{.note}  *Logical years* always begin on 1 January, but *historical
+years* can begin on an arbitrary day of the year which can result in the
+*historical year* being ahead or behind the *logical year*.  Because the
+use of *dual years* is not restricted to just years beginning on Lady
+Day, it is not in general possible to tell simply from the fact that a
+*dual year* was used what convention for the start of the year.   This
+can usually be inferred from context, and the *logical year* allows an
+application to process the *date* without knowing this.
+
+{.example ...}  In France, the year was reckoned to begin on Easter
+Sunday until 1564 (or 1565 &mdash; the change did not happen uniformly).
+An application cannot tell when reading the *date* "`10 FEB 1521/22`"
+whether it has been written using the French convention of starting the
+year on Easter Sunday or the English convention of starting the year on
+Lady Day, but it is not normally necessary to know this as this *date*
+refers to the same *calendar day* regardless of when the *historical
+year* began.
+
+This is an example where the *historical year* alone could be ambiguous
+due to Easter being a movable feast.  In France, there were two days
+which would have been written "1er avril, 1522".  In both cases, the
+*historical year* is 1522, but only for the first is the *logical year*
+also 1522: for the second, it is 1523.  This means the first *date*
+*must* be encoded in ELF as "`1 APR 1522`", while the second *should* be
+encoded as "`1 APR 1522/23`" (though it *may* alternatively be encoded
+as "`1 APR 1523`", without using a *dual year*).
+{/}
+
+Every *calendar year* in the Julian *calendar*, as reckoned by *logical
+year*, consists of the same 12 *calendar months* as the Gregorian
+calendar.  Their *month names*, the usual English form of their name,
+and the number of *calendar days* in each *calendar month* is as given
+for the Gregorian calendar in the table in {§gregorian}.  The only
+difference is the rule for determining the number of *calendar days* in
+February.
+
+In the Julian *calendar*, the rules for determining the number of
+*calendar days* in February are as follows:
+
+*  If the *logical year* number is exactly divisble by 4,
+   then February has 29 days.
+*  Otherwise, February has 28 days.
+
+{.example}  The year 1900 was a leap year in the Gregorian *calendar*,
+as 1900 is divisible by 100, but it was not a leap year in the Julian
+*calendar*.  This means "`29 FEB 1900`" is a *well-formed date* in the
+Gregorian *calendar*, but not in the Julian *calendar*.
+
+For years with the "`B.C.`" *epoch name*, the *logical year* number is
+subtracted from one to get zero or a negative number, which is then used
+in place of the *logical year* in the preceding rules.
+
+{.note}  The year 5~BC was a leap year according to ELF's definition of
+the Julian *calendar*, because subtracting 5 from 1 gives -4 which is
+divisible by 4.  In fact, the year 5~BC was almost certainly not a leap
+year as the Augustan reform was still taking effect at this point.
+There is disagreement between historians on the exact details of the
+reform, but is generally accepted that by 8~AD the rule for leap years
+given above was being applied correctly.  Any use of the the Julian
+calendar (in its final Augustan form) before about 5~AD should therefore
+be regarded as proleptic.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.
 
 ### The Hebrew calendar                                              {#hebrew}
 
