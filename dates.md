@@ -61,9 +61,7 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   update to the GEDCOM data model, but rather a basis for future
   extension.
 
-## General
-
-### Conventions used
+## Conventions used
 
 Where this standard gives a specific technical meaning to a word or
 phrase, that word or phrase is formatted in bold text in its initial
@@ -100,8 +98,9 @@ application *must* also be *conformant* with [Basic Concepts].  Concepts
 defined in that standard are used here without further definition.
 
 {.note} In particular, precise meaning of *character*, *string*,
-*whitespace*, *whitespace normalisation*, *term*, *prefix notation*,
-*prefix*, *datatype* and *subtype* are given in [Basic Concepts].
+*whitespace*, *whitespace normalisation*, *language tag*, *term*,
+*prefix notation*, *prefix*, *property*, *datatype* and *subtype* are
+given in [Basic Concepts].
 
 Indented text in grey or coloured boxes does not form a normative part
 of this standard, and is labelled as either an example or a note.  
@@ -116,10 +115,14 @@ The grammar given here uses the form of EBNF notation defined in §6 of
 attached to the capitalisation of grammar symbols.  *Conforming*
 applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
-*conforming* application in an implementation-defined manner.
+*conforming* application in an implementation-defined manner.  
 
-This standard uses *prefix notation* when discussing specific *terms*.
-The following *prefix* binding is assumed in this standard:
+This standard uses the `S` production defined in §2 of [Basic Concepts]
+to match any non-empty sequence of *whitespace* *characters*.
+
+This standard uses the *prefix notation*, as defined in §4.3 of [Basic
+Concepts], when discussing specific *terms*.  The following *prefix*
+bindings are assumed in this standard:
 
 ------           -----------------------------------------------
 `elf`            `https://terms.fhiso.org/elf/`
@@ -131,10 +134,12 @@ outside this standard document as *prefix notation* is not used in the
 formal data model defined by this standard.  This notation is simply a
 notational convenience to make the standard easier to read.
 
-### Basic time concepts
+## Basic&nbsp;Concepts                                 {#basic-concepts}
 
 {.ednote}  It is anticipated that this section will be moved to [Basic
 Concepts] in a future draft of these documents.
+
+### Time                                                {#time-concepts}
 
 An **instant** is defined as an infinitesimally brief point in time.  
 A **time interval** is defined as the section of time spanning
@@ -158,6 +163,10 @@ A **duration** is a measure of the length of time elapsing between two
 intervals* are *durations* with specific start and end *instants*.  A
 *time inteval* has a *duration* associated with it, quantifying how long
 it lasts.
+
+{.note} ELF does not provide a general-purpose *duration* *datatype*,
+but the `elf:Age` *datatype* defined in {§age} is a *datatype*
+customised for representing the *duration* of an individual's life.
 
 Fundamental to ELF's handling of dates are a set of *time intervals*
 called **calendar days**, each of which spans from one midnight until
@@ -190,6 +199,13 @@ or the locale which leaves some ambiguity into the exact points in time
 that are meant.  The [ISO 8601] concept of a *date* has the same
 ambiguity.
 
+{.ednote}  This standard deliberately does not specify whether the
+*calendar day* 1 January 2018 in Vancouver is the same *calendar day* as
+1 January 2018 in Paris, which started nine hours earlier than the
+*calendar day* in Vancouver.  This is left unspecified because [ISO
+8601] is similarly vague.  However if they are regarded as distinct
+*calendar days*, they are represented by the same *date* in ELF.
+
 {.note}  The definitions of an *instant*, a *time interval*, a
 *duration*, a *calendar day* and a *date* given here are intended to be
 fully compatible with the definitions of these concepts in [ISO 8601].
@@ -200,6 +216,17 @@ is unintentional.
 normative reference to [ISO 8601] because of the cost involved in
 obtaining a legal copy of [ISO 8601], and the likelihood that
 implementers will not do so.
+
+A **time of day** is a way of identifying an instant within a *calendar day*,
+done by dividing an ordinary *calendar day* into 24 **hours**, each of
+which is subdivded into 60 **minutes**, each of which is further divided
+into 60 **seconds**.  In ELF, a *time of day* is represented by the `elf:Time`
+*datatype* defined in {§time}.
+
+{.note}  A *calendar days* may exceptionally be divided differently if a
+leap second is inserted or deleted, or when the local time zone changes.
+
+### Calendars                                            {#cal-concepts}
 
 Many different systems for reckoning *dates* have been used throughout
 history and in different parts of the world. Such systems are called
@@ -231,24 +258,96 @@ time roughly equal to the time it takes the Earth to orbit the Sun, and
 a *calendar month* will be a unit of time intermediate in duration between
 a *calendar day* and a *calendar year*, and which is often loosely based
 on the time it takes the Moon to orbit the Earth.  However these are not
-requirements, nor is there a requirement that all *calendar years* or
+requirements, nor is it a requirement that all *calendar years* or
 all *calendar months* be of approximately equal length.
 
+{.ednote}  The flexibility to define *calendar years* and *calendar
+months* arbitrarily might be exploited in the future.  FHISO are
+considering whether there is merit to define a calendar for the Julian
+day.  If definied it would not be for general use in expressing
+historial *dates*, but rather to provide a way of expressing
+*epochs* in a *calendar*-neutral in the definition of *calendars*.
+Because there is no applicable notion of a *calendar month* or *calendar
+year* with Julian days, and because the generic *date* syntax defined in
+{§generic} is most natural with *calendars* that have a *calendar year*,
+it is quite likely this *calendar* might define a *calendar year* and a
+*calendar month* to be identical to a *calendar day*.  This standard
+does not prohibit this.
+
+An **incomplete date** is a way of identifying a particular *calendar
+month* or *calendar year* without identifying a specific *calendar day*.
+
+{.example}  In the Gregorian *calendar*, "June 1953" is an *incomplete
+date* as it identifies a particular *calendar month*, but not a specific
+*calendar day* within that month.
+
+{.note}  Under this definition, an *incomplete date* is a *date* when it
+is being used to identify a particular *calendar date*, but with limited
+*precision*.  
+
 An **epoch** is an *instant* which serves as a reference point for a
-given *calendar* from which *calendar years* are numbered consecutively,
-running either forwards of backwards in time.
+given *calendar* from which *calendar years* are numbered consecutively
+with an integer called the **logical year**, which runs either forwards
+or backwards in time.   When *calendar years* are numbered forwards in
+time, the *epoch* *shall* be first *instant* of the *calendar year*
+with the *logical year* number 1.  When they are numbered backwards,
+the *epoch* *shall* be the last *instant* of the *calendar year*
+with *logical year* number 1.
 
-{.example}  The *epoch* used in many forms of the Islamic Calendar is an
-*instant* during the Gregorian year AD&nbsp;622, the year of the Hijrah
-when Muhammad moved from Mecca to Medina.  The first *calendar year* of
-the Islamic *calendar*, called Anno Hegiræ 1 began at this *epoch*, and
-subsequent Islamic *calendar years* have been numbered sequentially,
-AH&nbsp;2, AH&nbsp;3, etc.  The previous *calendar years* is commonly
-labelled 1&nbsp;BH (standing for Before the Hijrah), and earlier
-*calendar years* are numbered backwards from the *epoch*.
+{.example ...}  The *epoch* used in many forms of the Islamic Calendar
+is an *instant* during the Gregorian year AD&nbsp;622, the year of the
+Hijrah when Muhammad moved from Mecca to Medina.  The first *calendar
+year* of the Islamic *calendar*, called Anno Hegiræ 1 began at this
+*epoch* and has the *logical year* number 1.  Subsequent Islamic
+*calendar years* have been numbered sequentially, AH&nbsp;2, AH&nbsp;3,
+etc., and have *logical year* numbers 2, 3, etc.
+The *calendar year* immediately before the *epoch* is commonly labelled
+1&nbsp;BH (standing for Before the Hijrah), and earlier *calendar years*
+are numbered backwards from the *epoch*.  These have *logical year*
+numbers 1, 2, 3, etc. too.  
+{/}
 
-{.note} This general definition of an *epoch* does not limit a *calendar*
-to only having a single *epoch*.
+A *logical year* number is not sufficient to identify a specific
+*calendar year*: the *epoch* and whether *calendar years* are being
+counted forwards or backwards must also be stated.  An **epoch name** is
+an identifier which represents these two things.  An *epoch name* which
+counts *calendar years* forwards is called a **forwards epoch name**,
+while an *epoch name* which counts *calendar years* backwards is called
+a **reverse epoch name**.
+
+{.example}  The Gregorian calendar has two distinct *epoch names*,
+"AD", standing for Anno Domini, which is a *forwards epoch name*, and
+"BC", standing for Before Christ, which is a *reverse epoch name*.
+Both use the same *epoch*, defined as midnight at start of 1&nbsp;January
+1&nbsp;AD.
+
+At times, the way years were counted historically does not completely
+match the modern reckoning of years which defines the *logical year*,
+even though they are nominally reckoned from the same *epoch*.  The year
+number according to the historical reckoning is called the **historical
+year**.
+
+{.example}  Prior to the adoption of the Gregorian *calendar* in many
+parts of the world, the year was considered to begin on the Feast of the
+Assumption (otherwise called Lady Day) which falls on 25 March.  This
+was the case in England before 1752.  Contemporary sources record the
+execution Charles I as happening on 30 January 1648.  This was in the
+month following December 1648 and would now be reckoned in 1649, as a
+result of which modern accounts usually describe it as happening on 30
+January 1649.  (This is not a result a change of the Julian *calendar*
+to the Gregorian one: in the Gregorian *calendar* this *date* would be 9
+February 1649.)  In this example, 1649 is the *logical year*, while 1648
+is the *historical year*.
+
+{.example}  The Byzantine *calendar* counted years since the supposed
+beginning of the world with an *epoch* on 1 September 5509&nbsp;BC,
+however in early times some alternative *dates* were assigned to this
+*epoch*, including 25 March 5493&nbsp;BC, sometimes known as the
+"Alexandrian" *epoch*.  A definition of this *calendar* which used the
+traditional Byzantine *epoch* in 5509&nbsp;BC would have *logical years*
+counted from then, but might also allow *historical years* to be counted
+from the Alexandrian *epoch*.  This is an example where the *logical
+year* and *historical year* differ by more than one.
 
 A *calendar* defines how the number of *calendar days* in each *calendar
 month* and the number of *calendar months* in each *calendar year* are
@@ -266,21 +365,12 @@ linguistic ones, and therefore these difference are not separate
 this definition of what constitutes a distinct *calendar*.  Does Roman
 day reckoning (e.g. "Prid. Kal. Sept" for 31 Aug) count as a separate
 *calendar* or is just a stylistic variation?  What about regnal years
-(e.g. "31 Aug 67 Eliz II")?  What about years beginning on the Feast of
-the Annunciation (25 March, sometimes called Lady Day)?  These are not
-strictly separate *calendars*, but it could be convenient to consider
-them as such in ELF if it is considered desirable for ELF to preserve
-the fact that the dates were recorded in these forms.
+(e.g. "31 Aug 67 Eliz II")?  These are not strictly separate
+*calendars*, but it could be convenient to consider them as such in ELF
+if it is considered desirable for ELF to preserve the fact that the
+dates were recorded in these forms.
 
-A **time** is a way of identifying an instant within a *calendar day*,
-done by dividing an ordinary *calendar day* into 24 **hours**, each of
-which is subdivded into 60 **minutes**, each of which is further divided
-into 60 **seconds**.
-
-{.note}  A *calendar days* may exceptionally be divided differently if a
-leap second is inserted or deleted, or when the local time zone changes.
-
-### Uncertainty
+### Uncertainty                                           {#uncertainty}
 
 {.ednote}  It is anticipated that this section will be moved to [Basic
 Concepts] in a future draft of these documents.
@@ -451,36 +541,12 @@ circumstances of the death, there may have been a few minutes of
 of the uncertainty is from lack of knowledge of what happened and when.
 {/}
 
-### Datatypes
+### Date concepts in other formats
 
-{.ednote}  This whole section may vanish in a future draft, as it is
-mainly a place to put the various editorial notes found here.
+{.ednote}  This whole section may vanish in a future draft.
 
-ELF does not provide a general-purpose *duration* *datatype*, but the
-`elf:Age` *datatype* defined in {§age} is a *datatype* customised for
-representing the *duration* of a individual's life.
-
-{.ednote ...}  This could be reviewed.  At the moment the `elf:Age`
-*datatype* contains both a general-purpose *duration* microformat and
-also a small set of qualitative *age* keywords (like `CHILD`) which do
-not belong in a general-purpose *duration* type, and prevent `elf:Age`
-from being that.  In principle, a more general *duration* type could be
-made a *subtype* of `elf:Age`, but this would introduce an awkward
-dependency on the more special-purpose `elf:Age` *datatype*.  
-
-Another option is to remove the `elf:Age` *datatype* and replace it with
-two separate *datatypes*: a general-purpose `elf:Duration` *datatype*
-and a special `elf:AgeWord` *datatype* for qualitative *age* keywords.
-The various ELF structures having an `elf:Age` *payload* would then be
-changed to have *payloads* which were a *union of datatypes*.  This
-introduces several technical complications, including the need make
-*datatype correction* work with multiple *default datatypes*.  In
-principle this works fine when the *default datatypes* have disjoint
-*lexical spaces*, as they would here, but it would need careful
-specification.
-{/}
-
-The use of these *datatypes* other than with ELF is *not recommended*.
+Use of the *datatypes* defined in this standard in serialisation formats
+other than with ELF is *not recommended*.
 
 {.ednote ...} In due course we need to decide FHISO's preferred way of
 handling *dates* and *durations* in other serialisation formats.  GEDCOM
@@ -522,7 +588,1076 @@ serialisation format.
 {/}
 
 
-## The `elf:Age` datatype {#age}
+## Date formats                                                 {#dates}
+
+ELF uses three different *datatypes* to represent *dates*, depending on
+the context.
+
+* `elf:DateValue` is used for historical *dates*.
+* `elf:DatePeriod` is used to record the period of coverage a source.
+* `elf:DateExact` is used to record the creation or modification *date* 
+  of various objects in the data model.
+
+As the first two of these *datatypes* are used to record historical
+*dates*, and ELF allows historical *dates* to be expresssed using many
+different *calendars*, these two *datatypes* each allow *dates* in
+arbitrary *calendars*.  This is achieved by providing a generic *date*
+syntax which all *dates* *must* match, regardless of *calendar*, and
+which begins with a *calendar escape* indicating the specific *calendar*
+in use.  
+
+{.ednote ...} An exarlier draft of this standard used a separate
+*datatype* for each *calendar*, and used `@#D`&hellip;`@` escapes as a
+serialisation layer means of tagging the *datatype*.  This approach was
+eventually abandoned because it could not cope with *date ranges* and
+*date periods* where the two end points are expressed using different
+*calendars*.  [GEDCOM 5.5.1] permits this, and although many
+applications do not support it, we considered there to be important use
+
+    0 INDI
+    1 NAME George II
+    1 TITL King of Great Britain
+    2 DATE FROM @#DJULIAN@ 11 JUN 1727 TO @#DGREGORIAN@ 25 OCT 1760
+
+What should the *datatype* of the `DATE` element's payload be?  It's
+neither wholly Julian nor wholly Gregorian.  Because of the difficulties
+with such constructs, we dropped the idea of making each *calendar* a
+separate *datatype*.
+
+One option for solving this which the TSC seriously considered is to
+introduce **compound calendars**, along the lines of the proposal in
+[CFPS 38](https://tech.fhiso.org/cfps/files/cfps38.pdf), but this adds
+complexity due to the need to add a mechanism for defining *compound
+calendars*.
+
+A separate complication comes from the fact that there `elf:DateValue`
+and `elf:DatePeriod` are separate *datatypes*, and *calendar*-specific
+*subtypes* of each would likely be required.  This could be solved by
+removing periods from the data model entirely, perhaps by having the
+serialisation layer split up `DATE` tags containing a period.  This may
+make sense at a date model level too, if we model periods as two
+implicit events: one intiating and one concluding the period being
+discussed.  There is less of a case for doing the same wtih ranges, so a
+solution to the problem of ranges with multiple calendars would still be
+required.
+
+The TSC believe an approach along these lines could be made to work, but
+it would be too big a change to include in ELF 1.0.  We also feel we
+should investigate alternative approaches before committing to a
+specific solution.  Deferring this functionality until a future version
+of ELF will give us time to do give suitable consideration to the
+options available.
+{/}
+
+### Generic date syntax                                       {#generic}
+
+A *date* is represented in the generic *date* syntax as a sequence of five
+components: a *calendar escape*, followed by encodings of the *calendar
+day*, *calendar month*, *calendar year* and *epoch*.  Only the *calendar
+year* is *required*; the other components are *optional*, except that
+the *calendar day* cannot be omitted unless the *calendar month* is
+also omitted.  It matches the `Date` production.
+
+    Date   ::= (CalEsc S)? ((Day S)? Month S)? Year (S? Epoch)?
+
+    CalEsc ::= "@#D" [A-Z] [A-Z ]* "@"
+    Day    ::= [0-9]+
+    Month  ::= [A-Z] [A-Z0-9] [A-Z0-9]+
+    Year   ::= "-"? [0-9]+ ( "/" "-"? [0-9]+ )?
+    Epoch  ::= [A-Z] ( [A-Z] | [A-Z0-9._]* [._] [A-Z0-9._]* ) 
+               | "$" [^ #x9#xA#xD]+
+
+{.example ...}  The following are examples of *dates* which match the
+`Date` production:
+
+    63 B.C.
+    21 JAN 1793
+    @#DJULIAN@ 29 MAY 1453
+
+The first of these includes only a *calendar year* and *epoch*.  The
+following two both have a *calendar day*, *calendar month* and *calendar
+year*, and neither specifies an *epoch*; only the third date includes a
+*calendar escape*.
+{/}
+
+{.note}  The `Month` and `Epoch` productions are more complex than might
+at first seem necessary to ensure that no *string* can match both
+productions.  This ensures a *string* containing just a *day* and a
+*month*, such as "`1 JAN`", cannot match the `Date` production.  A
+future version of ELF might allow the year to be omitted in *dates*
+where it is unknown.
+
+A *conformant* application serialising a *date* using this syntax
+*should* use a single space *character* (U+0020) wherever *whitespace*
+is permitted in the `Date` production, and *should not* omit the
+*whitespace* before the *epoch* component.
+
+{.note}  [GEDCOM 5.5.1] under-specifies how *whitespace* is allowed in
+*dates*.  The `Date` production is somewhat permissive in its treatment of
+*whitespace*, though does not allow it to be omitted entirely.  The
+preceding recommendation ensures that *conformant* ELF applications will
+be maximally compliant with current GEDCOM application which typically
+use a single space *character*.
+
+#### Calendar escapes                                     {#cal-escapes}
+
+The `CaleEsc` production encodes the **calendar escape**, which
+identifies the particular *calendar* being used in the *date*.
+
+{.note}  Syntactically, the *calendar escape* is an ELF escape, as
+defined §XX of [ELF Serialisation].  When such escapes occur in the
+payload of a `DATE` line, they are passed through to the data model
+unaltered.
+
+{.ednote}  Check the above is true once [ELF Serialisation] has been
+updated.  Note that this means historical dates *must* appear on `DATE`
+lines.
+
+The following *calendar escapes* are defined in {§calendars} of this
+standard.
+
+----------------    -------------------------------------------------
+`@#DGREGORIAN@`     The Gregorian *calendar* defined in {§gregorian}
+`@#DJULIAN@`        The Julian *calendar* defined in {§julian}
+`@#DHEBREW@`        The Hebrew *calendar* defined in {§hebrew}
+`@#DFRENCH R@`      The French Republican *calendar* defined in {§french}
+----------------    -------------------------------------------------
+
+{.ednote}  An earlier draft of this standard included `@#FRENCHR@`
+(without a space) as an alias for `@#DFRENCH R@`, but we have no record
+of the use case that lead to its inclusion and have removed it again.
+
+{.note}  [GEDCOM 5.5.1] includes one further *calendar escape*,
+`@#ROMAN@`, which it reserved for future use, presumably for use with
+Roman Republican *calendar*.  This standard does not reserve this
+*calendar escape*.
+
+The `@#DUNKNOWN@` *calendar escape* is permanently reserved.  Third
+parties *must not* define calendars with this name and applications
+*should not* generate *dates* using this *calendar escape*, however
+*conformant* applications *must not* discard *dates* using this
+*calendar escape*.  *Conformant* applications *must not* assume that two
+dates with a `@#DUNKNOWN@` *calendar escape*, whether explicitly written
+or inferred as described below, are expressed in the same *calendar*.
+
+{.example}  The generic *date* syntax puts sufficient constraints on how
+*calendars* can be represented that applications *may* make certain
+assumption about *dates* written in unknown *calendars*, for example
+that `@#DISLAMIC@ 1 RAJ 1420` is an ealier date than `@#DISLAMIC@ 9 RAM
+1422` if both are *well-formed* *dates*.  This is because year numbers
+*must* increase with time.  *Conformant* applications *must not* make
+similar assumptions for two *dates* with the `@#DUNKNOWN@` *calendar
+escape* as they might not be represented using the same *calendar*.
+
+{.note}  It is the intention of FHISO to allow third parties to define
+their own *calendar escapes* in order to support additional *calendars*.
+However this version of ELF provides no means of avoiding conflict
+between separate third-party *calendar escapes*.  This is particularly
+problematic when there a several variants of a calendar, and if
+different vendors choose to implement a different variant using the same
+*calendar escape*.  FHISO intend to introduce a mechanism to avoid such
+conflicts in a future version of ELF.  This is likely to work by
+assigning a *term* to each *calendar*, and a syntax for binding
+*calendar escapes* to *term name* IRIs.
+
+{.ednote ...}  This functionality was dropped from ELF 1.0 because the
+specification proved more complicated than expected.  The intention is
+to add *calendar* bindings to the ELF schema, such as this:
+
+    1 SCHMA
+    2 PRFX elf https://terms.fhiso.org/elf/
+    2 IRI elf:JulianCalendar
+    3 DTYPE JULIAN
+
+Because *dates* are likely to copied around, once in the data model the
+*date* needs to reference the *calendar* *term name* rather than the
+*calendar escape*.  This means the serialisation layer needs to convert
+*calendar escapes* to *term names*, and vice versa.  Finding a clean
+way of doing this proved problematic.
+
+The TSC had been considering making *calendars* a specific sort of
+*datatype*, and then have the serialisation layer treat the *calendar
+escape* as way of tagging the *datatype* of the `DATE` tag's payload.
+However, as noted in an earlier editorial note, this caused problems
+with periods and ranges which used multiple *calendars*, and has been
+deferred to a later version of ELF.  
+{/}
+
+This generic *date* syntax defines only some basic syntactic constraints
+on the representation of the *calendar day*, *calendar month*, *calendar
+year* and *epoch* components.  The party defining each *calendar*
+*should* define further constraints on these components to define what
+constitutes a **well-formed** *date* in that *calendar*.  Where possible,
+the set of *well-formed* *dates* *should* be the same as the set of *dates*
+that actually existed.
+
+{.example}  The *date* "`12 AUGUST 2000`" is not a *well-formed* *date* in
+the Gregorian calendar, as defined in {§gregorian}, because the
+specified month, "`AUGUST`", is not one of the twelve allowed months
+names: it ought to have been written "`12 AUG 2000`".
+
+{.example}  The *date* "`29 FEB 1973`" is not a *well-formed* *date* in
+the Gregorian calendar, because February 1973 only had 28 days.
+
+{.note} This standard does not prohibit *calendars* from defining *dates*
+which never occurred to be *well-formed*, though this is generally *not
+recommended*.  It is allowed to accommodate *calendars* where the exact
+sequence of *dates* is either unknown or cannot be determined
+algorithmically.  
+
+{.example}  Certain versions of the Islamic *calendar* define the start
+of each *calendar month* by when the new moon is actually observed.
+This results in unpredictable month lengths.  If such a *calendar* were
+defined for use in ELF, it would likely regard days beyond the expected
+end of the month as *well-formed* *dates* to accommodate the possibility
+that bad weather had prevented the new moon from being observed.
+
+All *dates* written using a *calendar escape* with which the application
+is not familiar are assumed to be *well-formed*.  This includes all
+*dates* using the `@#DUNKNOWN@` *calendar escape*.
+
+*Conformant* applications *must not* generate *dates* which are not
+*well-formed*, and which are not assumed to be *well-formed* by virtue
+of using a unknown *calendar escape*.  Applications encountering *dates*
+which are not *well-formed* *may* delete the *date* or signal an error
+to the user.
+
+The *calendar escape* is *optional* in the generic *date* syntax.  If the
+*calendar escape* is omitted and if the *date* if *well-formed* in the
+Gregorian *calendar*, then the *date* is treated as if it used the
+`@#DGREGORIAN@` *calendar escape*.  If the *calendar escape* is
+otherwise omitted, the *date* is treated as if it used the `@#DUNKNOWN@`
+*calendar escape*.
+
+{.note}  [GEDCOM 5.5.1] simply says that *dates* written without a
+*calendar escape* default to the Gregorian calendar.  ELF's approach is
+more nuanced.  If a *date* explicitly uses the Gregorian
+*calendar escape* then an invalid *date* *may* be deleted; if it is
+written without a *calendar escape* then it *must not* be, assuming it
+conforms to the generic *date* syntax.  ELF deviates from [GEDCOM 5.5.1]
+in this regard because many current applications fail to include a
+*calendar escape* when the Julian *calendar* is used.  As a result,
+*dates* like "`29 FEB 1700`" can be found written without a *calendar
+escape*.  This date did not exist in the Gregorian calendar and
+is not a *well-formed date* in that *calendar*, however this rule
+prevents applications from deleting it as invalid.
+
+It is *recommended* that, where possible, dates should be entered in ELF
+datasets using the calendar in which they were written in the source.
+
+{.example}  A contemporary record of an event occurring in seventeenth
+century Massachusetts would almost certainly be recoded using the Julian
+calendar, as Massachusetts, like all the British colonies, did not adopt
+the Gregorian calendar until 1752.  The date of the event *should*
+therefore be recorded in ELF using the Julian calendar and not converted
+to the Gregorian calendar.
+
+#### Days
+
+The `Day` production encodes the *calendar day* component of the *date*.
+It is an positive integer which *calendars* *should* use to count
+how many *calendar days* into the *calendar month* the specified
+*calendar day* is, with the first *calendar day* being "`1`".
+Leading zeros preceding a non-zero digit are permitted; *conformant*
+applications *must* attach no significance to them and *may* remove
+them.
+
+{.ednote}  An earlier draft of this standard allowed non-integer
+*calendar day* components, providing the first *character* was a decimal
+digit.  The motivation for allowing this came from consideration
+of Roman day reckoning.  In this system, days are reckoned backwards
+from three fixed points in each month, called the kalends, nones and
+ides.  For example, the day described as "ante diem quintum kalendas
+Septembres" or "a.d. V Kal.  Sept", meaning five days before the kalends
+of September (1 Sept), counting inclusively, is 28 August.  If this were
+considered a separate *calendar*, the day could be represented as "`5K
+SEP`".  However on balance it was felt this was an unnecessary
+complication and the facilitity was removed.  The framework is still
+flexible enough to handle Roman day reckoning by using separate month
+components for the kalends, nones and ides, thus giving 28 August a
+representation similar to "`5 KSEP`".
+
+#### Months
+
+The `Month` production encodes the *calendar month* component of the
+*date*.  The set of permitted *calendar month* components in a given
+*calendar* is called the set of **month names** for the *calendar*. 
+*Month names* *should* normally be abbreviated forms of their common
+names, and *must* be at least three *characters* long.
+
+{.example}  The French Republican *calendar* has twelve months named
+Vendémiaire, Brumaire, Frimaire, Nivôse, Pluviôse, Ventôse, Germinal,
+Floréal, Prairial, Messidor, Thermidor and Fructidor.  If ELF, as
+described in {§french}, these are abbreviated `VEND`, `BRUM`, `FRIM`,
+`NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER` and
+`FRUC`.  In addition, each year had five or six consecutive intercalary
+days, or jours complémentaires, which were not part of any month.  For
+the purposes of representing this calendar in ELF, the intercalary days
+are considered a thirteenth month, `COMP`.
+
+{.note} *Month names* are always upper-case, a constraint guaranteed by
+the `Month` production.  Lower-case, mixed-case, or non-ASCII *month
+names* *must not* be used.
+
+{.note}  *Month names* are *required* to be at least three *characters*
+long to avoid conflicting with *epoch* names.
+
+The following words are reserved and *must not* be used as *month
+names* in any calendar: `ABT`, `AFT`, `AND`, `BEF`, `BET`, `CAL`, `EST`,
+`EVERY`, `FOR`, `FROM`, `INT`, `POS`, `REP`, `TIME`, `UNCERT`, `UNK` and
+`ZONE`.
+
+{.note}  Many of these words have specific meanings in the ELF *date*
+*datatypes*.  The words `EVERY`, `FOR`, `POS`, `REP`, `TIME`, `UNCERT`,
+`UNK` and `ZONE` are reserved for possible future use because they
+describe concepts in [GEDCOM X Dates] or [ISO 8601-2] which are
+not currently in ELF.  This does not necessarily mean FHISO will add
+such functionality to a future version of ELF.
+
+#### Years
+
+The `Year` production encodes the *calendar year* component of the
+*date*.  The *string* matching this production *shall* be an 
+integer, and *may* be followed by a solidus (U+002F) and another
+integer.  Either integer *may* begin with a minus sign (U+002D).
+
+{.note}  Negative years and the year zero are supported by this generic
+*date* syntax, but not by any *calendar* defined in this standard.  The
+intention is that they provide a way of representing a *dates* before
+the *epoch* of a particular *calendar* where no *reverse epoch name* has
+been defined.  This is not expected to be common with real *calendars*.
+
+{.ednote}  One specific example where it might occur is if a future
+version of ELF defines a *calendar* to represent Julian days, for use in
+defining *epochs*.  The *epoch* for the Julian day is in the Gregorian
+year 4714&nbsp;BC, but some other *calendars*, such as the Byzantine
+calendar, have earlier *epochs* meaning their *epoch* occurs on a
+negative Julian day.
+
+When the *calendar year* component contains no solidus and second
+integer value, the integer given is the *logical year* number.  A
+*conformant* appliication *must* attach no signifance to its particular
+lexical form, and *may* add or remove leading zeros preceding a non-zero
+digit.
+
+A *calendar year* component with two integers is called a **dual year**,
+and is used when the historical and modern reckoning of years differ.
+The first integer in a *dual year* is the *historical year*; the second
+integer is the *logical year* which *may* be given in abbreviated form.
+
+{.example}  The principal use of *dual years* is to encode *dates* which
+were recorded using years beginning on 25 March, as was the practice in
+many parts of the world in early modern times.  The Charles I occurred
+on 30 January in the *logical year* 1649, but the *historical year*
+1648.  To avoid ambiguity, the year can be written 1648/1649.  ELF
+supports this and allows the *date* to be recorded as “`30 JAN
+1648/1649`”.  In this case the *logical year* is not abbreviated.
+
+The *dual year* syntax is only used when there are genuine differences
+in the conventional reckoning of years.  *Dual years* *should* be used
+during periods when use of a *historical year* differing from the
+*logical year* was common, even if the source in question did not use
+the *historical year*.  This is to remove any potential ambiguity.
+
+{.example} The *date* of Charles I's execution *should not* be written
+"`30 JAN 1649`", even though this is technically correct as 1649 is the
+*logical year*, as reckoned with 1 January as the start of the new year.
+This is true even if the *date* was quoted from a modern book which
+wrote it using the *logical year*.  The form "`30 JAN 1648/1649`" avoids
+any possible ambiguity over which new year was being used.
+
+*Dual years* *must not* be used simply to record an error in the year as
+stated in a source. 
+
+{.example}  If a parish register includes a baptism entry dated 12 Jan
+1842, but the context and other circumstantial evidence makes it clear
+that the year was incorrectly written in the register and was in fact
+1845, this *must not* be recorded in ELF as "`12 JAN 1842/1845`".
+
+When serialising a *date*, a *dual year* *must* be used if the
+*historical year* and *logical year* differ, and *must not* be used if
+they are equal.  
+
+When seralising a *dual year*, applications *may* abbreviate the
+*logical year* to just the last two digits if the difference between the
+*historical year* and the *logical year* is less than 10 years, or *may*
+abbreviate it to just the last one digit if the difference between the
+*historical year* and the *logical year* is no more than 1 year.  If
+the *historical year* and the *logical year* differ by 10 or more years,
+abbreviated form *must not* be used.  When the *logical year* is
+abbreviated, any minus sign is dropped in the abbreviated form.  Where
+possible, *logical years* *should* be abbreviated to two digits.
+
+{.example}  The *date* of Charles I's execution *may* be written in
+abbreviated form as "`30 JAN 1648/49`" or as "`30 JAN 1648/9`".  The
+former is the *recommended* form as this is compatible with [GEDCOM
+5.5.1].
+
+{.example}  Abbreviated form *must not* be used if *dual years* are
+being used in the Byzantine *calendar* to express years using standard
+Byzantine *epoch* and the Alexandrian *epoch*.  This is because the
+*historical year* and *logical year* will differ by 16 or 17 years,
+depending on the specific *date*.
+
+A specific *calendar* *should* normally place further restrictions on
+how *dual years* can be used, and any uses which fail to conform to this
+are not *well-formed* dates.
+
+{.note}  This is necessary if applications are to have understanding of
+what the *historical date* means.  A *date* of "`@#DJULIAN@ 1740/1620`"
+is perfectly well-defined insofar that it represents the Julian year
+A.D.&nbsp;1620 and which for some reason was conventionally recorded as
+1740 at the time, but without an understanding of why this was done, it
+is difficult for an application to know what to do with this
+information.  In fact, the Julian calendar defined in {§julian} only
+allows *dual years* when the *historical date* and *logical date* differ
+by exactly one year.  "`@#DJULIAN@ 1740/1620`" is not therefore
+a *well-formed date*.
+
+*Calendars* *must not* place further restrictions on when the
+abbreviated format can be used.
+
+{.note}  This is because abbreviated form is considered part of the
+generic *date* syntax, and not specific to any *calendar*.  It is
+intended that applications can parse *dual years* to extract the
+*historical date* and *logical date* even in unknown *calendars*.
+
+{.note ...}  [GEDCOM 5.5.1] includes support for *dual years*, though
+only with *dates* in the Gregorian *calendar*, which is unfortunate as
+its principal use is with *dates* in the Julian *calendar* and the
+example it gives is seemingy in the Julian *calendar*.  Nevertheless,
+many applications do implement *dual year* support.  In [GEDCOM 5.5.1],
+*dual years* *must* be written in abbreviated form with the *logical
+year* shortened to two years.  ELF relaxes this restriction as *dual
+years* are commonly found unabbreviated or with a single-digit *logical
+date*.
+
+*Dual years* in [GEDCOM 5.5.1] were probably only intended for years
+beginning on Lady Day, though the standard does not explicitly say so;
+however the same facility readily accommodates years beginning on
+arbitrary days, and some applications implement this.  ELF generalises
+this further by allowing the *historical year* and *logical year* to
+differ arbitrarily.
+{/}
+
+When parsing a *dual year*, a *conformant* application *must* treat the
+second integer as an abbreviated *logical year* if it could have been
+produced by the serialisation rule for abbreviated *logical years*,
+above, and otherwise *must not*.
+
+{.example}  The *dual year* "`1616/8`" is not in abbreviated form
+because there is no *logical year* number ending in 8 which is at most
+one year away from the *historical year* 1618.  This is therefore
+considered an unabbreviated *dual year*, representing the *historical
+year* 1618 and the *logical year* 8.  Very probably this will result in
+the date not being *well-formed* in the applicable *calendar*, in which
+case the application *may* reject it.
+
+*Conformant* applications *may* alter the lexical form of a *dual year*
+in any way, providing the *logical year* and *historical year* it
+represents is unchanged, and *must not* attach any significance to its
+particular lexical form.
+
+{.note}  This allows applications to store the *calendar year* component
+of the *date* as two integers internally and regenerate its lexical form
+upon serialisation.
+
+The *calendar* *may* define further restrictions on the range of
+integers permitted as *logical years*.  Any such restritictions apply
+regardless of whether *dual years* are in used.
+
+#### Epochs
+
+The `Epoch` production encodes the *epoch name* component of the *date*,
+which specifies both the particular *epoch* from which *calendar years*
+and the direction of the numbering.  Each *calendar* specifies the set
+of permitted *epoch names* components for that *calendar*.
+
+{.example}  The Julian *calendar* defined in {§julian} includes the
+*epoch names* "`B.C.`" and "`A.D.`", standing for Before Christ and Anno
+Domini, respectively.  Both *epoch names* state that *calendar years*
+are counted from an *epoch* on the Julian date 1 January A.D.&nbsp;1,
+nominally the date for the birth of Jesus Christ, but for "`B.C.`"
+*calendar years* are counted backwards from that *epoch*, while for
+"`A.D.`" *calendar years* are counted forwards.
+
+The `Epoch` production requires *epoch names* either to be exactly two
+*characters* long, or to include at least one full stop (U+002E) or
+underscore (U+005F), or to begin with a dollar sign (U+0024).
+
+{.note}  This ensure that no *month name* is syntactically allowed as an
+*epoch name*, or vice versa.  This ensures that a *string* like 
+"`1 JAN`" cannot match the `Date` production.  
+
+*Epoch names* *should* normally be an acronym or initialism with full
+stops between letters.  The two-letter form of *epoch names*, without a
+full stop, underscore or leading dollar, is deprecated.  If an
+application encounters such a *epoch name*, it *should* convert it into
+an initialism by inserting a full stop between the two letters and
+another after the second letter.
+
+{.note} Two-letter *epoch names* without full stops are allowed in ELF
+because "`BC`" is fairly commonly found in some current GEDCOM files,
+even though [GEDCOM 5.5.1] requires it to be spelled "`B.C.`".  This
+rule converts "`BC`" to "`B.C.`".
+
+*Epoch names* beginning with a dollar sign are reserved for future use.
+
+{.ednote}  This specification of *epoch names* is designed to be usable
+to implement regnal years.  In such a scheme, the *instant* of
+accession of each monarch would be an *epoch*, and a *forwards epoch
+name* would be used to reference it, for example "`25 OCT 3 HENRY_V`".
+However to accommodate monarachs with a single name and no regnal number
+(e.g. Victoria or Tutankhamun), as well as to allow monarch names in
+foreign scripts, the dollar sign is reserved as a possible sigil for
+epoch names.  This would allow "`$昭和`", for example, to represent the
+*epoch* at the start of the Shōwa period in Japan.
+
+The words "`TO`" and "`AT`" are reserved and *must not* be used as
+*epoch names* in any *calendar*.
+
+{.note}  The word "`AT`" is included here for future compatibility.
+
+{.ednote ...}  An earlier draft of this standard included the following
+paragraph:
+
+> If a *calendar* defines multiple *epoch names* for the same *epoch*,
+> and which are either all *forwards epoch names* or all *reverse epoch
+> names*, applications *should* treat those *epoch names* as
+> interchangeable.
+
+This was added to allow the Julian and Gregorian *calendars* to define
+"`B.C.E.`" as an alias for the "`B.C.`", however the current draft does
+not do that.  If the BCE form is added, this paragraph needs
+reinstating.
+{/}
+
+A *calendar* *may* require an *epoch name* to be present, *may* allow it
+to be omitted, and *may* define no *epoch names* thereby requiring it to
+be omitted.  In calendars where the *epoch name* is *optional*, the
+*calendar* *should* define an explicit *epoch name* that is equivalent
+to an omitted *epoch name*.  This *epoch name* is called the **default
+epoch name** for the calendar.
+
+{.example}  The Julian calendar defined in {§julian} provides the
+"`A.D.`" *epoch name* to serve as its *default epoch name*.
+
+{.ednote}  This specification of *epoch names* is designed to be usable
+to implement regnal years.  In such a scheme, the *instant* of
+accession of each monarch would be an *epoch*, and a *forwards epoch
+name* would be used to reference it, for example "`25 OCT 3 HENRY_V`".
+To accommodate monarachs without a regnal number, we might want to allow
+an additional *character* which could serve as a sigil for epoch names,
+and then allow arbitrary characters, e.g. "`$昭和`" for the Shōwa
+period in Japan.
+
+### Date modifiers                                     {#date-modifiers}
+
+The generic *date* syntax described in {§generic} provides a means of
+specifying a particular *date*, but does not provide a way of describing
+*dates* which are *approxiately stated*, nor of giving natural language
+descriptions, nor of stating a *imprecise* *date* via its *precision
+range*.  ELF provides several extensions to the generic *date* syntax to
+provide this functionality.  These 
+
+{.ednote}  This draft, like [GECOM 5.5.1], does not allow more than one
+of these facilities to be used on the same *date*.  It seems potentially
+useful to remove this restriction, for example by allowing "`FROM ABT
+1798 TO 2 JAN 1842`".  Thebe no ambiguity in the grammar with
+such constructs and their meaning would generally be well defined.
+Backwards compatibility could be handled by saying that applications
+*should not* produce such constructs but *must* be able to read them.
+This would also allow constructs such as "`EST ABT 1881`", which the
+GEDCOM grammar does not allow but which appears as an example in [GEDCOM
+5.5.1], albeit as an example of an unnecessary circumlocution.
+Should ELF support such things?
+
+
+#### Approximated dates
+
+A *date* *may* be preceded by one of the tokens `ABT`, `CAL` or `EST`,
+as shown in the following `DateApprox` production:
+
+    DateApprox  ::= ( "ABT" | "CAL" | "EST" ) S Date
+
+The `ABT` token indicates that the *date* is *approximately stated*, and
+that its *precision* is lower than would have been the case without the
+`ABT` token.  It is typically used when there is evidence that the
+*date* given is roughly correct, and *should not* be used when the
+*date* is estimated using statistical likelihoods or cultural norms.
+
+{.example}  If it is known that the first and third children in a family
+were born in 1897 and 1900, the second child's birth *may* be recorded
+as `ABT 1899` as the *date* of birth is fairly well bounded, even if
+twins were involved.  
+
+{.note}  The `ABT` token is currently by far the most commonly used of
+the three approximated tokens.
+
+The `EST` token also indicates that *date* is *approximately stated*,
+and is only an estimate perhaps based only on stastical likelihoods or
+cultural norms.  An application *may* assume a *date* written with the
+`EST` token has lower *precision* than one with the `ABT` token.
+
+{.example}  If it is known that the first three children in a family of
+four were born between 1897 and 1900, a researcher might conclude that
+it is probable that next child was born shortly afterwards and estimate
+the *date* of birth as `EST 1903`.  The `ABT` token *should not* be used
+in this case, unless there is additional evidence that the fourth child
+was not much younger.
+
+{.example}  It can sometimes be useful to provide a crude estimate of
+an individual's *date* of birth.  If a baptism register records a
+baptism in 1692 and gives the father's name, a researcher might wish to
+record an estimate of the father's *date* of birth, perhaps to help
+disambiguate him from other people of the same name.  If such an
+estimate is to recorded, it should use the `EST` token, for example,
+`EST 1660`.
+
+The `CAL` token is used to record a *date* that is not directly stated
+in a source, but instead has been calculated from other known values,
+typically another *date* and the *duration* separating the two *dates*.
+An application *may* assume a *date* written with the `CAL` token has a
+similar or higher *precision* than one written with the `ABT` token.
+
+{.example}  If a newspaper reports on a golden wedding celebration in
+the summer of 1948, this is evidence that the wedding happened 50 years
+previously, and the date of the marriage *may* be entered as `CAL 1898`.
+
+When a *date* is calculated from another *date* and an *imprecise*
+*duration* separating them, use of the `ABT` token is *recommended*
+instead of the `CAL` token. 
+
+{.example}  Like many censuses, the 1880 census of Iceland records
+individuals' *ages* on their most recent birthday.  A person recorded as
+72 could have been born in 1807 or 1808.  Because the *age* has been
+rounded down and is therefore somewhat *imprecise*, it is *recommended*
+that the *date* of birth be recorded as `ABT 1808` rather than `CAL
+1808`.
+
+{.note}  A `CAL` token might sometimes be an indicator that the *date*
+is of lower *reliability* than one without this token, all other things
+being equal, due to it not being directly stated.
+
+{.ednote}  Should FHISO deprecate the `CAL` token and allow uses of it
+to be replaced with `ABT`?  It's not clear it adds anything useful.
+
+#### Date phrases and interpreted dates                  {#date-phrases}
+
+ELF allows *dates* to be recorded in natural language.  The natural
+language description of a *date* is called a **date phrases** and is
+written between parentheses (U+0028 and U+0029).
+
+    DateInterp  ::= ( "INT" S Date S )? "(" DatePhrase ")"
+    DatePhrase  ::= [^#xA#xD()]*
+
+The *date phrase* is an arbitrary *language-tagged* *string* except that
+it *must not* contain parentheses (U+0028 or U+0029), line feeds
+(U+000A) or carriage returns (U+000D).
+
+{.note}  [GEDCOM 5.5.1] only requires that *date phrases* be "enclosed
+in matching parentheses", which could be interpreted as requiring that any
+parentheses in the *date phrase* be balanced.  ELF goes further and
+prohibits parentheses from occurring in *date phrases* at all.
+
+{.ednote}  The prohibition on these *characters* is not strictly needed,
+at least while the grammar does not allow *date phrases* within *date
+ranges* or *date periods*, though that is a possible extension which
+might be made in a future version of ELF.  A data model layer escape
+mechanism along the lines of the `%{`&hellip;`}` syntax used in FHISO's
+draft Creator's Name microformat could allow arbitrary *characters* to
+appear in it.
+
+A *date phrase* *should* be a fragment of text quoted from a source,
+possibly in translation, and *should* only normally be used if the text
+cannot readily be converted into a *date*, or where that conversion
+would lose useful information.  *Date phrases* *should not* be used for
+arbitrary annotations or commentary, and *must not* be used in a
+negative sense to say the event did not occur.
+
+{.example}  If a source describes an event as happening on "The Feast of
+St John" in a particular year, this might be recorded in a *date phrase*
+if there was insufficient context to establish whether it referred to
+the Feast of Nativity of St John the Baptist on 24 June, or the Feast of
+St John the Evangelist on 27 December.
+
+{.note}  Historically, some applications have used a *date phrase* like
+"Not married" to indicate a marriage did not occur.  Such usage is
+prohibited in ELF, and applications are permitted to assume a *date
+phrase* describes an actual *date*, even if the *date phrase* cannot be
+interpreted.  Fortunately, such usage is almost entirely confined to
+[GEDCOM 5.3] and earlier which omitted the parentheses around *date
+phrases*.  *Date phrases* written without parentheses will not normally
+match the generic *date* syntax, and will therefore not be parsed as
+*dates* in ELF.
+
+The *date phrase* *may* be accompanied by a *date* in the generic *date*
+syntax preceded by the `INT` token.   The combination is called
+an **interpreted date** and its *date* *should* be an interpretation
+of the associated *date phrase* in the context of source containing it.
+
+{.example}  "`INT @#DJULIAN@ 18 JUNE 1502 (Saturday before the Feast of
+the Nativity of St John the Baptist)`" is a valid *interpreted date*.
+In this case the *date phrase* does not mention the year; perhaps it
+was inferred from the context or stated elsewhere in the document.
+
+{.note}  An *interpreted date* might sometimes be of lower *reliability*
+than if the *date* were written without a *date phrase*, as the presence
+of a *data phrase* typically indicates some subtlety in interpreting the
+*date*.
+
+#### Date ranges                                          {#date-ranges}
+
+A **date range** is a *time interval* used to record an unknown *date*
+which can be placed within certain bounds.  A *date range* *may* be
+bounded from below, from above, or both.  It matches the `DateRange`
+production:
+
+    DateRange   ::= ( "BEF" | "AFT" ) S Date | "BET" S Date S "AND" S Date
+
+A *date range* beginning with a `BEF` token represents an unknown
+*instant* on or before the specified *date*.  A *date range* beginning
+with a `AFT` token represents an unknown *instant* on or after the
+specified *date*.  
+
+It is *recommended* that the `BEF` and `AFT` forms of *date ranges* are
+only used if it is believe the specified *date* is probably within a few
+years of the unknown *date* being represented.
+
+{.example}  If an individual was elected mayor of a city in 1745 and the
+cultural norms of the time mean the person was almost certainly an
+adult, and probably in middle age, their *date* of birth *should not* be
+recorded as `BEF 1745`.  Even though this would literally be true
+insofar as the person was indeed born before 1745 and this
+representation is not prohibited, it is *not recommended*.  The person
+could well have been born in the previous century which would be
+stretching the definition of "a few years".  If there is need to give a
+date of birth, a crude estimate given with the `EST` token might be
+preferable.
+
+A *date range* using the `BET` &hellip; `AND` form of *date range* is a
+*precision
+range* of the unknown *date*.
+
+A *date range* using the `BET` &hellip; `AND` construct represents an
+unknown *instant* on or after the first specified *date*, and on or
+before the second specified *date*.  This is a way of specifying an
+unknown *date* in terms of its *precision range*.  In this form of *date
+range*, the first specified *date* *should* be no later than the
+second specified *date*.
+
+{.example}  If someone's *age* is recorded as 26 on a census conducted
+on 3 April 1881, their *date* of birth could be recorded as `BET 4 APR
+1854 AND 3 APR 1855`.  However current practice is to record this as
+`ABT 1855`.
+
+{.ednote}  Should ELF encourage users to prefer the *date range* form in
+the previous example? 
+
+*Date ranges* using the `BET` &hellip; `AND` format contain two *dates*
+and therefore potentially two *calendar escapes*.  The second *date*
+does not inherit the *calendar escape* from the first date, and it
+*must* be respecified when required.  It is *recommended* that, where
+possible, the same *calendar escape* be used on both *dates*.
+
+{.note}  Although [GEDCOM 5.5.1] supports *date ranges* where the two
+*dates* use different *calendar escapes*, not all current
+implementations support them.  They are best avoided where possible.
+
+### The `elf:DateValue` datatype                           {#DateValue}
+
+The `elf:DateValue` *datatype* is used to record historical *dates*.  It
+allows *dates* to be represented using the generic *date* syntax or any
+of the modifier forms given in {§date-modifiers}.  It *may* also be a
+*date period* as defined in {§DatePeriod}.  Its *lexical space* is the
+set of *strings* which match the following `DateValue` production.
+
+    DateValue ::= Date | DateApprox | DateInterp | DateRange | DatePeriod
+
+{.ednote}  In the many places in ELF, it would be wrong to a *date
+period* where an `elf:DateValue` is required.  This is not the case with
+the other options allowed in the `DateValue` production.  The difference
+is that a *date period* represents a state which persisted for an
+extended *time interval*, while the others represent a single *instant*
+(or at least an event of short duration that is conveniently treated as
+an *instant*).  FHISO are considering removing `DatePeriod` from the
+`DateValue` production, above, and allowing it as an explicit option in
+certain contexts.  However this introduces the same complications as
+introducing separate `elf:AgeWord` *datatype*, and which were discussed
+in an editorial note at the end of {§age}.
+
+The `elf:DateValue` *datatype* is a *language-tagged datatype*, however
+the associated *language tag* is ignored unless the *date* contains a
+*date phrase*.  *Conformant* applications are not required to preserve
+the *language tag* of *dates* without a *date phrase*, and *may* replace
+it with an arbitrary *language tag*.
+
+{.note}  This allows applications to store the *language tag* as part of
+the 
+
+Applications are permitted to serialise an `elf:DateValue`
+that does not contain 
+using an 
+
+Formally, the `elf:DateValue` *datatype* is a *structured
+language-tagged datatype* which has the following properties:
+
+: Datatype definition
+
+------           -----------------------------------------------
+Name             `https://terms.fhiso.org/elf/DateValue`
+Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
+Pattern          *See below*
+Supertype        `http://www.w3.org/1999/02/22-rdf-syntax-ns#langString`
+Abstract         `false`
+------           -----------------------------------------------
+
+The *pattern* for this *datatype* is as follows:
+
+{#include DateValue.md}
+
+{.note}  The grammar productions given in this standard provide a more
+useful description of *datatype* for a human reader.  The *pattern*
+above is used during *datatype correction* in certain *optional*
+contexts.  It was generated automatically from the grammar productions,
+and any discrepancy between the grammar and this *pattern* is
+unintentional.
+
+### The `elf:DatePeriod` datatype                          {#DatePeriod}
+
+A **date period** is a *time interval* used to record a state of being
+that persisted throughout the stated *time interval* which represents an
+extended period of history; they are also used to record the period of
+coverage of a source.  They are represented in ELF using the
+`elf:DatePeriod` *datatype* whose *lexical space* is set set of
+*strings* which match the following `DatePeriod` production:
+ 
+    DatePeriod  ::= "FROM" S Date ( S "TO" S Date )? | "TO" S Date
+
+Use of a *date period* does not necessarily mean the state was believed
+to have begun on the specified "from" *date*, nor that it ended on the
+specified "to" *date*, though where possible this is *recommended*.
+Either the start *date* or the end *date* *may* be omitted from the
+*date period*, in which case the missing *date* is interpreted as being
+*date*.  
+
+{.example}  Abraham Lincoln was President of the United States from
+1861 to 1865.  This could recorded using the *date period* "`FROM 1861
+TO 1865`", or more *precisely* as "`FROM 4 MAR 1861 TO 15 APR 1865`".
+If it were unknown when Lincoln's presidency began, it could be written
+"`TO 15 APR 1865`".
+
+{.note}  The difference between a *date range* and a *date period* is
+sometimes misunderstood and applications should be alert to the wrong
+representation being used.  A *date range* is used to record an
+*instant*, or an event of short duration, when its *date* is not
+precisely known, whereas a *date period* is used to record a state that
+held throughout the specified period.
+
+{.example ...}  Civil birth, marriage and death registrations in England
+and Wales are indexed in quarterly volumes which do not list the
+*precise* *date* of the event.  The coverage of this source is
+represented in ELF using a *date period*:
+
+    0 @S1@ SOUR
+    1 TITL GRO Marriages Index 
+    1 DATA
+    2 EVEN MARR 
+    3 DATE FROM 1 JAN 1898 TO 31 MAR 1898
+
+However the event itself *must not* be recorded using a *date period*
+because the marriage did not take place over an extended period: it
+happened on one particular *date* which is not *precisely* known.  For
+this purpose a *date range* *should* be used.
+
+    0 FAM
+    1 MARR
+    2 DATE BET 1 JAN 1898 AND 31 MAR 1898
+
+A less *precise* alternative would be to just give a year.
+{/}
+
+: Datatype definition
+
+------           -----------------------------------------------
+Name             `https://terms.fhiso.org/elf/DatePeriod`
+Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
+Pattern          *See below*
+Supertype        `http://www.w3.org/1999/02/22-rdf-syntax-ns#langString`
+Abstract         `false`
+------           -----------------------------------------------
+
+The *pattern* for this *datatype* is as follows:
+
+{#include DatePeriod.md}
+
+
+## The `elf:Time` datatype {#time}
+
+ELF uses the `elf:Time` *datatype* to represent *times of day* using the 24-hour
+clock in *hours*, *minutes* and *seconds*, with these components
+separated by a colon (U+003A).  The *hours* and *minutes* components are
+*required*, and the *seconds* component *should* be provided.  A
+fractional *seconds* component *may* be provided.  
+
+{.example}  The value "`15:30:00`" is a valid *time of day*, represented using
+the `elf:Time` *datatype*.  It represents half past three in the
+afternoon.
+
+The `elf:Time` *datatype* is typically used in conjunction with a value
+of type `elf:DateExact` called its **associated date**.
+
+{.example ...}  In [ELF Data Model], *times of day* are found as `TIME`
+subelements of a `DATE` element which has a payload of *datatype*
+`elf:DateExact`.
+
+    2 DATE 10 DEC 2018
+    3 TIME 13:52:00
+
+In this example, "`10 DEC 2018`" is the *associated date* for the time
+"`13:52:00`".
+{/}
+
+{.note}  As specified here, the *associated date* will always be
+expressed in the Gregorian calendar.
+
+*Strings* in the *lexical space* of the `elf:Time` *datatype* *shall*
+match the following `Time` production, as well as the other constraints
+given here on the numerical value of each component.  *Whitespace* is
+not permitted anywhere in an `elf:Time` value.
+
+    Time     ::=  HH ":" MM (":" SS)? TZD?  
+
+    HH       ::= [0-9] [0-9]
+    MM       ::= [0-9] [0-9]
+    SS       ::= [0-9] [0-9] ("." [0-9]+)?
+    TZD      ::= "Z" | ("+" | "-") HH ":" MM
+
+The `HH` production encodes the *hours* component of the *time of day*,
+zero-padded to two digits.  It *shall* be a decimal integer between `00`
+and `24`, inclusive.  Values outside this range are outside the *lexical
+space* of `elf:Time`.  The *hours* component *shall* only be `24` if the
+*minutes* and *seconds* components are both zero or absent; any other
+uses of `24` as an *hours* component is outside the *lexical space* of
+the *datatype*.
+
+{.example}  The *strings* "`30:00`" and "`24:30`" are both outside the
+*lexical space* of this *datatype*.  The former is invalid because the
+*hours* component of `30` is not between `00` to `24`; the latter is
+invalid because it has an *hours* component of `24` and a non-zero
+*minutes* component.
+
+The *string* "`24:00:00`" is the **end-of-day instant** and denote the
+final *instant* of a *calendar day*.  It is the same *instant* as the
+first *instant* of the following *calendar day* (which is denoted
+`00:00:00`).  *Conformant* applications *must* accept *end-of-day
+instants* as valid input but *must not* create new instances of them.
+A *conformant* application *may* convert an *end-of-day instant* to
+`00:00:00`, but only if it has an *associated date* and that is
+simultaneously incremented by one day.
+
+{.example} A *time of day* of "`24:00:00`" with an *associated date* of
+"`30 NOV 2018`" *may* be converted to a *time of day* of "`00:00:00`"
+with an *associated date* of "`1 DEC 2018`".
+
+{.note} [GEDCOM 5.5.1] does not specify whether or not the *end-of-day
+instant* is legal, and existing applications are unlikely to produce it.
+It is supported by `elf:Time` for compatibility with [ISO 8601] and the
+`xsd:time` *datatype* defined in [XSD Pt2].
+
+The `MM` production encodes the *minutes* component of the *time of day*,
+zero-padded to two digits.  It *shall* be a decimal integer between `00`
+and `59`, inclusive.  Values outside this range are outside the *lexical
+space* of `elf:Time`. 
+
+The `SS` production encodes the *seconds* component of the *time of day*,
+zero-padded to two digits and followed by an *optional* fractional
+component.  It *shall* be a decimal greater than or equal to `00` and
+strictly less than `61`.  Values outside this range are outside the
+*lexical space* of `elf:Time`.
+
+Applications *must* preserve at least the first three decimal digits of
+a fractional *seconds* component, but *may* truncate or round the
+fractional part of the *seconds* component beyond that.  Applications
+*may* add or remove trailing zeros on the frational part of the
+*seconds* component, and *should* add a *seconds* component of `:00` if
+none was given.
+
+{.note}  These provisions allows applications to process *times of day*
+using the standard data structures and facilities provided in many
+program languages, without preserving the original lexical form of the
+*time of day*.
+
+{.note}  A future version of this standard is likely to make the
+*seconds* component *required* to make this *datatype* fully compatible
+with the `xsd:time` *datatype* defined in [XSD Pt2].  
+
+A *seconds* component greater than or equal to `60`, and strictly less
+than `61` is a **leap second** component.  Any use of a *leap second*
+component is part of the *lexical space* of `elf:Time`, but *leap
+second* components *shall* only be used to represent a leap seconds
+inserted by the International Earth Rotation Service or its successor.
+
+*Conformant* applications encountering a *leap seconds* component *may*
+convert it to an ordinary *seconds* component by subtracting one from
+its value.  This *should not* be done if the application supports
+leap seconds and knows the specified *time of day* was a leap second.
+
+{.example}  The *string* "`12:56:60.800`" is in the *lexical space* of
+this *datatype* and has a *leap second* component of `60.800`.  As leap
+seconds are always been inserted at midnight UTC and there is no
+timezone in which this *time of day* is midnight UTC, this *time of day*
+could not arise in practice and therefore *conformant* applications
+*must not* generate such a *time of day*.  *Conformant* applications
+*must* accept such *times of day* but *may* subtract one second to
+convert it to "`12:56:59.800`".
+
+{.note}  [GEDCOM 5.5.1] makes no mention of leap seconds, but existing
+applications are likely to generate such *times of day* if they happen
+to save a file during the inserted leap second.  Leap seconds are also
+supported
+in [ISO 8601], but not in the `xsd:time` *datatype* defined in [XSD Pt2].
+These rules allow compatibility with these standards and with possible
+existing use, while also allowing applications to ignore the leap
+second.
+
+The *lexical space* of the `elf:Time` *datatype* allows the inclusion of
+a **time zone designator** matching the `TZD` production.  *Conformant*
+applications *must* accept *time zone designators* on *dates* in input,
+but *should* ignore them and *may* remove them.  *Conformant*
+applications *must not* include *time zone designators* on newly
+generated *times of day*.
+
+{.note}  Syntactic support for *time zone designators* is an extention to
+[GEDCOM 5.5.1], and is included in ELF for forwards compatibility. This
+standard does not specify the meaning conveyed by a *time zone
+designator*, but the syntax used is compatible with [ISO 8601] and the
+`xsd:time` *datatype* defined in [XSD Pt2], and a future version of this
+standard is likely to define by reference to the latter standard.  If an
+application chooses not to ignore *time zone designators*, it should
+follow [XSD Pt2].
+
+Formally, the `elf:Time` *datatype* is a *structured non-language-tagged
+datatype* which has the following *properties*:
+
+: Datatype definition
+
+------           -----------------------------------------------
+Name             `https://terms.fhiso.org/elf/Time`
+Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
+Pattern          `(([01][0-9]|2[0-3]):[0-5][0-9](:([0-5][0-9]|60)(\.[0-9]+)?)?`
+                 `|24:00:00(\.0+)?)(Z|(\+|-)([01][0-9]|2[0-3]):[0-5][0-9])?`
+Supertype        *No non-trivial supertypes*
+Abstract         `false`
+------           -----------------------------------------------
+
+{.note} The *pattern* in the table above has been split on to two
+lines for convenience of presentation; it is, however, really one
+*pattern* and contains no *whitespace* or line breaks.
+really one single line.  Any functional difference between the `Time`
+production and the *pattern* specified above is unintentional.
+
+## The `elf:Age` datatype                                         {#age}
 
 The **age** of a living individual is defined as the *duration* which
 has elapsed since the *instant* of their birth.  
@@ -549,10 +1684,6 @@ which match the following `Age` production:
 
 {.note}  These productions are case-sensitive, so the *string* "`17y`"
 matches the `Duration` production, while "`17Y`" does not.
-
-The `S` production is the *whitespace* production defined in §2 of
-[Basic Concepts] and matches any non-empty sequence of *whitespace*
-*characters*.  
 
 {.note}  Because the `elf:Age` *datatype* is currently only used in ELF
 in contexts where *whitespace normalisation* has been carried out, the
@@ -638,10 +1769,10 @@ because the Islamic *calendar year* is around 11 *calendar days* shorter
 than the Gregorian *calendar year*.  ELF does not provide a means of
 specifying which *calendar* was when recording an *age*.
 
-{.ednote}  A future version of ELF may add facilities to specify the
-*calendar* being used for *ages* and also to give an explicit
-*precision*, for example to say that an *age* has been given within a
-five-year *age* bracket.
+{.note}  A future version of ELF may add facilities to specify which
+*calendar* is being used for *ages* and also to allow an explicit
+*precision* to be stated, for example to say that an *age* has been
+given within a five-year *age* bracket.
 
 *Ages* *should* generally be rounded down when expressed using just a
 number of *calendar years*, or using a number *calendar years* and
@@ -761,766 +1892,36 @@ specified above is unintentional.
 
 {.ednote} Depending on the details of how the ELF data model is
 specified, it may make sense to split this into two *datatypes*: the
-`elf:Age` one which would be restricted to just quantitative *ages*, and
-a separate `elf:AgeWord` *datatype*.
+`elf:Age` *datatype* which would be restricted to just quantitative
+*ages* and would therefore serve as a general *duration* datatype, and
+a separate `elf:AgeWord` *datatype*.  
+The various ELF structures having an `elf:Age` *payload* would then be
+changed to have *payloads* which were a *union of datatypes*.  This
+introduces several technical complications, including the need make
+*datatype correction* work with multiple *default datatypes*.  In
+principle this works fine when the *default datatypes* have disjoint
+*lexical spaces*, as they would here, but it would need careful
+specification.
 
-## Date formats 
+## Calendar definitions                                           {#calendars}
 
-ELF uses three different *datatypes* to represent *dates*, depending on
-the context.
+### The Gregorian calendar                                        {#gregorian}
 
-* `elf:DateValue` is used for historical *dates*.
-* `elf:DatePeriod` is used to record the period of coverage a source.
-* `elf:DateExact` is used to record the creation or modification *date* 
-  of various objects in the data model.
+Dual years are not allowed.  
 
-{.ednote}  We may want to split `elf:DateValue` into two separate
-*datatypes*: one for historical dates which *may* be periods and those
-which *must not* be.
+{.note} Deviation from [GEDCOM 5.5.1].
 
-As the first two of these *datatypes* are used to record historical
-*dates*, and ELF allows historical *dates* to be expresssed using many
-different *calendars*, these two *datatypes* each allow *dates* in
-arbitrary *calendars*.  This is achieved by providing a generic *date*
-syntax which all *dates* *must* match, regardless of *calendar*, and
-which begins with a *calendar escape* indicating the specific *calendar*
-in use.  
+*Epoch names*:  B.C., A.D.
 
-{.ednote ...} An exarlier draft of this standard used a separate
-*datatype* for each *calendar*, and used `@#D`&hellip;`@` escapes as a
-serialisation layer means of tagging the *datatype*.  This approach was
-eventually abandoned because it could not cope with *date ranges* and
-*date periods* where the two end points are expressed using different
-*calendars*.  [GEDCOM 5.5.1] permits this, and although many
-applications do not support it, we considered there to be important use
+{.ednote} Do we want B.C.E. and C.E. as aliases?
 
-    0 INDI
-    1 NAME George II
-    1 TITL King of Great Britain
-    2 DATE FROM @#DJULIAN@ 11 JUN 1727 TO @#DGREGORIAN@ 25 OCT 1760
+B.C. indicates a date before the birth of Christ.
 
-What should the *datatype* of the `DATE` element's payload be?  It's
-neither wholly Julian nor wholly Gregorian.  Because of the difficulties
-with such constructs, we dropped the idea of making each *calendar* a
-separate *datatype*.
+    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
+                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
 
-One option for solving this which the TSC seriously considered is to
-introduce **compound calendars**, along the lines of the proposal in
-[CFPS 38](https://tech.fhiso.org/cfps/files/cfps38.pdf), but this adds
-complexity due to the need to add a mechanism for defining *compound
-calendars*.
-
-A separate complication comes from the fact that there `elf:DateValue`
-and `elf:DatePeriod` are separate *datatypes*, and *calendar*-specific
-*subtypes* of each would likely be required.  This could be solved by
-removing periods from the data model entirely, perhaps by having the
-serialisation layer split up `DATE` tags containing a period.  This may
-make sense at a date model level too, if we model periods as two
-implicit events: one intiating and one concluding the period being
-discussed.  There is less of a case for doing the same wtih ranges, so a
-solution to the problem of ranges with multiple calendars would still be
-required.
-
-The TSC believe an approach along these lines could be made to work, but
-it would be too big a change to include in ELF 1.0.  We also feel we
-should investigate alternative approaches before committing to a
-specific solution.  Deferring this functionality until a future version
-of ELF will give us time to do give suitable consideration to the
-options available.
-{/}
-
-### Generic date syntax                                       {#generic}
-
-A *date* is represented in the generic *date* syntax as a sequence of five
-components: a *calendar escape*, followed by encodings of the *calendar
-day*, *calendar month*, *calendar year* and *epoch*.  Only the *calendar
-year* is *required*; the other components are *optional*, except that
-the *calendar day* cannot be omitted unless the *calendar month* is
-also omitted.  It matches the `Date` production.
-
-    Date   ::= (CalEsc S)? ((Day S)? Month S)? Year (S? Epoch)?
-
-    CalEsc ::= "@#D" [A-Z] [A-Z ]* "@"
-    Day    ::= [0-9] [A-Z0-9]*
-    Month  ::= [A-Z] [A-Z0-9] [A-Z0-9]+
-    Year   ::= [0-9]+ ( "/" [0-9]+ )?
-    Epoch  ::= [A-Z] ( [A-Z] | [A-Z0-9._]* [._] [A-Z0-9._]* )
-
-{.example ...}  The following are examples of *dates* which match the
-`Date` production:
-
-    63 B.C.
-    21 JAN 1793
-    @#DJULIAN@ 29 MAY 1453
-
-The first of these includes only a *calendar year* and *epoch*.  The
-following two both have a *calendar day*, *calendar month* and *calendar
-year*, and neither specifies an *epoch*; only the third date includes a
-*calendar escape*.
-{/}
-
-A *conformant* application serialising a *date* using this syntax
-*should* use a single space *character* (U+0020) wherever *whitespace*
-is permitted in the `Date` production, and *should not* omit the
-*whitespace* before the *epoch* component.
-
-{.note}  [GEDCOM 5.5.1] under-specifies how *whitespace* is allowed in
-*dates*.  The `Date` production is somewhat permissive in its treatment of
-*whitespace*, though does not allow it to be omitted entirely.  The
-preceding recommendation ensures that *conformant* ELF applications will
-be maximally compliant with current GEDCOM application which typically
-use a single space *character*.
-
-#### Calendar escapes
-
-The `CaleEsc` production encodes the **calendar escape**, which
-identifies the particular *calendar* being used in the *date*.
-
-{.note}  Syntactically, the *calendar escape* is an ELF escape, as
-defined §XX of [ELF Serialisation].  When such escapes occur in the
-payload of a `DATE` line, they are passed through to the data model
-unaltered.
-
-{.ednote}  Check the above is true once [ELF Serialisation] has been
-updated.  Note that this means historical dates *must* appear on `DATE`
-lines.
-
-The following *calendar escapes* are defined in {§calendars} of this
-standard.
-
-----------------    -------------------------------------------------
-`@#DGREGORIAN@`     The Gregorian *calendar* defined in {§gregorian}
-`@#DJULIAN@`        The Julian *calendar* defined in {§julian}
-`@#DHEBREW@`        The Hebrew *calendar* defined in {§hebrew}
-`@#DFRENCH R@`      The French Republican *calendar* defined in {§french}
-----------------    -------------------------------------------------
-
-{.note}  [GEDCOM 5.5.1] includes one further *calendar escape*,
-`@#ROMAN@`, which it reserved for future use, presumably for use with
-Roman Republican *calendar*.  This standard does not reserve this
-*calendar escape*.
-
-The `@#DUNKNOWN@` *calendar escape* is permanently reserved.  Third
-parties *must not* define calendars with this name and applications
-*should not* generate *dates* using this *calendar escape*.
-
-Third parties *may* define their own *calendar escapes* in order to
-support additional *calendars*.  Parties doing this *should* provide a
-publicly accessible definition of the *calendar* represented by the
-*calendar escape*.
-
-{.note}  This version of ELF provides no means of avoiding conflict
-between separate third-party *calendar escapes*.  This is particularly
-problematic when there a several variants of a calendar, and if
-different vendors choose to implement a different variant using the same
-*calendar escape*.  FHISO intend to introduce a mechanism to avoid such
-conflicts in a future version of ELF.  This is likely to work by
-assigning a *term* to each *calendar*, and a syntax for binding
-*calendar escapes* to *term name* IRIs.
-
-{.ednote ...}  This functionality was dropped from ELF 1.0 because the
-specification proved more complicated than expected.  The intention is
-to add *calendar* bindings to the ELF schema, such as this:
-
-    1 SCHMA
-    2 PRFX elf https://terms.fhiso.org/elf/
-    2 IRI elf:JulianCalendar
-    3 DTYPE JULIAN
-
-Because *dates* are likely to copied around, once in the data model the
-*date* needs to reference the *calendar* *term name* rather than the
-*calendar escape*.  This means the serialisation layer needs to convert
-*calendar escapes* to *term names*, and vice versa.  Finding a clean
-way of doing this proved problematic.
-
-The TSC had been considering making *calendars* a specific sort of
-*datatype*, and then have the serialisation layer treat the *calendar
-escape* as way of tagging the *datatype* of the `DATE` tag's payload.
-However, as noted in an earlier editorial note, this caused problems
-with periods and ranges which used multiple *calendars*, and has been
-deferred to a later version of ELF.  
-{/}
-
-This generic *date* syntax defines only some basic syntactic constraints
-on the representation of the *calendar day*, *calendar month*, *calendar
-year* and *epoch* components.  The party defining each *calendar*
-*should* define further constraints on these components to define what
-constitutes a **well-formed** *date* in that *calendar*.  Where possible,
-the set of *well-formed* *dates* *should* be the same as the set of *dates*
-that actually existed.
-
-{.example}  The *date* "`12 AUGUST 2000`" is not a *well-formed* *date* in
-the Gregorian calendar, as defined in {§gregorian}, because the
-specified month, "`AUGUST`", is not one of the twelve allowed months
-names: it shoud have been written "`12 AUG 2000`".
-
-{.example}  The *date* "`29 FEB 1973`" is not a *well-formed* *date* in
-the Gregorian calendar, because February 1973 only had 28 days.
-
-{.note} This standard does not prohibit *calendars* from defining *dates*
-which never occurred to be *well-formed*, though this is generally *not
-recommended*.  It is allowed to accommodate *calendars* where the exact
-sequence of *dates* is either unknown or cannot be determined
-algorithmically.  
-
-{.example}  Certain versions of the Islamic *calendar* define the start
-of each *calendar month* by when the new moon is actually observed.
-This results in unpredictable month lengths.  If such a *calendar* were
-defined for use in ELF, it would likely regard days beyond the expected
-end of the month as *well-formed* *dates* to accommodate the possibility
-that bad weather had prevented the new moon from being observed.
-
-All *dates* written using a *calendar escape* with which the application
-is not familiar are assumed to be *well-formed*.  This includes all
-*dates* using the `@#DUNKNOWN@` *calendar escape*.
-
-*Conformant* applications *must not* generate *dates* which are not
-*well-formed*, and which are not assumed to be *well-formed* by virtue
-of using a unknown *calendar escape*.  Applications encountering *dates*
-which are not *well-formed* *may* delete the *date* or signal an error
-to the user.
-
-The *calendar escape* is *optional* in the generic *date* syntax.  If the
-*calendar escape* is omitted and if the *date* if *well-formed* in the
-Gregorian *calendar*, then the *date* is treated as if it used the
-`@#DGREGORIAN@` *calendar escape*.  If the *calendar escape* is
-otherwise omitted, the *date* is treated as if it used the `@#DUNKNOWN@`
-*calendar escape*.
-
-{.note}  [GEDCOM 5.5.1] simply says that *dates* written without a
-*calendar escape* default to the Gregorian calendar.  ELF's approach is
-more nuanced.  If a *date* explicitly uses the Gregorian
-*calendar escape* then an invalid *date* *may* be deleted; if it is
-written without a *calendar escape* then it *must not* be, assuming it
-conforms to the generic *date* syntax.  ELF deviates from [GEDCOM 5.5.1]
-in this regard because many current applications fail to include a
-*calendar escape* when the Julian *calendar* is used.  As a result,
-*dates* like "`29 FEB 1700`" can be found written without a *calendar
-escape*.  This date did not exist in the Gregorian calendar and
-is not a *well-formed date* in that *calendar*, however this rule
-prevents applications from deleting it as invalid.
-
-It is *recommended* that, where possible, dates should be entered in ELF
-datasets using the calendar in which they were written in the source.
-
-{.example}  A contemporary record of an event occurring in seventeenth
-century Massachusetts would almost certainly be recoded using the Julian
-calendar, as Massachusetts, like all the British colonies, did not adopt
-the Gregorian calendar until 1752.  The date of the event *should*
-therefore be recorded in ELF using the Julian calendar and not converted
-to the Gregorian calendar.
-
-#### Days
-
-The `Day` production encodes the *calendar day* component of the *date*.
-Although only the first *character* is *required* to be a decimal digit,
-*calendars* *should* normally make this component an integer, counting
-how many *calendar days* into the *calendar month* the specified
-*calendar day* is, with the first *calendar day* being "`1`".
-*Calendars* *should* normally permit leading zeros and attach no
-signifince to them.
-
-{.ednote}  It is unclear whether the flexibility to have a non-integer
-*calendar day* component will be needed.  If we're comfortable it will
-not be needed, we should make it simply an integer.  The motivation for
-allowing non-integer *calendar day* components came from consideration
-of Roman day reckoning.  In this system, days are reckoned backwards
-from the kalends, nones and ides of each month.  For example, the day
-described as "ante diem quintum kalendas Septembres" or "a.d. V Kal.
-Sept", meaning five days before the kalends of September (1 Sept),
-counting inclusively, is 28 August.  If this were considered a separate
-*calendar*, it could be represented as "`5K SEP`".
-
-#### Months
-
-The `Month` production encodes the *calendar month* component of the
-*date*.  The set of permitted *calendar month* components in a given
-*calendar* is called the set of **month names** for the *calendar*. 
-*Month names* *should* normally be abbreviated forms of their common
-names, and *must* be at least three *characters* long.
-
-{.example}  The French Republican *calendar* has twelve months named
-Vendémiaire, Brumaire, Frimaire, Nivôse, Pluviôse, Ventôse, Germinal,
-Floréal, Prairial, Messidor, Thermidor and Fructidor.  If ELF, as
-described in {§french}, these are abbreviated `VEND`, `BRUM`, `FRIM`,
-`NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER` and
-`FRUC`.  In addition, each year had five or six consecutive intercalary
-days, or jours complémentaires, which were not part of any month.  For
-the purposes of representing this calendar in ELF, the intercalary days
-are considered a thirteenth month, `COMP`.
-
-{.note} *Month names* are always upper-case, a constraint guaranteed by
-the `Month` production.  Lower-case, mixed-case, or non-ASCII *month
-names* *must not* be used.
-
-{.note}  *Month names* are *required* to be at least three *characters*
-long to avoid conflicting with *epoch* names.
-
-The following words are reserved and *must not* be used as *month
-names* in any calendar: `ABT`, `AFT`, `AND`, `BEF`, `BET`, `CAL`, `EST`,
-`EVERY`, `FOR`, `FROM`, `INT`, `POS`, `REP`, `TIME`, `UNCERT`, `UNK` and
-`ZONE`.
-
-{.note}  Many of these words have specific meanings in the ELF *date*
-*datatypes*.  The words `EVERY`, `FOR`, `POS`, `REP`, `TIME`, `UNCERT`,
-`UNK` and `ZONE` are reserved for possible future use because they
-describe concepts in [GEDCOM X Dates] or [ISO 8601-2] which are
-not currently in ELF.  This does not necessarily mean FHISO will add
-such functionality to a future version of ELF.
-
-#### Years
-
-The `Year` production encodes the *calendar year* component of the
-*date*.  The *string* matching this production *shall* be a non-negative
-integer, which *may* be followed by a solidus (U+002F) and another
-non-negative integer.  A *calendar year* component with two integers is
-called a **dual year**, and is used when the historical reckoning of
-years does not completely match the modern reckoning of years.  The year
-number according to the historical reckoning is called the **historical
-year**, while the year number according to the modern reckoning is called
-the **logical year**.  The first integer in a *dual year* is the
-*historical year*; the second integer is the *logical year* which *may*
-be given in abbreviated form.  When the *calendar year* component is not
-a *dual year*, the *historical year* and *logical year* are both equal
-to the one integer given.
-
-{.example}  The principal use of *dual years* is to encode *dates* which
-were recorded using years beginning on 25 March (the Feast of the
-Annunciation, also known as Lady Day), as was the practice in many
-parts of the world before the adoption of the Gregorian calendar.
-Contemporary sources record the execution Charles I as happening on 30
-January 1648.  This was the month following December 1648 and would now
-be reckoned in 1649, as a result of which modern accounts usually
-describe it as happening on 30 January 1649.  (This is not a result a
-change of the Julian calendar to the Gregorian one: in the Gregorian
-calendar this *date* would be 9 February 1649.)  To avoid ambiguity, the
-year can be written 1648/1649.  ELF supports this and allows the *date*
-to be recorded as “`30 JAN 1648/1649`”.
-
-The *dual year* syntax is only used when there are genuine differences
-in the conventional reckoning of years.  It *must not* be used simply to
-record an error in the year in a source.
-
-{.example}  If a parish register includes a baptism entry dated 12 Jan
-1842, but the context and other circumstantial evidence makes it clear
-that the year was incorrectly written in the register and was in fact
-1845, this *must not* be recorded in ELF as "`12 JAN 1842/1845`".
-
-The *logical year* *may* be abbreviated to just the last two digits
-if the difference between the *historical year* and the *logical year*
-is less than 10 years, or *may* be abbreviated to just the last one
-digit if the difference between the *historical year* and the *logical
-year* is no more than 1 year.  Where possible, the *logical year*
-*should* be abbreviated to two digits.
-
-{.example}  The *date* in the previous example *may* be written in
-abbreviated form as "`30 JAN 1648/49`" or as "`30 JAN 1648/9`".
-
-{.note}  An application reading an abbreviated *dual year* should round
-the *historical date* to the nearest 10 or 100 years, depending on
-whether the *logical year* has been abbreviated to one or two digits,
-respectively, and then prepend the leading digits from the rounded
-*historical date* to the abbreviated *logical date* to produce the
-unabbreviated *logical date*.
-
-When abbreviated form is not used, the *historical year* and the
-*logical year* *must* be written using the same number of digits, even
-if this means padding one integer with leading zeros.
-
-{.note}  This restriction exists to prevent any uncertainty determining
-whether a *dual year* has been abbreviated.
-
-A specific *calendar* *should* normally place further restrictions on
-how *dual years* can be used.
-
-{.note} This is necessary if applications are to have understanding of
-what the *historical date* means.  A *date* of "`@#DJULIAN@ 1740/1620`"
-is perfectly well-defined insofar that it represents the Julian year
-A.D.&nbps;1620 and which for some reason was conventionally recorded as
-1740 at the time, but without understanding of why this was done, it is
-difficult for an application to know what to do with this information.
-In fact, the Julian calendar defined in {§julian} only allows *dual
-years* when the *historical date* and *logical date* differ by exactly
-one year.
-
-The *calendar* *may* define further restrictions on the range of
-integers permitted as *logical years* or *historical years*.
-
-{.note ...}  [GEDCOM 5.5.1] includes support for *dual dates*, though
-only with *dates* in the Gregorian *calendar*, which is unfortunate as
-its principal use is with *dates* in the Julian *calendar* and the
-example it gives is seemingy in the Julian *calendar*.  Nevertheless,
-many applications do implement *dual date* support.  In [GEDCOM 5.5.1],
-*dual dates* *must* be written in abbreviated form with the *logical
-year* shortened to two years.  ELF relaxes this restriction as *dual
-dates* are commonly found unabbreviated or with a single-digit *logical
-date*.
-
-*Dual dates* in [GEDCOM 5.5.1] were probably only intended for years
-beginning on Lady Day, though the standard does not explicitly say so;
-however the same facility readily accommodates years beginning on
-arbitrary days, and some applications implement this.  ELF generalises
-this further by allowing the *historical year* and *logical year* to
-differ arbitrarily.
-{/}
-
-#### Epochs
-
-The `Epoch` production encodes the *epoch* component of the *date*,
-which specifies both the particular *epoch* from which *calendar years*
-and the direction of the numbering.  The set of permitted *epoch*
-components in a given *calendar* is called the set of **epoch names**
-for the *calendar*.
-
-{.example}  The Julian *calendar* defined in {§julian} includes the
-*epoch names* "`B.C.`" and "`A.D.`", standing for Before Christ and Anno
-Domini, respectively.  Both *epoch names* state that *calendar years*
-are counted from an *epoch* on the Julian date 1 January A.D.&nbsp;1,
-nominally the date for the birth of Jesus Christ, but for "`B.C.`"
-*calendar years* are counted backwards from that *epoch*, while for
-"`A.D." *calendar years* are counted forwards.
-
-An *epoch name* from which *calendar years* are counted forwards is
-called a **forwards epoch name**, while an *epoch name* from which
-*calendar years* are counted backwards is called a **reverse epoch
-name**.  *Calendar years* are numbered consecutively from the *epoch*
-represented by the *epoch name*.  For a *forwards epoch name*, the
-*epoch* *shall* be first *instant* of the *calendar year* identified by
-the *logical year* number 1.  For a *reverse epoch name*, the *epoch*
-*shall* be the last *instant* of the *calendar year* identified by the
-*logical year* number 1.
-
-The `Epoch` production requires *epoch names* either to be exactly two
-*characters* long, or to include at least one full stop (U+002E) or
-underscore (U+005F).  
-
-{.note}  This ensure that no *month name* is syntactically allowed as an
-*epoch name*, or vice versa.  This ensures that a *string* containing
-just a *day* and *month*, such as "`1 JAN`", cannot match the `Date`
-production.  A future version of ELF may allow the year to be omitted
-in *dates* when it is unknown, in which case this rule ensures there
-will be no ambiguity.
-
-They *should* normally be an acronym or initialism with full stops
-between letters.  The two-letter form of *epoch names* is deprecated.
-
-{.note} Two-letter *epoch names* without full stops are allowed by the
-`Epoch` production because "`BC`" is found in some current GEDCOM files,
-even though [GEDCOM 5.5.1] requires it to be spelled "`B.C.`".
-
-The words "`TO`" and "`AT`" are reserved and *must not* be used as
-*epoch names* in any *calendar*.
-
-{.note}  The word "`AT`" is included here for future compatibility.
-
-If a *calendar* defines multiple *epoch names* for the same *epoch*, and
-which are either all *forwards epoch names* or all *reverse epoch
-names*, applications *should* treat those *epoch names* as interchangeable.
-
-{.example}  The Julian calendar defined in {§julian} defines the
-"`B.C.`" and "`BC`" *epoch names* identically.  The former is the
-preferred form and is the only form allowed in [GEDCOM 5.5.1], however
-the latter is also found in current use, and ELF supports it.
-
-A *calendar* *may* require an *epoch name* to be present, *may* allow it
-to be omitted, and *may* define no *epoch names* thereby requiring it to
-be omitted.  In calendars where the *epoch name* is *optional*, the
-*calendar* *should* define an explicit *epoch name* that is equivalent
-to an omitted *epoch name*.  This *epoch name* is called the **default
-epoch name** for the calendar.
-
-{.example}  The Julian calendar defined in {§julian} provides the
-"`A.D.`" *epoch name* to serve as its *default epoch name*.
-
-{.ednote}  This specification of *epoch names* is designed to be usable
-to implement regnal years.  In such a scheme, the *instant* of
-accession of each monarch would be an *epoch*, and a *forwards epoch
-name* would be used to reference it, for example "`25 OCT 3 HENRY_V`".
-To accommodate monarachs without a regnal number, we might want to allow
-an additional *character* which could serve as a sigil for epoch names,
-and then allow arbitrary characters, e.g. "`$昭和`" for the Shōwa
-period in Japan.
-
-### Lower precision formats
-
-The generic *date* syntax described in {§generic} provides a means of
-specifying a particular *date*, but does not provide a way of describing
-*dates* with less *precision*.  ELF provides several extensions to the 
-generic *date* syntax to provide this functionality.
-
-{.ednote}  This draft, like [GECOM 5.5.1], does not allow more than one
-of these facilities to be used on the same *date*.  It seems potentially
-useful to remove this restriction, for example by allowing "`FROM ABT
-1798 TO 2 JAN 1842`".  Thebe no ambiguity in the grammar with
-such constructs and their meaning would generally be well defined.
-Backwards compatibility could be handled by saying that applications
-*should not* produce such constructs but *must* be able to read them.
-This would also allow constructs such as "`EST ABT 1881`", which the
-GEDCOM grammar does not allow but which appears as an example in [GEDCOM
-5.5.1], albeit as an example of an unnecessary circumlocution.
-Should ELF support such things?
-
-
-#### Approximated dates
-
-A *date* *may* be preceded by one of the tokens `ABT`, `CAL` or `EST`,
-as shown in the following `DateApprox` production:
-
-    DateApprox  ::= ( "ABT" | "CAL" | "EST" ) S Date
-
-The `ABT` token indicates that the *date* is *approximately stated*, and
-that its *precision* is lower than would have been the case without the
-`ABT` token.  It is typically used when there is evidence that the
-*date* given is roughly correct, and *should not* be used when the
-*date* is estimated using statistical likelihoods or cultural norms.
-
-{.example}  If it is known that the first and third children in a family
-were born in 1897 and 1900, the second child's birth *may* be recorded
-as `ABT 1899` as the *date* of birth is fairly well bounded, even if
-twins were involved.  
-
-{.note}  The `ABT` token is currently by far the most commonly used of
-the three approximated tokens.
-
-The `EST` token also indicates that *date* is *approximately stated*,
-and is only an estimate perhaps based only on stastical likelihoods or
-cultural norms.  An application *may* assume a *date* written with the
-`EST` token has lower *precision* than one with the `ABT` token.
-
-{.example}  If it is known that the first three children in a family of
-four were born between 1897 and 1900, a researcher might conclude that
-it is probable that next child was born shortly afterwards and estimate
-the *date* of birth as `EST 1903`.  The `ABT` token *should not* be used
-in this case, unless there is additional evidence that the fourth child
-was not much younger.
-
-{.example}  It can sometimes be useful to provide a crude estimate of
-an individual's *date* of birth.  If a baptism register records a
-baptism in 1692 and gives the father's name, a researcher might wish to
-record an estimate of the father's *date* of birth, perhaps to help
-disambiguate him from other people of the same name.  If such an
-estimate is to recorded, it should use the `EST` token, for example,
-`EST 1660`.
-
-The `CAL` token is used to record a *date* that is not directly stated
-in a source, but instead has been calculated from other known values,
-typically another *date* and the *duration* separating the two *dates*.
-An application *may* assume a *date* written with the `CAL` token has a
-similar or higher *precision* than one written with the `ABT` token.
-
-{.example}  If a newspaper reports on a golden wedding celebration in
-the summer of 1948, this is evidence that the wedding happened 50 years
-previously, and the date of the marriage *may* be entered as `CAL 1898`.
-
-When a *date* is calculated from another *date* and an *imprecise*
-*duration* separating them, use of the `ABT` token is *recommended*
-instead of the `CAL` token. 
-
-{.example}  Like many censuses, the 1880 census of Iceland records
-individuals' *ages* on their most recent birthday.  A person recorded as
-72 could have been born in 1807 or 1808.  Because the *age* has been
-rounded down and is therefore somewhat *imprecise*, it is *recommended*
-that the *date* of birth be recorded as `ABT 1808` rather than `CAL
-1808`.
-
-{.note}  A `CAL` token might sometimes be an indicator that the *date*
-is of lower *reliability* than one without this token, all other things
-being equal, due to it not being directly stated.
-
-{.ednote}  Should FHISO deprecate the `CAL` token and allow uses of it
-to be replaced with `ABT`?  It's not clear it adds anything useful.
-
-#### Date phrases and interpreted dates
-
-ELF allows *dates* to be recorded in natural language.  The natural
-language description of a *date* is called a **date phrases** and is
-written between parentheses (U+0028 and U+0029).
-
-    DateInterp  ::= ( "INT" S Date S )? "(" DatePhrase ")"
-    DatePhrase  ::= [^#xA#xD()]*
-
-The *date phrase* is an arbitrary *language-tagged* *string* except that
-it *must not* contain parentheses (U+0028 or U+0029), line feeds
-(U+000A) or carriage returns (U+000D).
-
-{.note}  [GEDCOM 5.5.1] only requires that *date phrases* be "enclosed
-in matching parentheses", which could be interpreted as requiring that any
-parentheses in the *date phrase* be balanced.  ELF goes further and
-prohibits parentheses from occurring in *date phrases* at all.
-
-{.ednote}  The prohibition on these *characters* is not strictly needed,
-at least while the grammar does not allow *date phrases* within *date
-ranges* or *date periods*, though that is a possible extension which
-might be made in a future version of ELF.  A data model layer escape
-mechanism along the lines of the `%{`&hellip;`}` syntax used in FHISO's
-draft Creator's Name microformat could allow arbitrary *characters* to
-appear in it.
-
-A *date phrase* *should* be a fragment of text quoted from a source,
-possibly in translation, and *should* only normally be used if the text
-cannot readily be converted into a *date*, or where that conversion
-would lose useful information.  *Date phrases* *should not* be used for
-arbitrary annotations or commentary, and *must not* be used in a
-negative sense to say the event did not occur.
-
-{.example}  If a source describes an event as happening on "The Feast of
-St John" in a particular year, this might be recorded in a *date phrase*
-if there was insufficient context to establish whether it referred to
-the Feast of Nativity of St John the Baptist on 24 June, or the Feast of
-St John the Evangelist on 27 December.
-
-{.note}  Historically, some applications have used a *date phrase* like
-"Not married" to indicate a marriage did not occur.  Such usage is
-prohibited in ELF, and applications are permitted to assume a *date
-phrase* describes an actual *date*, even if the *date phrase* cannot be
-interpreted.  Fortunately, such usage is almost entirely confined to
-[GEDCOM 5.3] and earlier which omitted the parentheses around *date
-phrases*.  *Date phrases* written without parentheses will not normally
-match the generic *date* syntax, and will therefore not be parsed as
-*dates* in ELF.
-
-The *date phrase* *may* be accompanied by a *date* in the generic *date*
-syntax preceded by the `INT` token.   The combination is called
-an **interpreted date** and its *date* *should* be an interpretation
-of the associated *date phrase* in the context of source containing it.
-
-{.example}  "`INT @#DJULIAN@ 18 JUNE 1502 (Saturday before the Feast of
-the Nativity of St John the Baptist)`" is a valid *interpreted date*.
-In this case the *date phrase* does not mention the year; perhaps it
-was inferred from the context or stated elsewhere in the document.
-
-{.note}  An *interpreted date* might sometimes be of lower *reliability*
-than if the *date* were written without a *date phrase*, as the presence
-of a *data phrase* typically indicates some subtlety in interpreting the
-*date*.
-
-#### Date ranges
-
-A **date range** is a *time interval* used to record an unknown *date*
-which can be placed within certain bounds.  A *date range* *may* be
-bounded from below, from above, or both.  It matches the `DateRange`
-production:
-
-    DateRange   ::= ( "BEF" | "AFT" ) S Date | "BET" S Date S "AND" S Date
-
-A *date range* beginning with a `BEF` token represents an unknown
-*instant* on or before the specified *date*.  A *date range* beginning
-with a `AFT` token represents an unknown *instant* on or after the
-specified *date*.  
-
-It is *recommended* that the `BEF` and `AFT` forms of *date ranges* are
-only used if it is believe the specified *date* is probably within a few
-years of the unknown *date* being represented.
-
-{.example}  If an individual was elected mayor of a city in 1745 and the
-cultural norms of the time mean the person was almost certainly an
-adult, and probably in middle age, their *date* of birth *should not* be
-recorded as `BEF 1745`.  Even though this would literally be true
-insofar as the person was indeed born before 1745 and this
-representation is not prohibited, it is *not recommended*.  The person
-could well have been born in the previous century which would be
-stretching the definition of "a few years".  If there is need to give a
-date of birth, a crude estimate given with the `EST` token might be
-preferable.
-
-A *date range* using the `BET` &hellip; `AND` construct represents an
-unknown *instant* on or after the first specified *date*, and on or
-before the second specified *date*.  In this form of *date range*, the
-first specified *date* *should be* be no later than the second specified
-*date*.
-
-{.note}  The `BET` &hellip; `AND` form of *date range* is a *precision
-range* of the unknown *date*.
-
-{.example}  If someone's *age* is recorded as 26 on a census conducted
-on 3 April 1881, their *date* of birth could be recorded as `BET 4 APR
-1854 AND 3 APR 1855`.  However current practice is to record this as
-`ABT 1855`.
-
-{.ednote}  Should ELF encourage users to prefer the *date range* form? 
-
-
-#### Date periods
-
-A **date period** is a *time interval* used to record a state of being
-that persisted throughout the stated *time interval*; they are also used
-to record the period of coverage of a source.  It matches the following
-`DatePeriod` production:
- 
-    DatePeriod  ::= "FROM" S Date ( S "TO" S Date )? | "TO" S Date
-
-Use of a *date period* does not necessarily mean the state was believed
-to have begun on the specified "from" *date*, nor that it ended on the
-specified "to" *date*, though where possible this is *recommended*.
-Either the start *date* or the end *date* *may* be omitted from the
-*date period*, in which case the missing *date* is interpreted as being
-*date*.  
-
-{.example}  Abraham Lincoln was President of the United States from
-1861 to 1865.  This could recorded using the *date period* "`FROM 1861
-TO 1865`", or more *precisely* as "`FROM 4 MAR 1861 TO 15 APR 1865`".
-If it were unknown when Lincoln's presidency began, it could be written
-"`TO 15 APR 1865`".
-
-{.note}  The difference between a *date range* and a *date period* is
-sometimes misunderstood and applications should be alert to the wrong
-representation being used.  A *date range* is used to record an
-*instant*, or an event of short duration, when its *date* is not
-precisely known, whereas a *date period* is used to record a state that
-held throughout the specified period.
-
-{.example ...}  Civil birth, marriage and death registrations in England
-and Wales are indexed in quarterly volumes which do not list the
-*precise* *date* of the event.  The coverage of this source is
-represented in ELF using a *date period*:
-
-    0 @S1@ SOUR
-    1 TITL GRO Marriages Index 
-    1 DATA
-    2 EVEN MARR 
-    3 DATE FROM 1 JAN 1898 TO 31 MAR 1898
-
-However the event itself *must not* be recorded using a *date period*
-because the marriage did not take place over an extended period: it
-happened on one particular *date* which is not *precisely* known.  For
-this purpose a *date range* *should* be used.
-
-    0 FAM
-    1 MARR
-    2 DATE BET 1 JAN 1898 AND 31 MAR 1898
-
-A less *precise* alternative would be to just give a year.
-{/}
-
-
-### Date {#date-format}
-
-{.note} Some dates (in particular the [Period](#date-period) and [Value](#date-value) productions) may have multiple [Date](#date-format) values; it is not known if current implementations can handle situations where the dates are from different calendars, nor if they assume an uncalendared date paired with a calendared date is `GREGORIAN` or the same as the other date provided.  It is RECOMMENDED that the same calendar be used for both Dates in such payloads.
-
-The three pieces are formatted as follows:
-    
-day
-:   A decimal number of one or two digits.
-    This SHOULD NOT be zero or greater than the number of days in the appropriate month.
-    This specification does not specify whether single-digit days should begin with a zero or not.
-
-{.ednote} Should we specify leading 0s are preferred?
-
-
-### Datatypes
-
-#### The `elf:DateValue` datatype                           {#DateValue}
-
-The `elf:DateValue` *datatype* is used to record historical *dates*.  
-
-    DateValue ::= Date | DateRange | DatePeriod | DateApprox | DateInterp
-
-
-#### The `elf:DatePeriod` datatype                         {#DatePeriod}
-
-The `elf:DatePeriod` *datatype* is used to represent an extended period
-of history.
-
+One of the following three-character strings: `JAN`, `FEB`, `MAR`, `APR`,
+`MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`.
 
 #### The `elf:DateExact` datatype                           {#DateExact}
 
@@ -1533,184 +1934,6 @@ An *exact date* is a `GREGORIAN` [Date](#date-format)s with the following additi
 -   They MUST include the day and month
 -   They MUST NOT have either year suffix
 
-
-## The `elf:Time` datatype {#time}
-
-ELF uses the `elf:Time` *datatype* to represent *times* using the 24-hour
-clock in *hours*, *minutes* and *seconds*, with these components
-separated by a colon (U+003A).  The *hours* and *minutes* components are
-*required*, and the *seconds* component *should* be provided.  A
-fractional *seconds* component *may* be provided.  
-
-{.example}  The value "`15:30:00`" is a valid *time*, represented using
-the `elf:Time` *datatype*.  It represents half past three in the
-afternoon.
-
-The `elf:Time` *datatype* is typically used in conjunction with a value
-of type `elf:DateExact` called its **associated date**.
-
-{.example ...}  In [ELF Data Model], *times* are found as `TIME`
-subelements of a `DATE` element which has a payload of *datatype*
-`elf:DateExact`.
-
-    2 DATE 10 DEC 2018
-    3 TIME 13:52:00
-
-In this example, "`10 DEC 2018`" is the *associated date* for the time
-"`13:52:00`".
-{/}
-
-{.note}  As specified here, the *associated date* will always be
-expressed in the Gregorian calendar.
-
-*Strings* in the *lexical space* of the `elf:Time` *datatype* *shall*
-match the following `Time` production, as well as the other constraints
-given here on the numerical value of each component.  *Whitespace* is
-not permitted anywhere in an `elf:Time` value.
-
-    Time     ::=  HH ":" MM (":" SS)? TZD?  
-
-    HH       ::= [0-9] [0-9]
-    MM       ::= [0-9] [0-9]
-    SS       ::= [0-9] [0-9] ("." [0-9]+)?
-    TZD      ::= "Z" | ("+" | "-") HH ":" MM
-
-The `HH` production encodes the *hours* component of the *time*,
-zero-padded to two digits.  It *shall* be a decimal integer between `00`
-and `24`, inclusive.  Values outside this range are outside the *lexical
-space* of `elf:Time`.  The *hours* component *shall* only be `24` if the
-*minutes* and *seconds* components are both zero or absent; any other
-uses of `24` as an *hours* component is outside the *lexical space* of
-the *datatype*.
-
-{.example}  The *strings* "`30:00`" and "`24:30`" are both outside the
-*lexical space* of this *datatype*.  The former is invalid because the
-*hours* component of `30` is not between `00` to `24`; the latter is
-invalid because it has an *hours* component of `24` and a non-zero
-*minutes* component.
-
-The *string* "`24:00:00`" is the **end-of-day instant** and denote the
-final *instant* of a *calendar day*.  It is the same *instant* as the
-first *instant* of the following *calendar day* (which is denoted
-`00:00:00`).  *Conformant* applications *must* accept *end-of-day
-instants* as valid input but *must not* create new instances of them.
-A *conformant* application *may* convert an *end-of-day instant* to
-`00:00:00`, but only if it has an *associated date* and that is
-simultaneously incremented by one day.
-
-{.example} A *time* of "`24:00:00`" with an *associated date* of "`30
-NOV 2018`" *may* be converted to a *time* of "`00:00:00`" with an
-*associated date* of "`1 DEC 2018`".
-
-{.note} [GEDCOM 5.5.1] does not specify whether or not the *end-of-day
-instant* is legal, and existing applications are unlikely to produce it.
-It is supported by `elf:Time` for compatibility with [ISO 8601] and the
-`xsd:time` *datatype* defined in [XSD Pt2].
-
-The `MM` production encodes the *minutes* component of the *time*,
-zero-padded to two digits.  It *shall* be a decimal integer between `00`
-and `59`, inclusive.  Values outside this range are outside the *lexical
-space* of `elf:Time`. 
-
-The `SS` production encodes the *seconds* component of the *time*,
-zero-padded to two digits and followed by an *optional* fractional
-component.  It *shall* be a decimal greater than or equal to `00` and
-strictly less than `61`.  Values outside this range are outside the
-*lexical space* of `elf:Time`.
-
-Applications *must* preserve at least the first three decimal digits of
-a fractional *seconds* component, but *may* truncate or round the
-fractional part of the *seconds* component beyond that.  Applications
-*may* add or remove trailing zeros on the frational part of the
-*seconds* component, and *should* add a *seconds* component of `:00` if
-none was given.
-
-{.note}  These provisions allows applications to process *times* using
-the standard data structures and facilities provided in many program
-languages, without preserving the original lexical form of the *time*.
-
-{.note}  A future version of this standard is likely to make the
-*seconds* component *required* to make this *datatype* fully compatible
-with the `xsd:time` *datatype* defined in [XSD Pt2].  
-
-A *seconds* component greater than or equal to `60`, and strictly less
-than `61` is a **leap second** component.  Any use of a *leap second*
-component is part of the *lexical space* of `elf:Time`, but *leap
-second* components *shall* only be used to represent a leap seconds
-inserted by the International Earth Rotation Service or its successor.
-
-*Conformant* applications encountering a *leap seconds* component *may*
-convert it to an ordinary *seconds* component by subtracting one from
-its value.  This *should not* be done if the application supports
-leap seconds and knows the specified *time* was a leap second.
-
-{.example}  The *string* "`12:56:60.800`" is in the *lexical space* of
-this *datatype* and has a *leap second* component of `60.800`.  As leap
-seconds are always been inserted at midnight UTC and there is no
-timezone in which this *time* is midnight UTC, this *time* could not
-arise in practice and therefore *conformant* applications *must not*
-generate such a *time*.  *Conformant* applications *must* accept such
-*times* but *may* subtract one second to convert it to "`12:56:59.800`".
-
-{.note}  [GEDCOM 5.5.1] makes no mention of leap seconds, but existing
-applications are likely to generate such *times* if they happen to save
-a file during the inserted leap second.  Leap seconds are also supported
-in [ISO 8601], but not in the `xsd:time` *datatype* defined in [XSD Pt2].
-These rules allow compatibility with these standards and with possible
-existing use, while also allowing applications to ignore the leap
-second.
-
-The *lexical space* of the `elf:Time` *datatype* allows the inclusion of
-a **time zone designator** matching the `TZD` production.  *Conformant*
-applications *must* accept *time zone designators* on *dates* in input,
-but *should* ignore them and *may* remove them.  *Conformant*
-applications *must not* include *time zone designators* on newly
-generated *times*.
-
-{.note}  Syntactic support for *time zone designators* is an extention to
-[GEDCOM 5.5.1], and is included in ELF for forwards compatibility. This
-standard does not specify the meaning conveyed by a *time zone
-designator*, but the syntax used is compatible with [ISO 8601] and the
-`xsd:time` *datatype* defined in [XSD Pt2], and a future version of this
-standard is likely to define by reference to the latter standard.
-
-Formally, the `elf:Time` *datatype* is a *structured non-language-tagged
-datatype* which has the following *properties*:
-
-: Datatype definition
-
-------           -----------------------------------------------
-Name             `https://terms.fhiso.org/elf/Time`
-Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
-Pattern          `(([01][0-9]|2[0-3]):[0-5][0-9](:([0-5][0-9]|60)(\.[0-9]+)?)?`
-                 `|24:00:00(\.0+)?)(Z|(\+|-)([01][0-9]|2[0-3]):[0-5][0-9])?`
-Supertype        *No non-trivial supertypes*
-Abstract         `false`
-------           -----------------------------------------------
-
-{.note} The *pattern* in the table above has been split on to two
-lines for convenience of presentation; it is, however, really one
-*pattern* and contains no *whitespace* or line breaks.
-really one single line.  Any functional difference between the `Time`
-production and the *pattern* specified above is unintentional.
-
-## Calendars                                                      {#calendars}
-
-### The Gregorian calendar                                        {#gregorian}
-
-Dual years are not allowed.  
-
-{.note} Deviation from [GEDCOM 5.5.1].
-
-*Epoch names*:  BC, B.C., AD, A.D.
-
-B.C. indicates a date before the birth of Christ.
-
-    month   ::= "JAN" | "FEB" | "MAR" | "APR" | "M‌AY" | "JUN"
-                | "JUL" | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
-
-One of the following three-character strings: `JAN`, `FEB`, `MAR`, `APR`,
-`MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, or `DEC`.
  
 ### The Julian calendar                                              {#julian}
 

@@ -979,7 +979,7 @@ Superstructures
 
 Payload
 :   A *line string* in the *lexical space* of the `elf:Age` *datatype*
-    defined in §2 of [ELF Dates].
+    defined in §5 of [ELF Dates].
 
 Default tag
 :   `AGE`
@@ -1518,7 +1518,8 @@ Superstructures
 :   `[elf:EVENTS_RECORDED]`
 
 Payload
-:   A *line string* matching the [Date Period](#date-period) microformat.
+:   A *line string* in the *lexical space* of the `elf:DatePeriod`
+    *datatype* defined in §3.4 of [ELF Dates].
     
     Indicates the period during which the source recorded events.
     
@@ -1535,7 +1536,8 @@ Superstructures
 :   `[elf:Event]`
 
 Payload
-:   A *line string* matching the [Date Value](#date-value) microformat.
+:   A *line string* in the *lexical space* of the `elf:DateValue` 
+    *datatype* defined in §3.3 of [ELF Dates].
     
     Indicates when the event or attribute described by the containing structure occurred or was witnessed.
     
@@ -1647,7 +1649,8 @@ Superstructures
 :   `[elf:SOURCE_CITATION_DATA]`
 
 Payload
-:   A *line string* matching the [Date Value](#date-value) microformat.
+:   A *line string* in the *lexical space* of the `elf:DateValue` 
+    *datatype* defined in §3.3 of [ELF Dates].
     
     Indicates when the portion of the source being cited was entered into the source.
     
