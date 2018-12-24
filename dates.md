@@ -1913,6 +1913,20 @@ specification.
 
 ## Calendar definitions                                     {#calendars}
 
+This section defines four standard *calendars* for use with ELF: the
+Gregorian, Julian, Hebrew and French Republican *calendars*.
+*Conformant* applications are *required* to support all four.
+
+{.ednote}  There is no technical need for applications to support
+anything other than the Gregorian *calendar*.  Would it be better to
+make only this one *required* and the others *recommended*?  Ideally,
+applications would do more than simply check *dates* are synctactically
+valid and would offer conversions between supported *calendars*, *date*
+arithmetic, the ability to look up the day of the week and the *dates*
+of important feast days.  Few applications currently offer this.  Would
+reducing the number of *required* *calendars* make it easier for vendors
+to provide such functionality? 
+
 ### The Gregorian calendar                                  {#gregorian}
 
 {.note} The Gregorian *calendar* is the name given to the now ubiquitous
