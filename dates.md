@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 24 December 2018
+date: 25 December 2018
 numbersections: true
 ...
 
@@ -131,9 +131,9 @@ standard includes a table listing its formal *properties*.
 supertypes* of the *datatype*, and say whether it is an *abstract
 datatype*.  These concepts are defined in §6.1, §6.2 and §6.3 of [Basic
 Concept]s.  The *pattern* is a regular expression written in FHISO's
-`types:Pattern` *datatype* defined in [Patterns].  This information
-forms part of an abstraction which allows applications to use a
-*discovery* mechanism to find out about unknown components, thus
+`types:Pattern` *datatype* defined in [FHISO Patterns].  This
+information forms part of an abstraction which allows applications to
+use a *discovery* mechanism to find out about unknown components, thus
 allowing them to be processed in more sophisticated ways than could be
 done with a truly unknown component.  To support this, FHISO's webserver
 has been configured to provide [Triples Discovery] on all *terms*
@@ -2219,15 +2219,102 @@ One of the following three-character strings: `TSH`, `CSH`, `KSL`, `TVT`,
 
 ### The French Republican calendar                                   {#french}
 
-{.ednote}  Should it only be defined for the years 1 to 14, and
-exceptionally the year 79?  Leap years were 3, 7 and 11 at first, but
-contradictory rules make it unclear how this would have continued.
+{.note} The French Republican *calendar* or French Revolutionary
+*calendar* are the names given to the *calendar* adopted in 1794 by the
+French National Convention.  It is represented in ELF by the `@#DFRENCH
+R@` *calendar escape*.
 
-    month_f ::= "VEND" | "BRUM" | "FRIM" | "NIVO" | "PLUV" | "VENT" | "GERM"
-                | "FLOR" | "PRAI" | "MESS" | "THER" | "FRUC" | "COMP"
+The French Republican *calendar* has an epoch at the start of the
+Gregorian *calendar day* 22 September 1792, the date the First French
+Republic was founded.  This *date* was identified as 1er vendémiaire I
+in the new *calendar*.
 
-One of the following four-character strings: `VEND`, `BRUM`, `FRIM`, `NIVO`,
-`PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER`, `FRUC`, `COMP`.
+{.note}  It is common to write French Republican *calendar years* using
+Roman numerals.
+
+The *calendar* has a single anonymous *forwards epoch name*.  It does
+not provide a *backwards epoch name* for referring to *dates* before the
+founding of the First Republic, nor are zero or negative *logical years*
+permitted.
+
+{.ednote}  If it proves undesirable to have an anonymous *epoch name*,
+the usual phrase in époque républicaine or ère de la republique.  An
+*epoch name* of "`E.R.`" would therefore be sensible.
+
+The *logical year* *shall* be an integer greater than 0 and *should*
+be no greater than 18.  Applications *may* consider any *date* with a
+*logical year* greater than 18 not to be a *well-formed date*.
+
+{.note}  The placement of leap years in the French Revolutionary
+*calendar* was never defined satisfactorily due to an ambiguity in the
+legislation that had not been resolved when the *calendar* was
+abolished.  The *calendar* was in actual use during years II to XIV, and
+the placement of leap years in the peroid between years I and XVIII is
+unambiguous.  The *calendar* was used again very briefly during the
+Paris Commune in May 1871 (Floréal and Prairial LXXIX), and applications
+are encouraged to support this, but ELF does not require this as the
+number of sources of genealogical relevance from the Paris Commune is
+likely to be small.
+
+*Dual years* *must not* be used in the French Republican *calendar*.
+
+Every *calendar year* in the French Republican *calendar* consists of 12
+*calendar months*, which are followed by 5 or 6 intercalary days or
+jours complémentaires which ELF treats as a thirteenth month.  Their
+*month names* are given in the table below in order of their occurence
+in the *calendar year*.  The table also gives the usual form of the
+their name in French, and the number of *calendar days* in each month.
+The *calendar days* in each *calendar month* are numbered sequentially
+starting with 1.
+
+-------  ---------------         -----------------------------
+`VEND`   Vendémiaire              30 days
+`BRUM`   Brumaire                 30 days
+`FRIM`   Frimaire                 30 days
+`NIVO`   Nivôse                   30 days
+`PLUV`   Pluviôse                 30 days 
+`VENT`   Ventôse                  30 days
+`GERM`   Germinal                 30 days
+`FLOR`   Floréal                  30 days
+`PRAI`   Prairial                 30 days
+`MESS`   Messidor                 30 days
+`THER`   Thermidor (or Fervidor)  30 days
+`FRUC`   Fructidor                30 days
+`COMP`   Jours complémentaires    5 or 6 days &mdash; see below
+-------  ---------------          -----------------------------
+
+{.note} The month of Thermidor was also called Fervidor, however ELF
+uses the *month name* `THER` regardless of which form the source uses.
+`FERV` *must not* be used.
+
+The number of additional *calendar days* inserted into the *calendar
+year* as jours complémentaires depends on the *logical year*.  If the
+*logical year* number is 3, 7, 11 or 15, the year had 6 jours
+complémentaires; all other years with *logical year* numbers between 1
+and 18, inclusive, had 5 jours complémentaires.  
+
+{.note}  This standard does not specify when leap years occurred after
+year 18 because the legislation was ambiguous.  The legislation required
+leap years to be arranged such that the autumnal equinox would fall on
+the first day of the year, 1 Vendémiaire, at the Paris Observatory.
+Under this rule, the leap year after year XV would have been five years
+later, in year XX.  However the legislation also said that leap years
+were every four years, in which case the next leap year would have been
+XIX.  A solution was proposed by Charles-Gilbert Romme, one of the
+creators of the *calendar*, which would have placed a leap year in year
+XX, and then one every four years with similar rules as the Gregorian
+*calendar* applying every century.   No decision had been made Napoleon
+abolished the *calendar* stopped, so no definitive statement can be made
+on which subsequent years were leap years, and this standard does not
+require any particular interpretation.  Applications *may* do any of the
+above and remain *conformant*; they *may* also reject anything after
+year XVII as not being *well-formed dates*.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.  This provision applies to jours complémentaires
+too.
+
 
 ## References
 
@@ -2291,7 +2378,7 @@ One of the following four-character strings: `VEND`, `BRUM`, `FRIM`, `NIVO`,
     8601-2:2009.  Data elements and interchange formats — Information
     interchange — Part 2: Extensions*.  Draft, 15 Feb 2016.
 
-[Patterns]
+[FHISO Patterns]
 :   FHISO (Family History Information Standards Organisation).
     *The Pattern Datatype*.  First public draft.
     (See <https://fhiso.org/TR/patterns>.)
