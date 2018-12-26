@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 25 December 2018
+date: 26 December 2018
 numbersections: true
 ...
 
@@ -61,8 +61,8 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
 
 {.ednote}  At the time this draft was published, neither [ELF Data
 Model] nor [ELF Serialisation] were yet at the stage of having a first
-public draft available, however the TSC are working on them and hope to
-have first drafts available soon.  
+public draft available, however FHISO's Technical Standing Committee
+(TSC) are working on them and hope to have first drafts available soon.  
 
 An explanation of the conventions used in this standard can be found in
 {§conventions}, and the general concepts associated with time, calendars
@@ -143,26 +143,31 @@ applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.  
 
-This standard uses the `S` production defined in §2 of [Basic Concepts]
-to match any non-empty sequence of *whitespace* *characters*.
+{.note} In this form of EBNF, *whitespace* is only permitted where it
+is explicitly stated in the grammar.  It is not automatically permitted
+between arbitrary tokens in the grammar.
+
+The grammar productions in this standard uses the `S` production defined
+in §2 of [Basic Concepts] to match any non-empty sequence of
+*whitespace* *characters*.
 
 This standard defines five *datatypes* to represent time-related
-concepts, each of which is identified by a *term name*, which is simply
-an IRI.  The concept of a *datatype*, as used by FHISO, is defined in §
-6 of [Basic Concepts], and the definition of each *datatype* in this
-standard includes a table listing its formal *properties*.
+concepts in ELF, each of which is identified by a *term name*, which is
+simply an IRI.  The concept of a *datatype*, as used by FHISO, is
+defined in §6 of [Basic Concepts], and the definition of each *datatype*
+in this standard includes a table listing its formal *properties*.
 
 {.note}  These *properties* include a formal statement that the
 *datatype* is *datatype*, define the *pattern* and *non-trivial
 supertypes* of the *datatype*, and say whether it is an *abstract
 datatype*.  These concepts are defined in §6.1, §6.2 and §6.3 of [Basic
-Concept]s.  The *pattern* is a regular expression written in FHISO's
+Concepts].  The *pattern* is a regular expression written in FHISO's
 `types:Pattern` *datatype* defined in [FHISO Patterns].  This
 information forms part of an abstraction which allows applications to
 use a *discovery* mechanism to find out about unknown components, thus
 allowing them to be processed in more sophisticated ways than could be
-done with a truly unknown component.  To support this, FHISO's webserver
-has been configured to provide [Triples Discovery] on all *terms*
+done with a truly unknown component.  To support this, FHISO's web
+server has been configured to provide [Triples Discovery] on all *terms*
 defined in this standard.  Such functionality is outside the scope of
 this standard, and is entirely *optional* in ELF.  Most readers can
 safely ignore this formalism and the tables of *properties* given for
@@ -178,10 +183,10 @@ bindings are assumed in this standard:
 `types`          `https://terms.fhiso.org/types/`
 ------           -----------------------------------------------
 
-{.note}  The particular *prefix* assigned above have no relevance
+{.note}  The particular *prefixes* assigned above have no relevance
 outside this standard document as *prefix notation* is not used in the
-formal data model defined by this standard.  This notation is simply a
-notational convenience to make the standard easier to read.
+formal data model as defined by this standard.  This notation is simply
+a notational convenience which makes the standard easier to read.
 
 ## General concepts                                          {#concepts}
 
@@ -190,7 +195,16 @@ Concepts] in a future draft of these documents.
 
 ### Time                                                {#time-concepts}
 
-An **instant** is defined as an infinitesimally brief point in time.  
+An **instant** is defined as an infinitesimally brief point in time.
+
+{.note}  Although defined as an infinitesimally brief point in time, it
+may be subject to the various forms of uncertainty described in
+{§uncertainty}.
+
+{.example}  King Alfred's birth occurred at some particular *instant* in
+the middle of the 9th century.  Even though the year is not known with
+any great certainty, it is still an *instant*.
+
 A **time interval** is defined as the section of time spanning
 between two specific *instants*.
 
@@ -201,9 +215,8 @@ on 14 Feb 2018 is a *time interval*.
 of a *time interval*, beginning at the *instant* of their birth and
 ending with the *instant* of their death.
 
-A **duration** is a measure of the length of time elapsing between two
-*instants*, but without reference to any specific pair of start and end
-*instants*.
+A **duration** is the length of time elapsing between two *instants*,
+but without reference to any specific choice of start and end *instants*.
 
 {.example} "3 days", and "34 years, 2 months" are two examples of
 *durations* expressed in natural language.
@@ -217,7 +230,7 @@ it lasts.
 but the `elf:Age` *datatype* defined in {§age} is a *datatype*
 customised for representing the *duration* of an individual's life.
 
-Fundamental to ELF's handling of dates are a set of *time intervals*
+Fundamental to ELF's handling of dates is a set of *time intervals*
 called **calendar days**, each of which spans from one midnight until
 the next.
 
@@ -279,7 +292,7 @@ leap second is inserted or deleted, or when the local time zone changes.
 
 Many different systems for reckoning *dates* have been used throughout
 history and in different parts of the world. Such systems are called
-**calendars**, and ELF allows historical *dates* to be reckoned using
+**calendars**, and ELF allows historical *dates* to be specified using
 many different *calendars*.
 
 {.example}  The simplest form of *calendar* is to count the number
@@ -305,21 +318,22 @@ whose definitions will be dependent on the particular *calendar*.
 {.note}  It is intended that a *calendar year* will typically be unit of
 time roughly equal to the time it takes the Earth to orbit the Sun, and
 a *calendar month* will be a unit of time intermediate in duration between
-a *calendar day* and a *calendar year*, and which is often loosely based
+a *calendar day* and a *calendar year*, and often loosely based
 on the time it takes the Moon to orbit the Earth.  However these are not
 requirements, nor is it a requirement that all *calendar years* or
-all *calendar months* be of approximately equal length.
+all *calendar months* be of approximately equal length in a given
+*calendar*.
 
 {.ednote}  The flexibility to define *calendar years* and *calendar
 months* arbitrarily might be exploited in the future.  FHISO are
-considering whether there is merit to define a calendar for the Julian
-day.  If definied it would not be for general use in expressing
-historial *dates*, but rather to provide a way of expressing
-*epochs* in a *calendar*-neutral in the definition of *calendars*.
-Because there is no applicable notion of a *calendar month* or *calendar
-year* with Julian days, and because the generic *date* syntax defined in
-{§generic} is most natural with *calendars* that have a *calendar year*,
-it is quite likely this *calendar* might define a *calendar year* and a
+considering whether there is merit to defining a calendar for the Julian
+day.  If defined it would not be for general use expressing historical
+*dates*, but rather to provide a way of expressing *epochs* in a
+*calendar*-neutral way when defining *calendars*.  Because there is no
+applicable notion of a *calendar month* or *calendar year* with Julian
+days, and because the generic *date* syntax defined in {§generic} is
+most natural with *calendars* that have a *calendar year*, it is quite
+likely this *calendar* might define a *calendar year* and a
 *calendar month* to be identical to a *calendar day*.  This standard
 does not prohibit this.
 
@@ -336,12 +350,12 @@ is being used to identify a particular *calendar date*, but with limited
 
 An **epoch** is an *instant* which serves as a reference point for a
 given *calendar* from which *calendar years* are numbered consecutively
-with an integer called the **logical year**, which runs either forwards
-or backwards in time.   When *calendar years* are numbered forwards in
+with an integer called the **logical year**, which either increases
+or decreases with time.  When the *logical year* number increases with
 time, the *epoch* *shall* be first *instant* of the *calendar year*
-with the *logical year* number 1.  When they are numbered backwards,
-the *epoch* *shall* be the last *instant* of the *calendar year*
-with *logical year* number 1.
+with the *logical year* number 1.  When thee *logical year* number
+decreases with time, the *epoch* *shall* be the last *instant* of the
+*calendar year* with *logical year* number 1.
 
 {.example ...}  The *epoch* used in many forms of the Islamic Calendar
 is an *instant* during the Gregorian year AD&nbsp;622, the year of the
@@ -356,37 +370,41 @@ are numbered backwards from the *epoch*.  These have *logical year*
 numbers 1, 2, 3, etc. too.  
 {/}
 
+{.note}  This definition does not limit a *calendar* to having a single
+*epoch*.
+
 A *logical year* number is not sufficient to identify a specific
-*calendar year*: the *epoch* and whether *calendar years* are being
-counted forwards or backwards must also be stated.  An **epoch name** is
-an identifier which represents these two things.  An *epoch name* which
-counts *calendar years* forwards is called a **forwards epoch name**,
-while an *epoch name* which counts *calendar years* backwards is called
-a **reverse epoch name**.
+*calendar year*: it is also necessary to state the particular *epoch*
+from which *calendar years* are numbered, and whether *logical year*
+numbers increase or decrease with time.  An **epoch name** is an
+identifier which represents these two things.  An *epoch name* where
+*logical year* numbers increase with time is called a **forwards epoch
+name**, while an *epoch name* where *logical year* numbers decrease with
+time is called a **reverse epoch name**.
 
 {.example}  The Gregorian calendar has two distinct *epoch names*,
 "AD", standing for Anno Domini, which is a *forwards epoch name*, and
 "BC", standing for Before Christ, which is a *reverse epoch name*.
 Both use the same *epoch*, defined as midnight at start of 1&nbsp;January
-1&nbsp;AD.
+AD&nbsp;1.
 
-At times, the way years were counted historically does not completely
-match the modern reckoning of years which defines the *logical year*,
-even though they are nominally reckoned from the same *epoch*.  The year
-number according to the historical reckoning is called the **historical
-year**.
+The way years were counted in the past does not always fully coincide
+with the modern reckoning of years in that calendar, which is what
+defines the *logical year*, even though they are nominally reckoned from
+the same *epoch*.  The year number according to the historical reckoning
+is called the **historical year**.
 
 {.example}  Prior to the adoption of the Gregorian *calendar* in many
 parts of the world, the year was considered to begin on the Feast of the
 Assumption (otherwise called Lady Day) which falls on 25 March.  This
-was the case in England before 1752.  Contemporary sources record the
-execution Charles I as happening on 30 January 1648.  This was in the
-month following December 1648 and would now be reckoned in 1649, as a
-result of which modern accounts usually describe it as happening on 30
-January 1649.  (This is not a result a change of the Julian *calendar*
-to the Gregorian one: in the Gregorian *calendar* this *date* would be 9
-February 1649.)  In this example, 1649 is the *logical year*, while 1648
-is the *historical year*.
+was the case in England before 1752.  Sources contemporary to the event
+record the execution Charles I as happening on 30 January 1648.  This
+was in the month following December 1648 and would now be considered to
+be in 1649, as a result of which modern accounts usually describe it as
+happening on 30 January 1649.  (This is not a result a change of the
+Julian *calendar* to the Gregorian one: in the Gregorian *calendar* this
+*date* is 9 February 1649.)  In this example, 1649 is the *logical
+year*, while 1648 is the *historical year*.
 
 {.example}  The Byzantine *calendar* counted years since the supposed
 beginning of the world with an *epoch* on 1 September 5509&nbsp;BC,
@@ -420,9 +438,6 @@ if it is considered desirable for ELF to preserve the fact that the
 dates were recorded in these forms.
 
 ### Uncertainty                                           {#uncertainty}
-
-{.ednote}  It is anticipated that this section will be moved to [Basic
-Concepts] in a future draft of these documents.
 
 The **precision** of a stated value, such as a *date*, is a measure of
 how specificity with which the value has been specified: the more
