@@ -22,7 +22,7 @@ FHISO's **Extended Legacy Format** (or **ELF**) is a hierarchical
 serialisation format and genealogical data model that is fully
 compatible with GEDCOM, but with the addition of a structured
 extensibility mechanism.  It also clarifies some ambiguities that were
-present in GEDCOM and documents best current practice. 
+present in GEDCOM, and documents best current practice. 
 
 The **GEDCOM** file format developed by The Church of Jesus Christ of
 Latter-day Saints is the *de facto* standard for the exchange of
@@ -38,7 +38,7 @@ have the status of a standard and has been widely implemented as such.
 FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
 name having been chosen to avoid confusion with any other updates or
-extensions to GEDCOM, or any future use of the term by The Church of
+extensions to GEDCOM, or any future use of the name by The Church of
 Jesus Christ of Latter-day Saints.  This document is one of three that
 form the initial suite of ELF standards, known collectively as ELF 1.0.0:
 
@@ -51,9 +51,7 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
 * **ELF: Date, Age and Time Microformats**.  This standard defines
   microformats for representing dates, ages and times in arbitrary calendars,
   together with how they are applied to the Gregorian, Julian, French
-  Republican and Hebrew calendars.  These formats are largely identical
-  to those used in GEDCOM, but the framework should serve as a basis for
-  future work on calendars.
+  Republican and Hebrew calendars.  
 
 * **ELF: Data Model**.  This standard defines a data model based on the
   lineage-linked GEDCOM form, reformulated in terms of the
@@ -61,7 +59,35 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   update to the GEDCOM data model, but rather a basis for future
   extension.
 
-## Conventions used
+{.ednote}  At the time this draft was published, neither [ELF Data
+Model] nor [ELF Serialisation] were yet at the stage of having a first
+public draft available, however the TSC are working on them and hope to
+have first drafts available soon.  
+
+An explanation of the conventions used in this standard can be found in
+{§conventions}, and the general concepts associated with time, calendars
+and uncertainty are defined in {§concepts}.  A generic syntax for
+expressing dates in arbitrary calendars is given in {§generic}, which
+{§modifiers} extends to support imprecisely known dates and dates
+written in natural language, and {§DatePeriod} extends to support date
+periods representing extended states of being.  Four specific calendars
+are defined in {§calendars}, allowing the Gregorian, Julian, French
+Republican and Hebrew calendars to be used in the generic date syntax.
+
+This standard defines five datatypes so that the formats defined here
+can be used in ELF.  The `elf:DateValue` datatype defined in
+{§DateValue} is ELF's standard datatype for representing historical
+dates, while the `elf:DatePeriod` datatype defined in {§DatePeriod} is
+used to represent date periods, such as the period of coverage of a
+source.  The `elf:DateExact` datatype defined in {§DateExact} is a more
+restricted format for expressing exact dates in the Gregorian calendar,
+and is used to record when ELF objects were created or last modified,
+typically in conjunction with the `elf:Time` format defined in {§time}.
+The `elf:Age` datatype defined in {§age} is used to represent
+individuals' ages.  These datatypes contain only modest changes from
+GEDCOM, but should serve as a basis for future work on calendars.
+
+## Conventions used                                       {#conventions}
 
 Where this standard gives a specific technical meaning to a word or
 phrase, that word or phrase is formatted in bold text in its initial
@@ -157,7 +183,7 @@ outside this standard document as *prefix notation* is not used in the
 formal data model defined by this standard.  This notation is simply a
 notational convenience to make the standard easier to read.
 
-## Basic&nbsp;concepts                                 {#basic-concepts}
+## General concepts                                          {#concepts}
 
 {.ednote}  It is anticipated that this section will be moved to [Basic
 Concepts] in a future draft of these documents.
@@ -610,7 +636,6 @@ additional *datatypes* to duplicate each *calendar* in each
 serialisation format. 
 {/}
 
-
 ## Date formats                                                 {#dates}
 
 ELF uses three different *datatypes* to represent *dates*, depending on
@@ -742,8 +767,8 @@ standard.
 ----------------    -------------------------------------------------
 `@#DGREGORIAN@`     The Gregorian *calendar* defined in {§gregorian}
 `@#DJULIAN@`        The Julian *calendar* defined in {§julian}
-`@#DHEBREW@`        The Hebrew *calendar* defined in {§hebrew}
 `@#DFRENCH R@`      The French Republican *calendar* defined in {§french}
+`@#DHEBREW@`        The Hebrew *calendar* defined in {§hebrew}
 ----------------    -------------------------------------------------
 
 {.ednote}  An earlier draft of this standard included `@#FRENCHR@`
@@ -1182,14 +1207,16 @@ an additional *character* which could serve as a sigil for epoch names,
 and then allow arbitrary characters, e.g. "`$昭和`" for the Shōwa
 period in Japan.
 
-### Date modifiers                                     {#date-modifiers}
+### Date modifiers                                          {#modifiers}
 
 The generic *date* syntax described in {§generic} provides a means of
 specifying a particular *date*, but does not provide a way of describing
 *dates* which are *approxiately stated*, nor of giving natural language
 descriptions, nor of stating a *imprecise* *date* via its *precision
 range*.  ELF provides several extensions to the generic *date* syntax to
-provide this functionality.  These 
+provide this functionality.  Syntactically, these are expressed be
+prefixing the generic *date* syntax with a token called **date
+modifier**.
 
 {.ednote}  This draft, like [GECOM 5.5.1], does not allow more than one
 of these facilities to be used on the same *date*.  It seems potentially
@@ -1202,7 +1229,6 @@ This would also allow constructs such as "`EST ABT 1881`", which the
 GEDCOM grammar does not allow but which appears as an example in [GEDCOM
 5.5.1], albeit as an example of an unnecessary circumlocution.
 Should ELF support such things?
-
 
 #### Approximated dates
 
@@ -1399,7 +1425,7 @@ implementations support them.  They are best avoided where possible.
 
 The `elf:DateValue` *datatype* is used to record historical *dates*.  It
 allows *dates* to be represented using the generic *date* syntax or any
-of the modifier forms given in {§date-modifiers}.  It *may* also be a
+of the modifier forms given in {§modifiers}.  It *may* also be a
 *date period* as defined in {§DatePeriod}.  Its *lexical space* is the
 set of *strings* which match the following `DateValue` production.
 
@@ -1522,8 +1548,389 @@ The *pattern* for this *datatype* is as follows:
 
 {#include DatePeriod.md}
 
+## Calendar definitions                                     {#calendars}
 
-## The `elf:Time` datatype {#time}
+This section defines four standard *calendars* for use with ELF: the
+Gregorian, Julian, Hebrew and French Republican *calendars*.
+*Conformant* applications are *required* to support all four.
+
+{.ednote}  There is no technical need for applications to support
+anything other than the Gregorian *calendar*.  Would it be better to
+make only this one *required* and the others *recommended*?  Ideally,
+applications would do more than simply check *dates* are synctactically
+valid and would offer conversions between supported *calendars*, *date*
+arithmetic, the ability to look up the day of the week and the *dates*
+of important feast days.  Few applications currently offer this.  Would
+reducing the number of *required* *calendars* make it easier for vendors
+to provide such functionality? 
+
+### The Gregorian calendar                                  {#gregorian}
+
+{.note} The Gregorian *calendar* is the name given to the now ubiquitous
+*calendar* introduced by Pope Gregory XIII in 1582 to correct the Julian
+*calendar* which was slowly drifting relative to the seasons.  It is
+represented by the `@#DGREGORIAN@` *calendar escape*, and is also ELF's
+default *calendar*, used whenever a *date* has no *calendar escape* and
+is a *well-formed date* in the Gregorian *calendar*.
+
+The Gregorian *calendar* has an *epoch* at the start of the *calendar
+day* 1 January 1&nbsp;AD, as expressed in the Gregorian *calendar*,
+and two *epoch names* relative to that *epoch*: a *reverse epoch name*
+"`B.C.`", and a *forwards epoch name* "`A.D.`".  The latter is the
+*default epoch name* for the *calendar*, and *should* be omitted.
+
+{.example}  The *date* "`24 DEC 2018 A.D.`" is equivalent to "`24 DEC
+2018`".  The latter is *recommended* for compatibility with [GEDCOM
+5.5.1] which does not support the "`A.D.`" *epoch name*.
+
+{.ednote} Do we want "`B.C.E.`" and "`C.E.`" (standing for Before Common
+Era and Common Era, respectively) as aliases?  There is no technical
+justification for adding them.
+
+Regardless of *epoch name*, the *logical year* *shall* be an integer
+greater than 0.
+
+{.note}  This prohibits negative or zero year numbers as they are not
+needed.  The year before "`1 A.D.`" is "`1 B.C.`".
+
+{.note}  [GEDCOM 5.5.1] says that *logical years* *must* be 3 or 4
+digits long, and presumably requires dates in the first century to be
+zero padded.  This standard has no such requirement, and many current
+applications do not enforce this requirement.
+
+*Dual years* *must not* be used in the Gregorian *calendar*.
+
+{.note} This is a deviation from [GEDCOM 5.5.1] which allows *dual
+years* only on Gregorian *dates*.  In this standard, a *date* with a
+*dual year* is not a *well-formed date* in the Gregorian *calendar*.
+This means a *date* using a *dual year* and no explicit *calendar
+escape* will be assigned the `@#DUNKNOWN@` *calendar escape*.
+
+{.ednote}  In practice there is a very strong likelihood that the Julian
+*calendar* is intended.  This draft could have altered the default
+*calendar* rules in {§cal-escapes} so that *dates* using *dual years*
+and no explicit *calendar escape* were automatically labelled
+`@#DJULIAN@`.  The reason this was not done is that an ELF file
+containing such *dates* is likely to have many other miscalendared
+*dates* but which are *well-formed dates* in the Gregorian *calendar*
+and so go undetected.  Flagging those with *dual years* with
+`@#DUNKNOWN@` will hopefully bring this to the researcher's attention.
+
+Every *calendar year* in the Gregorian *calendar* consists of 12
+*calendar months*.  Their *month names* are given in the table below in
+order of their occurence in the *calendar year*.  The table also gives
+the usual form of their name in English, and the number of *calendar
+days* in each month.  The *calendar days* in each *calendar month* are
+numbered sequentially starting with 1.
+
+-------  ----------   -----------------------------
+`JAN`    January      31 days
+`FEB`    February     28 or 29 days &mdash; see below
+`MAR`    March        31 days
+`APR`    April        30 days
+`MAY`    May          31 days
+`JUN`    June         30 days
+`JUL`    July         31 days
+`AUG`    August       31 days
+`SEP`    September    30 days
+`OCT`    October      31 days
+`NOV`    November     30 days
+`DEC`    December     31 days
+-------  ----------   -----------------------------
+
+The number of *calendar days* in February varies depending on the
+*logical year*.  The rules for determining this number in years with
+the "`A.D.`" *epoch name* are as follows:
+
+*  If the *logical year* number is exactly divisible by 400, 
+   then February has 29 days.
+*  Otherwise, if the *logical year* number is exactly divisible by 100,
+   then February has 28 days.
+*  Otherwise, if the *logical year* number is exactly divisble by 4,
+   then February has 29 days.
+*  Otherwise, February has 28 days.
+
+For years with the "`B.C.`" *epoch name*, the *logical year* number is
+subtracted from one to get zero or a negative number, which is then used
+in place of the *logical year* in the preceding rules.
+
+{.example}  The year 5~BC was a leap year in the proleptic Gregorian
+*calendar*, meaning February had 29 *calendar days*.  This is because
+subtracting 5 from 1 gives -4 which is exactly divisble by 4.
+
+{.note}  Although the Gregorian *calendar* was first introduced in 1582,
+ELF allows its use proleptically, including for *dates* BC.  This is a
+partial departure from [GEDCOM 5.5.1] which only allows *incomplete
+dates* referencing only a *calendar year* to use the "`B.C.`" *epoch
+name*.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.
+
+{.example}  The *date* "`29 FEB 2018`" is not a *well-formed date* in
+the Gregorian *calendar* because Febuary only had 28 days in 2018 due to
+2018 not being exactly divisble by 4.
+
+#### The `elf:DateExact` datatype                           {#DateExact}
+
+The `elf:DateExact` *datatype* is used to record the creation or
+modification *date* of various objects in the ELF data model using the
+Gregorian *calendar*.  The *lexical space* of this *datatype* is the set
+of *strings* which match the following `GregDate` production and which
+are additionally *well-formed dates* in the Gregorian *calendar* defined
+in {§gregorian}.
+
+    GregDate  ::= GregDay S GregMonth S GregYear
+
+    GregDay   ::= [0-9] [0-9]?
+    GregMonth ::= "JAN" | "FEB" | "MAR" | "ARP" | "MAY" | "JUN" | "JUL"
+                  | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
+    GregYear  ::= [0-9] [0-9] [0-9] [0-9]
+
+{.example}  The *string* "`24 DEC 2018`" is a matches the `GregDate`
+production and is a *well-formed date* in the Gregorian *calendar*.  It
+is therefore in the *lexical space* of `elf:DateExact`.  "`54 NOV 2018`"
+is not in the *lexical space* of `elf:DateExact` despite matching the
+`GregDate` production because it is not a *well-formed date* in the
+Gregorian *calendar* due to November only having 30 days. 
+
+{.note ...} This *datatype* is more restricted than a Gregorian *date*
+written in the generic *date* syntax due to the following additional
+constraints:
+
+*   There *must not* be a *calendar escape*.
+*   There *calendar day* and *calendar month* *must* be present.
+*   The *calendar year* component *must* be four digits long.
+*   The *epoch name* *must not* be present.
+*   The *date modifiers* defined in {§modifiers} *must not* be used.
+{/}
+Formally, the `elf:DateExact` *datatype* is a *structured
+non-language-tagged datatype* which has the following *properties*:
+
+: Datatype definition
+
+------           -----------------------------------------------
+Name             `https://terms.fhiso.org/elf/DateExact`
+Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
+Pattern          `[0-9]{1,2}[ \t\r\n](JAN|FEB|MAR|ARP|`<!-- -->`MAY|JUN|JUL|AUG|SEP|OCT`
+                 `|NOV|DEC)[ \t\r\n][0-9]{4}`
+Supertype        *No non-trivial supertypes*
+Abstract         `false`
+------           -----------------------------------------------
+
+{.note} The *pattern* in the table above has been split on to three
+lines for convenience of presentation; it is, however, really one
+*pattern* and contains no *whitespace* or line breaks.
+Any functional difference between the `GregDate` production and the
+*pattern* specified above is unintentional.
+
+{.note}  The `elf:DateExact` *datatype* is not specified as a *subtype*
+of the `elf:DateValue` *datatype* because the latter is a
+*language-tagged datatype*.
+
+### The Julian calendar                                        {#julian}
+
+{.note}  The Julian *calendar* is the name given to the *calendar*
+introduced by Julius Caesar in 45&nbsp;BC and subsequently amended by
+Augustus in about 8&nbsp;BC to correct an error in the application of
+its leap year rule during its first three decades.  The Augustan form of
+the Julian *calendar* is represented by the `@#DJULIAN@` *calendar
+escape*.  Because the Gregorian *calendar* derived from the Julian
+*calendar*, many of details here are the same as those in {§gregorian}.
+
+The Julian *calendar* has an *epoch* at the start of the *calendar
+day* 1 January 1&nbsp;AD, as expressed in the Julian *calendar*, or 30
+December 1&nbsp;BC, as expressed in the proleptic Gregorian *calendar*.
+The Julian *calendar* has the same two *epoch names*, "`B.C.`" and
+"`A.D.`", as the Gregorian *calendar*, but defined relative to the
+Julian *epoch* instead of the Gregorian *epoch*.  The "`A.D.`" *epoch
+name* is the *default epoch name* for the *calendar*, and *should* be
+omitted.
+
+As for the Gregorian *calendar*, regardless of *epoch name*, the
+*logical year* *shall* be an integer greater than 0.
+
+*Dual years* are only allowed when the *logical year* and the
+*historical year* differ by exactly one year.  They are used to
+represent the differing conventions for the first day of the year.
+
+{.note} This is a deviation from [GEDCOM 5.5.1] where *dual years* are
+not permitted with the Julian *calendar*.   
+
+{.note}  *Logical years* always begin on 1 January, but *historical
+years* can begin on an arbitrary day of the year which can result in the
+*historical year* being ahead or behind the *logical year*.  Because the
+use of *dual years* is not restricted to just years beginning on Lady
+Day, it is not in general possible to tell simply from the fact that a
+*dual year* was used what convention for the start of the year.   This
+can usually be inferred from context, and the *logical year* allows an
+application to process the *date* without knowing this.
+
+{.example ...}  In France, the year was reckoned to begin on Easter
+Sunday until 1564 (or 1565 &mdash; the change did not happen uniformly).
+An application cannot tell when reading the *date* "`10 FEB 1521/22`"
+whether it has been written using the French convention of starting the
+year on Easter Sunday or the English convention of starting the year on
+Lady Day, but it is not normally necessary to know this as this *date*
+refers to the same *calendar day* regardless of when the *historical
+year* began.
+
+This is an example where the *historical year* alone could be ambiguous
+due to Easter being a movable feast.  In France, there were two days
+which would have been written "1er avril, 1522".  In both cases, the
+*historical year* is 1522, but only for the first is the *logical year*
+also 1522: for the second, it is 1523.  This means the first *date*
+*must* be encoded in ELF as "`1 APR 1522`", while the second *should* be
+encoded as "`1 APR 1522/23`" (though it *may* alternatively be encoded
+as "`1 APR 1523`", without using a *dual year*).
+{/}
+
+Every *calendar year* in the Julian *calendar*, as reckoned by *logical
+year*, consists of the same 12 *calendar months* as the Gregorian
+calendar.  Their *month names*, the usual English form of their name,
+and the number of *calendar days* in each *calendar month* is as given
+for the Gregorian calendar in the table in {§gregorian}.  The only
+difference is the rule for determining the number of *calendar days* in
+February.
+
+In the Julian *calendar*, the rules for determining the number of
+*calendar days* in February are as follows:
+
+*  If the *logical year* number is exactly divisble by 4,
+   then February has 29 days.
+*  Otherwise, February has 28 days.
+
+{.example}  The year 1900 was a leap year in the Gregorian *calendar*,
+as 1900 is divisible by 100, but it was not a leap year in the Julian
+*calendar*.  This means "`29 FEB 1900`" is a *well-formed date* in the
+Gregorian *calendar*, but not in the Julian *calendar*.
+
+For years with the "`B.C.`" *epoch name*, the *logical year* number is
+subtracted from one to get zero or a negative number, which is then used
+in place of the *logical year* in the preceding rules.
+
+{.note}  The year 5~BC was a leap year according to ELF's definition of
+the Julian *calendar*, because subtracting 5 from 1 gives -4 which is
+divisible by 4.  In fact, the year 5~BC was almost certainly not a leap
+year as the Augustan reform was still taking effect at this point.
+There is disagreement between historians on the exact details of the
+reform, but is generally accepted that by 8~AD the rule for leap years
+given above was being applied correctly.  Any use of the the Julian
+calendar (in its final Augustan form) before about 5~AD should therefore
+be regarded as proleptic.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.
+
+### The French Republican calendar                                   {#french}
+
+{.note} The French Republican *calendar* or French Revolutionary
+*calendar* are the names given to the *calendar* adopted in 1794 by the
+French National Convention.  It is represented in ELF by the `@#DFRENCH
+R@` *calendar escape*.
+
+The French Republican *calendar* has an epoch at the start of the
+Gregorian *calendar day* 22 September 1792, the date the First French
+Republic was founded.  This *date* was identified as 1 Vendémiaire I
+in the new *calendar*.
+
+{.note}  It is common to write French Republican *calendar years* using
+Roman numerals.
+
+The *calendar* has a single anonymous *forwards epoch name*.  It does
+not provide a *backwards epoch name* for referring to *dates* before the
+founding of the First Republic, nor are zero or negative *logical years*
+permitted.
+
+{.ednote}  If it proves undesirable to have an anonymous *epoch name*,
+the usual phrase is "l'époque républicaine" or "l'ère de la republique".
+An *epoch name* of "`E.R.`" would therefore be appropriate.
+
+The *logical year* *shall* be an integer greater than 0 and *should*
+be no greater than 18.  Applications *may* consider any *date* with a
+*logical year* greater than 18 not to be a *well-formed date*.
+
+{.note}  The placement of leap years in the French Revolutionary
+*calendar* was never defined satisfactorily due to an ambiguity in the
+legislation that had not been resolved when the *calendar* was
+abolished.  The *calendar* was in actual use during years II to XIV, and
+the placement of leap years in the peroid between years I and XVIII is
+unambiguous.  The *calendar* was used again very briefly during the
+Paris Commune in May 1871 (Floréal and Prairial LXXIX), and applications
+are encouraged to support this, but ELF does not require this as the
+number of sources of genealogical relevance from the Paris Commune is
+likely to be small.
+
+*Dual years* *must not* be used in the French Republican *calendar*.
+
+Every *calendar year* in the French Republican *calendar* consists of 12
+*calendar months*, which are followed by 5 or 6 intercalary days or
+jours complémentaires which ELF treats as a thirteenth month.  Their
+*month names* are given in the table below in order of their occurence
+in the *calendar year*.  The table also gives the usual form of the
+their name in French, and the number of *calendar days* in each month.
+The *calendar days* in each *calendar month* are numbered sequentially
+starting with 1.
+
+-------  ---------------         -----------------------------
+`VEND`   Vendémiaire              30 days
+`BRUM`   Brumaire                 30 days
+`FRIM`   Frimaire                 30 days
+`NIVO`   Nivôse                   30 days
+`PLUV`   Pluviôse                 30 days 
+`VENT`   Ventôse                  30 days
+`GERM`   Germinal                 30 days
+`FLOR`   Floréal                  30 days
+`PRAI`   Prairial                 30 days
+`MESS`   Messidor                 30 days
+`THER`   Thermidor (or Fervidor)  30 days
+`FRUC`   Fructidor                30 days
+`COMP`   Jours complémentaires    5 or 6 days &mdash; see below
+-------  ---------------          -----------------------------
+
+{.note} The month of Thermidor was also called Fervidor, however ELF
+uses the *month name* `THER` regardless of which form the source uses.
+`FERV` *must not* be used.
+
+The number of additional *calendar days* inserted into the *calendar
+year* as jours complémentaires depends on the *logical year*.  If the
+*logical year* number is 3, 7, 11 or 15, the year had 6 jours
+complémentaires; all other years with *logical year* numbers between 1
+and 18, inclusive, had 5 jours complémentaires.  
+
+{.note}  This standard does not specify when leap years occurred after
+year 18 because the legislation was ambiguous.  The legislation required
+leap years to be arranged such that the autumnal equinox would fall on
+the first day of the year, 1 Vendémiaire, at the Paris Observatory.
+Under this rule, the leap year after year XV would have been five years
+later, in year XX.  However the legislation also said that leap years
+were every four years, in which case the next leap year would have been
+XIX.  A solution was proposed by Charles-Gilbert Romme, one of the
+creators of the *calendar*, which would have placed a leap year in year
+XX, and then one every four years with similar rules as the Gregorian
+*calendar* applying every century.   No decision had been made Napoleon
+abolished the *calendar* stopped, so no definitive statement can be made
+on which subsequent years were leap years, and this standard does not
+require any particular interpretation.  Applications *may* do any of the
+above and remain *conformant*; they *may* also reject anything after
+year XVII as not being *well-formed dates*.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.  This provision applies to jours complémentaires
+too.
+
+### The Hebrew calendar                                        {#hebrew}
+
+    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
+                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
+
+One of the following three-character strings: `TSH`, `CSH`, `KSL`, `TVT`,
+`SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`.
+
+## The `elf:Time` datatype                                       {#time}
 
 ELF uses the `elf:Time` *datatype* to represent *times of day* using the 24-hour
 clock in *hours*, *minutes* and *seconds*, with these components
@@ -1934,388 +2341,6 @@ principle this works fine when the *default datatypes* have disjoint
 *lexical spaces*, as they would here, but it would need careful
 specification.
 
-## Calendar definitions                                     {#calendars}
-
-This section defines four standard *calendars* for use with ELF: the
-Gregorian, Julian, Hebrew and French Republican *calendars*.
-*Conformant* applications are *required* to support all four.
-
-{.ednote}  There is no technical need for applications to support
-anything other than the Gregorian *calendar*.  Would it be better to
-make only this one *required* and the others *recommended*?  Ideally,
-applications would do more than simply check *dates* are synctactically
-valid and would offer conversions between supported *calendars*, *date*
-arithmetic, the ability to look up the day of the week and the *dates*
-of important feast days.  Few applications currently offer this.  Would
-reducing the number of *required* *calendars* make it easier for vendors
-to provide such functionality? 
-
-### The Gregorian calendar                                  {#gregorian}
-
-{.note} The Gregorian *calendar* is the name given to the now ubiquitous
-*calendar* introduced by Pope Gregory XIII in 1582 to correct the Julian
-*calendar* which was slowly drifting relative to the seasons.  It is
-represented by the `@#DGREGORIAN@` *calendar escape*, and is also ELF's
-default *calendar*, used whenever a *date* has no *calendar escape* and
-is a *well-formed date* in the Gregorian *calendar*.
-
-The Gregorian *calendar* has an *epoch* at the start of the *calendar
-day* 1 January 1&nbsp;AD, as expressed in the Gregorian *calendar*,
-and two *epoch names* relative to that *epoch*: a *reverse epoch name*
-"`B.C.`", and a *forwards epoch name* "`A.D.`".  The latter is the
-*default epoch name* for the *calendar*, and *should* be omitted.
-
-{.example}  The *date* "`24 DEC 2018 A.D.`" is equivalent to "`24 DEC
-2018`".  The latter is *recommended* for compatibility with [GEDCOM
-5.5.1] which does not support the "`A.D.`" *epoch name*.
-
-{.ednote} Do we want "`B.C.E.`" and "`C.E.`" (standing for Before Common
-Era and Common Era, respectively) as aliases?  There is no technical
-justification for adding them.
-
-Regardless of *epoch name*, the *logical year* *shall* be an integer
-greater than 0.
-
-{.note}  This prohibits negative or zero year numbers as they are not
-needed.  The year before "`1 A.D.`" is "`1 B.C.`".
-
-{.note}  [GEDCOM 5.5.1] says that *logical years* *must* be 3 or 4
-digits long, and presumably requires dates in the first century to be
-zero padded.  This standard has no such requirement, and many current
-applications do not enforce this requirement.
-
-*Dual years* *must not* be used in the Gregorian *calendar*.
-
-{.note} This is a deviation from [GEDCOM 5.5.1] which allows *dual
-years* only on Gregorian *dates*.  In this standard, a *date* with a
-*dual year* is not a *well-formed date* in the Gregorian *calendar*.
-This means a *date* using a *dual year* and no explicit *calendar
-escape* will be assigned the `@#DUNKNOWN@` *calendar escape*.
-
-{.ednote}  In practice there is a very strong likelihood that the Julian
-*calendar* is intended.  This draft could have altered the default
-*calendar* rules in {§cal-escapes} so that *dates* using *dual years*
-and no explicit *calendar escape* were automatically labelled
-`@#DJULIAN@`.  The reason this was not done is that an ELF file
-containing such *dates* is likely to have many other miscalendared
-*dates* but which are *well-formed dates* in the Gregorian *calendar*
-and so go undetected.  Flagging those with *dual years* with
-`@#DUNKNOWN@` will hopefully bring this to the researcher's attention.
-
-Every *calendar year* in the Gregorian *calendar* consists of 12
-*calendar months*.  Their *month names* are given in the table below in
-order of their occurence in the *calendar year*.  The table also gives
-the usual form of their name in English, and the number of *calendar
-days* in each month.  The *calendar days* in each *calendar month* are
-numbered sequentially starting with 1.
-
--------  ----------   -----------------------------
-`JAN`    January      31 days
-`FEB`    February     28 or 29 days &mdash; see below
-`MAR`    March        31 days
-`APR`    April        30 days
-`MAY`    May          31 days
-`JUN`    June         30 days
-`JUL`    July         31 days
-`AUG`    August       31 days
-`SEP`    September    30 days
-`OCT`    October      31 days
-`NOV`    November     30 days
-`DEC`    December     31 days
--------  ----------   -----------------------------
-
-The number of *calendar days* in February varies depending on the
-*logical year*.  The rules for determining this number in years with
-the "`A.D.`" *epoch name* are as follows:
-
-*  If the *logical year* number is exactly divisible by 400, 
-   then February has 29 days.
-*  Otherwise, if the *logical year* number is exactly divisible by 100,
-   then February has 28 days.
-*  Otherwise, if the *logical year* number is exactly divisble by 4,
-   then February has 29 days.
-*  Otherwise, February has 28 days.
-
-For years with the "`B.C.`" *epoch name*, the *logical year* number is
-subtracted from one to get zero or a negative number, which is then used
-in place of the *logical year* in the preceding rules.
-
-{.example}  The year 5~BC was a leap year in the proleptic Gregorian
-*calendar*, meaning February had 29 *calendar days*.  This is because
-subtracting 5 from 1 gives -4 which is exactly divisble by 4.
-
-{.note}  Although the Gregorian *calendar* was first introduced in 1582,
-ELF allows its use proleptically, including for *dates* BC.  This is a
-partial departure from [GEDCOM 5.5.1] which only allows *incomplete
-dates* referencing only a *calendar year* to use the "`B.C.`" *epoch
-name*.
-
-A *date* which uses a *calendar day* number which is greater than the
-number of *calendar days* in the specified year and month is not a
-*well-formed date*.
-
-{.example}  The *date* "`29 FEB 2018`" is not a *well-formed date* in
-the Gregorian *calendar* because Febuary only had 28 days in 2018 due to
-2018 not being exactly divisble by 4.
-
-#### The `elf:DateExact` datatype                           {#DateExact}
-
-The `elf:DateExact` *datatype* is used to record the creation or
-modification *date* of various objects in the ELF data model using the
-Gregorian *calendar*.  The *lexical space* of this *datatype* is the set
-of *strings* which match the following `GregDate` production and which
-are additionally *well-formed dates* in the Gregorian *calendar* defined
-in {§gregorian}.
-
-    GregDate  ::= GregDay S GregMonth S GregYear
-
-    GregDay   ::= [0-9] [0-9]?
-    GregMonth ::= "JAN" | "FEB" | "MAR" | "ARP" | "MAY" | "JUN" | "JUL"
-                  | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
-    GregYear  ::= [0-9] [0-9] [0-9] [0-9]
-
-{.example}  The *string* "`24 DEC 2018`" is a matches the `GregDate`
-production and is a *well-formed date* in the Gregorian *calendar*.  It
-is therefore in the *lexical space* of `elf:DateExact`.  "`54 NOV 2018`"
-is not in the *lexical space* of `elf:DateExact` despite matching the
-`GregDate` production because it is not a *well-formed date* in the
-Gregorian *calendar* due to November only having 30 days. 
-
-{.note ...} This *datatype* is more restricted than a Gregorian *date*
-written in the generic *date* syntax due to the following additional
-constraints:
-
-*   There *must not* be a *calendar escape*.
-*   There *calendar day* and *calendar month* *must* be present.
-*   The *calendar year* component *must* be four digits long.
-*   The *epoch name* *must* be omitted.
-{/}
-Formally, the `elf:DateExact` *datatype* is a *structured
-non-language-tagged datatype* which has the following *properties*:
-
-: Datatype definition
-
-------           -----------------------------------------------
-Name             `https://terms.fhiso.org/elf/DateExact`
-Type             `http://www.w3.org/2000/01/rdf-schema#Datatype`
-Pattern          `[0-9]{1,2}[ \t\r\n](JAN|FEB|MAR|ARP|`<!-- -->`MAY|JUN|JUL|AUG|SEP|OCT`
-                 `|NOV|DEC)[ \t\r\n][0-9]{4}`
-Supertype        *No non-trivial supertypes*
-Abstract         `false`
-------           -----------------------------------------------
-
-{.note} The *pattern* in the table above has been split on to three
-lines for convenience of presentation; it is, however, really one
-*pattern* and contains no *whitespace* or line breaks.
-Any functional difference between the `GregDate` production and the
-*pattern* specified above is unintentional.
-
-{.note}  The `elf:DateExact` *datatype* is not specified as a *subtype*
-of the `elf:DateValue` *datatype* because the latter is a
-*language-tagged datatype*.
-
-### The Julian calendar                                        {#julian}
-
-{.note}  The Julian *calendar* is the name given to the *calendar*
-introduced by Julius Caesar in 45&nbsp;BC and subsequently amended by
-Augustus in about 8&nbsp;BC to correct an error in the application of
-its leap year rule during its first three decades.  The Augustan form of
-the Julian *calendar* is represented by the `@#DJULIAN@` *calendar
-escape*.  Because the Gregorian *calendar* derived from the Julian
-*calendar*, many of details here are the same as those in {§gregorian}.
-
-The Julian *calendar* has an *epoch* at the start of the *calendar
-day* 1 January 1&nbsp;AD, as expressed in the Julian *calendar*, or 30
-December 1&nbsp;BC, as expressed in the proleptic Gregorian *calendar*.
-The Julian *calendar* has the same two *epoch names*, "`B.C.`" and
-"`A.D.`", as the Gregorian *calendar*, but defined relative to the
-Julian *epoch* instead of the Gregorian *epoch*.  The "`A.D.`" *epoch
-name* is the *default epoch name* for the *calendar*, and *should* be
-omitted.
-
-As for the Gregorian *calendar*, regardless of *epoch name*, the
-*logical year* *shall* be an integer greater than 0.
-
-*Dual years* are only allowed when the *logical year* and the
-*historical year* differ by exactly one year.  They are used to
-represent the differing conventions for the first day of the year.
-
-{.note} This is a deviation from [GEDCOM 5.5.1] where *dual years* are
-not permitted with the Julian *calendar*.   
-
-{.note}  *Logical years* always begin on 1 January, but *historical
-years* can begin on an arbitrary day of the year which can result in the
-*historical year* being ahead or behind the *logical year*.  Because the
-use of *dual years* is not restricted to just years beginning on Lady
-Day, it is not in general possible to tell simply from the fact that a
-*dual year* was used what convention for the start of the year.   This
-can usually be inferred from context, and the *logical year* allows an
-application to process the *date* without knowing this.
-
-{.example ...}  In France, the year was reckoned to begin on Easter
-Sunday until 1564 (or 1565 &mdash; the change did not happen uniformly).
-An application cannot tell when reading the *date* "`10 FEB 1521/22`"
-whether it has been written using the French convention of starting the
-year on Easter Sunday or the English convention of starting the year on
-Lady Day, but it is not normally necessary to know this as this *date*
-refers to the same *calendar day* regardless of when the *historical
-year* began.
-
-This is an example where the *historical year* alone could be ambiguous
-due to Easter being a movable feast.  In France, there were two days
-which would have been written "1er avril, 1522".  In both cases, the
-*historical year* is 1522, but only for the first is the *logical year*
-also 1522: for the second, it is 1523.  This means the first *date*
-*must* be encoded in ELF as "`1 APR 1522`", while the second *should* be
-encoded as "`1 APR 1522/23`" (though it *may* alternatively be encoded
-as "`1 APR 1523`", without using a *dual year*).
-{/}
-
-Every *calendar year* in the Julian *calendar*, as reckoned by *logical
-year*, consists of the same 12 *calendar months* as the Gregorian
-calendar.  Their *month names*, the usual English form of their name,
-and the number of *calendar days* in each *calendar month* is as given
-for the Gregorian calendar in the table in {§gregorian}.  The only
-difference is the rule for determining the number of *calendar days* in
-February.
-
-In the Julian *calendar*, the rules for determining the number of
-*calendar days* in February are as follows:
-
-*  If the *logical year* number is exactly divisble by 4,
-   then February has 29 days.
-*  Otherwise, February has 28 days.
-
-{.example}  The year 1900 was a leap year in the Gregorian *calendar*,
-as 1900 is divisible by 100, but it was not a leap year in the Julian
-*calendar*.  This means "`29 FEB 1900`" is a *well-formed date* in the
-Gregorian *calendar*, but not in the Julian *calendar*.
-
-For years with the "`B.C.`" *epoch name*, the *logical year* number is
-subtracted from one to get zero or a negative number, which is then used
-in place of the *logical year* in the preceding rules.
-
-{.note}  The year 5~BC was a leap year according to ELF's definition of
-the Julian *calendar*, because subtracting 5 from 1 gives -4 which is
-divisible by 4.  In fact, the year 5~BC was almost certainly not a leap
-year as the Augustan reform was still taking effect at this point.
-There is disagreement between historians on the exact details of the
-reform, but is generally accepted that by 8~AD the rule for leap years
-given above was being applied correctly.  Any use of the the Julian
-calendar (in its final Augustan form) before about 5~AD should therefore
-be regarded as proleptic.
-
-A *date* which uses a *calendar day* number which is greater than the
-number of *calendar days* in the specified year and month is not a
-*well-formed date*.
-
-### The Hebrew calendar                                              {#hebrew}
-
-    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
-                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
-
-One of the following three-character strings: `TSH`, `CSH`, `KSL`, `TVT`,
-`SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`.
-
-### The French Republican calendar                                   {#french}
-
-{.note} The French Republican *calendar* or French Revolutionary
-*calendar* are the names given to the *calendar* adopted in 1794 by the
-French National Convention.  It is represented in ELF by the `@#DFRENCH
-R@` *calendar escape*.
-
-The French Republican *calendar* has an epoch at the start of the
-Gregorian *calendar day* 22 September 1792, the date the First French
-Republic was founded.  This *date* was identified as 1er vendémiaire I
-in the new *calendar*.
-
-{.note}  It is common to write French Republican *calendar years* using
-Roman numerals.
-
-The *calendar* has a single anonymous *forwards epoch name*.  It does
-not provide a *backwards epoch name* for referring to *dates* before the
-founding of the First Republic, nor are zero or negative *logical years*
-permitted.
-
-{.ednote}  If it proves undesirable to have an anonymous *epoch name*,
-the usual phrase in époque républicaine or ère de la republique.  An
-*epoch name* of "`E.R.`" would therefore be sensible.
-
-The *logical year* *shall* be an integer greater than 0 and *should*
-be no greater than 18.  Applications *may* consider any *date* with a
-*logical year* greater than 18 not to be a *well-formed date*.
-
-{.note}  The placement of leap years in the French Revolutionary
-*calendar* was never defined satisfactorily due to an ambiguity in the
-legislation that had not been resolved when the *calendar* was
-abolished.  The *calendar* was in actual use during years II to XIV, and
-the placement of leap years in the peroid between years I and XVIII is
-unambiguous.  The *calendar* was used again very briefly during the
-Paris Commune in May 1871 (Floréal and Prairial LXXIX), and applications
-are encouraged to support this, but ELF does not require this as the
-number of sources of genealogical relevance from the Paris Commune is
-likely to be small.
-
-*Dual years* *must not* be used in the French Republican *calendar*.
-
-Every *calendar year* in the French Republican *calendar* consists of 12
-*calendar months*, which are followed by 5 or 6 intercalary days or
-jours complémentaires which ELF treats as a thirteenth month.  Their
-*month names* are given in the table below in order of their occurence
-in the *calendar year*.  The table also gives the usual form of the
-their name in French, and the number of *calendar days* in each month.
-The *calendar days* in each *calendar month* are numbered sequentially
-starting with 1.
-
--------  ---------------         -----------------------------
-`VEND`   Vendémiaire              30 days
-`BRUM`   Brumaire                 30 days
-`FRIM`   Frimaire                 30 days
-`NIVO`   Nivôse                   30 days
-`PLUV`   Pluviôse                 30 days 
-`VENT`   Ventôse                  30 days
-`GERM`   Germinal                 30 days
-`FLOR`   Floréal                  30 days
-`PRAI`   Prairial                 30 days
-`MESS`   Messidor                 30 days
-`THER`   Thermidor (or Fervidor)  30 days
-`FRUC`   Fructidor                30 days
-`COMP`   Jours complémentaires    5 or 6 days &mdash; see below
--------  ---------------          -----------------------------
-
-{.note} The month of Thermidor was also called Fervidor, however ELF
-uses the *month name* `THER` regardless of which form the source uses.
-`FERV` *must not* be used.
-
-The number of additional *calendar days* inserted into the *calendar
-year* as jours complémentaires depends on the *logical year*.  If the
-*logical year* number is 3, 7, 11 or 15, the year had 6 jours
-complémentaires; all other years with *logical year* numbers between 1
-and 18, inclusive, had 5 jours complémentaires.  
-
-{.note}  This standard does not specify when leap years occurred after
-year 18 because the legislation was ambiguous.  The legislation required
-leap years to be arranged such that the autumnal equinox would fall on
-the first day of the year, 1 Vendémiaire, at the Paris Observatory.
-Under this rule, the leap year after year XV would have been five years
-later, in year XX.  However the legislation also said that leap years
-were every four years, in which case the next leap year would have been
-XIX.  A solution was proposed by Charles-Gilbert Romme, one of the
-creators of the *calendar*, which would have placed a leap year in year
-XX, and then one every four years with similar rules as the Gregorian
-*calendar* applying every century.   No decision had been made Napoleon
-abolished the *calendar* stopped, so no definitive statement can be made
-on which subsequent years were leap years, and this standard does not
-require any particular interpretation.  Applications *may* do any of the
-above and remain *conformant*; they *may* also reject anything after
-year XVII as not being *well-formed dates*.
-
-A *date* which uses a *calendar day* number which is greater than the
-number of *calendar days* in the specified year and month is not a
-*well-formed date*.  This provision applies to jours complémentaires
-too.
-
-
 ## References
 
 ### Normative references
@@ -2344,12 +2369,10 @@ too.
 [ELF Data Model]
 :   FHISO (Family History Information Standards Organisation).
     *Extended Legacy Format (ELF): Data Model*.  Exploratory draft.
-    (See <https://fhiso.org/TR/elf-data-model>.)
 
 [ELF Serialisation]
 :   FHISO (Family History Information Standards Organisation).
     *Extended Legacy Format (ELF): Serialisation Format*.  Exploratory draft.
-    (See <https://fhiso.org/TR/elf-serialisation>.)
 
 [GEDCOM 5.3]
 :   The Church of Jesus Christ of Latter-day Saints.

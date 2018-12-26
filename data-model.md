@@ -979,7 +979,7 @@ Superstructures
 
 Payload
 :   A *line string* in the *lexical space* of the `elf:Age` *datatype*
-    defined in §5 of [ELF Dates].
+    defined in §6 of [ELF Dates].
 
 Default tag
 :   `AGE`
@@ -1298,7 +1298,7 @@ Substructures
 
 Payload
 :   A *line string* in the *lexical space* of the `elf:DateExact` 
-    *datatype* defined in §6.1.1 of [ELF Dates].
+    *datatype* defined in §4.1.1 of [ELF Dates].
     
     Indicates the last change to the containing structure.
 
@@ -3519,7 +3519,7 @@ Substructures
 
 Payload
 :   A *line string* in the *lexical space* of the `elf:Time`
-    *datatype* defined in §4 of [ELF Dates].
+    *datatype* defined in §5 of [ELF Dates].
 
 Default tag
 :   `TIME`
@@ -3887,7 +3887,7 @@ Substructures
 
 Payload
 :   A *line string* in the *lexical space* of the `elf:DateExact` 
-    *datatype* defined in §6.1.1 of [ELF Dates].
+    *datatype* defined in §4.1.1 of [ELF Dates].
         
     Contains the date the source dataset (described by the superstructure) was published or created.
 
@@ -3934,7 +3934,7 @@ Substructure
 
 Payload
 :   A *line string* in the *lexical space* of the `elf:DateExact` 
-    *datatype* defined in §6.1.1 of [ELF Dates].
+    *datatype* defined in §4.1.1 of [ELF Dates].
 
     The date that this dataset was created.
 
