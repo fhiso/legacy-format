@@ -461,10 +461,10 @@ specific day.
 {.note} Values are stated *imprecisely* for many reasons, including when
 a more *precise* value is not known and when greater *precision* is
 considered irrelevant.  Another reason is when the value being stated is
-inherently ambiguous.
+*inherently ambiguous*.
 
-When the value being stated is *instant* at which some entity changes
-state, it is common for to this *instant* not to be defined with
+When the value being stated is the *instant* at which some entity
+changed state, it is common for this *instant* not to be defined with
 arbitrary *precision* because there is a *time interval* during the
 transition when it is not well-defined what the state is.  The
 *duration* of this *time interval* is known as the **inherent
@@ -472,7 +472,7 @@ ambiguity** of the *instant* of the change.
 
 {.example}  Depending on the jurisdiction, the *precise* *instant*
 during a wedding when the couple become married may be ill-defined as
-there are several obvious possibiliies.  It could be argued to occur
+there are several obvious possibilities.  It could be argued to occur
 when the couple complete their vows, or when the priest declares the
 couple husband and wife; or it might be when the last signature is put
 on marriage certificate has been completed, or when the ceremony ends.
@@ -491,14 +491,14 @@ three different ways in the earlier example.  In order of decreasing
 *precision* these were "St Crispin's Day, 1415", "the autumn of 1415",
 and "during Henry V's reign".  The meaning of St Cripin's Day is
 well-defined: it is 25 October.  Had the Battle of Agincourt in fact
-occurred on 24 October 1415, for example, this would not be consistent
-with the statement that it happened on St Crispin's Day.  "St Crispin's
-Day, 1415" is therefore an *exactly stated* value.  "During Henry V's
-reign" is similarly *exactly stated*.
+occurred on 24 October 1415, this would not be consistent with the
+statement that it happened on St Crispin's Day.  "St Crispin's Day,
+1415" is therefore an *exactly stated* value.  "During Henry V's reign"
+is similarly *exactly stated*.
 
 "The autumn of 1415" is very likely not well-defined.  Some people
-define it as stretching from the autumnal equinox (in late September) to
-the winter solstice (in late December), but this definition is by no
+define it as stretching from the autumnal equinox in late September to
+the winter solstice in late December, but this definition is by no
 means universal.  Often it is used a more vague manner to refer to the
 later part of the year in the northern hemisphere.  Unless context makes
 it clear that a specific, well-defined meaning of word "autumn" was
@@ -538,7 +538,7 @@ range* and is a *calendar year*.  In this example, the stated value is
 
 {.example}  If a person is said to have married in the 1910s, it is
 fairly clear this refers to a decade and therefore the *precision range*
-is 10 years.  However if the person was said to have married in the
+is 10 years.  However if the person is said to have married in the
 1900s, this might mean the decade or the century.  Without further
 context, the intended *precision range* is unclear.
 
@@ -592,12 +592,14 @@ found on 31 January.  The coroner determined the man had been dead for
 one to two weeks when found, but that no more *precise* date of death
 could be established.  A newspaper obituary simply said he died in
 January, but a gravestone was erected giving his date of death as 21
-January.  A researcher might conclude the obituary is *reliable* as the
-less *precise* "in January" is almost certainly *accurate* as it it
-consistent with the other evidence.  The gravestone might be *accurate*
-and it is not contradicted by the other evidence, but if the researcher
-believes the *date* "21 January" was made up in order to be able to put
-something on the grave, it might be judged *unreliable*.
+January.  A researcher might conclude the bare month given in the
+obituary is *reliable* because the relatively *imprecise* *date* is very
+likely *accurate* as it is consistent with the other evidence.  The
+gravestone might be *accurate*, and it is not directly contradicted by
+the other evidence, but if the researcher believes the *date* "21
+January" was made up, perhaps so that something could be put on the
+grave, it might be judged *unreliable* as there is a high likelihood
+that the true *instant* of death was not actually on 21 January.
 
 This is not an example of *inherent ambiguity*.  Depending on the
 circumstances of the death, there may have been a few minutes of
@@ -609,46 +611,38 @@ of the uncertainty is from lack of knowledge of what happened and when.
 
 {.ednote}  This whole section may vanish in a future draft.
 
-Use of the *datatypes* defined in this standard in serialisation formats
-other than with ELF is *not recommended*.
+The *datatypes* defined in this standard are *not recommended* for us in
+serialisation formats other than with ELF.
 
 {.ednote ...} In due course we need to decide FHISO's preferred way of
 handling *dates* and *durations* in other serialisation formats.  GEDCOM
-X, for example, uses a format more closely based on [ISO 8601], and in
-early discussion on *dates* and in the call for paper submissions, we
+X, for example, uses a format more closely aligned with [ISO 8601], and
+in early discussion on *dates* and in our call for paper submissions, we
 were erring in that direction too.  
 
-If we end up with one *date* format for ELF, another for GEDCOM X, and
-possibly even a third one for a future format of our own, we will want
-to make sure we don't end up with *dates* formatted for GEDCOM X
-appearing in ELF, or vice versa, otherwise an ELF application will need
-to know about every *date* format.  At some level, this requires
-converting *dates* between formats when data containing *dates* moves
-between systems.  For data in the [ELF Data Model] or in the GEDCOM X
-data model, this is no problem as a data conversion stage will be
-required when converting between data models, and it can convert the
-*date* formats too.
+If we have one *date* format for ELF, another for GEDCOM X, and
+possibly even a third one for a future format of our own, we will
+probably want to make sure we don't end up with *dates* formatted for
+GEDCOM X appearing in ELF, or vice versa, otherwise an ELF application
+will need to know about every *date* format rather than just the ELF
+*date* formats.  At some level, this requires converting *dates* between
+formats when data is transferred between systems.  For data in the [ELF
+Data Model] or in the GEDCOM X data model, this is no problem as a data
+conversion stage will be required when converting between data models,
+and it can convert the *date* formats too.
 
-The problem arises with data in the data model of one of FHISO's
-component standards, like [CEV Concepts], which is intended to be usable
-in ELF, GEDCOM X and other data models.  An ELF application will not
-necessarily know about CEV, so there needs to some way of indicating
-that the ELF *structure* it is reading contains a *date*.  The could be
-done by requiring an ELF schema to be present, though that might be too
-onerous a requirement, or by requiring a specific tag like `DATE` to be
-used.  The same issue may exist for *ages* too, but it is not general to
-all *datatypes* &mdash; just those which have to be formatted
-differently in different serialisations, which will hopefully be a
-minority of *datatypes*.
-
-On a technical level, we need to decide how to model the fact that
-*dates* are formatted differently in (at least) ELF and GEDCOM X in the
-system of *datatypes* developed in [Basic Concepts].  One option is to
-have a separate set of *datatypes* for ELF, for GEDCOM X, and so on.
-That's technically straightforward and is the approach taken here, but
-because each *calendar* has its own *datatype*, this may require many
-additional *datatypes* to duplicate each *calendar* in each
-serialisation format. 
+A problem arises in FHISO's component standards, such as [CEV Concepts],
+which are intended to be usable in ELF, GEDCOM X and other data models.
+An ELF application will not necessarily know about CEV and will then see
+the CEV *structures* as unknown extensions, so there needs to some way of
+indicating that the ELF structure it is reading contains a *date*.
+This could be done by requiring an ELF schema to be present and have it
+specify the datatype for the payload, though that might be too onerous
+a requirement.  Another option is to require a specific tag like `DATE`
+to be used, and special case this.  The same issue may exist for *ages*
+too, but it is not general to all *datatypes* &mdash; just those which
+have to be formatted differently in different serialisations, which will
+hopefully be a minority of *datatypes*.
 {/}
 
 ## Date formats                                                 {#dates}
