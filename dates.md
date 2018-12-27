@@ -1239,23 +1239,26 @@ specifying a particular *date*, but does not provide a way of describing
 *dates* which are *approxiately stated*, nor of giving natural language
 descriptions, nor of stating a *imprecise* *date* via its *precision
 range*.  ELF provides several extensions to the generic *date* syntax to
-provide this functionality.  Syntactically, these are expressed be
+provide this functionality.  Syntactically, these are expressed by
 prefixing the generic *date* syntax with a token called **date
 modifier**.
+
+{.example}  An "`ABT`" *date modifier* is introduced in {§approx}.  It
+is placed before the *date*, as in "`ABT JAN 1901`".  
 
 {.ednote}  This draft, like [GECOM 5.5.1], does not allow more than one
 of these facilities to be used on the same *date*.  It seems potentially
 useful to remove this restriction, for example by allowing "`FROM ABT
-1798 TO 2 JAN 1842`".  Thebe no ambiguity in the grammar with
+1798 TO 2 JAN 1842`".  There would be no ambiguity in the grammar with
 such constructs and their meaning would generally be well defined.
 Backwards compatibility could be handled by saying that applications
 *should not* produce such constructs but *must* be able to read them.
 This would also allow constructs such as "`EST ABT 1881`", which the
 GEDCOM grammar does not allow but which appears as an example in [GEDCOM
 5.5.1], albeit as an example of an unnecessary circumlocution.
-Should ELF support such things?
+Should the initial version of ELF support such things?
 
-#### Approximated dates
+#### Approximated dates                                        {#approx}
 
 A *date* *may* be preceded by one of the tokens `ABT`, `CAL` or `EST`,
 as shown in the following `DateApprox` production:
@@ -1270,21 +1273,21 @@ that its *precision* is lower than would have been the case without the
 
 {.example}  If it is known that the first and third children in a family
 were born in 1897 and 1900, the second child's birth *may* be recorded
-as `ABT 1899` as the *date* of birth is fairly well bounded, even if
+as "`ABT 1899`" as the *date* of birth is fairly well bounded, even if
 twins were involved.  
 
 {.note}  The `ABT` token is currently by far the most commonly used of
 the three approximated tokens.
 
 The `EST` token also indicates that *date* is *approximately stated*,
-and is only an estimate perhaps based only on stastical likelihoods or
+and is an estimate perhaps based only on statistical likelihoods or
 cultural norms.  An application *may* assume a *date* written with the
 `EST` token has lower *precision* than one with the `ABT` token.
 
 {.example}  If it is known that the first three children in a family of
 four were born between 1897 and 1900, a researcher might conclude that
 it is probable that next child was born shortly afterwards and estimate
-the *date* of birth as `EST 1903`.  The `ABT` token *should not* be used
+the *date* of birth as "`EST 1903`".  The `ABT` token *should not* be used
 in this case, unless there is additional evidence that the fourth child
 was not much younger.
 
@@ -1294,7 +1297,7 @@ baptism in 1692 and gives the father's name, a researcher might wish to
 record an estimate of the father's *date* of birth, perhaps to help
 disambiguate him from other people of the same name.  If such an
 estimate is to recorded, it should use the `EST` token, for example,
-`EST 1660`.
+"`EST 1660`".
 
 The `CAL` token is used to record a *date* that is not directly stated
 in a source, but instead has been calculated from other known values,
@@ -1304,7 +1307,8 @@ similar or higher *precision* than one written with the `ABT` token.
 
 {.example}  If a newspaper reports on a golden wedding celebration in
 the summer of 1948, this is evidence that the wedding happened 50 years
-previously, and the date of the marriage *may* be entered as `CAL 1898`.
+previously, and the date of the marriage *may* be entered as "`CAL
+1898`".
 
 When a *date* is calculated from another *date* and an *imprecise*
 *duration* separating them, use of the `ABT` token is *recommended*
@@ -1314,11 +1318,11 @@ instead of the `CAL` token.
 individuals' *ages* on their most recent birthday.  A person recorded as
 72 could have been born in 1807 or 1808.  Because the *age* has been
 rounded down and is therefore somewhat *imprecise*, it is *recommended*
-that the *date* of birth be recorded as `ABT 1808` rather than `CAL
-1808`.
+that the *date* of birth be recorded as "`ABT 1808`" rather than "`CAL
+1808`".
 
 {.note}  A `CAL` token might sometimes be an indicator that the *date*
-is of lower *reliability* than one without this token, all other things
+is of lower *reliability* than one without this token, everything else
 being equal, due to it not being directly stated.
 
 {.ednote}  Should FHISO deprecate the `CAL` token and allow uses of it
@@ -1365,13 +1369,13 @@ St John the Evangelist on 27 December.
 
 {.note}  Historically, some applications have used a *date phrase* like
 "Not married" to indicate a marriage did not occur.  Such usage is
-prohibited in ELF, and applications are permitted to assume a *date
-phrase* describes an actual *date*, even if the *date phrase* cannot be
-interpreted.  Fortunately, such usage is almost entirely confined to
-[GEDCOM 5.3] and earlier which omitted the parentheses around *date
-phrases*.  *Date phrases* written without parentheses will not normally
-match the generic *date* syntax, and will therefore not be parsed as
-*dates* in ELF.
+prohibited in ELF and was not allowed in [GEDCOM 5.5.1].  *Conformant*
+applications are permitted to assume a *date phrase* describes an actual
+*date*, even if the *date phrase* cannot be interpreted.  Fortunately,
+uses like "Not married" is largely confined to [GEDCOM 5.3] and earlier
+which omitted the parentheses around *date phrases*.  *Date phrases*
+written without parentheses will not normally match the generic *date*
+syntax, and will therefore not be parsed as *dates* in ELF.
 
 The *date phrase* *may* be accompanied by a *date* in the generic *date*
 syntax preceded by the `INT` token.   The combination is called
@@ -1380,13 +1384,29 @@ of the associated *date phrase* in the context of source containing it.
 
 {.example}  "`INT @#DJULIAN@ 18 JUNE 1502 (Saturday before the Feast of
 the Nativity of St John the Baptist)`" is a valid *interpreted date*.
-In this case the *date phrase* does not mention the year; perhaps it
-was inferred from the context or stated elsewhere in the document.
+In this case the *date phrase* does not mention the year: perhaps it
+was inferred from its context or was stated elsewhere in the document.
 
 {.note}  An *interpreted date* might sometimes be of lower *reliability*
 than if the *date* were written without a *date phrase*, as the presence
 of a *data phrase* typically indicates some subtlety in interpreting the
 *date*.
+
+Being a *language-tagged string*, a *date phrase* has a *language tag*
+associated with it.  This *language tag* is not embedded in the *date*
+but is provided externally by the serialisation format.
+
+{.note ...}  In [ELF Serialisation], the *language tag* is provided by a
+`LANG` tag, which *may* be a substructure of the `DATE` tag, failing which
+it *may* be a substructure of one of the superstructure of the `DATE`
+tag, failing which it *may* be in the ELF header.  For example, 
+
+    2 DATE INT 25 JAN 1840 (L'an mil huit cent quarante, le vingt-cinquième jour du mois de janvier)
+    3 LANG French
+{/}
+
+{.ednote}  Review the previous note once [ELF Serialisation] has been
+developed further.
 
 #### Date ranges                                          {#date-ranges}
 
@@ -1403,35 +1423,30 @@ with a `AFT` token represents an unknown *instant* on or after the
 specified *date*.  
 
 It is *recommended* that the `BEF` and `AFT` forms of *date ranges* are
-only used if it is believe the specified *date* is probably within a few
-years of the unknown *date* being represented.
+only used if it is believed the specified *date* is probably within a
+few years of the unknown *date* being represented.
 
 {.example}  If an individual was elected mayor of a city in 1745 and the
-cultural norms of the time mean the person was almost certainly an
-adult, and probably in middle age, their *date* of birth *should not* be
-recorded as `BEF 1745`.  Even though this would literally be true
-insofar as the person was indeed born before 1745 and this
-representation is not prohibited, it is *not recommended*.  The person
-could well have been born in the previous century which would be
-stretching the definition of "a few years".  If there is need to give a
-date of birth, a crude estimate given with the `EST` token might be
-preferable.
-
-A *date range* using the `BET` &hellip; `AND` form of *date range* is a
-*precision
-range* of the unknown *date*.
+cultural norms of the time mean the person was likely a middle-aged
+adult, their *date* of birth *should not* be recorded as "`BEF 1745`".
+Even though this would literally be true, insofar as the person was
+indeed born before 1745, and this representation is not prohibited, it
+is *not recommended*.  The person could well have been born in the
+previous century which would be stretching the definition of "a few
+years".  If there is need to give a date of birth, a crude estimate
+given with the `EST` token might be preferable.
 
 A *date range* using the `BET` &hellip; `AND` construct represents an
 unknown *instant* on or after the first specified *date*, and on or
 before the second specified *date*.  This is a way of specifying an
 unknown *date* in terms of its *precision range*.  In this form of *date
-range*, the first specified *date* *should* be no later than the
-second specified *date*.
+range*, the first specified *date* *must not* be later than the second
+specified *date*.
 
 {.example}  If someone's *age* is recorded as 26 on a census conducted
-on 3 April 1881, their *date* of birth could be recorded as `BET 4 APR
-1854 AND 3 APR 1855`.  However current practice is to record this as
-`ABT 1855`.
+on 3 April 1881, their *date* of birth could be recorded as "`BET 4 APR
+1854 AND 3 APR 1855`".  However the usual practice in GEDCOM is to record
+this as "`ABT 1855`".
 
 {.ednote}  Should ELF encourage users to prefer the *date range* form in
 the previous example? 
@@ -1452,20 +1467,20 @@ The `elf:DateValue` *datatype* is used to record historical *dates*.  It
 allows *dates* to be represented using the generic *date* syntax or any
 of the modifier forms given in {§modifiers}.  It *may* also be a
 *date period* as defined in {§DatePeriod}.  Its *lexical space* is the
-set of *strings* which match the following `DateValue` production.
+set of *strings* which match the following `DateValue` production:
 
     DateValue ::= Date | DateApprox | DateInterp | DateRange | DatePeriod
 
-{.ednote}  In the many places in ELF, it would be wrong to a *date
-period* where an `elf:DateValue` is required.  This is not the case with
-the other options allowed in the `DateValue` production.  The difference
-is that a *date period* represents a state which persisted for an
-extended *time interval*, while the others represent a single *instant*
-(or at least an event of short duration that is conveniently treated as
-an *instant*).  FHISO are considering removing `DatePeriod` from the
+{.ednote}  In the many places in ELF, it is wrong to use a *date period*
+where an `elf:DateValue` is required.  This is not the case with the
+other options allowed in the `DateValue` production.  The difference is
+that a *date period* represents a state which persisted for an extended
+*time interval*, while the others represent a single *instant* (or at
+least an event of short duration that is conveniently approximated to an
+*instant*).  FHISO are considering removing `DatePeriod` from the
 `DateValue` production, above, and allowing it as an explicit option in
 certain contexts.  However this introduces the same complications as
-introducing separate `elf:AgeWord` *datatype*, and which were discussed
+introducing separate `elf:AgeWord` *datatype*, and which are discussed
 in an editorial note at the end of {§age}.
 
 The `elf:DateValue` *datatype* is a *language-tagged datatype*, however
@@ -1475,11 +1490,12 @@ the *language tag* of *dates* without a *date phrase*, and *may* replace
 it with an arbitrary *language tag*.
 
 {.note}  This allows applications to store the *language tag* as part of
-the 
-
-Applications are permitted to serialise an `elf:DateValue`
-that does not contain 
-using an 
+the *date phrase*, and allows them to serialise an `elf:DateValue` that
+does not contain a *date phrase* using an arbitrary *language tag*.  In
+particular, this means a *date* read from an ELF file in one language
+*may* be serialised as part of an ELF file in another language without
+explicitly annotating it with a `LANG` substructure, unless the *date*
+contains a *date phrase*.
 
 Formally, the `elf:DateValue` *datatype* is a *structured
 language-tagged datatype* which has the following properties:
@@ -1496,7 +1512,11 @@ Abstract         `false`
 
 The *pattern* for this *datatype* is as follows:
 
+<div style="font-size: smaller">\begingroup\footnotesize
+
 {#include DateValue.md}
+
+\endgroup</div>
 
 {.note}  The grammar productions given in this standard provide a more
 useful description of *datatype* for a human reader.  The *pattern*
@@ -1520,21 +1540,37 @@ Use of a *date period* does not necessarily mean the state was believed
 to have begun on the specified "from" *date*, nor that it ended on the
 specified "to" *date*, though where possible this is *recommended*.
 Either the start *date* or the end *date* *may* be omitted from the
-*date period*, in which case the missing *date* is interpreted as being
-*date*.  
+*date period*, in which case the missing *date* is interpreted as an
+unknown *date*.  
 
 {.example}  Abraham Lincoln was President of the United States from
 1861 to 1865.  This could recorded using the *date period* "`FROM 1861
 TO 1865`", or more *precisely* as "`FROM 4 MAR 1861 TO 15 APR 1865`".
 If it were unknown when Lincoln's presidency began, it could be written
-"`TO 15 APR 1865`".
+"`TO 15 APR 1865`".  If it was also known that Lincoln was president at
+the time of the Battle of Gettysburg in July 1863, the *date period* of
+his presidency could be written "`FROM JUL 1863 TO 15 APR 1865`".  This
+does not imply Lincoln became president in 1863, only that he was
+president for the whole of the period from 1863 to 1865.
+
+{.ednote}  Neither GEDCOM nor this draft of ELF has a way of saying
+whether the *date period* is believed to be the complete period during
+which the state persisted.  This is perhaps a shortcoming that a future
+version of ELF should resolve.  The obvious solution is to say that a
+*date period* always represents the full period, and allow the various
+*date modifiers* from {§modifiers} to be used in the end *instants* of
+the *date period*.  In the previous example where Lincoln was known to
+have been president for the Battle of Gettysburg, and to have died in
+office on 15 April 1865, this could be written "`FROM BEF JUL 1863 TO 15
+APR 1865`".  This could be done without allowing arbitrary nested *date
+modifiers*.
 
 {.note}  The difference between a *date range* and a *date period* is
-sometimes misunderstood and applications should be alert to the wrong
+sometimes misunderstood, and applications should be alert to the wrong
 representation being used.  A *date range* is used to record an
 *instant*, or an event of short duration, when its *date* is not
-precisely known, whereas a *date period* is used to record a state that
-held throughout the specified period.
+*precisely* known, whereas a *date period* is used to record a state
+that persisted throughout the specified *time interval*.
 
 {.example ...}  Civil birth, marriage and death registrations in England
 and Wales are indexed in quarterly volumes which do not list the
@@ -1571,7 +1607,11 @@ Abstract         `false`
 
 The *pattern* for this *datatype* is as follows:
 
+<div style="font-size: smaller">\footnotesize
+
 {#include DatePeriod.md}
+
+</div>
 
 ## Calendar definitions                                     {#calendars}
 
@@ -1971,7 +2011,7 @@ The `elf:Time` *datatype* is typically used in conjunction with a value
 of type `elf:DateExact` called its **associated date**.
 
 {.example ...}  In [ELF Data Model], *times of day* are found as `TIME`
-subelements of a `DATE` element which has a payload of *datatype*
+substructures of a `DATE` element which has a payload of *datatype*
 `elf:DateExact`.
 
     2 DATE 10 DEC 2018
