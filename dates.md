@@ -1620,11 +1620,11 @@ Abstract         `false`
 
 The *pattern* for this *datatype* is as follows:
 
-<div style="font-size: smaller">\footnotesize
+<div style="font-size: smaller">\begingroup\footnotesize
 
 {#include DatePeriod.md}
 
-</div>
+\endgroup</div>
 
 ## Calendar definitions                                     {#calendars}
 
