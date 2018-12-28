@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 26 December 2018
+date: 28 December 2018
 numbersections: true
 ...
 
@@ -202,7 +202,7 @@ may be subject to the various forms of uncertainty described in
 {§uncertainty}.
 
 {.example}  King Alfred's birth occurred at some particular *instant* in
-the middle of the 9th century.  Even though the year is not known with
+the middle of the ninth century.  Even though the year is not known with
 any great certainty, it is still an *instant*.
 
 A **time interval** is defined as the section of time spanning
@@ -253,6 +253,13 @@ travel to another region, and subsequently participate in an event on
 the previous *calendar day*.  If the second event is the person's death,
 this could theoretically result in a living person participating in an
 event the *calendar day* after their death.
+
+{.ednote}  Does this definition need loosening?  Not all cultures
+consider the day to be begin at midnight.  The Hebrew calendar defined
+in {§hebrew}, for example, is normally used with *calendar days*
+beginning at sunset.  The Islamic and Bahá'í *calendars* do similarly.
+The definition of a *calendar day* is currently taken from [ISO 8691],
+but should it be loosened to allow such definitions?
 
 A **date** is a way of identifying a particular *calendar day*.
 
@@ -1161,6 +1168,12 @@ nominally the date for the birth of Jesus Christ, but for "`B.C.`"
 *calendar years* are counted backwards from that *epoch*, while for
 "`A.D.`" *calendar years* are counted forwards.
 
+{.note}  The *epoch name* always comes after the *calendar year*
+component in the generic *date* syntax, despite certain *epoch names*
+being conventionally written before the *logical year* number in
+English.  For example, it is normal to write "AD 1752" in English, but
+the ELF representation is "`1752 A.D.`".
+
 The `Epoch` production requires *epoch names* either to be exactly two
 *characters* long, or to include at least one full stop (U+002E) or
 underscore (U+005F), or to begin with a dollar sign (U+0024).
@@ -1896,9 +1909,9 @@ number of *calendar days* in the specified year and month is not a
 French National Convention.  It is represented in ELF by the `@#DFRENCH
 R@` *calendar escape*.
 
-The French Republican *calendar* has an epoch at the start of the
+The French Republican *calendar* has an *epoch* at the start of the
 Gregorian *calendar day* 22 September 1792, the date the First French
-Republic was founded.  This *date* was identified as 1 Vendémiaire I
+Republic was founded.  This *date* is identified as 1 Vendémiaire I
 in the new *calendar*.
 
 {.note}  It is common to write French Republican *calendar years* using
@@ -1934,12 +1947,12 @@ Every *calendar year* in the French Republican *calendar* consists of 12
 *calendar months*, which are followed by 5 or 6 intercalary days or
 jours complémentaires which ELF treats as a thirteenth month.  Their
 *month names* are given in the table below in order of their occurence
-in the *calendar year*.  The table also gives the usual form of the
-their name in French, and the number of *calendar days* in each month.
-The *calendar days* in each *calendar month* are numbered sequentially
+in the *calendar year*.  The table also gives the usual form of their
+name in French, and the number of *calendar days* in each month.  The
+*calendar days* in each *calendar month* are numbered sequentially
 starting with 1.
 
--------  ---------------         -----------------------------
+-------  ---------------          -----------------------------
 `VEND`   Vendémiaire              30 days
 `BRUM`   Brumaire                 30 days
 `FRIM`   Frimaire                 30 days
@@ -1989,11 +2002,103 @@ too.
 
 ### The Hebrew calendar                                        {#hebrew}
 
-    month_h ::= "TSH" | "CSH" | "KSL" | "TVT" | "SHV" | "ADR" | "ADS"
-                | "NSN" | "IYR" | "SVN" | "TMZ" | "AAV" | "ELL"
+{.note} The Hebrew *calendar* is the name given to the *calendar* used
+by Jewish peoples around the world which developed into its current form
+in the early ninth century.  It is represented in ELF by the
+`@#DHEBREW@` *calendar escape*.
 
-One of the following three-character strings: `TSH`, `CSH`, `KSL`, `TVT`,
-`SHV`, `ADR`, `ADS`, `NSN`, `IYR`, `SVN`, `TMZ`, `AAV`, `ELL`.
+The Hebrew *calendar* has an *epoch* at the start of the *calendar day*
+referred to as 7 September 3761&nbsp;BC in the proleptic Gregorian
+*calendar*.  This *date* is identified as 1 Tishrei AM&nbsp;1 in the
+Hebrew *calendar*.
+
+{.note}  The *date* of this *epoch* is more commonly quoted as 7 October
+3761&nbsp;BC, which is its *date* in the proleptic Julian *calendar*.
+This is the *date* of the start of the Hebrew *calendar year*
+traditionally believed to contain the Creation.
+
+{.ednote}  A day in the Hebrew *calendar* is normally reckoned to begin at
+sunset, which means the *epoch* should properly be at sunset on 6
+September 3761&nbsp;BC in the proleptic Gregorian *calendar*, or 6
+October 3761&nbsp;BC in the proleptic Julian *calendar*.  However, as
+noted in {§time-concepts}, the definition of a *calendar day* given in
+[ISO 8601] and adopted here says a *calendar day* starts at midnight.
+
+The *calendar* has a single *forwards epoch name*, "`A.M.`", which is
+the *default epoch name* for the *calendar*.  It *should* be omitted
+when serialising *dates* in ELF.  The *calendar* does not provide a
+*backwards epoch name* for referring to *dates* before the Hebrew
+*epoch*, nor are zero or negative *logical years* permitted.
+
+{.note}  [GEDCOM 5.5.1] does allow the "`B.C.`" *epoch name* to be used
+with the Hebrew *calendar*, but it seems almost certain this is an error
+in that standard.  ELF does not permit "`B.C.`" to be used with
+this *calendar*, and any Hebrew *dates* using of it will not be
+*well-formed date*.
+
+It is *not recommended* for *dual years* to be used with the Hebrew
+*calendar*.
+
+{.note}  This is not an outright prohibition on *dual years*, and
+alternative calculations of the year of Creation were used to number
+*calendar years* in early times.  These could be used as *historical
+years*, typically differing from the *logical year* by no more than
+three years.
+
+Every *calendar year* in the Hebrew *calendar* consists of either 12 or
+13 *calendar months*.  Their *month names* are given in the table below
+in order of their occurrence in the *calendar year*.  The table also
+gives the usual form of their name in English and Hebrew, and the number
+of *calendar days* in each month.  The *calendar days* in each *calendar
+month* are numbered sequentially starting with 1.
+
+-------  ---------------            ---------------------------------------------------------------------      ---------------------
+`TSH`    Tishrei                    תשרי                                                                       30 days
+`CSH`    Marcheshvan (or Cheshvan)  <span dir="rtl">מרחשון</span> (or <span dir="rtl">חשוון</span>)                                                                                            29 days, or sometimes 30 days &mdash; see below
+`KSL`    Kislev                     כסלו                                                                       30 days, or sometimes 29 days &mdash; see below
+`TVT`    Tevet                      טבת                                                                        29 days
+`SHV`    Shevat                     שבט                                                                        30 days
+`ADR`    Adar I (or Adar Rishon)    <span dir="rtl">אדר א</span> (or <span dir="rtl">אדר ראשון</span>)                                                                                         30 days, if present &mdash; see below
+`ADS`    Adar II (or Adar Sheni)    <span dir="rtl">אדר ב</span> (or <span dir="rtl">אדר שני</span>)                                                                                           29 days
+`NSN`    Nisan                      ניסן                                                                       30 days
+`IYR`    Iyar                       אייר                                                                       29 days
+`SVN`    Sivan                      סיוון                                                                      30 days
+`TMZ`    Tammuz                     תמוז                                                                       29 days
+`AAV`    Av                         אב                                                                         30 days
+`ELL`    Elul                       אלול                                                                       29 days
+-------  ---------------            ---------------------------------------------------------------------
+
+{.note}  "Cheshvan" is a shortened form of "Marcheshvan" produced by
+dropping the first syllable.  "Rishon" and "Sheni are the Hebrew words
+for "first" and "second", respectively.  Sometimes Adar&nbsp;I and II
+are called Adar Aleph and Adar Bet (<span dir="rtl">אדר א</span> and 
+<span dir="rtl">אדר ב</span>) after the first and second letters in the
+Hebrew alphabet.
+
+*Calendar years* containing 13 *calendar months* are called **leap
+years**, and fall in a 19 year cycle.  *Calendar years* which are not
+*leap years* are called **non-leap years**.  To determine whether a year
+is a *leap year*, the *logical year* number is divided by 19 and the
+remainder taken.  If the remainder is 3, 6, 8, 11, 14, 17 or 19 then the
+year is a *leap year*; otherwise it is a *non-leap year*.
+
+In a *non-leap year*, the *calendar month* of Adar&nbsp;I is omitted and
+Adar&nbsp;II is known simply as Adar (<span dir="rtl">אדר</span>).
+Nevertheless, the *month name* used for Adar in a *non-leap year* is
+"`ADR`", the same *month name* as Adar&nbsp;I in a *leap year*.  "`ADS`"
+is not *well-formed* when used as a *month name* in a *non-leap year*,
+and it is *recommended* that applications rewrite it to "`ADR`".
+
+{.note}  The intended handling of Adar in *non-leap years* is very
+poorly unspecified in [GEDCOM 5.5.1].  As Adar I is the extra month
+inserted into the *calendar*, it would make sense if Adar were
+represented as "`ADS`" in *non-leap years*, but in practice this is not
+what current vendors do.  Possibly because [GEDCOM 5.5.1] describes
+"`ADR`" as standing for Adar rather than Adar I or Adar Rishon, vendors
+have used "`ADR`" to represent Adar in *non-leap years* and Adar&nbsp;I
+in *leap years*.  ELF standardises that behaviour.
+
+{.ednote}  Still need to define deficient, regular and complete years.
 
 ## The `elf:Time` datatype                                       {#time}
 
