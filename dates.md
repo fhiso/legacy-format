@@ -1660,13 +1660,14 @@ to provide such functionality?
 *calendar* which was slowly drifting relative to the seasons.  It is
 represented by the `@#DGREGORIAN@` *calendar escape*, and is also ELF's
 default *calendar*, used whenever a *date* has no *calendar escape* and
-is a *well-formed date* in the Gregorian *calendar*.
+is *well-formed* in the Gregorian *calendar*.
 
 The Gregorian *calendar* has an *epoch* at the start of the *calendar
 day* 1 January 1&nbsp;AD, as expressed in the Gregorian *calendar*,
 and two *epoch names* relative to that *epoch*: a *reverse epoch name*
 "`B.C.`", and a *forwards epoch name* "`A.D.`".  The latter is the
-*default epoch name* for the *calendar*, and *should* be omitted.
+*default epoch name* for the *calendar*, and its name *should* be
+omitted.
 
 {.example}  The *date* "`24 DEC 2018 A.D.`" is equivalent to "`24 DEC
 2018`".  The latter is *recommended* for compatibility with [GEDCOM
@@ -1703,11 +1704,12 @@ and no explicit *calendar escape* were automatically labelled
 containing such *dates* is likely to have many other miscalendared
 *dates* but which are *well-formed* in the Gregorian *calendar*
 and so go undetected.  Flagging those with *dual years* with
-`@#DUNKNOWN@` will hopefully bring this to the researcher's attention.
+`@#DUNKNOWN@` will hopefully bring this to the researcher's attention,
+with the result that all the miscalendared *dates* are fixed.
 
 Every *calendar year* in the Gregorian *calendar* consists of 12
 *calendar months*.  Their *month names* are given in the table below in
-order of their occurence in the *calendar year*.  The table also gives
+order of their occurrence in the *calendar year*.  The table also gives
 the usual form of their name in English, and the number of *calendar
 days* in each month.  The *calendar days* in each *calendar month* are
 numbered sequentially starting with 1.
@@ -1735,17 +1737,25 @@ the "`A.D.`" *epoch name* are as follows:
    then February has 29 days.
 *  Otherwise, if the *logical year* number is exactly divisible by 100,
    then February has 28 days.
-*  Otherwise, if the *logical year* number is exactly divisble by 4,
+*  Otherwise, if the *logical year* number is exactly divisible by 4,
    then February has 29 days.
 *  Otherwise, February has 28 days.
+
+In the Gregorian *calendar*, a *calendar year* in which February has 29
+*calendar days* is called a **leap year**, while a *calendar year* in
+which February has only 28 *calendar days* is called a **non-leap
+year**.
+
+{.note} Other *calendars* defined the phrases *leap year* and *non-leap
+year* differently.
 
 For years with the "`B.C.`" *epoch name*, the *logical year* number is
 subtracted from one to get zero or a negative number, which is then used
 in place of the *logical year* in the preceding rules.
 
-{.example}  The year 5~BC was a leap year in the proleptic Gregorian
+{.example}  The year 5&nbsp;BC was a *leap year* in the proleptic Gregorian
 *calendar*, meaning February had 29 *calendar days*.  This is because
-subtracting 5 from 1 gives -4 which is exactly divisble by 4.
+subtracting 5 from 1 gives &minus;4 which is exactly divisible by 4.
 
 {.note}  Although the Gregorian *calendar* was first introduced in 1582,
 ELF allows its use proleptically, including for *dates* BC.  This is a
@@ -1777,7 +1787,7 @@ defined in {§gregorian}.
                   | "AUG" | "SEP" | "OCT" | "NOV" | "DEC"
     GregYear  ::= [0-9] [0-9] [0-9] [0-9]
 
-{.example}  The *string* "`24 DEC 2018`" is a matches the `GregDate`
+{.example}  The *string* "`24 DEC 2018`" matches the `GregDate`
 production and is a *well-formed* *date* in the Gregorian *calendar*.
 It is therefore in the *lexical space* of `elf:DateExact`.  "`54 NOV
 2018`" is not in the *lexical space* of `elf:DateExact` despite matching
@@ -1793,7 +1803,9 @@ constraints:
 *   The *calendar year* component *must* be four digits long.
 *   The *epoch name* *must not* be present.
 *   The *date modifiers* defined in {§modifiers} *must not* be used.
+*   It *must not* be a *date period*.
 {/}
+
 Formally, the `elf:DateExact` *datatype* is a *structured
 non-language-tagged datatype* which has the following *properties*:
 
@@ -1823,10 +1835,11 @@ of the `elf:DateValue` *datatype* because the latter is a
 {.note}  The Julian *calendar* is the name given to the *calendar*
 introduced by Julius Caesar in 45&nbsp;BC and subsequently amended by
 Augustus in about 8&nbsp;BC to correct an error in the application of
-its leap year rule during its first three decades.  The Augustan form of
-the Julian *calendar* is represented by the `@#DJULIAN@` *calendar
+its *leap year* rule during its first three decades.  The Augustan form
+of the Julian *calendar* is represented by the `@#DJULIAN@` *calendar
 escape*.  Because the Gregorian *calendar* derived from the Julian
-*calendar*, many of details here are the same as those in {§gregorian}.
+*calendar*, many of the details here are the same as those in
+{§gregorian}.
 
 The Julian *calendar* has an *epoch* at the start of the *calendar
 day* 1 January 1&nbsp;AD, as expressed in the Julian *calendar*, or 30
@@ -1834,8 +1847,8 @@ December 1&nbsp;BC, as expressed in the proleptic Gregorian *calendar*.
 The Julian *calendar* has the same two *epoch names*, "`B.C.`" and
 "`A.D.`", as the Gregorian *calendar*, but defined relative to the
 Julian *epoch* instead of the Gregorian *epoch*.  The "`A.D.`" *epoch
-name* is the *default epoch name* for the *calendar*, and *should* be
-omitted.
+name* is the *default epoch name* for the *calendar*, and its name
+*should* be omitted.
 
 As for the Gregorian *calendar*, regardless of *epoch name*, the
 *logical year* *shall* be an integer greater than 0.
@@ -1867,12 +1880,14 @@ year* began.
 
 This is an example where the *historical year* alone could be ambiguous
 due to Easter being a movable feast.  In France, there were two days
-which would have been written "1er avril, 1522".  In both cases, the
-*historical year* is 1522, but only for the first is the *logical year*
-also 1522: for the second, it is 1523.  This means the first *date*
-*must* be encoded in ELF as "`1 APR 1522`", while the second *should* be
-encoded as "`1 APR 1522/23`" (though it *may* alternatively be encoded
-as "`1 APR 1523`", without using a *dual year*).
+which would have been written "1er jour d'avril, 1522", as Easter was
+early in the *logical year* 1522 and late in 1523.  For both days
+described as 1 April 1522, the *historical year* is 1522, but only for
+the first is the *logical year* also 1522: for the second, it is 1523.
+This means the first *date* *must* be encoded in ELF as "`1 APR 1522`",
+while the second *should* be encoded as "`1 APR 1522/23`" (though it
+*may* alternatively be encoded as "`1 APR 1523`", without using a *dual
+year*).
 {/}
 
 Every *calendar year* in the Julian *calendar*, as reckoned by *logical
@@ -1880,18 +1895,21 @@ year*, consists of the same 12 *calendar months* as the Gregorian
 calendar.  Their *month names*, the usual English form of their name,
 and the number of *calendar days* in each *calendar month* is as given
 for the Gregorian calendar in the table in {§gregorian}.  The only
-difference is the rule for determining the number of *calendar days* in
-February.
+difference between the *calendars* is the rule for determining the
+number of *calendar days* in February.
 
 In the Julian *calendar*, the rules for determining the number of
 *calendar days* in February are as follows:
 
-*  If the *logical year* number is exactly divisble by 4,
+*  If the *logical year* number is exactly divisible by 4,
    then February has 29 days.
 *  Otherwise, February has 28 days.
 
-{.example}  The year 1900 was a leap year in the Gregorian *calendar*,
-as 1900 is divisible by 100, but it was not a leap year in the Julian
+The terms *leap year* and *non-leap year* are defined as for the
+Gregorian *calendar*.
+
+{.example}  The year 1900 was a *leap year* in the Gregorian *calendar*,
+as 1900 is divisible by 100, but it was not a *leap year* in the Julian
 *calendar*.  This means "`29 FEB 1900`" is a *well-formed* *date* in the
 Gregorian *calendar*, but not in the Julian *calendar*.
 
@@ -1899,27 +1917,26 @@ For years with the "`B.C.`" *epoch name*, the *logical year* number is
 subtracted from one to get zero or a negative number, which is then used
 in place of the *logical year* in the preceding rules.
 
-{.note}  The year 5~BC was a leap year according to ELF's definition of
-the Julian *calendar*, because subtracting 5 from 1 gives -4 which is
-divisible by 4.  In fact, the year 5~BC was almost certainly not a leap
-year as the Augustan reform was still taking effect at this point.
-There is disagreement between historians on the exact details of the
-reform, but is generally accepted that by 8~AD the rule for leap years
-given above was being applied correctly.  Any use of the the Julian
-calendar (in its final Augustan form) before about 5~AD should therefore
-be regarded as proleptic.
+{.note}  The year 5&nbsp;BC was a *leap year* according to ELF's
+definition of the Julian *calendar*, because subtracting 5 from 1 gives
+&minus;4 which is divisible by 4.  In fact, the year 5&nbsp;BC was
+almost certainly not a *leap year* as the Augustan reform was still
+taking effect at this point.  There is disagreement between historians
+on the exact details of the reform, but is generally accepted that by
+AD&nbsp;8 the rule for *leap years* given above was being applied
+correctly.  Any use of the Julian calendar (in its final Augustan form)
+before about AD&nbsp;5 should therefore be regarded as proleptic.
 
 A *date* which uses a *calendar day* number which is greater than the
 number of *calendar days* in the specified year and month is not a
 *well-formed* *date*.
-\clearpage
 
 ### The French Republican calendar                                   {#french}
 
 {.note} The French Republican *calendar* or French Revolutionary
-*calendar* are the names given to the *calendar* adopted in 1794 by the
-French National Convention.  It is represented in ELF by the `@#DFRENCH
-R@` *calendar escape*.
+*calendar* are the names given to the new *calendar* adopted in 1794 by
+the French National Convention.  It is represented in ELF by the
+`@#DFRENCH R@` *calendar escape*.
 
 The French Republican *calendar* has an *epoch* at the start of the
 Gregorian *calendar day* 22 September 1792, the date the First French
@@ -1935,18 +1952,18 @@ founding of the First Republic, nor are zero or negative *logical years*
 permitted.
 
 {.ednote}  If it proves undesirable to have an anonymous *epoch name*,
-the usual phrase is "l'époque républicaine" or "l'ère de la republique".
-An *epoch name* of "`E.R.`" would therefore be appropriate.
+the usual phrase are "l'époque républicaine" and "l'ère de la republique".
+An *epoch name* of "`E.R.`" would therefore seem appropriate.
 
 The *logical year* *shall* be an integer greater than 0 and *should*
 be no greater than 18.  Applications *may* consider any *date* with a
-*logical year* greater than 18 not to be *well-formed*.
+*logical year* greater than 18 to be not *well-formed*.
 
-{.note}  The placement of leap years in the French Revolutionary
+{.note}  The placement of *leap years* in the French Revolutionary
 *calendar* was never defined satisfactorily due to an ambiguity in the
 legislation that had not been resolved when the *calendar* was
 abolished.  The *calendar* was in actual use during years II to XIV, and
-the placement of leap years in the peroid between years I and XVIII is
+the placement of *leap years* in the period between years I and XVIII is
 unambiguous.  The *calendar* was used again very briefly during the
 Paris Commune in May 1871 (Floréal and Prairial LXXIX), and applications
 are encouraged to support this, but ELF does not require this as the
@@ -1957,8 +1974,8 @@ likely to be small.
 
 Every *calendar year* in the French Republican *calendar* consists of 12
 *calendar months*, which are followed by 5 or 6 intercalary days or
-jours complémentaires which ELF treats as a thirteenth month.  Their
-*month names* are given in the table below in order of their occurence
+**jours complémentaires** which ELF treats as a thirteenth month.  Their
+*month names* are given in the table below in order of their occurrence
 in the *calendar year*.  The table also gives the usual form of their
 name in French, and the number of *calendar days* in each month.  The
 *calendar days* in each *calendar month* are numbered sequentially
@@ -1984,32 +2001,34 @@ starting with 1.
 uses the *month name* `THER` regardless of which form the source uses.
 `FERV` *must not* be used.
 
-The number of additional *calendar days* inserted into the *calendar
-year* as jours complémentaires depends on the *logical year*.  If the
-*logical year* number is 3, 7, 11 or 15, the year had 6 jours
-complémentaires; all other years with *logical year* numbers between 1
-and 18, inclusive, had 5 jours complémentaires.  
+In the French Republican *calendar*, a *calendar year* with 6 
+*jours complémentaires* is called a **leap year**, while a *calendar
+year* with only 5 *jours complémentaires* is called a **non-leap year**.
+If the *logical year* number is 3, 7, 11 or 15, the *calendar year* was
+a *leap year*; all other years with *logical year* numbers between 1 and
+18, inclusive, were *non-leap years*.
 
-{.note}  This standard does not specify when leap years occurred after
-year 18 because the legislation was ambiguous.  The legislation required
-leap years to be arranged such that the autumnal equinox would fall on
-the first day of the year, 1 Vendémiaire, at the Paris Observatory.
-Under this rule, the leap year after year XV would have been five years
-later, in year XX.  However the legislation also said that leap years
-were every four years, in which case the next leap year would have been
-XIX.  A solution was proposed by Charles-Gilbert Romme, one of the
-creators of the *calendar*, which would have placed a leap year in year
-XX, and then one every four years with similar rules as the Gregorian
-*calendar* applying every century.   No decision had been made Napoleon
-abolished the *calendar* stopped, so no definitive statement can be made
-on which subsequent years were leap years, and this standard does not
-require any particular interpretation.  Applications *may* do any of the
-above and remain *conformant*; they *may* also reject anything after
-year XVII as not being *well-formed*.
+{.note}  This standard does not specify when *leap years* occurred after
+year XVIII because the legislation was ambiguous.  The legislation
+required *leap years* to be arranged such that the autumnal equinox
+would fall on the first day of the year, 1 Vendémiaire, as observed from
+the Paris Observatory.  Under this rule, the *leap year* after year XV
+would have been five years later, in year XX.  However the legislation
+also said that *leap years* were every four years, in which case the
+next *leap year* would have been XIX.  A solution was proposed by
+Charles-Gilbert Romme, one of the creators of the *calendar*, which
+would have placed a *leap year* in year XX, and then one every four
+years with similar rules as the Gregorian *calendar* applying every
+century.   No decision had been made when Napoléon abolished the
+*calendar*, so no definitive statement can be made on which subsequent
+years were *leap years*, and this standard does not require any
+particular interpretation.  Applications *may* do any of the above and
+remain *conformant*; they *may* also reject anything after year XVII as
+not being *well-formed*.
 
 A *date* which uses a *calendar day* number which is greater than the
 number of *calendar days* in the specified year and month is not a
-*well-formed date*.  This provision applies to jours complémentaires
+*well-formed date*.  This provision applies to *jours complémentaires*
 too.
 
 ### The Hebrew calendar                                        {#hebrew}
@@ -2081,23 +2100,27 @@ month* are numbered sequentially starting with 1.
 -------  ----------     -------      ---------------------
 
 {.note}  The English names given above are transliterations of the
-Hebrew, and many other transliterations are found.  Cheshvan is a
-shortened form of Marcheshvan (<span dir="rtl">מרחשון</span>) produced
-by dropping the first syllable.  Adar I and Adar II are otherwise known
-as Adar Rishon (<span dir="rtl">אדר ראשון</span>) and Adar Sheni (<span
-dir="rtl">אדר שני</span>), respectively, using the Hebrew 
-words for first and second.  They are also 
-Sometimes Adar&nbsp;I and II are called Adar Aleph and
-Adar Bet (<span dir="rtl">אדר א</span> and <span dir="rtl">אדר ב</span>)
-after the first and second letters in the Hebrew alphabet.
+Hebrew, and many variants of the transliterations can be found.
+Cheshvan is a shortened form of Marcheshvan (<span
+dir="rtl">מרחשון</span>) produced by dropping the first syllable.  Adar
+I and Adar II are otherwise known as Adar Rishon (<span dir="rtl">אדר
+ראשון</span>) and Adar Sheni (<span dir="rtl">אדר שני</span>),
+respectively, using the Hebrew words for first and second.  Adar I and
+II are also sometimes called Adar Aleph and Adar Bet (<span
+dir="rtl">אדר א</span> and <span dir="rtl">אדר ב</span>) after the first
+and second letters in the Hebrew alphabet.
+
+{.note}  For religious purposes, the *calendar year* is sometimes said
+to begin with the *calendar month* of Nisan.  ELF uses the usual civil
+definition of the year beginning with the *calendar month* of Tishrei.
 
 *Calendar years* containing 13 *calendar months* are called **leap
 years**, and fall in a 19 year cycle called the **Metonic cycle**.
 *Calendar years* which are not *leap years* are called **non-leap
 years**.  To determine whether a year is a *leap year*, the *logical
-year* number is divided by 19 and the remainder taken.  If the remainder
-is 0, 3, 6, 8, 11, 14 or 17 then the year is a *leap year*; otherwise it
-is a *non-leap year*.
+year* number is divided by 19 and the remainder taken to find the year's
+place in the *Metonic cycle*.  If the remainder is 0, 3, 6, 8, 11, 14 or
+17 then the year is a *leap year*; otherwise it is a *non-leap year*.
 
 In a *non-leap year*, the *calendar month* of Adar&nbsp;I is omitted and
 Adar&nbsp;II is known simply as Adar (<span dir="rtl">אדר</span>).
@@ -2109,15 +2132,15 @@ and it is *recommended* that applications rewrite it to "`ADR`".
 {.note}  The intended handling of Adar in *non-leap years* is very
 poorly unspecified in [GEDCOM 5.5.1].  As Adar I is the extra month
 inserted into the *calendar*, it would make sense if Adar were
-represented as "`ADS`" in *non-leap years*, but in practice this is not
-what current vendors do.  Possibly because [GEDCOM 5.5.1] describes
-"`ADR`" as standing for Adar rather than Adar I or Adar Rishon, vendors
-have used "`ADR`" to represent Adar in *non-leap years* and Adar&nbsp;I
-in *leap years*.  ELF standardises that behaviour.
+represented as "`ADS`" in *non-leap years*, but in practice this seems
+not to be what current vendors do.  Possibly because [GEDCOM 5.5.1]
+describes "`ADR`" as standing for Adar rather than Adar I or Adar
+Rishon, vendors have used "`ADR`" to represent Adar in *non-leap years*
+and Adar&nbsp;I in *leap years*.  ELF standardises that behaviour.
 
 The rule for deciding when Cheshvan is extended in length to have 30
 *calendar days*, and when Kislev is reduced in length to have 29
-*calendar days* are somewhat complex and based on when in the week the
+*calendar days*, are somewhat complex and based on when in the week the
 Tishrei *molad* falls.   
 
 {.note}  Although an application needs to know how many *calendar days*
@@ -2126,9 +2149,9 @@ are in each *calendar month* in order to determine whether a *date* is a
 able to determine whether a *date* is *well-formed*.  This would allow a
 *conformant* application to support the Hebrew *calendar* without full
 knowledge of how long each *calendar month* is.  An application which
-cannot determine how many *calendar days* are in Cheshvan and Kislev,
-*must* consider "`30 CSH`" and "`30 KSL`" to be *well-formed* regardless
-of year.
+cannot determine how many *calendar days* are in Cheshvan and Kislev in
+a particular year, *must* consider "`30 CSH`" and "`30 KSL`" to be
+*well-formed* regardless of year.
 
 The **molad** is the calculated *instant* of the new moon, as seen from
 Jerusalem.  The first *molad* occurred 5 hours and 204 *halakim* into
@@ -2192,7 +2215,6 @@ after the *instant* in the first column, and before the *instant* in the
 second column, then the length of the *calendar year* can be found in
 one of the last four columns, depending on the position of the year in
 the *Metonic cycle* as shown in the column headings.
-\clearpage
 
 Molad ≥     Molad <     1, 4, 9, 12 or 15   7 or 18   2, 5, 10, 13 or 16   0, 3, 6, 8, 11, 14 or 17
 ---------   ---------   ------------------  --------  -------------------  -------------------------
@@ -2216,6 +2238,14 @@ Kislev has 30 *calendar days* except when the *calendar year* is only
 353 or 383 *calendar days* long, in which case it only has 29 *calendar
 days*.  
 
+{.example}  The previous example calculated the Tishrei *molad* for
+AM&nbsp;5779 to be at 2:14:316, which means the second row of the table
+applies.  As 5779 divided by 19 is 304 with a remainder of 2, the year
+AM&nbsp;5779 is the second year in the *Metonic cycle*, so the fifth
+column gives the year length as 355 *calendar days*.  That means both
+Cheshvan and Kislev have 30 *calendar days*.  "`30 CSH 5779`" and "`30
+KSL 5779`" are therefore both *well-formed* *dates*.
+
 {.note}  This table is called the "Table of Four Gates".  Its
 complexities are the result of the competing requirements that Yom
 Kippur does not fall on a day adjacent to the Sabbath (i.e. that 10
@@ -2224,14 +2254,6 @@ by the *molad* cannot be observed in daylight until it is six hours old
 and Tishrei cannot start until the new moon it deemed observable;
 that all months have 29 or 30 *calendar days*; and that only Cheshvan
 and Kislev can vary in length.
-
-{.example}  The previous example calculated the Tishrei *molad* for
-AM&nbsp;5779 to be at 2:14:316, which means the second row of the table
-applies.  As 5779 divided by 19 is 304 with a remainder of 2, the year
-AM&nbsp;5779 is the second year in the *Metonic cycle*, so the fifth
-column gives the year length as 355 *calendar days*.  That means both
-Cheshvan and Kislev have 30 *calendar days*.  "`30 CSH 5779`" and "`30
-KSL 5779`" are therefore both *well-formed* *dates*.
 
 A *date* which uses a *calendar day* number which is greater than the
 number of *calendar days* in the specified year and month is not a
