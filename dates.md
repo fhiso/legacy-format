@@ -2765,4 +2765,12 @@ specification.
     *Simple Triples Discovery Mechanism*.  First public draft.
     (See <https://fhiso.org/TR/triples-discovery>.)
 
+\vfill
+
+----
+Copyright © 2018, [Family History Information Standards Organisation,
+Inc](https://fhiso.org/).
+The text of this standard is available under the
+[Creative Commons Attribution 4.0 International
+License](https://creativecommons.org/licenses/by/4.0/).
 
