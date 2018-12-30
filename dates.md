@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 28 December 2018
+date: 30 December 2018
 numbersections: true
 ...
 
@@ -257,9 +257,10 @@ event the *calendar day* after their death.
 {.ednote}  Does this definition need loosening?  Not all cultures
 consider the day to be begin at midnight.  The Hebrew calendar defined
 in {§hebrew}, for example, is normally used with *calendar days*
-beginning at sunset.  The Islamic and Bahá'í *calendars* do similarly.
-The definition of a *calendar day* is currently taken from [ISO 8691],
-but should it be loosened to allow such definitions?
+beginning at sunset, which is defined as 6pm using variable length
+hours.  The Islamic and Bahá'í *calendars* do similarly.  The definition
+of a *calendar day* is currently taken from [ISO 8691], but should it be
+loosened to allow such definitions?
 
 A **date** is a way of identifying a particular *calendar day*.
 
@@ -888,11 +889,18 @@ All *dates* written using a *calendar escape* with which the application
 is not familiar are assumed to be *well-formed*.  This includes all
 *dates* using the `@#DUNKNOWN@` *calendar escape*.
 
-*Conformant* applications *must not* generate *dates* which are not
-*well-formed*, and which are not assumed to be *well-formed* by virtue
-of using a unknown *calendar escape*.  Applications encountering *dates*
-which are not *well-formed* *may* delete the *date* or signal an error
-to the user.
+*Conformant* applications *must not* generate *dates* which are known
+not to be *well-formed*.  Applications encountering *dates* which are
+known not to be *well-formed* *may* delete the *date* or signal an error
+to the user.  If an application cannot determine whether or not a *date*
+is *well-formed*, it *must* assume it is *well-formed*.
+
+{.note}  Other than for *dates* written in the Gregorian *calendar*, no
+part of this standard requires an application to be able to determine
+whether a *date* is *well-formed*.  In some *calendars*, such as the
+Hebrew *calendar* defined in {§hebrew}, the rules for determining
+this are fairly complex.  Applications are encouraged to implement these
+rules in full, but are not required to.
 
 The *calendar escape* is *optional* in the generic *date* syntax.  If the
 *calendar escape* is omitted and if the *date* if *well-formed* in the
@@ -1083,8 +1091,9 @@ Byzantine *epoch* and the Alexandrian *epoch*.  This is because the
 depending on the specific *date*.
 
 A specific *calendar* *should* normally place further restrictions on
-how *dual years* can be used, and any uses which fail to conform to any
-such *calendar*-specific restrictions are not *well-formed* dates.
+how *dual years* can be used, and any *dates* using *dual years* which
+fail to conform to any such *calendar*-specific restrictions are not
+*well-formed* *dates*.
 
 {.note}  This is necessary if applications are to have understanding of
 what the *historical date* means.  A *date* of "`@#DJULIAN@ 1740/1620`"
@@ -1136,7 +1145,7 @@ because there is no *logical year* number ending in 8 which is at most
 one year away from the *historical year* 1618.  This is therefore
 considered an unabbreviated *dual year*, representing the *historical
 year* 1618 and the *logical year* 8.  Very probably this will result in
-the date not being *well-formed* in the applicable *calendar*, in which
+the *date* not being *well-formed* in the applicable *calendar*, in which
 case the application *may* reject it.
 
 *Conformant* applications *may* alter the lexical form of a *dual year*
@@ -1172,7 +1181,9 @@ nominally the date for the birth of Jesus Christ, but for "`B.C.`"
 component in the generic *date* syntax, despite certain *epoch names*
 being conventionally written before the *logical year* number in
 English.  For example, it is normal to write "AD 1752" in English, but
-the ELF representation is "`1752 A.D.`".
+the ELF representation is "`1752 A.D.`".  A *conformant* application
+*must not* accept "`A.D. 1752`" as a valid *date*, as it does not match
+the `Date` production.
 
 The `Epoch` production requires *epoch names* either to be exactly two
 *characters* long, or to include at least one full stop (U+002E) or
@@ -1680,7 +1691,7 @@ applications do not enforce this requirement.
 
 {.note} This is a deviation from [GEDCOM 5.5.1] which allows *dual
 years* only on Gregorian *dates*.  In this standard, a *date* with a
-*dual year* is not a *well-formed date* in the Gregorian *calendar*.
+*dual year* is not *well-formed* in the Gregorian *calendar*.
 This means a *date* using a *dual year* and no explicit *calendar
 escape* will be assigned the `@#DUNKNOWN@` *calendar escape*.
 
@@ -1690,7 +1701,7 @@ escape* will be assigned the `@#DUNKNOWN@` *calendar escape*.
 and no explicit *calendar escape* were automatically labelled
 `@#DJULIAN@`.  The reason this was not done is that an ELF file
 containing such *dates* is likely to have many other miscalendared
-*dates* but which are *well-formed dates* in the Gregorian *calendar*
+*dates* but which are *well-formed* in the Gregorian *calendar*
 and so go undetected.  Flagging those with *dual years* with
 `@#DUNKNOWN@` will hopefully bring this to the researcher's attention.
 
@@ -1744,11 +1755,11 @@ name*.
 
 A *date* which uses a *calendar day* number which is greater than the
 number of *calendar days* in the specified year and month is not a
-*well-formed date*.
+*well-formed* *date*.
 
-{.example}  The *date* "`29 FEB 2018`" is not a *well-formed date* in
-the Gregorian *calendar* because Febuary only had 28 days in 2018 due to
-2018 not being exactly divisble by 4.
+{.example}  The *date* "`29 FEB 2018`" is not *well-formed* in
+the Gregorian *calendar* because February only had 28 days in 2018 due to
+2018 not being exactly divisible by 4.
 
 #### The `elf:DateExact` datatype                           {#DateExact}
 
@@ -1756,8 +1767,8 @@ The `elf:DateExact` *datatype* is used to record the creation or
 modification *date* of various objects in the ELF data model using the
 Gregorian *calendar*.  The *lexical space* of this *datatype* is the set
 of *strings* which match the following `GregDate` production and which
-are additionally *well-formed dates* in the Gregorian *calendar* defined
-in {§gregorian}.
+are additionally *well-formed* *dates* in the Gregorian *calendar*
+defined in {§gregorian}.
 
     GregDate  ::= GregDay S GregMonth S GregYear
 
@@ -1767,11 +1778,11 @@ in {§gregorian}.
     GregYear  ::= [0-9] [0-9] [0-9] [0-9]
 
 {.example}  The *string* "`24 DEC 2018`" is a matches the `GregDate`
-production and is a *well-formed date* in the Gregorian *calendar*.  It
-is therefore in the *lexical space* of `elf:DateExact`.  "`54 NOV 2018`"
-is not in the *lexical space* of `elf:DateExact` despite matching the
-`GregDate` production because it is not a *well-formed date* in the
-Gregorian *calendar* due to November only having 30 days. 
+production and is a *well-formed* *date* in the Gregorian *calendar*.
+It is therefore in the *lexical space* of `elf:DateExact`.  "`54 NOV
+2018`" is not in the *lexical space* of `elf:DateExact` despite matching
+the `GregDate` production because it is not a *well-formed* *date* in
+the Gregorian *calendar* due to November only having 30 days. 
 
 {.note ...} This *datatype* is more restricted than a Gregorian *date*
 written in the generic *date* syntax due to the following additional
@@ -1881,7 +1892,7 @@ In the Julian *calendar*, the rules for determining the number of
 
 {.example}  The year 1900 was a leap year in the Gregorian *calendar*,
 as 1900 is divisible by 100, but it was not a leap year in the Julian
-*calendar*.  This means "`29 FEB 1900`" is a *well-formed date* in the
+*calendar*.  This means "`29 FEB 1900`" is a *well-formed* *date* in the
 Gregorian *calendar*, but not in the Julian *calendar*.
 
 For years with the "`B.C.`" *epoch name*, the *logical year* number is
@@ -1900,7 +1911,8 @@ be regarded as proleptic.
 
 A *date* which uses a *calendar day* number which is greater than the
 number of *calendar days* in the specified year and month is not a
-*well-formed date*.
+*well-formed* *date*.
+\clearpage
 
 ### The French Republican calendar                                   {#french}
 
@@ -1928,7 +1940,7 @@ An *epoch name* of "`E.R.`" would therefore be appropriate.
 
 The *logical year* *shall* be an integer greater than 0 and *should*
 be no greater than 18.  Applications *may* consider any *date* with a
-*logical year* greater than 18 not to be a *well-formed date*.
+*logical year* greater than 18 not to be *well-formed*.
 
 {.note}  The placement of leap years in the French Revolutionary
 *calendar* was never defined satisfactorily due to an ambiguity in the
@@ -1993,7 +2005,7 @@ abolished the *calendar* stopped, so no definitive statement can be made
 on which subsequent years were leap years, and this standard does not
 require any particular interpretation.  Applications *may* do any of the
 above and remain *conformant*; they *may* also reject anything after
-year XVII as not being *well-formed dates*.
+year XVII as not being *well-formed*.
 
 A *date* which uses a *calendar day* number which is greater than the
 number of *calendar days* in the specified year and month is not a
@@ -2052,35 +2064,40 @@ gives the usual form of their name in English and Hebrew, and the number
 of *calendar days* in each month.  The *calendar days* in each *calendar
 month* are numbered sequentially starting with 1.
 
--------  ---------------            ---------------------------------------------------------------------      ---------------------
-`TSH`    Tishrei                    תשרי                                                                       30 days
-`CSH`    Marcheshvan (or Cheshvan)  <span dir="rtl">מרחשון</span> (or <span dir="rtl">חשוון</span>)                                                                                            29 days, or sometimes 30 days &mdash; see below
-`KSL`    Kislev                     כסלו                                                                       30 days, or sometimes 29 days &mdash; see below
-`TVT`    Tevet                      טבת                                                                        29 days
-`SHV`    Shevat                     שבט                                                                        30 days
-`ADR`    Adar I (or Adar Rishon)    <span dir="rtl">אדר א</span> (or <span dir="rtl">אדר ראשון</span>)                                                                                         30 days, if present &mdash; see below
-`ADS`    Adar II (or Adar Sheni)    <span dir="rtl">אדר ב</span> (or <span dir="rtl">אדר שני</span>)                                                                                           29 days
-`NSN`    Nisan                      ניסן                                                                       30 days
-`IYR`    Iyar                       אייר                                                                       29 days
-`SVN`    Sivan                      סיוון                                                                      30 days
-`TMZ`    Tammuz                     תמוז                                                                       29 days
-`AAV`    Av                         אב                                                                         30 days
-`ELL`    Elul                       אלול                                                                       29 days
--------  ---------------            ---------------------------------------------------------------------
+-------  ----------     -------      ---------------------
+`TSH`    Tishrei           תשרי      30 days
+`CSH`    Cheshvan         חשוון      29 days, or sometimes 30 days &mdash; see below
+`KSL`    Kislev            כסלו      30 days, or sometimes 29 days &mdash; see below
+`TVT`    Tevet              טבת      29 days
+`SHV`    Shevat             שבט      30 days
+`ADR`    Adar I           אדר א      30 days, if present &mdash; see below
+`ADS`    Adar II          אדר ב      29 days
+`NSN`    Nisan             ניסן      30 days
+`IYR`    Iyar              אייר      29 days
+`SVN`    Sivan            סיוון      30 days
+`TMZ`    Tammuz            תמוז      29 days
+`AAV`    Av                  אב      30 days
+`ELL`    Elul              אלול      29 days
+-------  ----------     -------      ---------------------
 
-{.note}  "Cheshvan" is a shortened form of "Marcheshvan" produced by
-dropping the first syllable.  "Rishon" and "Sheni are the Hebrew words
-for "first" and "second", respectively.  Sometimes Adar&nbsp;I and II
-are called Adar Aleph and Adar Bet (<span dir="rtl">אדר א</span> and 
-<span dir="rtl">אדר ב</span>) after the first and second letters in the
-Hebrew alphabet.
+{.note}  The English names given above are transliterations of the
+Hebrew, and many other transliterations are found.  Cheshvan is a
+shortened form of Marcheshvan (<span dir="rtl">מרחשון</span>) produced
+by dropping the first syllable.  Adar I and Adar II are otherwise known
+as Adar Rishon (<span dir="rtl">אדר ראשון</span>) and Adar Sheni (<span
+dir="rtl">אדר שני</span>), respectively, using the Hebrew 
+words for first and second.  They are also 
+Sometimes Adar&nbsp;I and II are called Adar Aleph and
+Adar Bet (<span dir="rtl">אדר א</span> and <span dir="rtl">אדר ב</span>)
+after the first and second letters in the Hebrew alphabet.
 
 *Calendar years* containing 13 *calendar months* are called **leap
-years**, and fall in a 19 year cycle.  *Calendar years* which are not
-*leap years* are called **non-leap years**.  To determine whether a year
-is a *leap year*, the *logical year* number is divided by 19 and the
-remainder taken.  If the remainder is 3, 6, 8, 11, 14, 17 or 19 then the
-year is a *leap year*; otherwise it is a *non-leap year*.
+years**, and fall in a 19 year cycle called the **Metonic cycle**.
+*Calendar years* which are not *leap years* are called **non-leap
+years**.  To determine whether a year is a *leap year*, the *logical
+year* number is divided by 19 and the remainder taken.  If the remainder
+is 0, 3, 6, 8, 11, 14 or 17 then the year is a *leap year*; otherwise it
+is a *non-leap year*.
 
 In a *non-leap year*, the *calendar month* of Adar&nbsp;I is omitted and
 Adar&nbsp;II is known simply as Adar (<span dir="rtl">אדר</span>).
@@ -2098,7 +2115,136 @@ what current vendors do.  Possibly because [GEDCOM 5.5.1] describes
 have used "`ADR`" to represent Adar in *non-leap years* and Adar&nbsp;I
 in *leap years*.  ELF standardises that behaviour.
 
-{.ednote}  Still need to define deficient, regular and complete years.
+The rule for deciding when Cheshvan is extended in length to have 30
+*calendar days*, and when Kislev is reduced in length to have 29
+*calendar days* are somewhat complex and based on when in the week the
+Tishrei *molad* falls.   
+
+{.note}  Although an application needs to know how many *calendar days*
+are in each *calendar month* in order to determine whether a *date* is a
+*well-formed date*, an applications can be *conformant* without being
+able to determine whether a *date* is *well-formed*.  This would allow a
+*conformant* application to support the Hebrew *calendar* without full
+knowledge of how long each *calendar month* is.  An application which
+cannot determine how many *calendar days* are in Cheshvan and Kislev,
+*must* consider "`30 CSH`" and "`30 KSL`" to be *well-formed* regardless
+of year.
+
+The **molad** is the calculated *instant* of the new moon, as seen from
+Jerusalem.  The first *molad* occurred 5 hours and 204 *halakim* into
+Monday, 1 Tishrei AM&nbsp;1.  A **helek** (plural: **halakim**) is a
+traditional Hebrew subdivision of the hour equal to 3⅓ seconds: there
+are 1080 *halakim* in an hour.  The week used by the Hebrew *calendar*
+is the standard seven day week.  
+
+{.note}  This time is stated relative to the traditional Hebrew start of
+the day, which was at sunset the previous evening; it also uses unequal
+hours so that the time between sunset and sunrise is always 12 hours,
+regardless of the time of year.  Applications do not need to be aware of
+this detail as all times are expressed using Hebrew time reckoning in
+this calculation.  All they need to know is that there are 1080
+*halakim* (also spelt "chalakim") in an hour, 24 hours in a *calendar
+day*, and 7 *calendar days* in a week.  
+
+In the Hebrew *calendar* calculations in this standard, *instants*
+within a week are expressed with as three integers separated with
+colons.  These being the day number, the number of hours into the day,
+and the number of *halakim* into the hour.  Days of the week are
+numbered with Saturday being 0.
+
+{.example}  The *instant* of the first *molad* can be written
+2:5:204, meaning 5 hours and 204 *halakim* into a Monday.
+
+The *molad* for any given *calendar month* and *calendar year* is
+calculated from an earlier *molad* whose time and day of the week are
+known by adding 4 weeks, 1 day, 12 hours, and 793 *halakim* per elapsed
+*calendar month* between *molads*. 
+
+{.note}  This *duration* is commonly written 4:1:12:793, where the
+components are weeks, days, hours and *halakim*, though the number of
+weeks can be dropped for the purpose of determining the length of the
+*calendar year*.  As 793 *halakim* does not equate to an integer number
+of seconds, doing the calculation in *halakim* rather than seconds
+avoids rounding errors if floating point arithmetic is used.  
+
+{.note}  The computation of the *molad* is simplified by knowing that a
+complete 19 year *Metonic cycle* always contains exactly 235 *calendar
+months*.
+
+{.example}  The year AM&nbsp;5779 began in September AD&nbsp;2018, 5778
+years after the first *molad*.  5778 divided by 19 is 304, with a
+remainder of 2, so from the first *molad* to the Tishrei *molad* for
+AM&nbsp;5779, there were 304 complete *Metonic cycles* plus two extra
+years, which are both *non-leap years*, being years 1 and 2 in the
+*Metonic cycle*.  This means 71&thinsp;464 *calendar months* elapsed
+between the first *molad* and the Tishrei *molad* for AM&nbsp;5779.
+Adding 71&thinsp;464 lots of 4:1:12:793 to 2:5:204 gives
+301482:2:14:316.  The number of weeks can be discarded as it is
+irrelevant when determining the year length, leaving just 2:14:316.
+This says the Tushrei *molad* for the year AM&nbsp;5779 happened on a
+Monday, being the second day after the Sabbath, at 08:17:33⅓, when
+converted to hours, minutes and seconds after midnight, rather than
+hours and *halakim* after sunset.
+
+Once the Tishrei *molad* is known, the length of the *calendar year* can
+be determine using the following table.  If the Tishrei *molad* is on or
+after the *instant* in the first column, and before the *instant* in the
+second column, then the length of the *calendar year* can be found in
+one of the last four columns, depending on the position of the year in
+the *Metonic cycle* as shown in the column headings.
+\clearpage
+
+Molad ≥     Molad <     1, 4, 9, 12 or 15   7 or 18   2, 5, 10, 13 or 16   0, 3, 6, 8, 11, 14 or 17
+---------   ---------   ------------------  --------  -------------------  -------------------------
+0:00:000    0:18:000    355                 355       355                  385
+0:18:000    1:09:204    353                 353       353                  383
+1:09:204    1:20:491    355                 355       355                  383
+1:20:491    2:15:589    355                 355       355                  385
+2:15:589    2:18:000    354                 354       355                  385
+2:18:000    3:18:000    354                 354       354                  384
+3:18:000    4:11:695    354                 354       354                  383
+4:11:695    5:09:204    354                 354       354                  385
+5:09:204    5:18:000    355                 355       355                  385
+5:18:000    6:00:408    353                 353       353                  383
+6:00:408    6:09:204    355                 353       353                  383
+6:09:204    6:20:491    355                 355       355                  383
+6:20:491    7:00:000    355                 355       355                  385
+
+Cheshvan has 29 *calendar days* except when the *calendar year* is 355
+or 385 *calendar days* long, in which case it has 30 *calendar days*.
+Kislev has 30 *calendar days* except when the *calendar year* is only
+353 or 383 *calendar days* long, in which case it only has 29 *calendar
+days*.  
+
+{.note}  This table is called the "Table of Four Gates".  Its
+complexities are the result of the competing requirements that Yom
+Kippur does not fall on a day adjacent to the Sabbath (i.e. that 10
+Tishrei not fall on a Friday or Sunday); that the new moon represented
+by the *molad* cannot be observed in daylight until it is six hours old
+and Tishrei cannot start until the new moon it deemed observable;
+that all months have 29 or 30 *calendar days*; and that only Cheshvan
+and Kislev can vary in length.
+
+{.example}  The previous example calculated the Tishrei *molad* for
+AM&nbsp;5779 to be at 2:14:316, which means the second row of the table
+applies.  As 5779 divided by 19 is 304 with a remainder of 2, the year
+AM&nbsp;5779 is the second year in the *Metonic cycle*, so the fifth
+column gives the year length as 355 *calendar days*.  That means both
+Cheshvan and Kislev have 30 *calendar days*.  "`30 CSH 5779`" and "`30
+KSL 5779`" are therefore both *well-formed* *dates*.
+
+A *date* which uses a *calendar day* number which is greater than the
+number of *calendar days* in the specified year and month is not a
+*well-formed date*.  
+
+{.ednote}  The TSC decided to include a detailed specification of the
+Hebrew *calendar* in this standard rather than referencing a third party
+description largely because of the lack of a good, accessible
+description of *calendar* presented in a way that would make it easy to
+implement the *calendar* in ELF.  Most sources describing the *calendar*
+do so in terms of the postponement rules which makes it easier to
+understand why the *calendar* is as it is, but does not make it
+straightforward to implement.
 
 ## The `elf:Time` datatype                                       {#time}
 
