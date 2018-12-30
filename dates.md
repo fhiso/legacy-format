@@ -1646,12 +1646,18 @@ Gregorian, Julian, Hebrew and French Republican *calendars*.
 {.ednote}  There is no technical need for applications to support
 anything other than the Gregorian *calendar*.  Would it be better to
 make only this one *required* and the others *recommended*?  Ideally,
-applications would do more than simply check *dates* are synctactically
+applications would do more than simply check *dates* are syntactically
 valid and would offer conversions between supported *calendars*, *date*
 arithmetic, the ability to look up the day of the week and the *dates*
 of important feast days.  Few applications currently offer this.  Would
 reducing the number of *required* *calendars* make it easier for vendors
 to provide such functionality? 
+
+{.ednote}  The definitions given in this section only specify those
+details which are necessary to determine whether a *date* is
+*well-formed* in the given *calendar*.  Should these descriptions be
+expanded to give more details to help applications convert between
+*calendars*?
 
 ### The Gregorian calendar                                  {#gregorian}
 
@@ -2239,12 +2245,13 @@ Kislev has 30 *calendar days* except when the *calendar year* is only
 days*.  
 
 {.example}  The previous example calculated the Tishrei *molad* for
-AM&nbsp;5779 to be at 2:14:316, which means the second row of the table
+AM&nbsp;5779 to be at 2:14:316, which means the fourth row of the table
 applies.  As 5779 divided by 19 is 304 with a remainder of 2, the year
 AM&nbsp;5779 is the second year in the *Metonic cycle*, so the fifth
-column gives the year length as 355 *calendar days*.  That means both
-Cheshvan and Kislev have 30 *calendar days*.  "`30 CSH 5779`" and "`30
-KSL 5779`" are therefore both *well-formed* *dates*.
+column, whose heading includes "2", gives the year length as 355
+*calendar days*.  That means both Cheshvan and Kislev have 30 *calendar
+days*.  "`30 CSH 5779`" and "`30 KSL 5779`" are therefore both
+*well-formed* *dates*.
 
 {.note}  This table is called the "Table of Four Gates".  Its
 complexities are the result of the competing requirements that Yom
@@ -2266,7 +2273,9 @@ description of *calendar* presented in a way that would make it easy to
 implement the *calendar* in ELF.  Most sources describing the *calendar*
 do so in terms of the postponement rules which makes it easier to
 understand why the *calendar* is as it is, but does not make it
-straightforward to implement.
+straightforward to implement.  It is hoped that by providing these
+details here, vendors will be encouraged to provide full implementations
+of the *calendar*.
 
 ## The `elf:Time` datatype                                       {#time}
 
@@ -2283,6 +2292,10 @@ afternoon.
 The `elf:Time` *datatype* is typically used in conjunction with a value
 of type `elf:DateExact` called its **associated date**.
 
+{.note}  The `elf:DateExact` *datatype* is limited to expressing *dates*
+in the Gregorian *calendar*, so the *associated date* will always be a
+Gregorian *date*.
+
 {.example ...}  In [ELF Data Model], *times of day* are found as `TIME`
 substructures of a `DATE` element which has a payload of *datatype*
 `elf:DateExact`.
@@ -2294,13 +2307,10 @@ In this example, "`10 DEC 2018`" is the *associated date* for the time
 "`13:52:00`".
 {/}
 
-{.note}  As specified here, the *associated date* will always be
-expressed in the Gregorian calendar.
-
-*Strings* in the *lexical space* of the `elf:Time` *datatype* *shall*
-match the following `Time` production, as well as the other constraints
-given here on the numerical value of each component.  *Whitespace* is
-not permitted anywhere in an `elf:Time` value.
+The *lexical space* of the `elf:Time` *datatype* is the set of *strings*
+which match the following `Time` production, as well as the other
+constraints given here on the numerical value of each component.
+*Whitespace* is not permitted anywhere in an `elf:Time` value.
 
     Time     ::=  HH ":" MM (":" SS)? TZD?  
 
@@ -2369,33 +2379,33 @@ program languages, without preserving the original lexical form of the
 with the `xsd:time` *datatype* defined in [XSD Pt2].  
 
 A *seconds* component greater than or equal to `60`, and strictly less
-than `61` is a **leap second** component.  Any use of a *leap second*
-component is part of the *lexical space* of `elf:Time`, but *leap
-second* components *shall* only be used to represent a leap seconds
-inserted by the International Earth Rotation Service or its successor.
+than `61` is called a **leap second** component.  Any use of a *leap
+second* component is part of the *lexical space* of `elf:Time`, but
+applications *shall* only create new *leap second* to represent *leap
+seconds* inserted by the International Earth Rotation Service or its
+successor.
 
 *Conformant* applications encountering a *leap seconds* component *may*
 convert it to an ordinary *seconds* component by subtracting one from
 its value.  This *should not* be done if the application supports
-leap seconds and knows the specified *time of day* was a leap second.
+*leap seconds* and knows the specified *time of day* was a *leap second*.
 
 {.example}  The *string* "`12:56:60.800`" is in the *lexical space* of
-this *datatype* and has a *leap second* component of `60.800`.  As leap
-seconds are always been inserted at midnight UTC and there is no
+this *datatype* and has a *leap second* component of `60.800`.  As *leap
+seconds* are always inserted at midnight UTC and there is no
 timezone in which this *time of day* is midnight UTC, this *time of day*
 could not arise in practice and therefore *conformant* applications
 *must not* generate such a *time of day*.  *Conformant* applications
 *must* accept such *times of day* but *may* subtract one second to
 convert it to "`12:56:59.800`".
 
-{.note}  [GEDCOM 5.5.1] makes no mention of leap seconds, but existing
+{.note}  [GEDCOM 5.5.1] makes no mention of *leap seconds*, but existing
 applications are likely to generate such *times of day* if they happen
-to save a file during the inserted leap second.  Leap seconds are also
-supported
-in [ISO 8601], but not in the `xsd:time` *datatype* defined in [XSD Pt2].
-These rules allow compatibility with these standards and with possible
-existing use, while also allowing applications to ignore the leap
-second.
+to save a file during the inserted *leap second*.  *Leap seconds* are
+also supported by [ISO 8601], but not in the `xsd:time` *datatype*
+defined in [XSD Pt2].  These rules allow compatibility with these
+standards and with existing use, while also allowing applications to
+ignore the *leap second*.
 
 The *lexical space* of the `elf:Time` *datatype* allows the inclusion of
 a **time zone designator** matching the `TZD` production.  *Conformant*
@@ -2409,9 +2419,9 @@ generated *times of day*.
 standard does not specify the meaning conveyed by a *time zone
 designator*, but the syntax used is compatible with [ISO 8601] and the
 `xsd:time` *datatype* defined in [XSD Pt2], and a future version of this
-standard is likely to define by reference to the latter standard.  If an
-application chooses not to ignore *time zone designators*, it should
-follow [XSD Pt2].
+standard is likely to define it by reference to the latter standard.  
+Application choosing not to ignore *time zone designators* are
+encouraged to follow [XSD Pt2].
 
 Formally, the `elf:Time` *datatype* is a *structured non-language-tagged
 datatype* which has the following *properties*:
