@@ -18,8 +18,8 @@ to the [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing
 list.
 
 --------------           ---------------------------------------------
-Latest public version:   `https://fhiso.org/TR/cev-concepts`
-This version:            `https://fhiso.org/TR/cev-concepts-20181230`
+Latest public version:   `https://fhiso.org/TR/elf-dates`
+This version:            `https://fhiso.org/TR/elf-dates-20181230`
 --------------           ---------------------------------------------
 {/}
 
