@@ -2482,9 +2482,9 @@ permitted in the `Age` production.
 {.note}  [GEDCOM 5.5.1] under-specifies how *whitespace* is allowed in
 *ages*.  The `Age` production is permissive in its treatment of
 *whitespace*, including allowing it to be omitted entirely.  The
-preceding recommendation ensures that *conformant* ELF applications will
-be maximally compliant with current GEDCOM application which typically
-use a single space *character*.
+preceding recommendation is intended to make *conformant* ELF
+applications maximally compliant with current GEDCOM implementations
+which typically use a single space *character*.
 
 An *age* which uses the `elf:Age` *datatype* *shall* either consist of a
 quantitative *duration* conforming to the `Duration` or `BareYear`
@@ -2492,7 +2492,7 @@ productions, or an qualitative *age* keyword conforming to the `AgeWord`
 production.
 
 When an *age* is a quantitative *duration* matching the `Duration`
-production, it *shall* contain of one, two or three integers, each
+production, it *shall* contain one, two or three integers, each
 followed by a "`y`", "`m`" or "`d`" suffix to denote a number of
 *calendar years*, *calendar months* or *calendar days*, respectively,
 the sum of which is the *age*.
@@ -2518,11 +2518,11 @@ contain lines like the following, despite them being illegal:
 {/}
 
 An *age* which is written including a (possibly zero) number of
-*calendar days* *may* be assumed to have a *precision* of a few
+*calendar days* *may* be presumed to have a *precision* of a few
 *calendar days*; an *age* which includes a (possibly zero) number of
 *calendar months*, but no explicit number of *calendar days*, *may* be
-assumed to have a *precision* of a few *calendar months*; an *age*
-containing only a number of *calendar years* *may* be assumed to have a
+presumed to have a *precision* of a few *calendar months*; an *age*
+containing only a number of *calendar years* *may* be presumed to have a
 *precision* of a few *calendar years*.
 
 {.example ...}  The *age* "`40y`" *may* be assumed to have a *precision*
@@ -2563,29 +2563,35 @@ given within a five-year *age* bracket.
 *Ages* *should* generally be rounded down when expressed using just a
 number of *calendar years*, or using a number *calendar years* and
 *calendar months*, but an application *should not* assume this is
-necessarily the case without additional information.
+necessarily the case without additional information or context.
+
+{.example}  In many parts of East Asia, *ages* are rounded up rather
+than down, so a newborn infant is considered to be one year old, and
+becomes two years old on the first anniversary of their birth.
 
 A *conformant* application *may* remove any leading zeros preceding a
 non-zero digit, change how *whitespace* is used in an *age*, or append
 any omitted "`y`" suffix, but *must not* otherwise alter the *age*.
 In particular, applications *must not* insert or remove zero components,
-nor convert between days, months and years.  
+except as allowed below, nor convert between days, months and years.  
 
 {.example} "`2y 0m`", "`2y`" and "`24m`" are all distinct *ages* and
-applications *must not* rewrite one to another. However an *conformant*
-application *may* convert "`2`" to "`2y`", adding the `y` suffix; *may*
-convert "`02y`" to "`2y`", removing leading zero; and *may* convert
-"`2y0m`" to "`2y 0m`", a simple change in *whitespace*.
+applications *must not* rewrite one to another. However a *conformant*
+application *may* convert "`2`" to "`2y`", adding the "`y`" suffix;
+*may* convert "`02y`" to "`2y`", removing leading zero; and *may*
+convert "`2y0m`" to "`2y 0m`", a simple change in *whitespace*.
 
 In addition, a *conformant* application *may* insert or remove 
 components which are the number zero followed by "`y`", "`m`" or "`d`"
-suffix, providing doing so does not alter the *precision* of the *age*.
+suffix, providing doing so does not alter the presumed *precision* of
+the *age*.
 
-{.example ...}  The *ages* "`2y 0m`" and "`2y`" have different *precisions*:
-the former has a *precision* of a few months, while the latter has a
-*precision* of a few years.  Converting one to the other by inserting or
-removing a "`0m`" component would change the *precision* of the *age*,
-and of this reason a *conformant* application *must not* do it.   
+{.example ...}  The *ages* "`2y 0m`" and "`2y`" are presumed to have
+different *precisions*: the former has a *precision* of a few months,
+while the latter has a *precision* of a few years.  Converting one to
+the other by inserting or removing a "`0m`" component would change the
+*precision* of the *age*, and of this reason a *conformant* application
+*must not* do it.   
 
 However it is only the least significant component present (representing
 the smallest unit of duration) which affects the *precision*, and other
@@ -2599,7 +2605,7 @@ one to the other.
 at most the specified *age*, or is at least the specified *age*,
 respectively.
 
-{.note ...} This means the "`<`" and "`>`" token are actually interpretted
+{.note ...} This means the "`<`" and "`>`" token are actually interpreted
 as ≤ and ≥ operators, though in practice the *precision* of *ages* in
 ELF is such that difference between ≤ and <, or between ≥ and > does not
 matter.
@@ -2613,13 +2619,13 @@ greater than the specified *age*, respectively, but because of the
 uncertainty in the intended *precision* of an *age*, there is little
 practical difference.  
 The case for interpreting "`<`" as less than or equal to is weaker,
-but there seem to current examples where "`<`" has been used on *ages*
-inferred from an *age* given a few months later.
+but there are examples in current GEDCOM files where "`<`" has been used
+on *ages* inferred from an *age* given a few months later.
 {/}  
 
 {.example} If a source gives an individual's *age* as 52 in
-March, their *age* might be inferred to be "`< 52y`" the preceeding
-January.  In practice they might be 51 or 52, asuming the source is
+March, their *age* might be inferred to be "`< 52y`" the preceding
+January.  In practice, they might be 51 or 52, assuming the source is
 *accurate*.  However, it is normally best not to infer *ages* and only
 to record *ages* when they are given in sources.
 
@@ -2628,20 +2634,20 @@ qualitatively using an **age word** which matches the `AgeWord`
 production.  This standard defines three *age words*: `CHILD`, `INFANT`
 and `STILLBORN`.  These *should* be used when a source describes an
 individual as a child, an infant, or stillborn, respectively, or
-in using other words which are largely equivalent.  They *should not* be
+using other words which are broadly equivalent.  They *should not* be
 used when a source describes an individual using a quantitative *age*.  
 
 {.note}  The words "child", "infant" and "stillborn" can be considered
 societal roles which are to some extent culturally dependent, rather
 than well-defined *age* brackets.  A modern source might describe a
-15-year-old as a child, while in mediæval times they a person of this
-age was unlikely to be described in that way.  This standard does not
-therefore put firm limits on the *ages* meant by these terms.  This is a
-deviation from [GEDCOM 5.5.1] which states that a child is less than 8
-years old, an infant is less than 1 year old, and a stillborn invididual
-is approximately 0 days old.  Nevertheless, these ages may be useful in
-deciding whether a foreign word or phrase can reasonably be translated
-as one of these word.
+15-year-old as a child, while in mediæval times, a person of this age
+would be working and unlikely to be described as a child.  This standard
+does not therefore put firm limits on the *ages* meant by these terms.
+This is a deviation from [GEDCOM 5.5.1] which states that a child is
+less than 8 years old, an infant is less than 1 year old, and a
+stillborn individual is approximately 0 days old.  Nevertheless, these
+ages may be useful in deciding whether a foreign word or phrase can
+reasonably be translated as one of these word.
 
 The *age word* `STILLBORN` is not only a statement of *age* but also
 conveys the fact that the individual died just prior to, at, or
@@ -2651,7 +2657,7 @@ the time of birth.
 
 {.ednote}  Having exactly three *age words* seems unsatisfactory as it
 fails to cope with other descriptions that might occur in a source,
-such as "ancient".  The TSC have discussed whether *age words* should be
+such as "elderly".  The TSC have discussed whether *age words* should be
 deprecated, or whether they should be developed into a more general and
 extensible *age word* mechanism, but have reached no conclusion so far.
 
