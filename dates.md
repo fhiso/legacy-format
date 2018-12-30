@@ -7,14 +7,20 @@ numbersections: true
 
 # Extended Legacy Format (ELF):<br/> Date, Age and Time Microformats
 
-{.ednote ...} This is an **exploratory draft** of the microformats used
+{.ednote ...} This is a **first public draft** of the microformats used
 for dates, ages and times in FHISO's proposed suite of Extended Legacy Format
 (ELF) standards.  This document is not endorsed by the FHISO membership,
 and may be updated, replaced or obsoleted by other documents at any
 time.
 
-Comments on this draft should be directed to the
-[tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing list.
+Comments, discussion and other feedback on this draft should be directed
+to the [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing
+list.
+
+--------------           ---------------------------------------------
+Latest public version:   `https://fhiso.org/TR/cev-concepts`
+This version:            `https://fhiso.org/TR/cev-concepts-20181230`
+--------------           ---------------------------------------------
 {/}
 
 
