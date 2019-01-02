@@ -159,6 +159,40 @@ The remainder of the sequence of *extended lines* representing a *tagged structu
 
 #### Payload conversion
 
+A *tagged structure* payload that is an *xref_id* (or equivalently, one that matches production `XrefID`) is preserved unchanged as the corresponding *extended line*'s *payload string*.
+
+Otherwise,
+
+-   Each U+0040 in the *tagged structure*'s payload
+    is represented as two consecutive U+0040 in the *extended line*'s *payload string*
+    (i.e., each `@` is represented as `@@`),
+    unless the *extended line*'s (equivalently, *tagged structure*'s) *tag*
+    is an *escape-preserving tag*
+    and the U+0040 is part of a substring matching the production `Escape`
+    with an `EscType` in the *escape-preserving tag*'s list of *preserved escape types*.
+
+        Escape   ::= "@#" EscType EscText "@"
+        EscType  ::= [A-Z]
+        EscText  ::= [^#x40#xA#xD]*
+
+-   Any *character* MAY be represented with a **unicode escape** consisting of:
+
+    1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
+    2.  A hexadecimal encoding of the *character*'s *code point*
+    3.  The two characters U+0040 and U+0020 (i.e., "`@ `")
+    
+    A *unicode escape* MUST be used for each *character* that cannot be encoded
+    in the target *character encoding*;
+    SHOULD be used if the *character* will begin or end a *payload line*
+    after the *extended line* is converted to the *lines*;
+    and SHOULD NOT be used otherwise.
+
+These replacements MUST NOT be applied to one another's results.
+
+{.example} The payload "`example@fhiso.com`" serialises as the *payload string* "`example@@fhiso.org`"
+
+{.example} The payload "`☺`" may be represented in a *payload line* as "`☺`" or "`@#U263A@`" or "`@#U263a@`". The former SHOULD be used unless serialising to a *character encoding* (such as ASCII) that lacks a representation for U+263A, in which case one of the other two MUST be used instead.
+
 {.ednote} The following subsections are based on an earlier draft text; re-write in a more declarative style
 
 ##### Serialisation
