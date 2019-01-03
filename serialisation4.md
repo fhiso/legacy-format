@@ -69,18 +69,28 @@ Serialised Line
         EscType  ::= [A-Z]
         EscText  ::= [^#xA#xD#x40]*
 
+Octet String
+:   Consisting of a sequence of octets.
 
-A **serialised ELF document** is a *string* consisting of multiple *serialised lines* separated by *line-breaks*.
+A **serialised ELF document** is an *octet string* encoding multiple *serialised lines* separated by *line-breaks*.
 An **ELF document** is an `elf:Document` containing *structures*, as outlined more fully in [ELF-DataModel].
 
 {.ednote ...} This set of structures was selected to provide a single home for each of the major steps of serialisation:
 
+----------------------------------------------------------------------------------------
 High-level          Low-level           Conversion handles these concepts
 ---------------     ---------------     ------------------------------------------------
 *structure*         *tagged structure*  *structure type identifier*/*tag*; *pointer*/*xref_id*
+
 *tagged structure*  *extended line*     *level*/*substructure*; escapes
+
 *extended line*     *line*              *line-break*/"`CONT`"; splitting with "`CONC`"
+
 *line*              *serialised line*   
+
+concatentated       *octet string*      character encoding
+*serialised lines*
+----------------------------------------------------------------------------------------
 
 Additionally, having named intermediate forms allows us to easily describe elements that do not manifest as *structure*s in the data model, such as the header being defined as a *tagged structure*.
 {/}
@@ -92,7 +102,7 @@ The following subsections define how data is represented in the next intermediat
 ### Document
 
 An *ELF document* is represented as a sequence of at least two *tagged structures*.
-The first *tagged structure* in the sequence is the *[Header]*.
+The first *tagged structure* in the sequence is the *Header* defined in {§header}.
 The last *tagged structure* in the sequence is the **trailer**, which has *level* 0, *tag* "`TRLR`", an no *xref_id*, payload, or substructures.
 In between these two, in arbitrary order, is a *tagged structure* corresponding to each of the *structures*  in the *ELF document*.
 
@@ -104,9 +114,9 @@ A *structure* is represented as a single *tagged structure*, as defined by the f
 
 *structure* component       *tagged structure* component    Notes
 --------------------------- ------------------------------- ---------------------------------------------
-*structure type identifier* *tag*                           Correspondence determined by the [ELF Schema]
-no correspondence           *xref_id*                       see [xref_id] below
-*pointer* *payload*         *xref_id* payload               see [xref_id] below
+*structure type identifier* *tag*                           Correspondence determined by the ELF Schema, see {§schema}
+no correspondence           *xref_id*                       see {§xref-id}
+*pointer* *payload*         *xref_id* payload               see {§xref-id}
 *string* *payload*          *string* payload                same *string* in both
 *superstructure*            *superstructure*                
 *substructures*             *substructures*                 total order for *tagged structure*, partial order for *structure*
@@ -118,7 +128,7 @@ It is RECOMMENDED that serialisations place all *substructures* with the same *t
 Applications MUST NOT attach significance to the order of *tagged structures* with different *tags*.
 
 
-#### xref_id
+#### xref_id                                                          {#xref-id}
 
 The *tagged structure* corresponding to a *structure*
 
@@ -142,7 +152,7 @@ A *tagged structure* $X$ with an *xref_id* payload *must* have a payload that is
 If two or more *tagged structures* are encountered that have the same *xref_id*, a *conformant* application *may* do any of the following:
 
 - Reject the entire dataset as invalid.
-- Reject the all of the *tagged structures* with that *xref_id*, and all *tagged structures* with that *xref_id* as their payload, as invalid. See [Rejecting subparts of a dataset] for what this means.
+- Reject the all of the *tagged structures* with that *xref_id*, and all *tagged structures* with that *xref_id* as their payload, as invalid. See {§reject} for more.
 - If no *tagged structures* uses that *xref_id* as a payload, treat all *tagged structures* with that *xref_id* as if they had no *xref_id*.
 - If only one of the *tagged structures* with that *xref_id* lacks a *superstructure*, treat all *tagged structures* with that *xref_id* that have a *superstructure* as if they had no *xref_id*.
 
@@ -154,13 +164,13 @@ The first *extended line* in this sequence is said to be the *extended line* tha
 It has the same *xref_id* and *tag* as its corresponding the *tagged structure*.
 It's *level* is 0 if the *tagged structure* corresponds to a *record*;
 otherwise it is 1 greater than the *level* of its *superstructure*.
-The conversion of *payloads* is described in [Payload conversion].
+The conversion of *payloads* is described in {§payload-conversion}.
 
 The remainder of the sequence of *extended lines* representing a *tagged structure* is a concatenation of the sequences of *extended lines* corresponding to each of the *tagged structure*'s *substructures*, in the same order they have in the sequence of *substructures*.
 
 {.note} The above definitions mean that the *superstructure* of the *tagged structure* corresponding to an *extended line* is the *tagged structure* corresponding to the nearest preceding *extended line* with a *level* exactly one less than the *extended line* in question.
 
-#### Payload conversion
+#### Payload conversion                                    {#payload-conversion}
 
 A *tagged structure* payload that is an *xref_id* (or equivalently, one that matches production `XrefID`) is preserved unchanged as the corresponding *extended line*'s *payload string*.
 
@@ -219,7 +229,7 @@ leaving `@@` as `@@`. That may possibly complicate the handling of *escape-prese
 If an *extended line* is encountered that has a *level* more than 1 greater than the preceding *extended line*, a *conformant* application *may* do any of the following:
 
 - Reject the entire dataset as invalid.
-- Reject that *extended line*, and all subsequent *extended lines* with a *level* no more than one greater than the *level* of the preceding *extended line*, as invalid. See [Rejecting subparts of a dataset] for what this means.
+- Reject that *extended line*, and all subsequent *extended lines* with a *level* no more than one greater than the *level* of the preceding *extended line*, as invalid. See {§reject} for more.
 
 A *conformant* application MUST NOT adjust the *level* of an *extended line* during deserialisation, even if it believes it knows the *level* is in error.
 
@@ -315,18 +325,137 @@ A *line* is represented as a *string* by concatentating the following, in order:
 During deserialisation, if a line is encountered that cannot be parsed as a *line*, but which has a *level*, a *conformant* application *may* do any of the following:
 
 - Reject the entire dataset as invalid.
-- Reject that line as invalid. See [Rejecting subparts of a dataset] for what this means.
+- Reject that line as invalid. See {§reject} for more.
 
-## Header
+### Serialised Line                                                  {#encoding}
+
+The sequence of all *serialised lines* in a dataset is represented as an *octet stream* by concatenating them, separated with *line-breaks*, and then encoding the resulting *string* using the document's **character encoding**.
+The four supported encodings are listed in the following table:
+
+------    --------------------------------------------------------------------------
+Encoding  Description
+------    --------------------------------------------------------------------------
+`ASCII`   The US version of ASCII defined in [ASCII].
+
+`ANSEL`   The extended Latin character set for bibliographic use defined
+          in [ANSEL].
+
+`UNICODE` Either the UTF-16LE or the UTF-16BE encodings of Unicode
+          defined in [ISO 10646].
+
+`UTF-8`   The UTF-8 encodings of Unicode defined in [ISO 10646].
+------    --------------------------------------------------------------------------
+
+It is REQUIRED that the encoding used should be able to represent all code points within the *string*;
+*unicode escapes* (see {§payload-conversion}) allow this to be achieved for any encoding.
+It is RECOMMENDED that `UTF-8` be used for all datasets.
+
+#### Determining the character encoding
+
+In order to parse an ELF document, an application must determine how to
+map the raw stream of octets read from the network or disk into
+characters.  This is mapping is called the **character encoding** of
+the document.  Determining it is a two-stage process, with the first
+stage is to determine the **detected character encoding** of the
+document per {§chardetect}.
+
+{.note}  The *detected character encoding* might not be the actual
+*character encoding* used in the document, but if the document is
+*conformant*, it will be similar enough to allow a limited degree of
+parsing as basic ASCII *characters* will be correctly identified.
+
+##### Detected character encoding                        {#chardetect}
+
+If a character encoding is specified via any supported external means,
+such as an HTTP `Content-Type` header, this *should* be the *detected
+character encoding*.
+
+{.example ...}  Suppose the ELF file was download using HTTP and the
+response included this header:
+
+    Content-Type: text/plain; charset=UTF-8
+
+If an application supports taking the *detected character encoding* from
+an HTTP `Content-Type` header, the *detected character encoding*
+*should* be UTF-8.
+
+Note that the use of the MIME type `text/plain` is *not recommended* for
+ELF.  It is used here purely as an example. 
+{/}
+
+Otherwise, if the document begins with a byte-order mark (U+FEFF)
+encoded in UTF-8, or UTF-16 of either endianness, this encoding *shall*
+be the *detected character encoding*.  The byte-order mark is removed
+from the data stream before further processing.
+
+Otherwise, if the document begins with the digit `0` (U+0030) encoded in
+UTF-16 of either endianness, this encoding *shall* be the *detected
+character encoding*.
+
+{.note}  The digit `0` is tested for because an ELF file *must* begin
+with the *line* "`0 HEAD`".
+
+Otherwise, applications *may* try to detect other character encodings by
+examining the octet stream, but it is *not recommended* that they do so.
+
+{.note}  One situation where it might be desirable to try to detect
+another encoding is if the application needs to support (as an
+extension) a character encoding like EBCDIC which is not compatible with
+ASCII.
+
+Otherwise, there is no *detected character encoding*.
+
+{.note ...} These cases can be summarised as follows:
+
+----------------  -------------------------------------------------
+Initial octets    Detected character encoding
+----------------  -------------------------------------------------
+EF BB BF          UTF-8 (with byte-order mark)
+
+FF FE             UTF-16, little endian (with byte-order mark) 
+
+FE FF             UTF-16, big endian (with byte-order mark)
+
+30 00             UTF-16, little endian (without byte-order mark)
+
+00 30             UTF-16, big endian (without byte-order mark)
+
+Otherwise         None
+----------------  -------------------------------------------------
+{/}
+
+##### Character encoding
+
+A prefix of octet stream shall be decoded using the *detected character encoding*,
+or an unspecified ASCII-compatible encoding if there is no *detected character encoding*.
+This prefix is parsed into *lines*, stopping at the second instance of a *line* with *level* 0.
+If a *line* with *level* 1 and *tag* `CHAR` was found,
+its *payload* is the **specified character encoding** of the document.
+
+If there is a *specified character encoding*,
+it SHALL be used as the *character encoding* of the octet stream.
+Otherwise, if there is a *detected character encoding*,
+it SHALL be used as the *character encoding* of the octet stream.
+Otherwise, the *character encoding* SHALL be determined to be ANSEL.
 
 
-### ELF Schema
+## Header                                                              {#header}
+
+The **header** is a *tagged structure* with *tag* "`HEAD`"; no *superstructure*, *xref_id*, or *payload*; and the following *substructures*, none of which have an *xref_id*:
+
+- The *tagged structure* representing each *substructure* of `elf:Metadata`
+
+{.ednote} Fix me: find a better way of saying the metadata thing, possibly by reworking [ELF-DataModel]
+
+- A *tagged structure* with *tag* "`CHAR`", no *substructures*, and a *payload* specifying the *character encoding* using the exact encoding name listed in {§encoding}.
+
+- A *tagged structure* with *tag* "`SCHMA`", no *payload*, and *substructures* encoding the *Elf Schema*.
+
+### ELF Schema                                                         {#schema}
 
 ### Escape-preserving tags
 
 
-## Rejecting subparts of the dataset
-
-
+## Rejecting subparts of the dataset                                   {#reject}
 
 

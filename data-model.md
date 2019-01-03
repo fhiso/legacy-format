@@ -3778,7 +3778,7 @@ Supertype
 :   `[elf:Structure]`
 
 Superstructures
-:   `[elf:Dataset]`
+:   `[elf:Metadata]`
 
 Substructures
 :   `[elf:GEDCOM_FORM]`
