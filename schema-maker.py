@@ -107,9 +107,11 @@ if 1:
 1 GEDC 
 2 VERS 5.5.1
 2 FORM LINEAGE-LINKED
+2 ELF 1.0.0
 1 SCHMA
 2 PRFX elf https://terms.fhiso.org/elf/
-2 PRFX elfm https://terms.fhiso.org/elf/metadata/''')
+2 PRFX elfm https://terms.fhiso.org/elf/metadata/
+2 ESC DATE D''')
 
     for k in sorted(themap):
         if ':' in k:

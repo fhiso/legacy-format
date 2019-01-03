@@ -114,7 +114,7 @@ A *structure* is represented as a single *tagged structure*, as defined by the f
 
 *structure* component       *tagged structure* component    Notes
 --------------------------- ------------------------------- ---------------------------------------------
-*structure type identifier* *tag*                           Correspondence determined by the ELF Schema, see {§schema}
+*structure type identifier* *tag*                           Correspondence determined by the ELF Schema, see {§iri-tag}
 no correspondence           *xref_id*                       see {§xref-id}
 *pointer* *payload*         *xref_id* payload               see {§xref-id}
 *string* *payload*          *string* payload                same *string* in both
@@ -320,6 +320,13 @@ A *line* is represented as a *string* by concatentating the following, in order:
 1. The *tag*.
 1. If present, the *payload line*, preceded by a single space U+0020.
 
+
+A **delimiter** is defined as one or more space *characters* or tabs.
+It matches the production `Delim`:
+
+    Delim  ::=  (#x20 | #x9)+
+
+
 #### Deserialisation error recovery
 
 During deserialisation, if a line is encountered that cannot be parsed as a *line*, but which has a *level*, a *conformant* application *may* do any of the following:
@@ -449,13 +456,133 @@ The **header** is a *tagged structure* with *tag* "`HEAD`"; no *superstructure*,
 
 - A *tagged structure* with *tag* "`CHAR`", no *substructures*, and a *payload* specifying the *character encoding* using the exact encoding name listed in {§encoding}.
 
-- A *tagged structure* with *tag* "`SCHMA`", no *payload*, and *substructures* encoding the *Elf Schema*.
+- The *Elf Schema*.
 
 ### ELF Schema                                                         {#schema}
 
-### Escape-preserving tags
+The **ELF Schema** is a *tagged structure* with *tag* "`SCHMA`", no *payload* or *xref_id*,
+and may contain any number of `PRFX`, `IRI`, and `ESC` *tagged structures*.
 
+{.ednote} A previous draft REQUIRED that all `PRFX` come before any `IRI` to allow single-pass *prefix expansion*. This draft removes that as an unnecessary constraint.
+
+{.ednote} Do we want to allow multiple "`SCHMA`", and/or "`SCHMA`" defined by a single IRI instead of a set of *substructures*?
+
+#### Prefix abbreviation {#prefix}
+
+A `PRFX` *tagged structure* has no substructures.
+Its payload consist of two whitespace-separated tokens:
+the first is a **prefix** and the second is that *prefix*'s corresponding IRI.
+To **prefix expand** a *string*, if that *string* begins with one of the *prefixes* followed by a colon (U+003A `:`) then replace that *prefix* and colon with the *prefix*'s corresponding IRI.
+To **prefix shorten** a *string*, replace it with a *string* that  *prefix expansion* would convert to the original *string*.
+
+{.example ...} Given a `PRFX`
+
+    2 PRFX elf https://fhiso.org/elf/
+
+the IRI `https://fhiso.org/elf/ADDRESS` may be abbreviated as `elf:ADDRESS`.
+{/}
+
+
+#### IRI definitions                                                  {#iri-tag}
+
+The correspondence between a *structure*'s *structure type identifier* and its corresponding *tagged structure*'s *tag* is determined by the set of *IRI definitions* in the *Elf Schema*.
+
+Each **IRI definition** specifies the mapping between one *structure type identifier*
+and one (*tag*, *superstructure*'s *structure type identifier*) pair.
+
+{.example ...} The following are examples of [GEDCOM 5.5.1]-compatible *IRI definitions*
+
+*structure type identifier*     (*tag*, *superstructure*) pair
+---------------------------     ------------------------------------------------
+`elf:Parent1Age`                (`HUSB`, `elf:FamilyEvent`)
+`elf:PARENT1_POINTER`           (`HUSB`, `elf:FAM_RECORD`)
+{/}
+
+To convert a *tagged structure*'s *tag* $T$ into a *structure type identifier* $I$,
+first find $S$, the *structure type identifier* of the *superstructure*.
+If the *tagged structure* has no *superstructure*, use `elf:Document` as $S$.
+If the *tagged structure*'s *superstructure* is the *header*, use `elf:Metadata` as $S$.
+
+If an *IRI definition* exists with the (*tag*, *superstructure*) $(T, S)$, 
+or $(T, S')$ where $S'$ is a *supertype* of $S$,
+then that definition's *structure type identifier* is $I$.
+It MUST NOT be possible to arrive at two different *structure type identifiers* in this way.
+
+Each **supertype definition** specifies one *structure type identifier* that is defined to be a *supertype* of another.
+A *structure type identifier* $S'$ is said to be a **supertype** of *structure type identifier* $S$ if and only if at least one of the following holds:
+
+- There is a *supertype definition* that defines $S'$ to be a *supertype* of $S$
+- There is a *supertype* $S''$ of $S$ where $S'$ is a *supertype* of $S''$
+
+{.note} The above two rules define the *supertype* relationship to be its own transitive closure.
+
+The *supertype* defined in this specification is only intended to facilitate *IRI definitions*
+and MUST NOT be taken to indicate any semantic relationship between the structure types they describe.
+
+{.note} It is expected that underlying data models will often define
+a semantic supertype-like relationship
+that mirrors the *supertype definitions*, as for example [Elf-DataModel] does;
+however, the prohibition against assuming such from the *supertype definitions* alone
+provides a clearer separation between data model and serialisation.
+
+{.ednote} We could decide to REQUIRE that any *supertype definition*
+has some meaning in the underlying data model;
+I chose not to do so in this draft as it required discussing semantics,
+which this specification otherwise does not need to do.
+
+##### Encoding IRI and supertype definitions
+
+An `IRI` *tagged structure* has, as its payload, an IRI,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during deserialisation.
+The remainder of this section calls the `IRI` *tagged structure*'s *prefix expanded* payload $I$.
+An `IRI` *tagged structure* may have any number of *substructures* with *tags* "`ISA`" and "`TAG`".
+
+Each `ISA` *tagged structure* has, as its *payload*, a *structure type identifier* $I'$,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during deserialisation.
+Each `IRI` *tagged structure* encodes a single *supertype definition*, specifying that $I'$ is a *supertype* of $I$.
+
+Each `TAG` *tagged structure* has, as its *payload*, a whitespace-separated list of two or more tokens.
+The first token $T$ MUST match production `Tag`;
+each remaining token $S$ is an IRI,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during deserialisation.
+Each such $S$ encodes an *IRI definition* between *structure type identifier* $I$ and (*tag*, *supertype*) pair $(T, S)$.
+
+#### Escape-preserving tags
+
+{.note} This entire section, and all of the related functionality, is present to help cope with the idiosyncratic behaviour of date escapes in [GEDCOM 5.5.1]. Escapes in previous editions of GEDCOM were serialisation-specific and if encountered in ELF should generally be ignored, but date escapes are instead part of a microformat. While escape-preserving tags are not elegant, they are adequate to handle this idiosyncrasy.
+
+{.ednote} I wrote the above note from somewhat fuzzy memory. It might be good to review and summarise all the uses of escapes in various GEDCOM releases...
+
+Some *tags* may be defined a *escape-preserving tags*, with a list of types of *escapes* that are preserved unchanged from serialisation to data model.
+Each **escape-preserving tag** pairs a *tag* with a set of single-character **preserved escape types**, each of which MUST match production `UserEscType`.
+
+    UserEscType ::= [A-TV-Z]
+
+An **escape-preserving tag** is defined by a *tagged structure* in the *ELF Schema*
+with *tag* `ESC`, no *substructures*, and a token composed of two whitespace-separated tokens;
+the first is the *escape-preserving tag* and the second is a string of the *preserved escape types* of that *tag*.
+
+Escape-preserving tags are a deprecated feature included for backwards compatibility,
+and MUST NOT be used for new extensions.
+
+#### Default Schema
+
+If, during deserialisation, the *header* is discovered not to have an *ELF Schema*,
+then the schema in {§default-schema} is used.
+
+{.ednote} Do we need to make this dependant on the `GEDC` metadata?
 
 ## Rejecting subparts of the dataset                                   {#reject}
+
+{.ednote} The entire section needs writing, and possibly integrating above if there does not turn out to be sufficient shared information to be worth having a separate section.
+
+
+## Appendix A: Default Schema                                  {#default-schema}
+
+The following is a minimal ELF file with the default *ELF Schema*,
+which includes all *tag mappings* and *supertype* relationships listed in [Elf-DataModel].
+
+{#include schema.ged}
+
 
 
