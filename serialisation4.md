@@ -553,14 +553,16 @@ Each such $S$ encodes an *IRI definition* between *structure type identifier* $I
 
 {.ednote} I wrote the above note from somewhat fuzzy memory. It might be good to review and summarise all the uses of escapes in various GEDCOM releases...
 
-Some *tags* may be defined a *escape-preserving tags*, with a list of types of *escapes* that are preserved unchanged from serialisation to data model.
+Some *tags* may be defined as *escape-preserving tags*, with a list of types of *escapes* that are preserved unchanged from serialisation to data model.
 Each **escape-preserving tag** pairs a *tag* with a set of single-character **preserved escape types**, each of which MUST match production `UserEscType`.
 
     UserEscType ::= [A-TV-Z]
 
 An **escape-preserving tag** is defined by a *tagged structure* in the *ELF Schema*
 with *tag* `ESC`, no *substructures*, and a token composed of two whitespace-separated tokens;
-the first is the *escape-preserving tag* and the second is a string of the *preserved escape types* of that *tag*.
+the first is the *escape-preserving tag* and the second is a concatenation of all *preserved escape types* of that *tag*.
+
+Two `ESC` *tagged structures* MUST NOT differ only in the set of *preserved escape sequences* they define for a given *tag*.
 
 Escape-preserving tags are a deprecated feature included for backwards compatibility,
 and MUST NOT be used for new extensions.
