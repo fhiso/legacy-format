@@ -16,6 +16,7 @@
 3 TAG CTRY elf:ADDRESS
 2 IRI elf:ADDRESS_EMAIL
 3 TAG EMAIL elf:Agent
+3 TAG EMAI elf:Agent
 2 IRI elf:ADDRESS_FAX
 3 TAG FAX elf:Agent
 2 IRI elf:ADDRESS_LINE1
@@ -418,7 +419,7 @@
 3 TAG FAMC elf:BIRTH elf:CHRISTENING
 1 SOUR https://fhiso.org/elf/
 1 NOTE This file was automatically generated from data-model.md
-2 CONT by schema-maker.py at 2019-01-03T20:29:41.895360
+2 CONT by schema-maker.py at 2019-01-04T17:32:07.909701
 1 SUBM @fhiso_elf1@
 0 @fhiso_elf1@ SUBM
 1 NAME FHISO Extended Legacy Format, version 1
