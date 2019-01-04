@@ -3,6 +3,19 @@ title: ELF Serialisation
 subtitle: declarative redux pre-alpha draft
 ---
 
+{.ednote ...} This is a work-in-progress draft. Know gaps:
+
+- Missing opening boilerplate
+- Missing references
+- Does not define *whitespace*
+- Mechanism for removing a few offending  lines not complete (see (§reject})
+- Fails to clearly state that added *tagged structures* (like `SCHMA` and `CHAR`) do not become *structures* upon deserialisation
+- Definition of metadata encoding is weak
+- Unclear if an *escape-preserving tag* should leave `@@` as `@@` or not. Leaving it as `@@` bypasses some (relatively obscure) errors
+
+Other issues are found in .ednotes below.
+{/}
+
 ## Intermediate forms
 
 Serialisation and deserialisation are described in this section using a set of intermediate datastructures.
@@ -566,6 +579,25 @@ Two `ESC` *tagged structures* MUST NOT differ only in the set of *preserved esca
 
 Escape-preserving tags are a deprecated feature included for backwards compatibility,
 and MUST NOT be used for new extensions.
+
+{.note} The only known *escape-preserving tag* is "`DATE`", with the *preserved escape type* of "`D`"
+
+{.example ...} The following defines *tag* `_OLD_EXTENSION` to preserve `G` and `Q` escapes:
+
+    0 HEAD
+    1 SCHMA
+    2 ESC _OLD_EXTENSION QG
+
+The `ESC` could have equivalently been written as 
+
+    2 ESC _OLD_EXTENSION GQ
+
+or even
+
+    2 ESC _OLD_EXTENSION QGGQQQGGGG
+
+... though that last one is redundant and NOT RECOMMENDED.
+{/}
 
 #### Default Schema
 
