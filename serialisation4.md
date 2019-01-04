@@ -3,7 +3,7 @@ title: ELF Serialisation
 subtitle: declarative redux pre-alpha draft
 ---
 
-{.ednote ...} This is a work-in-progress draft. Know gaps:
+{.ednote ...} This is a work-in-progress draft. Known gaps:
 
 - Missing opening boilerplate
 - Missing references
