@@ -143,6 +143,8 @@ Applications MUST NOT attach significance to the order of *tagged structures* wi
 
 #### xref_id                                                          {#xref-id}
 
+{.ednote} Using "*xref_id* to refer to both the ID and the payload is somewhat confusing. It might be worth adding a different term for one of those two concepts.
+
 The *tagged structure* corresponding to a *structure*
 
 - MUST have an *xref_id* if the corresponding *structure* is pointed to by the *payload* of another *structure*
