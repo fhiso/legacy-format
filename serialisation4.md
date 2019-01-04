@@ -86,7 +86,7 @@ Octet String
 :   Consisting of a sequence of octets.
 
 A **serialised ELF document** is an *octet string* encoding multiple *serialised lines* separated by *line-breaks*.
-An **ELF document** is an `elf:Document` containing *structures*, as outlined more fully in [ELF-DataModel].
+An **ELF document** is an `elf:Metadata` and `elf:Document` containing *structures*, as outlined more fully in [ELF-DataModel].
 
 {.ednote ...} This set of structures was selected to provide a single home for each of the major steps of serialisation:
 
@@ -101,7 +101,7 @@ High-level          Low-level           Conversion handles these concepts
 
 *line*              *serialised line*   
 
-concatentated       *octet string*      character encoding
+concatenated        *octet string*      character encoding
 *serialised lines*
 ----------------------------------------------------------------------------------------
 
@@ -596,8 +596,11 @@ or even
 
     2 ESC _OLD_EXTENSION QGGQQQGGGG
 
-... though that last one is redundant and NOT RECOMMENDED.
+... though that last version is needlessly redundant and verbose and is NOT RECOMMENDED.
 {/}
+
+{.note} We selected *tag* and not *structure type* to indicate *escape preservation*
+because the main motivating case (`DATE`) applies it to all of the several *structure types* that share that *tag*.
 
 #### Default Schema
 
