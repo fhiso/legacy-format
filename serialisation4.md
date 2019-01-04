@@ -136,9 +136,55 @@ no correspondence           *xref_id*                       see {§xref-id}
 
 : Correspondence between *structure* and *tagged structure*.
 
-During serialisation, the order of *substructures* of a *tagged structure* MAY be picked arbitrarily, subject to the limitation that it MUST preserve the relative order of *substructures* with the same *structure type identifier* that was provided by the *structure*.
+During serialisation, the order of *substructures* of a *tagged structure* MAY be picked arbitrarily, subject to the limitation that it MUST NOT change the relative order of *substructures* with the same *structure type identifier*.
 It is RECOMMENDED that serialisations place all *substructures* with the same *tag* together, but doing so is NOT REQUIRED.
 Applications MUST NOT attach significance to the order of *tagged structures* with different *tags*.
+
+{.example ...} Consider an `elf:INDIVIDUAL_RECORD` with three `elf:IndividualEvent`s: one `elf:BIRTH` and two `elf:GRADUATION`s.
+If the earlier graduation is listed first, then the following three are all valid orderings and any may be used, though the second is NOT RECOMMENDED:
+
+````gedcom
+0 @I1@ INDI
+1 BIRTH
+2 DATE 20 JUN 1881
+1 GRAD
+2 AGE 18
+1 GRAD
+2 AGE 22
+````
+
+````gedcom
+0 @I1@ INDI
+1 GRAD
+2 AGE 18
+1 BIRTH
+2 DATE 20 JUN 1881
+1 GRAD
+2 AGE 22
+````
+
+````gedcom
+0 @I1@ INDI
+1 GRAD
+2 AGE 18
+1 GRAD
+2 AGE 22
+1 BIRTH
+2 DATE 20 JUN 1881
+````
+
+However, the following puts the graduations in a different order than the dataset and is not permitted:
+
+````gedcom
+0 @I1@ INDI
+1 GRAD
+2 AGE 22
+1 BIRTH
+2 AGE 18
+1 GRAD
+2 DATE 20 JUN 1881
+````
+{/}
 
 
 #### xref_id                                                          {#xref-id}
