@@ -137,7 +137,7 @@ no correspondence           *xref_id*                       see {§xref-id}
 : Correspondence between *structure* and *tagged structure*.
 
 During serialisation, the order of *substructures* of a *tagged structure* MAY be picked arbitrarily, subject to the limitation that it MUST preserve the relative order of *substructures* with the same *structure type identifier* that was provided by the *structure*.
-It is RECOMMENDED that serialisations place all *substructures* with the same *tag* together in this order, but doing so is NOT REQUIRED.
+It is RECOMMENDED that serialisations place all *substructures* with the same *tag* together, but doing so is NOT REQUIRED.
 Applications MUST NOT attach significance to the order of *tagged structures* with different *tags*.
 
 
