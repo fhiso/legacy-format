@@ -161,14 +161,14 @@ The semantics of serialisation are defined by the following procedural outline.
 
     - assigning *levels*
     - splitting *payloads*, if needed, using `CONT` and `CONC`
-    - ordering *substructures* in a prefix-ordering depth-first traversal of the *tagged structures*
+    - ordering *substructures* in a preorder traversal of the *tagged structures*
     
     This step cannot happen before payload conversion because valid split points are dependant on proper escaping.
     This step must happen before encoding as octets because valid split points are determined by *character*, not octet.
 
 5. The sequence of *lines* is converted to an octet stream by
 
-    - concatenating the *lines* with *line-break* *terminators*
+    - concatenating the *lines* with *line-break* terminators
     - converting *strings* to octets using the *character encoding*
 
 
@@ -176,9 +176,9 @@ The semantics of serialisation are defined by the following procedural outline.
     
 The semantics of parsing are defined by the following procedural outline.
 
-1. An octet stream is converted to a sequence of *string lines* by
+1. An octet stream is converted to a sequence of *string* lines by
 
-    a determining a *character encoding* by 
+    a. determining a *character encoding* by 
     
         i. detecting a *character encoding*
         ii. using that *detected character encoding* to look for a *character encoding* specified in the *serialisation metadata*
@@ -186,7 +186,7 @@ The semantics of parsing are defined by the following procedural outline.
     b. converting octets to *characters* using that *character encoding*
     c. splitting on *line breaks*
 
-2. *string lines* are parsed as *lines* by
+2. *string* lines are parsed as *lines* by
 
     - parsing the *level*, *tag*, *xref_id*, and *payload* of each *line*
     - creating an *error line* if that fails
@@ -195,7 +195,7 @@ The semantics of parsing are defined by the following procedural outline.
 
     - re-merging `CONC` and `CONT`-split *payloads*; violations of splitting rules are ignored
     - using *levels* to properly nest *xref structures*
-    - adding *error structures* if the *levels* are inconsistent
+    - converting to *error lines* before parsing if the *levels* are inconsistent
 
 4. *xref structures* are parsed into *tagged structures* by simultaneously
 
@@ -208,7 +208,7 @@ The semantics of parsing are defined by the following procedural outline.
 
 6. *tags* are converted into *structure type identifiers* using the *schema*
     and the resulting *structures* placed in the *metadata* or *document* as appropriate.
-    *tags* with no corresponding *structure type identifier* are converted into `elf:Undefined` *structures*.
+    *Tags* with no corresponding *structure type identifier* are converted into appropriate *undefined tag identifiers*.
 
 ### Constructs
 
@@ -242,7 +242,7 @@ Line
 :   1. A *level*, a non-negative *integer*
     2. An optional *xref_id*
     3. A *tag*, a *string* matching production `Tag`
-    4. An optional **payload line**, which is a *string* containing any number of *characters*, but which *must not* contain a *line-break*.
+    4. An optional *payload*, which is a *string* containing any number of *characters*, but which *must not* contain a *line-break*.
 
 Line break
 :   A sequence of one or more newline and/or carriage return characters.
@@ -253,7 +253,7 @@ Line break
     
     - a single newline (U+000A)
     - a single carriage return (U+000D)
-    - a single carriage return followed by a single newline (U+000A U+000D)
+    - a single carriage return followed by a single newline (U+000D U+000A)
     
     The same string SHOULD be used each place a *line break* is expected.
 
@@ -310,7 +310,7 @@ Superstructure type identifier
 an `elf:INDIVIDUAL_RECORD` is the superstructure of an `elf:GRADUATION`
 and the `elf:GRADUATION` is the superstructure of an `elf:AGE_AT_EVENT`.
 The *superstructure type identifier* of the `elf:AGE_AT_EVENT` is `elf:GRADUATION`,
-not `elf:INDIVIDUAL_RECORD` or `elf:Document`.
+not `elf:INDIVIDUAL_RECORD`.
 {/}
 
 
@@ -360,7 +360,7 @@ by utilizing *tag definitions* and *supertypes*, as outlined below.
 
 A **supertype definition** specifies one *structure type identifier* that is defined to be a **supertype** of another.
 
-{.example} The following are example *supertype definitions* in the *default ELF schema*:
+{.example ...} The following are example *supertype definitions* in the *default ELF schema*:
 
 - `elf:FamilyEvent` is a supertype of `elf:MARRIAGE`
 - `elf:Event` is a supertype of `elf:FamilyEvent`
@@ -460,11 +460,11 @@ During serialisation, a *conformant* application SHALL ensure the presence of su
 that at each *structure* has a defined *tag*,
 creating new *tag definitions* if needed to achieve this end.
 
-{.note} The above is not the same as saying that a *tag definition* is created for each *structure*
+{.note} The above is not the same as saying that a *tag definition* is created for each *structure type identifier*
 because a *structure* with identifier "`elf:Undefined`" or an *undefined tag identifier*
 has a defined *tag* without a *tag definition*.
 
-New *tag definitions* may be selected arbitrarily, subject to the limitations on *tags* (§tags) and *tag definitions* (§tag-definitions) and to the following:
+New *tag definitions* may be selected arbitrarily, subject to the limitations on *tags* (see {§tags}) and *tag definitions* (see {§tag-definitions}) and to the following:
 
 - the *tag* MUST NOT be "`CONT`", "`CONC`", "`ERROR`", "`UNDEF`",
     or the *tag* of any *undefined tag identifier* in the *dataset*.
@@ -505,7 +505,7 @@ Each *structure* is converted to a *tagged structure* with the *tag* being
     In the event that more than one such *tag* exists, applications SHOULD select the same *tag* in each instance where this choice exists.
 
 {.note} If processing *structures* into *tagged structures* in place,
-it may be easiest to perform a postfix traversal of each *structure* hierarchy;
+it may be easiest to perform a postorder traversal of each *structure* hierarchy;
 this way the *superstructure* of a *structure* being converted will still have a *structure type identifier*,
 not a *tag*,
 which will simplify looking up applicable *tag definitions*.
@@ -587,7 +587,7 @@ The *tagged structures* representing the *dataset* are ordered as follows:
     - A *serialisation metadata* *tagged structure* with *tag* "`SCHMA`" and no *payload*, with *substructures* encoding the *ELF Schema*; see {§schema} for details.
     
     - Each *tagged structure* with the *superstructure type identifier* `elf:Metadata`,
-        in an order consistent with the partial order imposed on *metadata*.
+        in an order consistent with the partial order of *structures* present in the *metadata*.
 
 2. Each *tagged structure* with the *superstructure type identifier* `elf:Document`, in arbitrary order.
 
@@ -1187,19 +1187,27 @@ is encoded as an *octet stream* by
 
 1. Convert each *line* into a *string* consisting of
 
-    a. The *level* encoded as a decimal integer with no leading 0
-    b. A single space (U+0020)
-    c. If the *line* has an *xref_id*,
+    a. Optionally any amount of *whitespace*, which SHOULD be omitted
+    b. The *level* encoded as a decimal integer with no leading 0
+    c. A *delimiter*, should SHOULD be a single space (U+0020)
+    d. If the *line* has an *xref_id*,
         i. The *xref_id*
-        ii. A single space (U+0020)
-    d. The *tag*
-    e. If the *line* has a *payload*,
+        ii. A *delimiter*, should SHOULD be a single space (U+0020)
+    e. The *tag*
+    f. If the *line* has a *payload*,
         i. A single space (U+0020)
         ii. The *payload*
 
+{.note} [GEDCOM 5.5.1] does not allow parsing delimiters other than a single space
+in steps (c) and (d.ii) above,
+but other delimiters are used in some extant files.
+
+{.note} [GEDCOM 5.5.1] is inconsistent in if it allows more-than-one-space for (f.i) above; in some places it clearly states that only a single space is allowed and in others it implies any delimiter may be present.
+Requiring a single space allows leading spaces to in *payloads*,
+which otherwise would require *unicode escapes* to encode.
+
 2. Concatenate those *strings* into a single *string*
-    with a single *line break* between each *line*
-    and, optionally, an additional *line break* at the end.
+    with a single *line break* between each *line*.
     
     All of the *line breaks* used SHOULD be the same,
     and SHOULD be one of
