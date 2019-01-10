@@ -133,8 +133,9 @@ applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
 
-This standard uses *prefix notation* when discussing specific *terms*.
-The following *prefix* binding is assumed in this standard:
+This standard uses the *prefix notation*, as defined in §4.3 of [Basic
+Concepts], when discussing specific *terms*.  The following *prefix*
+binding is assumed in this standard:
 
 ------           -----------------------------------------------
 `elf`            `https://terms.fhiso.org/elf/`
@@ -252,13 +253,13 @@ a researcher might believe that a single event occurred in two locations or the 
 
 Some researchers include just one version in the data (or none at all)
 and add `[elf:NOTE_STRUCTURE]`s that describe the alternatives.
-Assuming decent writing style and shared language, these can be fairly unambiguous
+Assuming clear writing and a shared language, these can be fairly unambiguous
 but almost never understandable by software.
 
 None of the above is clearly the right solution,
 nor does any one appear to be the most common in existing data.
 While a future version of this specification might include extensions to handle
-this common case, ELF 1.0.0 is intended to mirror GEDCOM closely
+uncertainty, ELF 1.0.0 is intended to mirror GEDCOM closely
 and does not include any such extension.
 
 
@@ -299,6 +300,18 @@ Substructures
     *substructures* with the same *structure type*
     *shall* be interpreted as being in preference order, with the first such *substructure* being most preferred.
 
+{.note ...} The exact meaning of "preferred" is not defined either here nor in any known GEDCOM standard.
+For example, when seeing multiple names, one if preferred by virtue of being first
+but implementations *should not* infer that that one was preferred by the individual in question
+nor by any particular contributor to the dataset.
+
+When a specific order of *substructures* is suggested or required by the data model
+(for example, `[elf:CHILD_POINTER]`s should be in birth order)
+or when distinct semantics are present in each *substructure*
+(for example, `[elf:CHILD_TO_FAMILY_LINK]`s to both birth and adoptive families)
+user interfaces are *recommended* to either present all such information, not just the first listed;
+or to clearly indicate that additional information is being elided.
+{/}
 
 
 {.example ...} Given the following data
@@ -313,18 +326,20 @@ a view using only a single name variant should use the first (Herman, not Harmon
 because it comes first and is thus interpreted as being preferred.
 {/}
 
-{.note ...} The exact meaning of "preferred" is not defined either here nor in any known GEDCOM standard.
-For example, when seeing multiple names, one if preferred by virtue of being first
-but implementations *should not* infer that that one was preferred by the individual in question
-nor by any particular contributor to the dataset.
 
-When a specific order of *substructures* is suggested or required by the data model
-(for example, `[elf:CHILD_POINTER]`s should be in birth order)
-or when distinct semantics are present in each *substructure*
-(for example, `[elf:CHILD_TO_FAMILY_LINK]`s to both birth and adoptive families)
-user interfaces are *recommended* to either present all such information, not just the first listed;
-or to clearly indicate that additional information is being elided.
-{/}
+Within this standard document, a postfix shorthand notation
+is used to indicate the expected **cardinality** of *substructures* of a *structure*:
+
+- "\*" indicates zero or more.
+
+- "?" indicates either zero or one.
+    If more than one *substructure* of thus type is present,
+    all but the first are considered extensions.
+    
+- "!" indicates exactly one.
+    If more than one *substructure* of thus type is present,
+    all but the first are considered extensions.
+    If zero are present, the superstructure is considered an extension.
 
 
 ### Supertypes and subtypes {#Inheritance}
@@ -390,8 +405,6 @@ Their purpose is to provide inherited semantics via being used as *supertypes*.
 ## Abstract types
 
 The following abstract types are presented in alphabetical order.
-
-{.ednote} To do: the meaning of ? ! and \* were not preserved and need to be re-added to this spec
 
 ### `elf:Agent`                                                   {#elf:Agent}
 
@@ -3979,25 +3992,54 @@ Not a structure at all, `elf:Metadata` is a special IRI used as the *structure t
 
 
 
-## Extension Types   {#Extensions}
+## Extensions   {#Extensions}
 
-The list of types contained in this specification are not exhaustive
-and may be extended by other specifications.
+There are several reasons why a *structure* may be considered an **unknown extension** to this data model:
 
-Extension types' *structure type identifier*s SHOULD be an IRI with an authority component owned by the extension author, as documented in [Basic Concepts].
+- It is not the first *substructure* of its type in its *superstructure*,
+    and the *superstructure* expected no more than one *substructure* of its type.
 
-Implementations encountering an unknown extension structures MAY ignore the structure and its substructures.
-It is RECOMMENDED that unknown extensions be preserved in the dataset if feasible,
-though doing so is NOT REQUIRED.
-Implementations SHOULD NOT create, modify, move, or duplicate structures with extensions unknown to the implementation.
+- It is a *substructure* of a type not expected by its *superstructure*.
+
+- It is missing a required *substructure*,
+    or that *substructure* has some error that makes it an *extension*.
+
+- Its *payload* is not appropriate for its *structure type*:
+    it has a *payload* where none was expected,
+    or a *string* where a *pointer* was expected or vice versa,
+    or a *pointer* to the wrong *structure type* or to an *extension*.
+
+- Its *structure type identifier* does not indicate any known *structure type*.
+
+*Unknown extensions* are permitted by this data model,
+and a dataset MUST NOT be rejected simply because it contains *unknown extensions*.
+A *conformant* application MAY remove *unknown extension* *structures*,
+but doing so is NOT RECOMMENDED.
+Implementations SHOULD NOT create, modify, move, or duplicate *structures* it considers to be *unknown extensions*.
+
+If a *structure* is removed as part of removing an *unknown extension*,
+all of its *substructures* and all *structures* that point to it
+MUST also be removed, recursively.
+
+{.note} [ELF-Serialisation] converts most serialisation errors
+into *unknown extensions* with a *structure type identifier* beginning `elf:Unknown`.
+FHISO currently does not intend to define semantics for `elf:Unknown`-prefixed *structure type identifiers*
+in any future ELF standard.
+
+### Extension types
+
+This data model may be extended by creating new **extension types**,
+which are *structure types* that are not documented in ELF 1.0.0.
+
+*Extension types'* *structure type identifier*s SHOULD be an IRI with an authority component owned by the extension author, as documented in [Basic Concepts].
 
 {.example ...} Suppose an implementation not understanding the `http://example.com/WEALTH` extension type is processing a dataset containing two `elf:INDIVIDUAL_RECORD`s, one of which has a `http://example.com/WEALTH` substructure with payload "34K/A".
 
 -   The implementation may choose to ignore the `http://example.com/WEALTH` or to display it in some default fashion.
 -   If the dataset is modified and exported
     -   If the `elf:INDIVIDUAL_RECORD` with that `http://example.com/WEALTH` still exists in the dataset, the `http://example.com/WEALTH` structure *should* be preserved, but it *may* be omitted.
-    -   No additional `http://example.com/WEALTH` structure *may* be created.
-    -   The payload of the existing `http://example.com/WEALTH` structure *must not* have been modified.
+    -   No additional `http://example.com/WEALTH` structure *should* be created.
+    -   The payload of the existing `http://example.com/WEALTH` structure *should not* have been modified.
 
 If the implementation discovers the meaning of `http://example.com/WEALTH`, it is welcome to create and modify `http://example.com/WEALTH` structures as it sees fit (subject to any constraints specific to that structure type).
 {/}
