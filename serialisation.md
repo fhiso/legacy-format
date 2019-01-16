@@ -1,9 +1,10 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Serialisation Format
-date: 15 October 2017
+date: 7 January 2019
 numbersections: true
 ...
+
 # ELF Serialisation Format
 
 {.ednote ...} This is an **exploratory draft** of the serialisation
@@ -35,15 +36,20 @@ have the status of a standard and has been widely implemented as such.
 FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
 name having been chosen to avoid confusion with any other updates or
-extensions to GEDCOM, or any future use of the term by The Church of
-Jesus Christ of Latter-day Saints.  This document is one of two that
-form the initial suite of ELF standards:
+extensions to GEDCOM, or any future use of the name by The Church of
+Jesus Christ of Latter-day Saints.  This document is one of three that
+form the initial suite of ELF standards, known collectively as ELF 1.0.0:
 
 * **ELF: Serialisation Format**.  This standard defines a
   general-purpose serialisation format based on the GEDCOM data format
   which encodes a *dataset* as a hierarchical series of *lines*, and
   provides low-level facilities such as escaping and extensibility
   mechanisms.
+
+* **ELF: Date, Age and Time Microformats**.  This standard defines
+  microformats for representing dates, ages and times in arbitrary calendars,
+  together with how they are applied to the Gregorian, Julian, French
+  Republican and Hebrew calendars.  
 
 * **ELF: Data Model**.  This standard defines a data model based on the
   lineage-linked GEDCOM form, reformulated in terms of the
@@ -105,643 +111,1129 @@ applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
 
-## Overview of ELF
+This standard uses the *prefix notation*, as defined in §4.3 of [Basic
+Concepts], when discussing specific *terms*.  The following *prefix*
+bindings are assumed in this standard:
 
-The ELF serialisation format is a structured, line-based text format for
-encoding data in a form that is both machine-readable and
-human-readable.  An ELF document consists of a sequence *structures*, 
-which are recursive data structures that allow arbitrary information to
-be represented in a hierarchical manner.  Each *structure* *may* have a
-*payload*, which is either a *string* or a *pointer* to another
-structure, and a list of child *structures* known as *substructures*.
+------           -----------------------------------------------
+`elf`            `https://terms.fhiso.org/elf/`
+`ex`             `https://example.com/`
+------           -----------------------------------------------
 
-{.note} The expressiveness of ELF is similar to that of XML.  ELF's
-*structures* serve the same role as elements in XML, and nest similarly.
+{.note} Although *prefix notation* is included in this standard document
+(see {§prefix}), that is only in the context of serialised data.
+When used outside of a serialised example, prefix notation is simply a
+notational convenience to make the standard easier to read.
 
-Each *structure* is encoded as sequence of *lines*.  The type of
-*structure* is encoded on the first *line*, together with its
-*payload*; *substructures* are encoded in order on subsequent
-*lines*.  Each *line* is prefixed by a *level*, which is a number that
-states how many levels of *substructures* deep the current *structure*
-is.
+
+
+
+## Overview
+
+A **dataset** consists of *metadata* and a *document*, each containing a collection of *structures*.
+An **octet stream** consists of an ordered sequence of octets, values between 0 and 255.
+This document specifies how a *dataset* is serialised into an *octet stream*
+and how an *octet stream* is parsed into a *dataset*.
+
+### Serialisation
+
+The semantics of serialisation are defined by the following procedural outline.
+
+1. Each *structure* is assigned a *tag* based on its *structure type identifier*, *superstructure type identifier*, and a *schema* which MAY be augmented during serialisation to allow all *structures* to have a *tag*.
+
+2. The *tagged structures* are ordered and additional *tagged structures* created to represent *serialisation metadata*.
+    
+    This step cannot happen before tagging because tagging may generate *serialisation metadata* that needs to be included in the *tagged structures*.
+
+3. Payloads are converted to create *xref structures* by simultaneously
+    
+    - assigning *xref_ids* and replacing *pointer*-valued *payloads* with *string*-valued *xrefs*
+    - escaping `@` *characters*
+    - preserving valid *escapes*
+    - escaping unrepresentable *characters*
+    
+    Semantically, these actions must happen concurrently because none of them should be applied to the others' results.
+    
+    This step cannot happen before tagging because tags are needed to determine the set of valid *escapes*.
+    This step cannot happen before adding *serialisation metadata* because it is applied to the *serialisation metadata* as well.
+
+4. The *dataset* is converted to a sequence of *lines* by
+
+    - assigning *levels*
+    - splitting *payloads*, if needed, using `CONT` and `CONC`
+    - ordering *substructures* in a preorder traversal of the *tagged structures*
+    
+    This step cannot happen before payload conversion because valid split points are dependant on proper escaping.
+    This step must happen before encoding as octets because valid split points are determined by *character*, not octet.
+
+5. The sequence of *lines* is converted to an octet stream by
+
+    - concatenating the *lines* with *line-break* terminators
+    - converting *strings* to octets using the *character encoding*
+
+
+### Parsing
+    
+The semantics of parsing are defined by the following procedural outline.
+
+1. An octet stream is converted to a sequence of *string* lines by
+
+    a. determining a *character encoding* by 
+    
+        i. detecting a *character encoding*
+        ii. using that *detected character encoding* to look for a *character encoding* specified in the *serialisation metadata*
+    
+    b. converting octets to *characters* using that *character encoding*
+    c. splitting on *line breaks*
+
+2. *string* lines are parsed as *lines* by
+
+    - parsing the *level*, *tag*, *xref_id*, and *payload* of each *line*
+    - creating an *error line* if that fails
+
+3. *lines* are parsed into *xref structures* by
+
+    - re-merging `CONC` and `CONT`-split *payloads*; violations of splitting rules are ignored
+    - using *levels* to properly nest *xref structures*
+    - converting to *error lines* before parsing if the *levels* are inconsistent
+
+4. *xref structures* are parsed into *tagged structures* by simultaneously
+
+    - converting *xrefs* to *pointers*, with a special "point to null" if this fails
+    - unescaping `@` *characters*
+    - preserving valid *escapes* and removing others
+    - converting *unicode escapes* into their represented *characters*,
+
+5. the *tagged structures* that represent the *schema* are parsed
+
+6. *tags* are converted into *structure type identifiers* using the *schema*
+    and the resulting *structures* placed in the *metadata* or *document* as appropriate.
+    *Tags* with no corresponding *structure type identifier* are converted into appropriate *undefined tag identifiers*.
+
+### Constructs
+
+This document uses five externally-visible constructs:
+*dataset*, *metadata*, *document*, *structure*, and *octet stream*.
+For clarity of presentation, it also uses several intermediate constructs internally:
+*line*, *xref structure*, and *tagged structure*.
+Each is defined in {§glossary}.
+
+### Glossary                                                {#glossary}
+
+Character encoding
+:   The scheme used to map between an *octet stream*
+    and a *string* of *characters*.
+
+Dataset
+:   *Metadata* and a *document*.
+
+Delimiter
+:   A sequence of one or more space or tabulation characters.
+
+        Delim ::= [#20#9]+
+    
+    During serialisation, a single space (U+0020) SHOULD be used
+    each place a *delimiter* is expected.
+
+Document
+:   An unordered set of *structures*.
+
+Line
+:   1. A *level*, a non-negative *integer*
+    2. An optional *xref_id*
+    3. A *tag*, a *string* matching production `Tag`
+    4. An optional *payload*, which is a *string* containing any number of *characters*, but which *must not* contain a *line-break*.
+
+Line break
+:   A sequence of one or more newline and/or carriage return characters.
+
+        LB ::= [#A#D]+
+
+    During serialisation, each *line break* MUST be one of 
+    
+    - a single newline (U+000A)
+    - a single carriage return (U+000D)
+    - a single carriage return followed by a single newline (U+000D U+000A)
+    
+    The same string SHOULD be used each place a *line break* is expected.
+
+Metadata
+:   A collections of *structures* intended to describe information about the dataset as a whole.
+    
+    The relative order of *structures* with the same *structure type identifier* SHALL be preserved within this collection;
+    the relative order of *structures* with distinct *structure type identifiers* is not defined by this specification.
+
+Octet
+:   One of 256 values, often represented as the numbers 0 through 255.
+    Also called a "byte."
+
+Octet Stream
+:   A sequence of octets.
+
+Record
+:   A *structure*, *tagged structure*, or *xref structure* whose *superstructure* is the *document*.
+
+ELF Schema
+:   Information needed to correctly parse *tagged structures* into *structures*:
+    a mapping between *structure type identifiers* and *tags*
+    and metadata relating to valid *escapes* and *prefixes*.
+
+Serialisation Metadata
+:   *Tagged structures* inserted during serialisation
+    and removed (with all its *substructures*) during parsing.
+    They are used to serialise the *character encoding* and *ELF schema*
+    as well as to separate the *metadata* and the *document*.
+
+Structure
+:   - A **structure type identifier**, which is a *term*.
+    - Optionally, a **payload** which is one of
+        - A **pointer** to another *structure*, which *must* be a *record* within the same *dataset*.
+        - A *string* or subtype thereof.
+    - One **superstructure**, which is one of
+        - Another *structure*; *superstructure* links MUST be acyclic.
+        - The *document*.
+        - The *metadata*.
+    - A collection of any number of **substructures**, which are *structures*.
+
+        The relative order of *structures* with the same *structure type identifier* SHALL be preserved within this collection;
+        the relative order of *structures* with distinct *structure type identifiers* is not defined by this specification.
+
+Superstructure type identifier
+:   A *term* identifying the type of the *superstructure* of a *structure*.
+    If the *superstructure* is the *document*, this is `elf:Document`.
+    If the *superstructure* is the *metadata*, this is `elf:Metadata`.
+    Otherwise, this is the *structure type identifier* of a *structures*'s *superstructure*.
+    
+{.note} *Superstructure type identifier* is not transitive, applying only to the immediate superstructure.
+
+{.example ...} Suppose 
+an `elf:INDIVIDUAL_RECORD` is the superstructure of an `elf:GRADUATION`
+and the `elf:GRADUATION` is the superstructure of an `elf:AGE_AT_EVENT`.
+The *superstructure type identifier* of the `elf:AGE_AT_EVENT` is `elf:GRADUATION`,
+not `elf:INDIVIDUAL_RECORD`.
+{/}
+
+
+Tagged Structure
+:   Like a *structure*, except 
+    
+    - it has a *tag* instead of a *structure type identifier*.
+    - its *substructures* are stored in a sequence with defined order, not in a partially-ordered collection.
+
+Undefined tag identifier
+:   A *term* containing a single `#` (U+0023)
+    with `elf:Undefined` before it
+    and a *string* matching production `Tag` after it.
+    The *string* after the U+0023 is called the *tag* of the *undefined tag identifier*.
+
+Xref Structure
+:   Like a *tagged structure*, except
+    
+    - it may have an optional *xref_id*.
+    - its payload, if present, is always a *string*, not a *pointer*.
+
+
+## Tags
+
+### Definitions                                             {#tags}
+
+A **tag** is a *string* that matches production `Tag`
+
+    Tag ::= [0-9a-zA-Z_]+
+
+A *tag* SHOULD be no more than 15 characters in length.
+
+{.note} [GEDCOM 5.5.1] required tags to be unique within the first 15 characters and no more than 31 characters in length. As memory constraints that motivated those requirements are no longer common, ELF has changed that recommended status instead.
+
+A *tag* SHOULD begin with an underscore (`_`, U+005F) unless it is defined in a FHISO standard.
+
+{.note} [GEDCOM 5.5.1] required all tags other than those it defined to begin with an underscore. ELF's use of *structure type identifiers* largely obviates that need, but it remains *recommended* in ELF 1.0.0 to support legacy systems that have special-case handling for underscore-prefixed *tags*. FHISO is considering removing that recommendation in a subsequent version of ELF.
+
+{.example} "`HEAD`" is a valid *tag*; so is "`_UUID`".
+"`23`" and "`UUID`" are also valid, but SHOULD NOT be used as they are not defined in a FHISO standard and do not begin with an underscore.
+"`_UNCLE_OF_THE_BRIDE`" is valid, but SHOULD NOT be used as it is 19 *characters* long, more than the 15-*character* recommended maximum length.
+
+*Structure type identifiers* are serialised as *tags*
+by utilizing *tag definitions* and *supertypes*, as outlined below.
+
+#### Supertypes
+
+A **supertype definition** specifies one *structure type identifier* that is defined to be a **supertype** of another.
+
+{.example ...} The following are example *supertype definitions* in the *default ELF schema*:
+
+- `elf:FamilyEvent` is a supertype of `elf:MARRIAGE`
+- `elf:Event` is a supertype of `elf:FamilyEvent`
+- `elf:Agent` is a supertype of `elf:SUBMITTER_RECORD`
+- `elf:Record` is a supertype of `elf:SUBMITTER_RECORD`
+{/}
+
+An **eventual supertype** of a *structure type identifier* is either
+
+- the *structure type identifier* itself
+- an *eventual supertype* of at least one of the *structure type identifier*'s *supertypes*
+
+{.example ...} Continuing the previous example,
+
+- `elf:MARRIAGE`, `elf:FamilyEvent`, and `elf:Event` are *eventual supertypes* of `elf:MARRIAGE`
+- `elf:FamilyEvent`, and `elf:Event` are *eventual supertypes* of `elf:FamilyEvent`
+- `elf:SUBMITTER_RECORD`, `elf:Agent`, and `elf:Record` are *eventual supertypes* of `elf:SUBMITTER_RECORD`
+{/}
+
+If $X$ is an *eventual supertype* of $Y$, then $Y$ is an **eventual subtype** of $X$.
+
+{.example ...} Continuing the previous example,
+
+- `elf:MARRIAGE`, `elf:FamilyEvent`, and `elf:Event` are *eventual subtypes* of `elf:Event`
+- `elf:SUBMITTER_RECORD` and `elf:Agent` are *eventual subtypes* of `elf:Agent`
+- `elf:SUBMITTER_RECORD` and `elf:Record` are *eventual subtypes* of `elf:Record`
+{/}
+
+The *supertype* defined in this specification is only intended to facilitate *tag definitions*
+and MUST NOT be taken to indicate any semantic relationship between the structure types they describe.
+
+{.note} It is expected that underlying data models will often define
+a semantic supertype-like relationship that mirrors the *supertype definitions* in this document;
+see [Elf-DataModel] for an example of what this might look like.
+The prohibition against assuming such from the *supertype definitions* alone
+provides a clearer separation between data model and serialisation.
+
+{.ednote} We could decide to REQUIRE that any *supertype definition*
+has meaning in the underlying data model;
+I chose not to do so in this draft as it required discussing semantics,
+which this specification otherwise does not need to do.
+
+#### Tag definitions                {#tag-definitions}
+
+The correspondence between *tags* and *structure type identifiers* is provided by a set of **tag definitions**.
+Each *tag definition* gives the unique *structure type identifier* that a particular *tag* corresponds to if its *superstructure type identifier* is an *eventual subtype* of a given *superstructure type identifier*.
+
+{.example ...} The following are example *tag definitions* in the *default ELF schema*:
+
+- the *structure type identifier* of "`HUSB`" is `elf:Parent1Age` if its *superstructure* is an `elf:FamilyEvent`.
+- the *structure type identifier* of "`HUSB`" is `elf:PARENT1_POINTER` if its *superstructure* is an `elf:FAM_RECORD`.
+- the *structure type identifier* of "`CAUS`" is `elf:CAUSE_OF_EVENT` if  its *superstructure* is an `elf:Event`.
+
+If a *tagged structure* has *tag* "`CAUS`" and *superstructure type identifier* `elf:MARRIAGE`, it's *structure type identifier* is `elf:CAUSE_OF_EVENT` because of the last of the above *tag definitions*
+and because `elf:MARRIAGE` is an *eventual subtype* of `elf:Event`.
+{/}
+
+The set of *tag definitions* and *supertype definitions*
+MUST NOT provide two (or more) different *structure type identifiers* for any single *structure*.
+
+{.example ...} The following, taken together, are not permitted
+
+- `elf:Agent` is a *supertype* of `elf:SUBMITTER_RECORD`.
+- `elf:Record` is a *supertype* of `elf:SUBMITTER_RECORD`.
+- `ex:AgentKind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Agent`.
+- `ex:RecordKind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Record`.
+
+These provide two contradictory *tag definitions*
+for the tag "`_EX_KIND`" as a *substructure* of an `elf:SUBMITTER_RECORD`.
+{/}
+
+{.example ...} The following, taken together, are permitted
+
+- `elf:Agent` is a *supertype* of `elf:SUBMITTER_RECORD`.
+- `elf:Record` is a *supertype* of `elf:SUBMITTER_RECORD`.
+- `ex:Kind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Agent`.
+- `ex:Kind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Record`.
+
+These provide two *tag definitions*
+for the tag "`_EX_KIND`" as a *substructure* of an `elf:SUBMITTER_RECORD`,
+but because both provide the same *structure type identifier*
+they are permitted.
+{/}
+
+A *tag definition* is said to apply to a *structure*
+if and only if the *structure*'s *structure type identifier* is that of the *tag definition*
+and its *superstructure type identifier* is an *eventual subtype* of the *tag definition*'s *superstructure type identifier*.
+
+A *tag definition* is said to apply to a *tagged structure*
+if and only if the *tagged structure*'s *tag* is that of the *tag definition*
+and its *superstructure type identifier* is an *eventual subtype* of the *tag definition*'s *superstructure type identifier*.
+
+
+### Serialisation                                           {#tag-serialisation}
+
+During serialisation, a *conformant* application SHALL ensure the presence of sufficient *tag definitions*
+that at each *structure* has a defined *tag*,
+creating new *tag definitions* if needed to achieve this end.
+
+{.note} The above is not the same as saying that a *tag definition* is created for each *structure type identifier*
+because a *structure* with identifier "`elf:Undefined`" or an *undefined tag identifier*
+has a defined *tag* without a *tag definition*.
+
+New *tag definitions* may be selected arbitrarily, subject to the limitations on *tags* (see {§tags}) and *tag definitions* (see {§tag-definitions}) and to the following:
+
+- the *tag* MUST NOT be "`CONT`", "`CONC`", "`ERROR`", "`UNDEF`",
+    or the *tag* of any *undefined tag identifier* in the *dataset*.
+
+{.note} "`CONT`", "`CONC`", "`ERROR`", and "`UNDEF`" are special *tags*
+that can be created at any location within the dataset during deserialisation.
+
+- the *structure type identifier* MUST NOT be any of 
+    "`elf:Document`",
+    "`elf:Metadata`",
+    "`elf:Undefined`",
+    or an *undefined tag identifier*.
+
+{.note} "`elf:Undefined`" *structures* are used for errors and are serialised differently than other *structures*.
+
+- the (*tag*, *superstructure type identifier*) pair MUST NOT be any of 
+    (`HEAD`, `elf:Document`), 
+    (`TRLR`, `elf:Document`), 
+    (`CHAR`, `elf:Metadata`), or 
+    (`SCHMA`, `elf:Metadata`).
+
+{.note} These tags and contexts are reserved for encoding *serialisation metadata*.
+
+- all *tag definitions* for a given *structure type identifier* SHOULD use the same *tag*
+
+{.note} [GEDCOM 5.5.1] never intentionally violates the above RECOMMENDATION, but via a typo it provides both `EMAI` and `EMAIL` as *tags* for `elf:ADDRESS_EMAIL`. Other aliases exist due to similar mistakes in applications and to multiple extensions inserting the same concept via different *tags*. The ability to handle these aliases is the reason this is a RECOMMENDATION, not a REQUIREMENT, in ELF.
+
+- the *tag definitions* in the default ELF Schema (see {§default-schema}) SHOULD be used in place of any alternative *tag definitions* for the same *structures* in the same contexts.
+
+Each *structure* is converted to a *tagged structure* with the *tag* being
+
+- `UNDEF` if the *structure type identifier* is `elf:Undefined`.
+
+- The *tag* of the *undefined tag identifier* if the *structure type identifier* is an *undefined tag identifier*.
+
+- The *tag* from one of the *tag definitions* that applies to that *structure* otherwise.
+
+    In the event that more than one such *tag* exists, applications SHOULD select the same *tag* in each instance where this choice exists.
+
+{.note} If processing *structures* into *tagged structures* in place,
+it may be easiest to perform a postorder traversal of each *structure* hierarchy;
+this way the *superstructure* of a *structure* being converted will still have a *structure type identifier*,
+not a *tag*,
+which will simplify looking up applicable *tag definitions*.
+
+The *substructures* of a *tagged structure* are stored in a sequence, not set.
+This ordering of *substructures* of a *tagged structure* MUST maintain the relative order
+of those *substructures* that were ordered in the corresponding *structure*.
+It is RECOMMENDED that all *substructures* with the same *tag* be grouped together, but doing so is NOT REQUIRED.
+
+{.example ...} Consider the following *structure* hierarchy
+
+- `elf:INDIVIDUAL_RECORD`
+    - `elf:BIRTH`
+        - `elf:DATE_VALUE` 20 JUN 1881
+    - `elf:GRADUATION`s:
+        1. `elf:GRADUATION`
+            - `elf:AGE_AT_EVENT` 18
+        2. `elf:GRADUATION`
+            - `elf:AGE_AT_EVENT` 22
+
+This may be converted to any of the following three *tagged structure* hierarchies, though the second is NOT RECOMMENDED:
+
+- `INDI`
+    1. `BIRTH`
+        - `DATE` 20 JUN 1881
+    2. `GRAD`
+        - `AGE` 18
+    3. `GRAD`
+        - `AGE` 22
+
+- `INDI`
+    1. `GRAD`
+        - `AGE` 18
+    2. `BIRTH`
+        - `DATE` 20 JUN 1881
+    3. `GRAD`
+        - `AGE` 22
+
+- `INDI`
+    1. `GRAD`
+        - `AGE` 18
+    2. `GRAD`
+        - `AGE` 22
+    3. `BIRTH`
+        - `DATE` 20 JUN 1881
+
+However, the following puts the *tagged structure* graduations in a different order than the corresponding *structure* graduations and MUST NOT be used:
+
+- `INDI`
+    1. `GRAD`
+        - `AGE` 22
+    2. `GRAD`
+        - `AGE` 18
+    3. `BIRTH`
+        - `DATE` 20 JUN 1881
+{/}
+
+### Parsing
+
+When parsing *tagged structures* into *structures*,
+add the *structure type identifier* from the the applicable *tag definition*.
+
+If there is no applicable *tag definition*, or if there are multiple applicable *tag definitions*
+providing different *structure type identifiers*,
+then the *structure type identifier* SHALL be `elf:Undefined` if the *tag* is `UNDEF`, or the *undefined tag identifier* constructed by concatenating `elf:Undefined#` and the *tag* otherwise.
+
+{.note} The special tag "`ERROR`" does not require special handling;
+because it never has a *tag definition*,
+it becomes the *undefined tag identifier* `elf:Undefined#ERROR`.
+
+## Serialisation metadata
+
+The *tagged structures* representing the *dataset* are ordered as follows:
+
+1. A *serialisation metadata* *tagged structure* with *tag* "`HEAD`" and the following *substructures*:
+    
+    - A *serialisation metadata* *tagged structure* with *tag* "`CHAR`" and *payload* identifying the *character encoding* used; see {§encoding} for details.
+    
+    - A *serialisation metadata* *tagged structure* with *tag* "`SCHMA`" and no *payload*, with *substructures* encoding the *ELF Schema*; see {§schema} for details.
+    
+    - Each *tagged structure* with the *superstructure type identifier* `elf:Metadata`,
+        in an order consistent with the partial order of *structures* present in the *metadata*.
+
+2. Each *tagged structure* with the *superstructure type identifier* `elf:Document`, in arbitrary order.
+
+3. A *serialisation metadata* *tagged structure* with *tag* "`TRLR`" and no *payload* or *substructures*.
+    
+### Charcter encoding names                                          {#encoding}
+
+The *character encoding* SHALL be serialised in the "`CHAR`" *tagged structure*'s *payload*
+encoding name in the following table
+that corresponds to the *character encoding* used to convert the *string* to an *octet stream* (see {§octet-string}).
+
+------    --------------------------------------------------------------------------
+Encoding  Description
+------    --------------------------------------------------------------------------
+`ASCII`   The US version of ASCII defined in [ASCII].
+
+`ANSEL`   The extended Latin character set for bibliographic use defined
+          in [ANSEL].
+
+`UNICODE` Either the UTF-16LE or the UTF-16BE encodings of Unicode
+          defined in [ISO 10646].
+
+`UTF-8`   The UTF-8 encodings of Unicode defined in [ISO 10646].
+------    --------------------------------------------------------------------------
+
+It is REQUIRED that the encoding used should be able to represent all code points within the *string*;
+*unicode escapes* (see {§unicode-escape}) allow this to be achieved for any supported encoding.
+It is RECOMMENDED that `UTF-8` be used for all datasets.
+
+
+### ELF Schema                                                         {#schema}
+
+The **ELF Schema** is a *serialisation metadata* *tagged structure*
+with *tag* "`SCHMA`" and no *payload*;
+it may contain as *substructures* any number of 
+*external schema structures*,
+*prefix abbreviation structures*,
+*IRI definition structures*,
+and
+*escape preservation structures*.
+
+If, during parsing, no *ELF Schema* is found, the *default ELF schema* defined in {§default-schema} SHALL be used.
+
+{.ednote} Do we need to make the default dependant on the `GEDC` metadata?
+
+If multiple *ELF Schemas* are found, they SHALL be treated as if all of their *substructures* were part of the same *ELF schema*.
+
+During serialisation exactly one *ELF Schema* SHOULD be included.
+
+#### External schema structure
+
+An **external schema structure** is a *tagged structure*
+with an *ELF Schema* as its *superstructure*,
+*tag* `SCHMA`, no *substructures*, and an IRI as its *payload*.
+The IRI SHOULD use the `http` or `https` scheme
+and an HTTP GET request sent to it with an `Accept` header of `application/x-fhiso-elf1-schema`
+SHOULD return a *dataset* serialised in accordance with this specification
+containing an *ELF Schema* defining the full data model in *structure type descriptions*.
+
+{.ednote} Is `application/x-fhiso-elf1-schema` a MIME-type we are happy with?
+
+{.example ...} When using the [ELF-DataModel] version 1.0.0,
+the *serialisation schema* could be serialised as
+
+````gedcom
+0 HEAD
+1 SCHMA
+2 SCHMA https://fhiso.org/TR/elf-data-model/v1.0.0
+````
+{/}
+
+{.example} An HTTP GET request sent to it with an `Accept` header of `application/x-fhiso-elf1-schema` to `https://fhiso.org/TR/elf-data-model/v1.0.0` will return the contents of {§default-schema} or the equivalent.
+
+When retrieving a serialised *dataset* via an HTTP GET request to the IRI of an *external schema structure*,
+all contents of that *dataset* except *ELF Schemas* SHALL be ignored.
+Additional *external schema structure* SHOULD NOT be present within that *ELF Schema*
+and if they are, they MAY be ignored.
+
+{.note} The recommendation against external schema structures inside other external schema structures is designed to simplify parsing.
+
+
+#### Prefix abbreviation structure {#prefix}
+
+{.ednote} Should this section cite §4.3 of [Basic Concepts] instead of its current text?
+
+A **prefix abbreviation structure** is a *tagged structure*
+with an *ELF Schema* as its *superstructure*,
+*tag* `PRFX`, and no *substructures*.
+Its *payload* consist of two *whitespace*-separated tokens:
+the first is a **prefix** and the second is that *prefix*'s corresponding IRI.
+
+To **prefix expand** a *string*, if that *string* begins with a defined *prefix* followed by a colon (U+003A `:`) then replace that *prefix* and colon with the *prefix*'s corresponding IRI.
+To **prefix shorten** a *string*, replace it with a *string* that *prefix expansion* would convert to the original *string*.
+
+{.example ...} Given a `PRFX`
+
+    2 PRFX elf https://fhiso.org/elf/
+
+the IRI `https://fhiso.org/elf/ADDRESS` may be abbreviated as `elf:ADDRESS`.
+{/}
+
+
+#### IRI definition structure
+
+An **IRI definition structure** is a *tagged structure*
+with an *ELF Schema* as its *superstructure* and *tag* "`IRI`".
+Its payload is an IRI,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during parsing.
+The remainder of this section calls this *prefix expanded* payload $I$.
+An *IRI definition structure* may have, as *substructures*, any number of
+*supertype definition structures* and 
+*tag definition structures*.
+
+A **supertype definition structure** is a *tagged structure*
+with an *IRI definition structure* as its *superstructure*, *tag* "`ISA`", and no *substructures*.
+Its payload is a *structure type identifier*
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during parsing.
+The remainder of this section calls this *prefix expanded* payload $I'$.
+Each *supertype definition structure* encodes a single *supertype definition*, specifying that $I'$ is a *supertype* of $I$.
+
+{.example ...} That `elf:ParentPointer` is a *supertype* of `elf:PARENT1_POINTER` can be encoded in a *supertype definition structure* as
+
+```gedcom
+2 IRI elf:PARENT1_POINTER
+3 ISA elf:ParentPointer
+```
+{/}
+
+
+A **tag definition structure** is a *tagged structure*
+with an *IRI definition structure* as its *superstructure*, *tag* "`TAG`", and no *substructure*.
+Its payload is a *whitespace*-separated list of two or more tokens.
+The first token $T$ MUST match production `Tag`;
+each remaining token $S$ is an IRI,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during parsing.
+Each such $S$ encodes an *tag definition* between *structure type identifier* $I$ and (*tag*, *superstructure type identifier*) pair $(T, S)$.
+
+{.example ...} The following *tag definitions*
+
+- the *structure type identifier* of "`HUSB`" is `elf:Parent1Age` if its *superstructure* is an `elf:FamilyEvent`.
+- the *structure type identifier* of "`HUSB`" is `elf:PARENT1_POINTER` if its *superstructure* is an `elf:FAM_RECORD`.
+- the *structure type identifier* of "`FORM`" is `elf:MULTIMEDIA_FORMAT` if  its *superstructure* is an `elf:MULTIMEDIA_RECORD`.
+- the *structure type identifier* of "`FORM`" is `elf:MULTIMEDIA_FORMAT` if  its *superstructure* is an `elf:MULTIMEDIA_FILE_REFERENCE`.
+- the *structure type identifier* of "`EMAIL`" is `elf:ADDRESS_EMAIL` if  its *superstructure* is an `elf:Agent`.
+- the *structure type identifier* of "`EMAI`" is `elf:ADDRESS_EMAIL` if  its *superstructure* is an `elf:Agent`.
+
+can be encoded in *tag definition structures* as
+
+```gedcom
+0 HEAD
+1 SCHMA
+2 PRFX elf https://fhiso.org/elf/
+2 IRI elf:PARENT1_POINTER
+3 TAG HUSB elf:FAM_RECORD
+2 IRI elf:Parent1Age
+3 TAG HUSB elf:FamilyEvent
+2 IRI elf:MULTIMEDIA_FORMAT
+3 TAG FORM elf:MULTIMEDIA_FILE_REFERENCE elf:MULTIMEDIA_RECORD
+2 IRI elf:ADDRESS_EMAIL
+3 TAG EMAIL elf:Agent
+3 TAG EMAI elf:Agent
+```
+{/}
+
+
+#### Escape-preserving tags
+
+{.note} This entire section, and all of the related functionality, is present to help cope with the idiosyncratic behaviour of date escapes in [GEDCOM 5.5.1]. Escapes in previous editions of GEDCOM were serialisation-specific and if encountered in ELF should generally be ignored, but date escapes are instead part of a microformat. While escape-preserving tags are not elegant, they are adequate to handle this idiosyncrasy.
+
+{.ednote} I wrote the above note from somewhat fuzzy memory. It might be good to review and summarise all the uses of escapes in various GEDCOM releases...
+
+Some *tags* may be defined as **escape-preserving tags**, each with a list of single-character **preserved escape types** each of which MUST match production `UserEscType`.
+
+    UserEscType ::= [A-TV-Z]
+
+An **escape preservation structure** is a *tagged structure*
+with an *ELF schema* as its *superstructure*, *tag* "`ESC`", and no *substructures*.
+Its payload is composed of two *whitespace*-separated tokens;
+the first is the *escape-preserving tag* and the second is a concatenation of all *preserved escape types* of that *tag*;
+each *preserved escape type* SHOULD be included in the second token only once.
+
+Two *escape preservation structures* MUST NOT differ only in the set of *preserved escape sequences* they define for a given *tag*.
+
+Escape-preserving tags are included for backwards compatibility,
+and MUST NOT be used for new extensions.
+
+{.note} The only known *escape-preserving tag* is "`DATE`", with the *preserved escape type* of "`D`"
+
+{.example ...} The following is the only *escape preservation structure* in ELF 1.0.0:
+
+    0 HEAD
+    1 SCHMA
+    2 ESC DATE D
+{/}
+
+{.example ...} The following defines *tag* `_OLD_EXTENSION` to preserve `G` and `Q` escapes:
+
+    0 HEAD
+    1 SCHMA
+    2 ESC _OLD_EXTENSION QG
+
+The `ESC` could have equivalently been written as 
+
+    2 ESC _OLD_EXTENSION GQ
+
+or even
+
+    2 ESC _OLD_EXTENSION QGGQQQGGGG
+
+... though that last version is needlessly redundant and verbose and is NOT RECOMMENDED.
+
+Such a definition MUST NOT be used except as backwards compatibility support for an escape-dependent `_OLD_EXTENSION` that predates ELF 1.0.0.
+{/}
+
+{.note} This specification uses *tag* and not *structure type* to indicate *escape preservation*
+because the main motivating case (`DATE`) applies it to all of the several *structure types* that share that *tag*.
+
+
+## Encoding with `@`
+
+ELF uses the *character* U+0040 (commercial at, `@`)
+to encode several special cases when encoding a *tagged structure*
+as an *xref structure*.
+In particular,
+
+- *pointers* are encoded be assigning an *xref_id* to the pointed-to *tagged structure* and using it as an *xref* in the pointing *payload*
+- *characters* outside the *character encoding* are encoded as *unicode escapes*
+- *escapes* that are not *preserved escapes* are removed
+- `@` that are not part of *escapes* are encoded as `@@`
+
+All of these steps involve `@`s, and MUST NOT be applied to one another's `@`s;
+semantically, they are applied concurrently.
+
+During parsing, there is an inherent ambiguity when there are several contiguous `@` in the payload.
+These SHALL be resolved in an earliest-match-first order.
+
+{.example ...} The following *xref structure*'s *payloads* are split into sequences as indicated:
+
+*payload* of *xref structure*       decomposed as
+-------------------------------     ----------------------------------------------
+"`name@example.com`"                "`name`", "`@`", "`example.com`"
+"`name@@example.com`"               "`name`", "`@@`", "`example.com`"
+"`name@@@example.com`"              "`name`", "`@@`", "`@`", "`example.com`"
+"`name@@@@example.com`"             "`name`", "`@@`", "`@@`", "`example.com`"
+"`some@#XYZ@ thing`"                "`some`", "`@#XYZ@ `", "`thing`"
+"`some@@#XYZ@ thing`"               "`some`", "`@@`", "`#XYZ`", "`@`", "` thing`"
+"`some@@@#XYZ@ thing`"              "`some`", "`@@`", "`@#XYZ@ `", "`thing`"
+{/}
+
+### Pointer conversion
+
+If a *tagged structure* is pointed to by the *pointer*-valued *payload* of another *tagged structure*,
+the pointe-to *tagged structure*'s corresponding *xref structure*
+SHALL be given an **xref_id**, a *string* matching production `XrefID`.
+
+    XrefID  ::= "@" ID "@"
+    ID      ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
+
+It MUST NOT be the case that two different *xref structures* be given the same *xref_id*.
+*Conformant* implementations MUST NOT attach semantic importance to the contents of an *xref_id*.
+
+It is RECOMMENDED that an *xref_id* be no more than 22 characters (20 characters plus the leading and trailing U+0040)
+
+{.note} [GEDCOM 5.5.1] REQUIRED that *xref_id* be no more than 22 characters. ELF weakens this to a RECOMMENDATION.
+
+Each *record* SHOULD be given an *xref_id*;
+each non-*record* *structure* SHOULD NOT;
+and each *serialisation metadata* *tagged structure* MUST NOT be given an *xref_id*.
+
+{.ednote} Since a pointed-to structure SHALL have an *xref_id* and a non-*record* MUST NOT,
+implicitly a *structure* SHOULD NOT point to a non-*record*.
+We should probably either make that explicit
+or remove it---the latter may make more sense
+as what is pointed to seems to be more a data model decision than a serialisation decision.
+However, GEDCOM is fairly clear that pointers to non-*records*
+might in the future be enabled with a non-standard *xref_id* syntax.
+
+The *xref structure* that corresponds to a *tagged structure* with a *pointer*-valued *payload*
+has, as its *payload*, an **xref**:
+a *string* identical to the *xref_id* of the *xref structure* corresponding to
+the pointed-to *tagged structure*.
+
+When parsing, if *xref* *payloads* are encountered
+that do not correspond to exactly one *xref structure*'s *xref_id*,
+that *payload* SHALL be converted to to a *pointer* to a *record* with *tag* "`UNDEF`",
+which SHALL NOT have a *payload* nor *substructures*.
+It is *recommended* that one such "`UNDEF`" *tagged structure* be inserted
+for each distinct *xref*.
+
+{.note} The undefined pointer rule is designed to minimize the information loss
+in the event of a bad serialised input.
+
+{.note} This rule does not handle pointer-to-wrong-type; information needed to determine that is not known be serialisation and thus must be handled by the data model instead.
+
+{.ednote} We could also allow pointer-to-nothing or pointer-to-multiple-things to be dropped from the dataset,
+and/or provide disambiguation heuristics for pointer-to-multiple-things situations. This draft does not do so as it is not obvious that the benefit is worth the complexity.
+
+### Escape preservation and removal
+
+An **escape** is a substring of a *string*-valued *payload* of either a *tagged structure* or *xref structure*
+which matched production `Escape`.
+Its **escape type** is the portion of the *escape* that was matched by `EscType`.
+
+    Escape   ::= "@#" EscType EscText "@ "
+    EscType  ::= [A-Z]
+    EscText  ::= [^#xA#xD#x40]*
+
+If the **escape type** is `U` (U+0055), the *escape* is a *unicode escape* and its handling is discussed in {§unicode-escape};
+otherwise, it is handled according to this section.
+
+#### Serialisation
+
+If an *escape* is in the *payload* of an *tagged structure* whose *tag* is an *escape preserving tag*,
+and if the escape*'s *escape type* is in the *tag*'s set of *preserved escape types*,
+then the *escape* SHALL be preserved unmodified in the corresponding *xref structure*'s *payload*.
+
+{.example} If a "`DATE`" *tagged structure* has *payload* "`ABT @#DJULIAN@ 1540`",
+its corresponding *xref structure*'s *payload* is also "`ABT @#DJULIAN@ 1540`".
+
+Otherwise, a modification of the *escape* SHALL be placed in the *xref structure*'s *payload*
+which is identical to the original *escape* except that each of the two `@`
+SHALL each be replaced with a pair of consecutive U+0040 `@`.
+
+{.example} If a "`NOTE`" *tagged structure* has *payload* "`ABT @#DJULIAN@ 1540`",
+its corresponding *xref structure*'s *payload* is "`ABT @@#DJULIAN@@ 1540`".
+
+#### Parsing
+
+If an *escape* is in the *payload* of an *xref structure* whose *tag* is an *escape preserving tag*,
+and the escape*'s *escape type* is in the *tag*'s set of *preserved escape types*,
+the *escape* SHALL be preserved unmodified in the corresponding *tagged structure*'s *payload*.
+
+{.example} If a "`DATE`" *xref structure* has *payload* "`ABT @#DJULIAN@ 1540`",
+its corresponding *tagged structure*'s *payload* is also "`ABT @#DJULIAN@ 1540`".
+
+Otherwise, the *escape* SHALL be omitted from the corresponding *tagged structure*'s *payload*.
+
+{.example} If a "`NOTE`" *xref structure* has *payload* "`ABT @#DJULIAN@ 1540`",
+its corresponding *tagged structure*'s *payload* is "`ABT 1540`".
+
+{.note} The decision to remove most *escapes* is motivated in part
+because [GEDCOM 5.5.1] does not provide any meaning for an *escape* other than a *date escape*.
+This caused some ambiguity in how such escapes were handled, which ELF seeks to remove.
+Lacking a semantics to assign these *escapes*, ELF chooses to simply remove them.
+Implementations that had assigned semantics to them
+were actually imposing non-standard semantics to those payloads
+which are more accurately handled by using an alternative *ELF schema* to map those *tags*
+to different *structure type identifiers* with those semantics documented.
+
+### Unicode escapes                                            {#unicode-escape}
+
+{.note} [GEDCOM 5.5.1] neither has a notion of *unicode escape*
+nor any other feature for achieving the same end.
+*Unicode escapes* are designed to provide a means for encoding any *character*
+in any *character encoding*
+in a way that is maximally backwards-compatible from [GEDCOM 5.5.1].
+
+Any *character* MAY be represented with a **unicode escape** consisting of:
+
+1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
+2.  A hexadecimal encoding of the *character*'s *code point*
+3.  The two characters U+0040 and U+0020 (i.e., "`@ `")
+
+A *unicode escape* MUST be used for each *character* that cannot be encoded
+in the target *character encoding*;
+and SHOULD NOT be used otherwise.
+
+{.ednote} Earlier drafts of this specification suggested using `@#U20@` in place of U+0020
+when a *line*'s *payload* begins or ends with a space.
+Given the inherent ambiguity in the handling of *delimiters* at the ends of a *line*'s *payloads*,
+it is not clear if that idea was better than simply clarifying that ambiguity.
+
+{.example} If a *tagged structure*'s *payload* is "`João`" and the *character encoding* is `ASCII`,
+the *xref structure*'s *payload* is "`Jo@#UE3@ o`" (or "`Joa@U#303@ o`" if the original used a combining diacritic).
+
+### Encoding `@`s
+
+{.ednote ...} It might be worthwhile to restrict this entire section to non-*escape preserving tags*;
+without that we have a (somewhat obscure) problem with the current system:
+
+Consider the *escape-preserving tag* `DATE`.
+A serialisation/parsing sequence applied to the *string* "`@@#Dx@@ yz`" yields
+
+1. encoded "`@@#Dx@@ yz`"
+2. decoded "`@#Dx@ yz`"
+3. encoded "`@#Dx@ yz`" -- not with `@@` because it matches a date escape
+{/}
+
+During serialisation, each U+0040 (`@`) that is not part of an *escape*
+SHALL be encoded as two consecutive U+0040 (`@@`).
+
+{.example} The *tagged structure* *payload* "`name@example.com`"
+is serialised as the *xref structure* *payload* "`name@@example.com`"
+
+During parsing, each consecutive pair of U+0040 (`@@`) SHALL be parsed as a single U+0040 (`@`).
+
+{.example} The *xref structure* *payload* "`name@@example.com`"
+is parsed as the *tagged structure* *payload* "`name@example.com`"
+
+During parsing, a lone U+0040 is left unmodified.
+
+{.example} If an *xref structure*'s *payload* is "`name@example.com`",
+it is parsed as the *tagged structure* *payload* "`name@example.com`";
+that in turn will be re-serialised as "`name@@example.com`".
+
+## Levels and lines
+
+Each *xref structure* is encoded as a sequence of one or more *lines*.
+
+These are of three kinds, in order:
+
+1. The **first line** of the *xref structure*
+2. Zero or more **additional lines** of the *xref structure*
+3. The *lines* that encode each of the *xref structure*'s *substructures* (if any)
+
+{.note} The constraint that *additional lines* come before the *lines* of *substructures* is never mentioned by [GEDCOM 5.5.1]. ELF includes it because it appears to have been universally applied by GEDCOM implementations, and some may depend upon it.
+
+The **level** of each line is a non-negative integer.
+The *level* of a *first line* is 0 if the *xref structure* is a *record*
+or the *serialisation metadata* *tagged structures* with *tag* "`HEAD`" and "`TRLR`";
+otherwise it is one greater than the *level* of the *first line* of its *superstructure*.
+The *level* of an *additional line* is one greater than the *level* of its *xref structure*'s *first line*.
+
+Each *first line* has the same *xref_id* (if any) and *tag* as its corresponding *xref line*.
+Each *additional line* has no *xref_id* and either "`CONT`" or "`CONC`" as its *tag*.
+
+{.note} Because an *xref structure* MUST NOT have either "`CONC`" or "`CONT`" as its *tag* (see {§tag-serialisation}), it is unambiguous which *lines* are *additional lines* and which *first line* they correspond to.
+
+The *payload* of the *xref structure*
+is the concatenation of the *payloads* of the *first line* and all *additional lines*,
+with a *line break* inserted before the *payload* of each *additional line* with *tag* "`CONT`".
+Because the *payload* of a *line* MUST NOT contain a *line-break*, there MUST be exactly one "`CONT`"-*tagged* *additional line* per *line-break* in the *xref structure*'s *payload*.
+The number of "`CONC`"-*tagged* *additional lines* may be picked arbitrarily, subject to the following:
+
+- Each *line* SHOULD be no more than 255 octets after being encoded in the *character encoding*.
+
+{.note} GEDCOM *required* that *lines* not exceed 255 *characters*;
+this does not seem to be a real restriction in most current applications,
+and hence has been reduced to *recommended* status.
+We recommend bytes instead of *characters* because the implied 
+purpose of this limit (enabling code to use fixed-width buffers)
+would limit by bytes, not characters.
+
+
+- The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* SHOULD NOT have an empty *payload*.
+- The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* MUST NOT end with a *delimiter*.
+- A "`CONC`"-*tagged* *line*' *payload* SHOULD NOT begin with a *delimiter*.
+
+{.note ...} [GEDCOM 5.5.1] is inconsistent in its discussion of leading and trailing *whitespace*.
+
+- The first of rule in the section "Grammar Rules" in Chapter 1 REQUIRES that spaces be after, not before, a `CONC` split; they (nonsensically) require the same for `CONT`s as well.
+- The grammar for `optional_line_value` in Chapter 1 allows both leading and trailing space, with no permission to remove it.
+- The definition of `CONC {CONCATENATION}` in Appendix A says an implementation MAY "look for the first non-space starting after the tag to determine the beginning of the value" and hence leading spaces MUST NOT appear.
+- The definition of `CONT {CONTINUED}` in Appendix A says an implementation MUST keep leading spaces in a `CONT` as an exception to the usual rules.
+- The definition of `NOTE_STRUCTURE` in Chapter 2 says that "most operating systems will strip off the trailing space and the space is lost in the reconstitution of the note."
+
+The RECOMMENDATIONS above are compatible with the most restrictive of these,
+while the REQUIREMENTS with the most limiting of them.
+{/}
 
 {.example ...}
+Suppose an *xref structure*
+*tag* is "`NOTE`";
+it's *payload* is "`This is a test\nwith one line break`";
+and its *superstructure*'s *superstructure* is a *record*.
+This *xref structure* requires at least two *lines*
+(because it contains one *line break*) and may use more.
+It could be serialised in many ways, such as
+
+````gedcom
+2 NOTE This is a test
+3 CONT with one line break
+````
+
+or
+
+````gedcom
+2 NOTE This i
+3 CONC s a test
+3 CONT with on
+3 CONC e line break
+````
+{/}
+
+- Each *line*'s *payload* MUST contain an even number of U+0040 (`@`).
+    However, during parsing, this constraint SHALL NOT be enforced in any way.
+
+{.note} [GEDCOM 5.5.1] gives no guidance how to handle unmatched "`@`", but they are relatively common in gedcom files. The above policy is intended to resolve common invalid files in an intuitive way.
+
+{.example ...} Given the following non-*conformant* data
+
+    1 EMAI name@example.com
+    2 DATE @#DGREG
+    3 CONC ORIAN@ 2 JAN 2019
+
+a *conformant* application will concatenate these *lines* normally during parsing
+
+    1 EMAI name@example.com
+    2 DATE @#DGREGORIAN@ 2 JAN 2019
+
+creating a valid date escape in the `DATE`-*tagged* *extended line*.
+The unmatched `@` in the `EMAI`-*tagged* *line* is left unchanged during parsing.
+
+Upon re-serialisation, the unmatched @ in the "`EMAI`" will be doubled when converting to an *xref structure*,
+but the date escape will not be modified
+
+    1 EMAI name@@example.com
+    2 DATE @#DGREGORIAN@ 2 JAN 2019
+
+If the serialisation decides to split either *extended line* with `CONC`s, it MUST NOT do so
+in a way that splits up the pairs of "`@`"s.
+{/}
+
+### Error lines
+
+A *string* line SHALL be parsed as an **error line**
+if it is either *unparseable* or its *line* is *too deep*.
+
+An **unparseable** line is one that does not match production `Parseable`
+
+    Parseable ::= Delim? [0-9]+ (Delim XrefID)? Delim Tag (Delim [^#A#D]*)?
+
+A **too deep** *line* is one that has a *level* more than one greater than its *previous level*.
+The **previous level** of a *line* is the *level* of the closest preceding *line* that is not an *error line*
+and has a *tag* that is neither "`CONT`" nor "`CONC`" nor "`ERROR`".
+If there is no such preceding *line* then the *line* is *too deep* unless its *level* is 0.
+
+An **error line** has *tag* `ERROR`;
+and a *level* equal to the 1 + its *previous level*.
+If generated by a *too deep* *line* with an *xref_id*,
+the *error line* has that same *xref_id*; otherwise it has no *xref_id*.
+Its *payload* is
+
+- the entire *unparseable* line, if generated by an *unparseable* line; or
+- the serialised *level*, *tag*, and *payload* of the *too deep* *line* otherwise.
+
+{.ednote ...} To do: pick one of the following:
+
+- The *string* line that represents an *error line* is just the *error line*'s *payload*;
+    the *level* and *tag* MUST NOT be included.
+
+- The *string* line that represents an *error line* SHALL include the *error line*'s *level* and *tag*,
+    like any other *line*.
+
+- The *string* line that represents an *error line* MAY either include the *error line*'s *level* and *tag*,
+    like any other *line*; or MAY be just the *error line*'s *payload* with no *level* or *tag*.
+{/}
+
+{.note} Because "`ERROR`" MUST NOT be the *tag* of any *tag definition*,
+the *structure type definition* of the *structure* corresponding to an *error line*
+is the *undefined tag identifier* `elf:Undefined#ERROR`.
+
+{.example ...} The following invalid input
+
     0 HEAD
-    1 GEDC
-    2 VERS 5.5.1
-    2 ELF 1.0.0
-    2 FORM LINEAGE-LINKED
     1 CHAR UTF-8
-    0 INDI
-    1 NAME Charlemagne
+    1 SCHMA
+    unexpected nonsense
+    2 SCHMA https://fhiso.org/TR/elf-data-model/v1.0.0
+    0 @N1@ NOTE This is text
+    1 CONT more text
+    2 CONT still more text
+    1 SOUR @S1@
+    1 CONT attached to nothing
+    0 @S1@ SOUR
+    2 @XYZ@ NOTE text
     0 TRLR
 
-The ELF document has three *lines* with *level* `0` which mark the start
-of the three top-level *structures*.  These *structures* have,
-respectively, two, one and zero *substructures*, which are denoted by
-the *lines* with *level* `1`.   The *structure* represented by the
-`CHAR` *line* is a *substructure* of the *structure* that begins on the
-`HEAD` *line* because there is no intervening *line* with *level* one
-less than `1` (i.e. `0`); the *structure* represented by the `NAME`
-*line* is a *substructure* of the `INDI` *structure* as that is the
-preceding *line* with a *level* `0`.
-{/}
+contains three *error lines*:
 
-## Structures and pseudo-structures
+- "`unexpected nonsense`" is *unparseable*
+    and is treated as it if were "`2 ERROR unexpected nonsense`"
 
-A dataset consists of **structures**; as part of encoding as a *string*, these are augmented by a set of **pseudo-structures**, *structure*-like constructs that are not part of the data model.
+- "`2 CONT still more text`" is *too deep*.
+    It's *level* is 2 greater than the *previous level*
+    (because the "`1 CONT more text`" line is not counted as a *previous level*)
+    and is treated as it if were "`1 ERROR 2 CONT still more text`"
 
-### Structures   {#Structure}
+- "`2 @XYZ@ NOTE text`" has a *level* 2 greater than the *previous level*
+    and is treated as it if were "`1 @XYZ@ ERROR 2 NOTE text`"
 
-Every *structure* consists of the following components:
+One other *line* will be identified as `elf:Undefined`:
 
-Structure Type Identifier
-:   Every *structure* has a *structure type identifier*, which is
-    *shall* be a *term*.
-
-Identifier
-:   A *string* uniquely identifying this *structure* within this dataset.
-    If present, the identifier MUST match the production ID:
-        
-        ID  ::= [0-9A-Z_a-z] [#x20-#x3F#x41-#x7E]*
-
-Payload
-:   If present, a *payload* is either a pointer to a *structure* within the dataset or a *string*.
-    Each pointed-to *structure* MUST have a unique identifier within the dataset.
-
-Substructures
-:   *Structures* may contain zero or more other *structures*,
-    which are called the *structure*'s **substructures**.
-
-    The order of substructures that have distinct *structure type identifiers* is not significant,
-    but the order of substructures with the same *structure type identifier* must be preserved.
-
-Every dataset contains exactly one *structure* called the **head**
-and any number of *structures* called **records**.
-Within a serialisation, the *head* is always the first *structure*;
-within a dataset, the *head* is always identified as such.
-Neither the *head* nor the *records* are substructures of other *structures*.
-
-The order of *records* is not significant and may be changed upon serialisation.
-However, for backwards compatibility it is RECOMMENDED that
-if there exits a *record* with the *structure type identifier* `http://terms.fhiso.org/elf/SUBN`, that *record* be placed before any other *record* within the serialisation.
-
-{.ednote} GEDCOM REQUIRED `SUBN` to be immediately after the `HEAD` if present; the author of this specification is aware of no GEDCOM parser that fails to parse files violating that constraint, hence the RECOMMENDED rather than REQUIRED status.
-
-
-### Pseudo-structures
-
-A **pseudo-structure** consists of the following components:
-
-Tag
-:   Every *pseudo-structure* has a *tag*, a four-character *string* specified elsewhere in this document.
-
-Payload
-:   If present, a *string*.
-
-Substructures
-:   *Pseudo-structures* may contain zero or more  *Structures*,
-    which are called the *pseudo-structure*'s **substructures**.
-
-This specification documents six specific *pseudo-structures*:
-
--   `[CONT]` and `[CONC]` are used to encode multi-line (`[CONT]`) or long (`[CONC]`) *payloads*.
-    As such, they may appear as pseudo-substructures of any *structure* with a *string* *payload*.
-    The order of `[CONT]` and `[CONC]` *pseudo-structures* MUST be preserved.
-    Any `[CONT]` and `[CONC]` pseudo-substructures MUST appear 
-    before any other substructures or pseudo-substructures
-    within any serialisation.
-
--   `[PRFX]` and `[DEFN]` are used to encode the [IRI Dictionary].
-    They appear only as pseudo-substructures of the *head* *structure*.
-
--   `[CHAR]` is used to specify the character encoding of the dateaset's serialization.
-    It appears only as pseudo-substructures of the *head* *structure*.
-
--   `[TRLR]` is always the last element of a serialised dataset.
-
-
-
-
-## Encoding/Decoding a dataset
-
-### Encoding a dataset
-
-To encode a *dataset*,
-
-1.  Determine a character encoding.
-    The character encoding MUST be taken from the following options:
-
-    ------    --------------------------------------------------------------------------
-    Encoding  Description
-    ------    --------------------------------------------------------------------------
-    `ASCII`   The US version of ASCII defined in [ASCII].
-
-    `ANSEL`   The extended Latin character set for bibliographic use defined
-              in [ANSEL].
-
-    `UNICODE` Either the UTF-16LE or the UTF-16BE encodings of Unicode
-              defined in [ISO 10646].
-
-    `UTF-8`   The UTF-8 encodings of Unicode defined in [ISO 10646].
-    ------    --------------------------------------------------------------------------
-
-    The character encoding selected
-    MUST be able to encode all code points in all payloads in every *structure* within the dataset.
-    It is RECOMMENDED that UTF-8 be used for all datasets.
-    
-1.  Add a `[CHAR]` *pseudo-structure* to the *head* with the encoding as its *payload*.
-
-1.  Create an [*IRI dictionary*](#IRI-dictionary) that can map all *structure type identifiers* in the data into *tag*s.
-
-1.  Add `[PRFX]` and `[DEFN]` *pseudo-structures* to the *head* to [encode the *IRI dictionary*](#IRI)
-
-1.  Create a *string* by
-
-    1.  Converting the *head* [into a *string*](#struct-string).
-    1.  Appending to that *string* the *string* created by converting each *record* [into a *string*](#struct-string).
-    1.  Appending the [*string* representation](#struct-string) of a trailer *pseudo-structure* (*level* 0, *tag* `TRLR`, no *payload*).
-
-    If the encoding is either `UNICODE` or `UTF-8`,
-    it is RECOMMENDED that the byte-order mark U+FEFF be prepended to the *string*.
-
-1.  [Convert the *string* into a sequence of octets](#string2octet).
-
-### Decoding a dataset
-
-To decode a *dataset*,
-
-1.  [Convert the sequence of octets into a *string*](#octet2string).
-
-1.  Inspect the portion of the *string* that encodes the *head*,
-    ignoring all lines other than those encoding `[PRFX]` and `[DEFN]` *pseudo-structures*.
-    Use those `[PRFX]` and `[DEFN]` *pseudo-structures* to populate an [*IRI dictionary*](#IRI-dictionary).
-
-1.  [Convert each line into a *structure* or *pseudo-structure*](#struct-string).
-    The first *structure* is the dataset's *head*;
-    each remaining *structure* is either one of the dataset's *records*
-    or a substructure of another strucure or *pseudo-structure*.
-    
-    *Pseudo-structures* provide metadata or modify other *structures*
-    and are not part of from the resulting dataset.
-    Substructures of *pseudo-structures* have no meaning and SHALL be ignored.
-
-{.ednote} Substrutures of pseudo-structures are *ignored* rather than *forbidden* because GEDCOM listed the `CHAR` pseudo-structure as having an optional `VERS` substructure with no defined semantics and because non-conformant GEDCOM producers might have placed substructures under any line.
-
-
-## Structure to/from String  {#struct-string}
-
-Each *structure* is mapped to a *string* through the intermediate form of a *line*.
-
-### Lines     {#Line}
-
-A **line** is a *string* that matches the following `Line` production.
-
-    Line  ::=  Delim? Number Delim (XRef Delim)? Tag (Delim PLine)? Delim? LB
-
-The components of a *line* are each separated by a *whitespace*
-**delimiter**, defined as one or more space *characters* or
-tabs.  It matches the production `Delim`:
-
-    Delim  ::=  (#x20 | #x9)+
-
-When creating a *line*, a *conformant* application *shall* use a single
-space *character* (U+0020) for each required *delimiter* and *shall not*
-use a *delimiter* where it is *optional* in grammar.
-
-{.note} This requires an application to be permissive about where
-*whitespace* is permitted when reading a *line*, but conservative in
-where *whitespace* is placed when writing a *line*.  This ensures
-maximum compatibility with existing applications, regardless of whether
-they strictly conform to the [GEDCOM 5.5.1] standard.
-
-Each *line* ends with a **line break** which is defined to be a carriage
-return, a line feed, or a carriage return followed by a line feed.  It
-matches the production `LB`:
-
-    LB  ::=  #xD #xA? | #xA
-
-{.note} This includes the form of line breaks used on Windows (U+000D
-U+000A), the form used on Unix, Linux and modern Mac OS (U+000A), and
-the traditional Mac OS form (U+000D).  However this standard makes no
-requirement that an application running on one of these operating
-systems should use the native form of line break.
-
-Applications *should* use the same form of *line break* throughout any
-given serialisation.
-
-The non-*whitespace* components of a *line* have the following forms: 
-
-
-1.  The **level**: a base-ten integer matching the production `Number`:
-    
-        Number  ::= "0" | [1-9] [0-9]*
-
-2.  An *optional* **xref_id**: an identifier surrounded by at-signs, matching the production `XRef`:
-    
-        XRef  ::= "@" [a-zA-Z0-9_] [^#x40#xA#xD]* "@"
-
-3.  A **tag**: a *string* (generally [mapping to a IRI](#IRIs-and-Tags)) matching the production `Tag`:
-    
-        Tag  ::= [0-9a-zA-Z_]+
-
-4.  An *optional* **payload line**: a *string* matching the production `PLine`:
-    
-        PLine   ::= PItem ((PItem | #x20 | #x9)* PItem)? | XRef
-        PItem   ::= [^#x40#x20#x9#xA#xD] | "@@" | Escape
-        Escape  ::= "@#" [^#x40#xA#xD]* "@"
-
-{.note}  The `PLine` production appears quite complicated when written
-in EBNF.  In fact, it allows an arbitrary *string* except that it *must
-not* begin or end with *whitespace*, and that any `@` sign must either
-be doubled (to represent a literal `@`) or be part of an escape
-sequence.  Writing the grammar like this avoides ambiguity as to whether
-*whitespace* is part of the *payload line* or the *delimiter*.
-
-### Structure to/from line(s)
-
-Each [*Structure* or *pseudo-structure*](#Structure) is encoded as one or more lines as follows:
-
-1.  The *level* of the *head*, of each *record*, and of the `[TRLR]` pseudo-structure is `0`.
-    The *level* of a substructure is 1 greater than the *level* of its superstructure.
-    
-    For example,
-    a substructure of the *head* has level `1`;
-    a substructure of a substructure of the *head* has level `2`.
-
-2.  If the *structure* has an *identifier*, that identifier surrounded by U+0040 (`@`) is the *xref_id*; otherwise, there is no *xref_id*.
-    
-    For example, the *xref_id* of a *structure* with *identifier* "S23" is `@S23@`.
-
-3.  The *tag* is a sting which will map to the *structure*'s *structure type identifier*
-    using the [IRI dictionary](#tag2iri).
-
-    For example, the *tag* of an `http://terms.fhiso.org/elf/ADDR` *structure* is `ADDR`.
-
-4.  The *payload line* has several possibilities:
-    
-    -   If the *payload* of the *structure* is None, there is no *payload line*.
-    
-    -   If the *payload* of the *structure* is a pointer, the *payload line* is the *identifier* of the pointed-to *structure* surrounded by U+0040 (`@`).
-        
-        For example, if the *payload* of a .`INDI`.`ALIA` points to an `INDI` with identifier "I45", the *payload line* is `@I45@`.
-    
-    -   If the *payload* of the *structure* is a *string*, the *payload line* is a prefix of the *payload* determined and encoded as described in [Payload String Encoding].
-
-    If there is no *payload line* but the *structure* expects a *string*-valued *payload*, the *payload* is a string of length 0.
-    If there is a *payload line* of length 0 but the *structure* expects no *payload*, there is no *payload*.
-
-{.ednote} The length-0 passage above deals with the case were "`1 CONT`" should be parsed as a blank line, not as an error because it lacks the required *payload line*.
-
-The [line(s)](#Line) encoding a *structure* is followed immediately by lines encoding each of its substructures and pseudo-substructures.
-The order of substructures of different *structure type identifier*s is arbitrary, but the order of substructures with the same *structure type identifier* MUST be preserved.
-It is RECOMMENDED that all substructures with the same *structure type identifier* be placed adjacent to one another.
-
-{.example ...}
-The following are all equivalent:
-
-````gedcom
-0 @jane@ SUBM
-1 NAME Jane Doe
-1 LANG Gujarati
-1 LANG English
-````
-
-````gedcom
-0 @jane@ SUBM
-1 LANG Gujarati
-1 NAME Jane Doe
-1 LANG English
-````
-
-````gedcom
-0 @jane@ SUBM
-1 LANG Gujarati
-1 LANG English
-1 NAME Jane Doe
-````
-
-... though the second ordering places a `NAME` between two `LANG`s and is thus not recommended.
-The following is *not* equivalent to any of the above:
-
-````gedcom
-0 @jane@ SUBM
-1 NAME Jane Doe
-1 LANG English
-1 LANG Gujarati
-````
-{/}
-
-{.example ...} It is the *structure type identifier* that determines if order must be preserved;
-thus, the order of the two notes in the following must be preserved
-even though one has a pointer as its *payload* and the other has a string:
-
-````gedcom
-1 NAME Jno. /Banks/
-2 NOTE @N34@
-2 NOTE This is probably an abbreviation for John
-````
-{/}
-
-
-### Payload String Encoding
-
-A *string*-valued *payload* is encoded into a *payload line* as follows:
-
-1.  The *payload* is split on all *line break*s,
-    and may also be split between any two non-*whitespace* characters
-    that are not part of a substring matching the `Escape` production.
-
-        Escape  ::= "@#" [^#x40#xA#xD]* "@"
-    
-    The portion before the first split point
-    (or the entire *payload* if there are no splits)
-    is encoded as the *payload line* of the *structure*'s line;
-    the remaining portions are encoded in order
-    as the *payload line*s of pseudo-substructures of the *structure*:
-    a `[CONT]` *pseudo-structure* if the split point was a *line break*
-    and a `[CONC]` *pseudo-structure* otherwise.
-
-    It is RECOMMENDED that all payloads be split as needed
-    to ensure that no *line* containing a portion of the *payload*
-    exceeds 255 characters in length.
-
-1.  Each U+0040 `@` in a *payload*
-    which is not part of a substring that matches production `Escape`
-    is replaced by two adjacent U+0040s `@@`.
-
-1.  Each *delimiter* character that begins or ends a *payload*
-    MUST be replaced by an escape sequence consisting of:
-
-    1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
-    1.  A hexadecimal encoding of the code point of the *delimiter* character (i.e., either `20` or `9`)
-    1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
-
-{.note} Delimiter escaping will never be used with any of the *structures* documented in [ELF-DM]
-because all *payload*s there are either *whitespace normalised* or *line break normalised*.
-Delimiter escaping is included in this specification to permit extensions where leading and trailing whitespace are significant.
-
-{.ednote} The above leaves out the ability to split next to a space or tab, meaning *strings* of hundreds of spaces or tabs will of necessity exceed the 255-character limit.
-
-{.example ...} If the payload of a .`HEAD`.`NOTE` would be represented in a C-like language as `"Example:\nmulti-line notes  \n supported."`, the `NOTE` could be encoded as
-
-````gedcom
-1 NOTE Example:
-2 CONT multi-line notes
-2 CONT supported.
-````
-
-or as
-
-````gedcom
-1 NOTE Example:
-2 CONT mult
-2 CONC i-lin
-2 CONC e notes
-2 CONT supported.
-````
-
-but *not* as
-
-````gedcom
-1 NOTE Example:
-2 CONT multi-line
-2 CONC notes
-2 CONT supported.
-````
-{/}
-
-
-### Payload String Decoding
-
-A the *payload line*s
-of a *structure*'s line
-and all its `[CONT]` and `[CONC]` pseudo-substructure lines
-are combined to create the *structure*'s *payload* as follows:
-
-1.  Each adjacent pair of U+0040 in each *payload line* is replaced by a single U+0040.
-
-1.  *Whitespace* at the beginning or end of each *payload line* is removed
-
-1.  The *payload* is created by concatenating all *payload line*s in order;
-    if a *payload line* is of a `[CONT]` *pseudo-structure*,
-    it is preceded by a single *line break* prior to concatenation.
-
-{.ednote} There is a problem with the above,
-where "`@@#x@@`", "`@@#x@`", "`@#x@@`", and "`@#x@`" will all decode as the same *payload*.
-The only solution to this that I have come up with involves moving the escapes to the data model.
-
-
-
-
-
-
-## IRI to/from Tag
-
-Each *structure type identifier* in a dataset
-is represented by a **tag** in the serialisation format.
-The mapping between *tag*s and *structure type identifier*s is handled by an **IRI dictionary**.
-The *IRI dictionary* may also define a set of alternate IRIs for a *tag*.
-
-{.note} The intent of the set of alternate IRIs
-is to aid implementations in handling unknown extensions
-without the overhead of a full discovery mechanism.
-
-{.example ...} Suppose that `http://terms.fhiso.org/sources/authorName` is a subtype of `http://terms.fhiso.org/elf/AUTH` that provides additional structural information within the *payload*.  An implementation might create the mapping 
-
-| Tag  | IRIs                                        |
-|------|---------------------------------------------|
-|`AUTH`|`http://terms.fhiso.org/sources/authorName` <br> `http://terms.fhiso.org/elf/AUTH`|
-
-to inform implementations that lines tagged `AUTH`
-are `authorName`s, 
-but can be treated like `AUTH`s
-if full `authorName` semantics are not understood.
-{/}
-
-
-### IRI dictionary format  {#IRI-dictionary}
-
-The IRI dictionary contains any mix of
-
--   zero or one *default namespace definition*,
--   zero or more *namespace definitions*, and
--   zero or more *individual tag mappings*.
-
-The *default namespace definition* specifies an absolute IRI.
-
-Each *namespace definition* maps a key matching the production `Prefix` to an absolute IRI.
-No two *namespace definition*s within a single dataset may share a key.
-
-    Prefix  ::= [0-9A-Za-z]* "_"
-
-Each *individual tag mapping* maps a key matching the production `Tag` to an ordered sequence of absolute IRIs.
-No two *individual tag mapping*s within a single dataset may share a key.
-
-
-### Tag to IRI {#tag2iri}
-
-To convert a *tag* to an IRI, the following checks are performed in order; the first one that matches is used.
-
-1.  If the *tag* is one of `CHAR`, `CONC`, `CONT`, `DEFN`, `PRFX`, or `TRLR`,
-    the *tag* is identifying a *pseudo-structure* and does not map to an IRI.
-
-1.  Otherwise, if the *tag* is a key of an *individual tag mapping*,
-    the IRI associated with that *tag* is the first IRI in the IRI sequence of that mapping.
-    Additional IRIs in that sequence provide *hints* to implementations that *structures* with this IRI MAY be treated like *structures* with other IRIs in the sequence, with a *preference* for the first usable IRI.
-
-1.  Otherwise, if the *tag* contains one or more underscores,
-    let *p* be the substring of the *tag* up to and including the first underscore
-    and *s* be the substring after the first underscore.
-    If *p* is a key in the prefix dictionary,
-    the IRI associated with the *tag* 
-    is the value associated with *p* concatenated with *s*.
-
-1.  Otherwise, if there is a *default namespace definition*,
-    the IRI associated with the *tag*
-    is the IRI of the *default namespace definition* concatenated with the *tag*.
-
-1.  Otherwise, the IRI associated with the *tag*
-    is `http://terms.fhiso.org/elf/` concatenated with the *tag*.
-
-{.example ...} Given the following namespace mappings dictionary entries:
-
-Key     Value
-------  ---------------------------------------------------------------
-`X_`    `http://example.com/extensions/`
-`_`     `http://example.com/old_extensions.html#`
-
-and the following individual tag mapping:
-
-Key     Value
-------  -------------------------------------------
-`_UID`  `http://example.com/UUID` <br> `http://purl.org/dc/terms/identifier`
-
-the following tags convert to the following IRIs:
-
-Tag         IRI
-----------  ------------------------------------------------
-`HEAD`      `http://terms.fhiso.org/elf/HEAD`
-`X_LAT`     `http://example.com/extensions/LAT`
-`_LOC`      `http://example.com/old_extensions.html#LOC`
-`_UID`      `http://example.com/UUID`
-
-Note that `http://purl.org/dc/terms/identifier` is *not* the IRI of `_UID`:
-even if an implementation does not understand `http://example.com/UUID`,
-the first element in the IRI sequence is always the IRI of a tag,
-the others being instead hints about how to treat that type.
-{/}
-
-
-### IRI to Tag {#iri2tag}
-
-Every *structure* type IRI MUST be replaced by a *tag* as part of serialisation,
-and every such replacement MUST be reversible via the IRI dictionary.
-The simplest technique to accomplish this is to create an *individual tag mapping* for every IRI with a unique key for each.
-However, it is RECOMMENDED that more compact *namespace definition*s be used;
-in particular, implementations SHOULD
-
--   use the default prefix for all *structure* types documented in the [Elf-DM].
--   use one *namespace definition* for each *namespace* (as defined in [Vocabularies]),
-    with a key of two or more characters.
--   use just-underscore keys only for compatibility communication with implementations that expect particular *tag*s.
--   provide additional IRIs for extensions that extend *structure* types documented in the [Elf-DM].
-
-{.ednote} Should we say "implementations MUST NOT use any of the six pseudo-structure tags" or add contexts to the definition of pseudo-structures?  In other words, is .INDI.NOTE.DEFN a pseudo-structure or can it be defined as a structure?
-
-### IRI dictionary encoding {#IRI}
-
-The IRI dictionary is encoded as a set pseudo-substructures of the *head*.
-
-Each *namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
-and *payload* consisting of
-the key of the *namespace definition*, a *delimiter*, and the absolute IRI of the *namespace definition*.
-
-Each *default namespace definition* is encoded as a *pseudo-structure* with *tag* `[PRFX]`
-and *payload* consisting of
-the absolute IRI of the *default namespace definition*.
-
-Each *individual tag mapping* is encoded as a *pseudo-structure* with *tag* `[DEFN]`
-and a *payload* consisting of
-the key of the *individual tag mapping*, a *delimiter*, and the sequence of absolute IRIs of the *individual tag mapping* separated by *whitespace*.
-
-{.note} The permission of *whitespace* separation allows either all IRIs to be encoded in a single line or some to be encoded in `[CONT]` lines.
-
-{.example ...} Given the following namespace mappings dictionary entries:
-
-Key     Value
-------  ---------------------------------------------------------------
-`X_`    `http://example.com/extensions/`
-`_`     `http://example.com/old_extensions.html#`
-
-and the following individual tag mapping:
-
-Key     Value
-------  ---------------------------------------------------------------
-`_UID`  `http://example.com/UUID` <br> `http://purl.org/dc/terms/identifier`
-
-the serialisation could begin
-
-````
-0 HEAD
-1 CHAR UTF-8
-1 DEFN _UID http://example.com/UUID
-2 CONT http://purl.org/dc/terms/identifier
-1 PRFX X_ http://example.com/extensions/
-1 PRFX _ http://example.com/old_extensions.html#
-````
+- "`1 CONT attached to nothing`" is not an *additional line*
+    as a *substructure* precedes it,
+    and `CONT` has no *tag definition*
 {/}
 
 
 
+## Octet string                                                  {#octet-string}
 
+### Serialising
 
+The sequence of *lines* representing the *dataset*
+is encoded as an *octet stream* by
 
+1. Convert each *line* into a *string* consisting of
 
+    a. Optionally any amount of *whitespace*, which SHOULD be omitted
+    b. The *level* encoded as a decimal integer with no leading 0
+    c. A *delimiter*, should SHOULD be a single space (U+0020)
+    d. If the *line* has an *xref_id*,
+        i. The *xref_id*
+        ii. A *delimiter*, should SHOULD be a single space (U+0020)
+    e. The *tag*
+    f. If the *line* has a *payload*,
+        i. A single space (U+0020)
+        ii. The *payload*
 
+{.note} [GEDCOM 5.5.1] does not allow parsing delimiters other than a single space
+in steps (c) and (d.ii) above,
+but other delimiters are used in some extant files.
 
+{.note} [GEDCOM 5.5.1] is inconsistent in if it allows more-than-one-space for (f.i) above; in some places it clearly states that only a single space is allowed and in others it implies any delimiter may be present.
+Requiring a single space allows leading spaces to in *payloads*,
+which otherwise would require *unicode escapes* to encode.
 
+2. Concatenate those *strings* into a single *string*
+    with a single *line break* between each *line*.
+    
+    All of the *line breaks* used SHOULD be the same,
+    and SHOULD be one of
+    the *character* U+000A, the *character* U+000D,
+    or the two-*character* sequence U+000D U+000A.
 
+3. Encoding the resulting *string* into and *octet stream*
+    using the same *character encoding*
+    that was documented in the *serialisation metadata*
+    *tagged structure* with *tag* "`CHAR`" (see {§encoding})
 
+### Parsing
 
-
-
-
-## String to/from octets
-
-### String to octets  {#string2octet}
-
-Given a *string* and character encoding, the *string* is converted into a sequence of octets as specified by that encoding.
-It is RECOMMENDED that the encoding used should be able to represent all code points within the *string*.
-Any code points that cannot be directly represented as octets within the character encoding SHALL be encoded as follows:
-
-1.  Replace the codepoint with the *string* made of
-    1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
-    1.  A hexadecimal encoding of the code point
-    1.  The two characters U+0040 and U+0020 (i.e., "`@ `")
-1.  Encode the *string* with the character encoding
-
-{.note} While GEDCOM has no provision for escaping unecodable code points, it does provide an "escape" construct `@#[^@]*@` which this addition uses.
-GEDCOM also does not define what is done with unknown code points, so the above definition does not violate what GEDCOM requires.
-
-{.ednote} Should we instead REQUIRE an encoding that accepts all code points in use?
-
-### Octets to string   {#octet2string}
-
-In order to parse an ELF document, an application must determine how to
-map the raw stream of octets read from the network or disk into
-characters.  This is mapping is called the **character encoding** of
-the document.  Determining it is a two-stage process, with the first
+In order to parse an ELF document, an application must determine the 
+*character encoding* to use to map the raw stream of octets read from 
+the network or disk into *characters*.
+Determining it is a two-stage process, with the first
 stage is to determine the **detected character encoding** of the
-document per §7.2.1.
+document per {§chardetect}.
 
 {.note}  The *detected character encoding* might not be the actual
 *character encoding* used in the document, but if the document is
 *conformant*, it will be similar enough to allow a limited degree of
-parsing as basic ASCII *character* will be correctly identified.
+parsing as basic ASCII *characters* will be correctly identified.
 
-
-#### Detected character encoding
+#### Detected character encoding                        {#chardetect}
 
 If a character encoding is specified via any supported external means,
 such as an HTTP `Content-Type` header, this *should* be the *detected
@@ -803,41 +1295,17 @@ Otherwise         None
 
 #### Character encoding
 
-A prefix of octet stream shall be decoded using the *detected character encoding*,
+A prefix of the *octet stream* shall be decoded using the *detected character encoding*,
 or an unspecified ASCII-compatible encoding if there is no *detected character encoding*.
-This prefix is parsed into *lines*, stopping at the second instance of a *line* with *level* 0.   If a *line* with *level* 1 and *tag* `CHAR` was found, its *payload* is the **specified character encoding** of the document.
+This prefix is parsed into *lines*, stopping at the second instance of a *line* with *level* 0.
+If a *line* with *level* 1 and *tag* `CHAR` was found,
+its *payload* is the **specified character encoding** of the document.
 
-If there is a *specified character encoding*, it SHALL be used as the *character encoding* of the octet stream.
-Otherwise, if there is a *detected character encoding*, it SHALL be used as the *character encoding* of the octet stream.
+If there is a *specified character encoding*,
+it SHALL be used as the *character encoding* of the octet stream.
+Otherwise, if there is a *detected character encoding*,
+it SHALL be used as the *character encoding* of the octet stream.
 Otherwise, the *character encoding* SHALL be determined to be ANSEL.
-
-#### Decoding
-
-Given an octet stream and a character encoding,
-the octet stream is converted into a sequence of characters as specified by that encoding.
-
-If any subsequence of the decoded *string* matches the production `UEsc`:
-
-    hex  ::= [0-9A-Fa-f]+
-    UEsc ::= "@#U" hex "@" #x20?
-
-that substring SHALL be replaced by the code point represented by the hexadecimal number included within the escape sequence.
-
-{.note} While GEDCOM does not have the UEsc provision, this provision will not cause an ELF decoder to misinterpret the output of any known GEDCOM exporter.
-
-{.ednote}  This is specified at the wrong time in the decoding process.
-Escape decoding must be done after *lines* have been parsed, otherwise
-it is not possible to use "`1 NOTE @#U20@`" to encode a *string*
-consisting of just a single space *character*.
-
-
-
-
-
-
-
-
-
 
 
 
@@ -878,11 +1346,6 @@ consisting of just a single space *character*.
     Scott Bradner, 1997.
     (See <http://tools.ietf.org/html/rfc2119>.)
 
-[Vocabularies]
-:   FHISO (Family History Information Standards Organisation)
-    *Preferred nature of vocabularies.*
-    See <http://tech.fhiso.org/policies/vocabularies>.
-
 [XML]
 :   W3C (World Wide Web Consortium).
     *Extensible Markup Language (XML) 1.1*, 2nd edition.
@@ -907,6 +1370,16 @@ consisting of just a single space *character*.
     W3C Recommendation.
     See <https://www.w3.org/TR/xml-names11/>.
 
-[ELF-DM]
+[ELF-DataModel]
 :   FHISO (Family History Information Standards Organisation)
     *Extended Legacy Format (ELF): Data Model.*
+
+
+
+## Appendix A: Default Schema                                  {#default-schema}
+
+The following is a minimal ELF file with the default *ELF Schema*,
+which includes all *tag definitions* and *supertype definitions* listed in [Elf-DataModel].
+
+{#include schema.ged}
+
