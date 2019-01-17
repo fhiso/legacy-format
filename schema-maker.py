@@ -20,17 +20,15 @@ with open(md_file) as f:
         within = []
         contains = []
         canbe = []
-        tag = None
+        tag = []
         parts = {}
         for chunk in chunks.finditer(bit):
             if chunk.group(1).startswith('Supertype'):
                 isa.extend(links.findall(chunk.group()))
             if chunk.group(1).startswith('Superstructure'):
                 within.extend(links.findall(chunk.group()))
-            if chunk.group(1).startswith('Default tag') and tag is None:
-                tag = chunk.group()
-                tag = tag[tag.find('`')+1:]
-                tag = tag[:tag.find('`')]
+            if chunk.group(1).startswith('Default tag'):
+                tag.extend(re.findall(r'`([^`\n]*)`', chunk.group()))
             if chunk.group(1).startswith('Subtype'):
                 canbe.extend(links.findall(chunk.group()))
             if chunk.group(1).startswith('Substructure'):
@@ -107,9 +105,11 @@ if 1:
 1 GEDC 
 2 VERS 5.5.1
 2 FORM LINEAGE-LINKED
+2 ELF 1.0.0
 1 SCHMA
 2 PRFX elf https://terms.fhiso.org/elf/
-2 PRFX elfm https://terms.fhiso.org/elf/metadata/''')
+2 PRFX elfm https://terms.fhiso.org/elf/metadata/
+2 ESC DATE D''')
 
     for k in sorted(themap):
         if ':' in k:
@@ -117,8 +117,8 @@ if 1:
             for sup in sorted(themap[k]['isa']):
                 if sup != 'elf:Structure':
                     print('3 ISA', sup)
-            if 'tag' in themap[k] and themap[k]['tag'] is not None:
-                print('3 TAG', themap[k]['tag'], ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
+            for tag in themap[k].get('tag', []):
+                print('3 TAG', tag, ('\n4 CONT ' if False else ' ').join(sorted(themap[k]['within'])))
     print('''1 SOUR https://fhiso.org/elf/
 1 NOTE This file was automatically generated from '''+md_file+'''
 2 CONT by '''+argv[0]+''' at '''+datetime.datetime.utcnow().isoformat()+'''
