@@ -2469,7 +2469,7 @@ which match the following `Age` production:
 
     Age      ::= ( [<>] S? )? ( Duration | BareYear ) | AgeWord
 
-    Duration ::= [0-9]+ | [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
+    Duration ::= [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
                  | [0-9]+ "m" ( S? [0-9]+ "d" )? | [0-9]+ "d"
     BareYear ::= [0-9]+
     AgeWord  ::= "CHILD" | "INFANT" | "STILLBORN"
