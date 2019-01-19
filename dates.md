@@ -2095,21 +2095,21 @@ gives the usual form of their name in English and Hebrew, and the number
 of *calendar days* in each month.  The *calendar days* in each *calendar
 month* are numbered sequentially starting with 1.
 
--------  ----------     -------      ---------------------
-`TSH`    Tishrei           תשרי      30 days
-`CSH`    Cheshvan         חשוון      29 days, or sometimes 30 days &mdash; see below
-`KSL`    Kislev            כסלו      30 days, or sometimes 29 days &mdash; see below
-`TVT`    Tevet              טבת      29 days
-`SHV`    Shevat             שבט      30 days
-`ADR`    Adar I           אדר א      30 days, if present &mdash; see below
-`ADS`    Adar II          אדר ב      29 days
-`NSN`    Nisan             ניסן      30 days
-`IYR`    Iyar              אייר      29 days
-`SVN`    Sivan            סיוון      30 days
-`TMZ`    Tammuz            תמוז      29 days
-`AAV`    Av                  אב      30 days
-`ELL`    Elul              אלול      29 days
--------  ----------     -------      ---------------------
+-------  ----------  -----------------------------      ---------------------
+`TSH`    Tishrei                              תשרי      30 days
+`CSH`    Cheshvan                            חשוון      29 days, or sometimes 30 days &mdash; see below
+`KSL`    Kislev                               כסלו      30 days, or sometimes 29 days &mdash; see below
+`TVT`    Tevet                                 טבת      29 days
+`SHV`    Shevat                                שבט      30 days
+`ADR`    Adar I       <span dir="rtl">אדר א</span>      30 days, if present &mdash; see below
+`ADS`    Adar II      <span dir="rtl">אדר ב</span>      29 days
+`NSN`    Nisan                                ניסן      30 days
+`IYR`    Iyar                                 אייר      29 days
+`SVN`    Sivan                               סיוון      30 days
+`TMZ`    Tammuz                               תמוז      29 days
+`AAV`    Av                                     אב      30 days
+`ELL`    Elul                                 אלול      29 days
+-------  ----------  -----------------------------      ---------------------
 
 {.note}  The English names given above are transliterations of the
 Hebrew, and many variants of the transliterations can be found.
@@ -2469,7 +2469,7 @@ which match the following `Age` production:
 
     Age      ::= ( [<>] S? )? ( Duration | BareYear ) | AgeWord
 
-    Duration ::= [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
+    Duration ::= [0-9]+ | [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
                  | [0-9]+ "m" ( S? [0-9]+ "d" )? | [0-9]+ "d"
     BareYear ::= [0-9]+
     AgeWord  ::= "CHILD" | "INFANT" | "STILLBORN"
