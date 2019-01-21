@@ -130,12 +130,95 @@ notational convenience to make the standard easier to read.
 
 ## Overview
 
-A **dataset** consists of *metadata* and a *document*, each containing a collection of *structures*.
-An **octet stream** consists of an ordered sequence of octets, values between 0 and 255.
-This document specifies how a *dataset* is serialised into an *octet stream*
-and how an *octet stream* is parsed into a *dataset*.
+The ELF serialisation format is a structured, line-based text format for
+encoding data in a form that is both machine-readable and
+human-readable.  
 
-### Serialisation
+At a logical level, an ELF document is built from **structures**, the name
+ELF gives to the basic hierarchical data structures used to represent
+data.  Each *structure* consists of:
+
+*  a *type identifier*, which is a *term* that encodes the meaning of
+   the *structure*;
+*  an *optional* *payload*, which is either a *string* or a *pointer* to
+   another *structure*; and 
+*  a sequence of zero or more child *structures* known as its
+   *substructures*.  
+
+A top-level *structure* which is not a *substructure* of any other
+*structure* is called a **record**.  An ELF document or **dataset** can
+have arbitrarily many *records*.
+
+{.note} The expressiveness of ELF is similar to that of XML.  ELF's
+*structures* serve the same role as elements in XML, and nest similarly.
+But unlike XML, which has a single root-level element, an ELF *dataset*
+typically has multiple *records*.
+
+The ELF serialisation format is a general purpose format that can be
+used to represent arbitrary data, depending on the *type identifiers*
+used in the *dataset*.  A particular set of *type identifiers*, together
+with their meanings and restrictions on how they are to be used, is
+called a **data model**.  
+
+{.note}  The ELF serialisation format is designed to be useable with
+various *data models*; however it is anticipated that most files using
+the ELF serialisation format will use the data model described in [ELF
+Data Model], which is based on and compatible with GEDCOM's
+lineage-linked form.
+
+At a lexical level, a *structure* is encoded as sequence of **lines**,
+each terminated with a *line break*.  The first *line* encodes the *type
+identifier* and *payload* of the *structure*, while any *substructures*
+are encoded in order on subsequent *lines*.  Each *line* consists of the
+following components, in order:
+
+*  a *level*, which is a non-negative *integer* that records how many
+   levels of *substructures* deep the current *structure* is nested;
+*  an *optional* *structure identifier*, which is an identifer written
+   between two "at" signs (U+0040) that can be referenced by a *pointer*
+   in the payload of another *structure*; 
+*  a *tag*, which encodes the *type identifier* of the *structure*; and
+*  the *optional* *payload* of the *structure* encoded by the *line*.
+
+{.example ...}
+    0 HEAD
+    1 GEDC
+    2 VERS 5.5.1
+    2 ELF 1.0.0
+    2 FORM LINEAGE-LINKED
+    1 CHAR UTF-8
+    0 INDI
+    1 NAME Charlemagne
+    0 TRLR
+
+This ELF document has three *lines* with *level* `0` which mark the
+start of the three top-level *structures* or *records*.  These *records*
+have, respectively, three, one and zero *substructures*, which are
+denoted by the *lines* with *level* `1`.   The *structure* represented
+by the *line* with a `CHAR` *tag* is a *substructure* of the `HEAD`
+*record* because there is no intervening *line* with *level* one less
+than `1` (i.e.  `0`); the *structure* represented by the `NAME` *line*
+naming Charlemagne is a *substructure* of the `INDI` *record*, as that
+is the preceding *line* with a *level* `0`.   The `TRLR` *record* is an
+example of a *record* with no *substructures*.
+
+Five of the *lines* in this example document have a *payload*.  For
+example, the *payload* of the `FORM` *line* is the *string*
+"`LINEAGE-LINKED`", while the *payload* of the `NAME` *line* is the
+*string* "`Charlemagne`".  None of the *lines* in this example have
+*payload* which are *pointers*, nor do any have a *structure
+identifier*.
+{/}
+
+ELF supports several different character encodings, so this standard
+treats its input as an **octet stream** consisting of a sequence of
+8-bit bytes or **octets**, each with a value between 0 and 255.
+This document specifies how an *octet stream* is parsed into a
+*dataset*, and how a *dataset* is serialised into an *octet stream*.
+Overviews of these processes can be found in {§parsing} and
+{§serialising}, respectively.
+
+### Serialisation                                               {#serialising}
 
 The semantics of serialisation are defined by the following procedural outline.
 
@@ -172,7 +255,7 @@ The semantics of serialisation are defined by the following procedural outline.
     - converting *strings* to octets using the *character encoding*
 
 
-### Parsing
+### Parsing                                                         {#parsing}
     
 The semantics of parsing are defined by the following procedural outline.
 
