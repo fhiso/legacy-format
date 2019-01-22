@@ -417,45 +417,6 @@ Xref Structure
 
 ## Octet string                                                {#octet-string}
 
-### Serialising
-
-The sequence of *lines* representing the *dataset*
-is encoded as an *octet stream* by
-
-1. Convert each *line* into a *string* consisting of
-
-    a. Optionally any amount of *whitespace*, which SHOULD be omitted
-    b. The *level* encoded as a decimal integer with no leading 0
-    c. A *delimiter*, should SHOULD be a single space (U+0020)
-    d. If the *line* has an *xref_id*,
-        i. The *xref_id*
-        ii. A *delimiter*, should SHOULD be a single space (U+0020)
-    e. The *tag*
-    f. If the *line* has a *payload*,
-        i. A single space (U+0020)
-        ii. The *payload*
-
-{.note} [GEDCOM 5.5.1] does not allow parsing delimiters other than a single space
-in steps (c) and (d.ii) above,
-but other delimiters are used in some extant files.
-
-{.note} [GEDCOM 5.5.1] is inconsistent in if it allows more-than-one-space for (f.i) above; in some places it clearly states that only a single space is allowed and in others it implies any delimiter may be present.
-Requiring a single space allows leading spaces to in *payloads*,
-which otherwise would require *unicode escapes* to encode.
-
-2. Concatenate those *strings* into a single *string*
-    with a single *line break* between each *line*.
-    
-    All of the *line breaks* used SHOULD be the same,
-    and SHOULD be one of
-    the *character* U+000A, the *character* U+000D,
-    or the two-*character* sequence U+000D U+000A.
-
-3. Encoding the resulting *string* into and *octet stream*
-    using the same *character encoding*
-    that was documented in the *serialisation metadata*
-    *tagged structure* with *tag* "`CHAR`" (see {§encoding})
-
 ### Parsing
 
 In order to parse an ELF document, an application must determine the 
@@ -543,6 +504,45 @@ it SHALL be used as the *character encoding* of the octet stream.
 Otherwise, if there is a *detected character encoding*,
 it SHALL be used as the *character encoding* of the octet stream.
 Otherwise, the *character encoding* SHALL be determined to be ANSEL.
+
+### Serialising
+
+The sequence of *lines* representing the *dataset*
+is encoded as an *octet stream* by
+
+1. Convert each *line* into a *string* consisting of
+
+    a. Optionally any amount of *whitespace*, which SHOULD be omitted
+    b. The *level* encoded as a decimal integer with no leading 0
+    c. A *delimiter*, should SHOULD be a single space (U+0020)
+    d. If the *line* has an *xref_id*,
+        i. The *xref_id*
+        ii. A *delimiter*, should SHOULD be a single space (U+0020)
+    e. The *tag*
+    f. If the *line* has a *payload*,
+        i. A single space (U+0020)
+        ii. The *payload*
+
+{.note} [GEDCOM 5.5.1] does not allow parsing delimiters other than a single space
+in steps (c) and (d.ii) above,
+but other delimiters are used in some extant files.
+
+{.note} [GEDCOM 5.5.1] is inconsistent in if it allows more-than-one-space for (f.i) above; in some places it clearly states that only a single space is allowed and in others it implies any delimiter may be present.
+Requiring a single space allows leading spaces to in *payloads*,
+which otherwise would require *unicode escapes* to encode.
+
+2. Concatenate those *strings* into a single *string*
+    with a single *line break* between each *line*.
+    
+    All of the *line breaks* used SHOULD be the same,
+    and SHOULD be one of
+    the *character* U+000A, the *character* U+000D,
+    or the two-*character* sequence U+000D U+000A.
+
+3. Encoding the resulting *string* into and *octet stream*
+    using the same *character encoding*
+    that was documented in the *serialisation metadata*
+    *tagged structure* with *tag* "`CHAR`" (see {§encoding})
 
 
 ## Levels and lines
