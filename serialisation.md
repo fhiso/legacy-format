@@ -218,43 +218,6 @@ This document specifies how an *octet stream* is parsed into a
 Overviews of these processes can be found in {§parsing} and
 {§serialising}, respectively.
 
-### Serialisation                                               {#serialising}
-
-The semantics of serialisation are defined by the following procedural outline.
-
-1. Each *structure* is assigned a *tag* based on its *structure type identifier*, *superstructure type identifier*, and a *schema* which MAY be augmented during serialisation to allow all *structures* to have a *tag*.
-
-2. The *tagged structures* are ordered and additional *tagged structures* created to represent *serialisation metadata*.
-    
-    This step cannot happen before tagging because tagging may generate *serialisation metadata* that needs to be included in the *tagged structures*.
-
-3. Payloads are converted to create *xref structures* by simultaneously
-    
-    - assigning *xref_ids* and replacing *pointer*-valued *payloads* with *string*-valued *xrefs*
-    - escaping `@` *characters*
-    - preserving valid *escapes*
-    - escaping unrepresentable *characters*
-    
-    Semantically, these actions must happen concurrently because none of them should be applied to the others' results.
-    
-    This step cannot happen before tagging because tags are needed to determine the set of valid *escapes*.
-    This step cannot happen before adding *serialisation metadata* because it is applied to the *serialisation metadata* as well.
-
-4. The *dataset* is converted to a sequence of *lines* by
-
-    - assigning *levels*
-    - splitting *payloads*, if needed, using `CONT` and `CONC`
-    - ordering *substructures* in a preorder traversal of the *tagged structures*
-    
-    This step cannot happen before payload conversion because valid split points are dependant on proper escaping.
-    This step must happen before encoding as octets because valid split points are determined by *character*, not octet.
-
-5. The sequence of *lines* is converted to an octet stream by
-
-    - concatenating the *lines* with *line-break* terminators
-    - converting *strings* to octets using the *character encoding*
-
-
 ### Parsing                                                         {#parsing}
     
 The semantics of parsing are defined by the following procedural outline.
@@ -292,6 +255,44 @@ The semantics of parsing are defined by the following procedural outline.
 6. *tags* are converted into *structure type identifiers* using the *schema*
     and the resulting *structures* placed in the *metadata* or *document* as appropriate.
     *Tags* with no corresponding *structure type identifier* are converted into appropriate *undefined tag identifiers*.
+
+
+### Serialisation                                               {#serialising}
+
+The semantics of serialisation are defined by the following procedural outline.
+
+1. Each *structure* is assigned a *tag* based on its *structure type identifier*, *superstructure type identifier*, and a *schema* which MAY be augmented during serialisation to allow all *structures* to have a *tag*.
+
+2. The *tagged structures* are ordered and additional *tagged structures* created to represent *serialisation metadata*.
+    
+    This step cannot happen before tagging because tagging may generate *serialisation metadata* that needs to be included in the *tagged structures*.
+
+3. Payloads are converted to create *xref structures* by simultaneously
+    
+    - assigning *xref_ids* and replacing *pointer*-valued *payloads* with *string*-valued *xrefs*
+    - escaping `@` *characters*
+    - preserving valid *escapes*
+    - escaping unrepresentable *characters*
+    
+    Semantically, these actions must happen concurrently because none of them should be applied to the others' results.
+    
+    This step cannot happen before tagging because tags are needed to determine the set of valid *escapes*.
+    This step cannot happen before adding *serialisation metadata* because it is applied to the *serialisation metadata* as well.
+
+4. The *dataset* is converted to a sequence of *lines* by
+
+    - assigning *levels*
+    - splitting *payloads*, if needed, using `CONT` and `CONC`
+    - ordering *substructures* in a preorder traversal of the *tagged structures*
+    
+    This step cannot happen before payload conversion because valid split points are dependant on proper escaping.
+    This step must happen before encoding as octets because valid split points are determined by *character*, not octet.
+
+5. The sequence of *lines* is converted to an octet stream by
+
+    - concatenating the *lines* with *line-break* terminators
+    - converting *strings* to octets using the *character encoding*
+
 
 ### Constructs
 
