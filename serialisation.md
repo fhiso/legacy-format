@@ -125,10 +125,7 @@ bindings are assumed in this standard:
 When used outside of a serialised example, prefix notation is simply a
 notational convenience to make the standard easier to read.
 
-
-
-
-## Overview
+## Overview                                                        {#overview}
 
 The ELF serialisation format is a structured, line-based text format for
 encoding data in a form that is both machine-readable and
@@ -307,6 +304,9 @@ For clarity of presentation, it also uses several intermediate constructs intern
 Each is defined in {§glossary}.
 
 ### Glossary                                                       {#glossary}
+
+{.ednote}  *Character encoding*, *line*, *octet*, *octet stream* and
+*structure* are now defined in {§overview}.
 
 Character encoding
 :   The scheme used to map between an *octet stream*
