@@ -210,9 +210,13 @@ example, the *payload* of the `FORM` *line* is the *string*
 identifier*.
 {/}
 
-ELF supports several different character encodings, so this standard
-treats its input as an **octet stream** consisting of a sequence of
-8-bit bytes or **octets**, each with a value between 0 and 255.
+The input to an ELF parser is an **octet stream**, which is a sequence of
+8-bit bytes or **octets** each with a value between 0 and 255.
+
+{.note}  An *octet stream* is typically read from a disk or the network.
+This standard does not define how these should be read, now how the
+*octets* are represented in storage or in transit on a network.
+
 This document specifies how an *octet stream* is parsed into a
 *dataset*, and how a *dataset* is serialised into an *octet stream*.
 Overviews of these processes can be found in {§parsing} and
