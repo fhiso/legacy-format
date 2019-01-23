@@ -522,6 +522,21 @@ compatible with ASCII.
 
 Otherwise, there is no *detected character encoding*.
 
+{.note ...} In this case, for the *octet stream* to be understood, it
+must use a 7- or 8-bit *character encoding* that is sufficiently
+compatible with ASCII that the `CHAR` *line* can be read.  The only 7 or
+8-bit *character encodings* defined in this standard are ASCII, ANSEL
+and UTF-8 which encode ASCII *characters* identically.  These will all
+be understood correctly if there is no *detected character encoding*.
+
+Some *character encodings* with minor differences from ASCII can also be
+understood correctly.  An example is the Japanese Shift-JIS *character
+encoding* which uses the *octets* 5C and 7E to encode the yen currency
+sign (U+00A5) and overline *character* (U+203E) where ASCII has a
+backslash (U+005C) and tilde (U+007E).  An application does not need to
+understand these *characters* in order to scan for a `CHAR` *line*.
+{/}
+
 {.note ...} These cases can be summarised as follows:
 
 ----------------  -------------------------------------------------
