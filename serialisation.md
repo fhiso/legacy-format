@@ -96,6 +96,12 @@ defined in that standard are used here without further definition.
 {.note} In particular, precise meaning of *string*, *character*,
 *whitespace* and *term* are given in [Basic Concepts].
 
+Certain facilities in this standard are described as **deprecated**,
+which is a warning that they may be removed from a future version of
+this standard.  This has no bearing on whether a *conformant*
+application must implement the facility: they may be *required*,
+*recommended* or *optional* as described in this standard.  
+
 Indented text in grey or coloured boxes does not form a normative part
 of this standard, and is labelled as either an example or a note.  
 
@@ -463,6 +469,9 @@ unspecified ASCII-compatible encoding.  It is then scanned for a `CHAR`
 *line* whose *payload* identifies the **specified character encoding**.
 This process is described in {§specified-enc}.  
 
+Considerations for reading specific *character encodings* can be found
+in {§encodings}.
+
 #### Detecting a character encoding                            {#detected-enc}
 
 {.note} For applications that choose not to support the *optional*
@@ -585,6 +594,62 @@ which otherwise would require *unicode escapes* to encode.
     using the same *character encoding*
     that was documented in the *serialisation metadata*
     *tagged structure* with *tag* "`CHAR`" (see {§encoding})
+
+### Character encodings                                           {#encodings}
+
+Support for reading the ASCII, ANSEL and UTF-8 *character encodings* is
+*required* by this standard.  Applications may *optionally* support the
+UTF-16 *character encoding* in its big or little endian forms, or both.
+The use of any of these *character encodings* other than UTF-8
+is *deprecated*.
+
+The UTF-8 and UTF-16 *character encodings* are the Unicode encoding
+forms defined in §2.5 of [ISO 10646], and the specifics of the big and
+little endian forms of UTF-16 are defined in §2.6 of [ISO 10646].  
+
+{.note}  As these are encodings of Unicode, they naturally decode into a
+sequence of Unicode *characters* without requiring conversion between
+character sets. 
+
+The *character encoding* referred to as ASCII in this standard is the US
+version of ASCII which, for the purpose of this standard, is defined as
+the subset of UTF-8 which uses only Unicode characters U+0001 to U+007F.
+
+{.note} The US ASCII *character encoding* is nominally defined in
+[ASCII], but this standard defines it in terms of [ISO 10646].  This is
+partly to avoid uncertainty over which of several incompatible
+definitions of ASCII is meant, partly because the Unicode standard is
+much more readily available than the ASCII one, and partly because ASCII
+allows certain punctuation marks a be used as combining diacritics when
+they follow the backspace *character* (U+0008).  This cannot be used
+legally in GEDCOM as the backspace *character* is not permitted.  Unicode
+provides separate combining diacritics and does not allow this use.
+
+ANSEL refers to the Extended Latin Alphabet Coded Character Set for
+Bibliographic Use defined in [ANSEL].  If an ELF file is determined to
+use the ANSEL *character encoding* it *must* be converted into a
+sequence of Unicode *characters* before it can be processed further.
+This is discussed in §3.3.1.  
+
+If other *character encodings* are supported, they too must be converted
+into a sequence of Unicode *characters* for further processing.
+
+{.note}  This standard makes no recommendation on how applications
+should represent sequences of Unicode *characters* internally, and the
+UTF-8, UTF-16 and UTF-32 *character encodings* each have advantages.
+
+{.ednote}  This standard currently makes no distinction between a
+*character set* and a *character encoding*, but arguably it would be
+cleaner to make this distinction.  Then UTF-16 and UTF-8 are different
+*character encodings* of the same Unicode *character set*, and ASCII may
+be regarded as such too for our purpose; but ANSEL is a different
+*character set* and required conversion to Unicode.  [ISO 10646] makes
+a further distinction between *encoding forms* like UTF-8 and UTF-16, and
+*encoding schemes* like UTF-16BE and UTF-16LE.
+
+#### Converting ANSEL to Unicode
+
+{.ednote} Add material from `ansel-to-unicode.md`.
 
 
 ## Levels and lines
