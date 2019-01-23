@@ -146,6 +146,9 @@ A top-level *structure* which is not a *substructure* of any other
 *structure* is called a **record**.  An ELF document or **dataset** can
 have arbitrarily many *records*.
 
+{.ednote}  This is either not strictly true or at least misleading,
+because `HEAD` and `TRLR` are not *records*.  Probably.
+
 {.note} The expressiveness of ELF is similar to that of XML.  ELF's
 *structures* serve the same role as elements in XML, and nest similarly.
 But unlike XML, which has a single root-level element, an ELF *dataset*
@@ -305,8 +308,10 @@ Each is defined in {§glossary}.
 
 ### Glossary                                                       {#glossary}
 
-{.ednote}  *Character encoding*, *line*, *octet*, *octet stream* and
-*structure* are now defined in {§overview}.
+{.ednote}  *Line*, *octet*, *octet stream*, *record* and *structure* are
+now defined in {§overview}, while *character encoding* is defined in
+{§parsing-enc}.  *Dataset* and *document* are very nearly defined in
+{§overview} too, but we don't current discuss *metadata* there.
 
 Character encoding
 :   The scheme used to map between an *octet stream*
@@ -422,25 +427,53 @@ Xref Structure
 
 ## Octet string                                                {#octet-string}
 
-### Parsing
+### Parsing                                                     {#parsing-enc}
 
-In order to parse an ELF document, an application must determine the 
-*character encoding* to use to map the raw stream of octets read from 
-the network or disk into *characters*.
-Determining it is a two-stage process, with the first
-stage is to determine the **detected character encoding** of the
-document per {§chardetect}.
+In order to parse an ELF document, an application *shall* first convert
+the *octet stream* into a sequence of *lines*.  The way in which
+*octets* are mapped to *characters* is called the **character encoding**
+of the document.  ELF supports several different *character encodings*.
+Determining which is used is a two-stage process, with the first stage
+being to determine the **detected character encoding** of the *octet
+stream* per {§detected-enc}.  
 
-{.note}  The *detected character encoding* might not be the actual
-*character encoding* used in the document, but if the document is
-*conformant*, it will be similar enough to allow a limited degree of
-parsing as basic ASCII *characters* will be correctly identified.
+{.note}  The purpose of this step is twofold: first, it allows
+non-ASCII-compatible *character encodings* like UTF-16 to be supported;
+and secondly, it removes any byte-order mark that might be present in
+the *octet stream*.
 
-#### Detected character encoding                                 {#chardetect}
+Frequently there will be no *detected character encoding*.  In this
+case, the *character encoding* is initially assumed to be compatible
+with ASCII.
 
-If a character encoding is specified via any supported external means,
-such as an HTTP `Content-Type` header, this *should* be the *detected
-character encoding*.
+{.note}  This standard does not define exactly what it means for a 
+*character encoding* to be compatible with ASCII.  The only 7 or 8-bit
+*character encodings* defined in this standard are ASCII, ANSEL and
+UTF-8 which encode ASCII *characters* identically to ASCII.  These are
+all therefore compatible with ASCII.  However an application *may*
+support *character encodings* that have small differences from ASCII,
+such as the Japanese Shift-JIS *character encoding* which uses the
+*octets* 5C and 7E to encode the yen currency sign and overbar where
+ASCII has a backslash and tilde.  Such *character encodings* can be
+sufficiently compatible with ASCII for the present purpose.
+
+Next, the initial portion of the *octet stream* is converted to
+*characters* using the *detected character encoding*, failing which, an
+unspecified ASCII-compatible encoding.  It is then scanned for a `CHAR`
+*line* whose *payload* identifies the **specified character encoding**.
+This process is described in {§specified-enc}.  
+
+#### Detecting a character encoding                            {#detected-enc}
+
+{.note} For applications that choose not to support the *optional*
+UTF-16 *character encoding*, the process described in this section can
+be as simple as skipping over a UTF-8 byte-order mark, and determining
+the *detected character encoding* to be UTF-8 if a byte-order mark was
+present.
+
+If a *character encoding* is specified via any supported external means,
+such as an HTTP `Content-Type` header, this *should* be taken as to be
+the *detected character encoding*.
 
 {.example ...}  Suppose the ELF file was download using HTTP and the
 response included this header:
@@ -455,25 +488,28 @@ Note that the use of the MIME type `text/plain` is *not recommended* for
 ELF.  It is used here purely as an example. 
 {/}
 
-Otherwise, if the document begins with a byte-order mark (U+FEFF)
-encoded in UTF-8, or UTF-16 of either endianness, this encoding *shall*
-be the *detected character encoding*.  The byte-order mark is removed
-from the data stream before further processing.
+Otherwise, if the *octet stream* begins with a byte-order mark (U+FEFF)
+encoded in UTF-8, the *detected character encoding* *shall* be UTF-8; or
+if the application supports the *optional* UTF-8 encoding UTF-16 and the
+*octet steam* beings with a byte-order mark encoded in UTF-16 of either
+endianness, the *detected character encoding* *shall* be UTF-16 of the
+appropriate endianness.  The byte-order mark *shall* be removed from the
+*octet stream* before further processing.
 
 Otherwise, if the document begins with the digit `0` (U+0030) encoded in
-UTF-16 of either endianness, this encoding *shall* be the *detected
-character encoding*.
+UTF-16 of either endianness, the *detected character encoding* *shall*
+be UTF-16 of the appropriate endianness.
 
 {.note}  The digit `0` is tested for because an ELF file *must* begin
 with the *line* "`0 HEAD`".
 
 Otherwise, applications *may* try to detect other character encodings by
-examining the octet stream, but it is *not recommended* that they do so.
+examining the *octet stream*, but this is *not recommended*.
 
-{.note}  One situation where it might be desirable to try to detect
+{.note}  One situation where it might be necessary to try to detect
 another encoding is if the application needs to support (as an
-extension) a character encoding like EBCDIC which is not compatible with
-ASCII.
+extension) a *character encoding* like EBCDIC or UTF-16 which is not
+compatible with ASCII.
 
 Otherwise, there is no *detected character encoding*.
 
@@ -496,13 +532,14 @@ Otherwise         None
 ----------------  -------------------------------------------------
 {/}
 
-#### Character encoding
+#### Scanning for a character encoding                        {#specified-enc}
 
-A prefix of the *octet stream* shall be decoded using the *detected character encoding*,
-or an unspecified ASCII-compatible encoding if there is no *detected character encoding*.
-This prefix is parsed into *lines*, stopping at the second instance of a *line* with *level* 0.
-If a *line* with *level* 1 and *tag* `CHAR` was found,
-its *payload* is the **specified character encoding** of the document.
+A prefix of the *octet stream* shall be decoded using the *detected
+character encoding*, or an unspecified ASCII-compatible encoding if
+there is no *detected character encoding*.  This prefix is parsed into
+*lines*, stopping at the second instance of a *line* with *level* 0.  If
+a *line* with *level* 1 and *tag* `CHAR` was found, its *payload* is the
+*specified character encoding* of the document.
 
 If there is a *specified character encoding*,
 it SHALL be used as the *character encoding* of the octet stream.
