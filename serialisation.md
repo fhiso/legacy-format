@@ -232,22 +232,26 @@ Overviews of these processes can be found in {§parsing} and
     
 The semantics of parsing are defined by the following procedural outline.
 
-1. An octet stream is converted to a sequence of *string* lines by
+1. An octet stream is converted to a sequence of *line strings* by
 
-    a. determining a *character encoding* by 
+    a. determining its *character encoding* by 
     
-        i. detecting a *character encoding*
-        ii. using that *detected character encoding* to look for a *character encoding* specified in the *serialisation metadata*
+        i.  detecting a *character encoding* per {§detected-enc}, and 
+        ii. using that *detected character encoding* to look for a
+            *specified character encoding* in the *serialisation
+            metadata* per {§specified-enc};
     
-    b. converting octets to *characters* using that *character encoding*
-    c. splitting on *line breaks*
+    b. converting octets to *characters* using that *character
+       encoding*; and
+    c. splitting on *line breaks* per {§line-strings}.
 
-2. *string* lines are parsed as *lines* by
+2. *Line strings* are parsed as *lines* by
 
-    - parsing the *level*, *tag*, *xref_id*, and *payload* of each *line*
-    - creating an *error line* if that fails
+    - parsing the *level*, *tag*, *xref_id*, and *payload* of each
+      *line*; 
+    - creating an *error line* if that fails.
 
-3. *lines* are parsed into *xref structures* by
+3. *Lines* are parsed into *xref structures* by
 
     - re-merging `CONC` and `CONT`-split *payloads*; violations of splitting rules are ignored
     - using *levels* to properly nest *xref structures*
@@ -316,8 +320,9 @@ Each is defined in {§glossary}.
 
 {.ednote}  *Line*, *octet*, *octet stream*, *record* and *structure* are
 now defined in {§overview}, while *character encoding* is defined in
-{§parsing-enc}.  *Dataset* and *document* are very nearly defined in
-{§overview} too, but we don't current discuss *metadata* there.
+{§parsing-enc}, and *line break* is defined in {§line-strings}.
+*Dataset* and *document* are very nearly defined in {§overview} too, but
+we don't currently discuss *metadata* there.
 
 Character encoding
 :   The scheme used to map between an *octet stream*
@@ -556,20 +561,51 @@ Otherwise         None
 ----------------  -------------------------------------------------
 {/}
 
-#### Scanning for a character encoding                        {#specified-enc}
+#### Specified character encodings                            {#specified-enc}
 
-A prefix of the *octet stream* shall be decoded using the *detected
-character encoding*, or an unspecified ASCII-compatible encoding if
-there is no *detected character encoding*.  This prefix is parsed into
-*lines*, stopping at the second instance of a *line* with *level* 0.  If
-a *line* with *level* 1 and *tag* `CHAR` was found, its *payload* is the
-*specified character encoding* of the document.
+To determine the *specified character encoding*, the initial portion of
+the *octet stream* *shall* temporarily be converted to *characters*
+using the *detected character encoding*.  If there is no *detected
+character encoding*, the application *shall* convert each *octet* to the
+*character* whose *code point* is the value of *octet*.
+
+{.note}  This is equivalent to assuming a *character encoding* of
+ISO-8859-1.  Alternatively, the application *may* assume it is encoded
+in ASCII, except that the application *must not* issue an error if it
+encounters *characters* outside the range of ASCII.
+
+The *characters* from the initial portion of the *octet stream* are
+parsed into *lines*, stopping at the second instance of a *line* with
+*level* 0.  If a *line* with *level* 1 and *tag* `CHAR` was found, its
+*payload* is the *specified character encoding* of the document.
 
 If there is a *specified character encoding*,
 it SHALL be used as the *character encoding* of the octet stream.
 Otherwise, if there is a *detected character encoding*,
 it SHALL be used as the *character encoding* of the octet stream.
 Otherwise, the *character encoding* SHALL be determined to be ANSEL.
+
+#### Line strings                                              {#line-strings}
+
+Before *characters* from the *octet stream* can be parsed into *lines*,
+they must be assembled into **line strings**, which are *strings*
+containing the lexical representations of *lines* before they have been
+parsed.
+
+*Characters* are appended to the *line string* until a *line break* is
+encountered, at which point the *character* or *characters* forming the
+*line break* are discarded and a new *line string* is begun.  A **line
+break** is defined as a sequence of one or more line feeds (U+000A) or
+carriage returns (U+000D).  It matches the following `LB` production:
+
+    LB ::= [#A#D]+
+
+{.note}  This definition of a *line break* matches the form of line
+endings used on Unix, Linux and modern Mac OS (U+000A), the
+traditional Mac OS form (U+000D), and Windows line endings (U+000D
+U+000A).  It also matches any combination of two or more of these line
+endings.
+
 
 ### Serialising
 
@@ -777,7 +813,7 @@ in a way that splits up the pairs of "`@`"s.
 
 ### Error lines
 
-A *string* line SHALL be parsed as an **error line**
+A *line string* SHALL be parsed as an **error line**
 if it is either *unparseable* or its *line* is *too deep*.
 
 An **unparseable** line is one that does not match production `Parseable`
@@ -800,13 +836,13 @@ Its *payload* is
 
 {.ednote ...} To do: pick one of the following:
 
-- The *string* line that represents an *error line* is just the *error line*'s *payload*;
+- The *line string* that represents an *error line* is just the *error line*'s *payload*;
     the *level* and *tag* MUST NOT be included.
 
-- The *string* line that represents an *error line* SHALL include the *error line*'s *level* and *tag*,
+- The *line string* that represents an *error line* SHALL include the *error line*'s *level* and *tag*,
     like any other *line*.
 
-- The *string* line that represents an *error line* MAY either include the *error line*'s *level* and *tag*,
+- The *line string* that represents an *error line* MAY either include the *error line*'s *level* and *tag*,
     like any other *line*; or MAY be just the *error line*'s *payload* with no *level* or *tag*.
 {/}
 
