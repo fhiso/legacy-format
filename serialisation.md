@@ -120,6 +120,15 @@ applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner.
 
+{.note} In this form of EBNF, *whitespace* is only permitted where it
+is explicitly stated in the grammar.  It is not automatically permitted
+between arbitrary tokens in the grammar.
+
+The grammar productions in this standard uses the `S` and `Char`
+productions defined in §2 of [Basic Concepts] to match any non-empty
+sequence of *whitespace* *characters* or any valid *character*,
+respectively.
+
 This standard uses the *prefix notation*, as defined in §4.3 of [Basic
 Concepts], when discussing specific *terms*.  The following *prefix*
 bindings are assumed in this standard:
@@ -183,9 +192,9 @@ identifier* and *payload* of the *structure*, while any *substructures*
 are encoded in order on subsequent *lines*.  Each *line* consists of the
 following components, in order:
 
-*  a *level*, which is a non-negative *integer* that records how many
-   levels of *substructures* deep the current *structure* is nested;
-*  an *optional* *structure identifier*, which is an identifer written
+*  a *level*, which is a non-negative decimal *integer* that records how
+   many levels of *substructures* deep the current *structure* is nested;
+*  an *optional* *structure identifier*, which is an identifier written
    between two "at" signs (U+0040) that can be referenced by a *pointer*
    in the payload of another *structure*; 
 *  a *tag*, which encodes the *type identifier* of the *structure*; and
@@ -235,7 +244,7 @@ Overviews of these processes can be found in {§parsing} and
 
 ### Parsing                                                         {#parsing}
     
-The semantics of parsing are defined by the following procedural outline.
+The parsing process can be summarised as follows:
 
 1. An *octet stream* is converted to a sequence of *line strings* by
 
@@ -325,9 +334,10 @@ Each is defined in {§glossary}.
 
 {.ednote}  *Line*, *octet*, *octet stream*, *record* and *structure* are
 now defined in {§overview}, while *character encoding* is defined in
-{§parsing-enc}, and *line break* is defined in {§line-strings}.
-*Dataset* and *document* are very nearly defined in {§overview} too, but
-we don't currently discuss *metadata* there.
+{§parsing-enc}, and *line break* is defined in {§line-strings}.  The
+notion of a *delimiter* is being removed.  *Dataset* and *document* are
+very nearly defined in {§overview} too, but we don't currently discuss
+*metadata* there &mdash; this is an issue which needs resolving.
 
 Character encoding
 :   The scheme used to map between an *octet stream*
@@ -458,14 +468,15 @@ and secondly, it removes any byte-order mark that might be present in
 the *octet stream*.
 
 Next, the initial portion of the *octet stream* is converted to
-*characters* using the *detected character encoding*, failing which, an
-unspecified ASCII-compatible encoding.  It is then scanned for a `CHAR`
-*line* whose *payload* identifies the **specified character encoding**.
-This process is described in {§specified-enc}.  If there is a *specified
-character encoding*, it is used as the *character encoding* for the ELF
-document; otherwise the *detected character encoding* is used, failing
-which the default is the ANSEL *character encoding*.  Considerations for
-reading specific *character encodings* can be found in {§encodings}.
+*characters* using the *detected character encoding*, failing which in
+an ASCII-compatible manner.  This *character* sequence is then scanned
+for a `CHAR` *line* whose *payload* identifies the **specified character
+encoding**.  This process is described in {§specified-enc}.  If there is
+a *specified character encoding*, it is used as the *character encoding*
+for the ELF document; otherwise the *detected character encoding* is
+used, failing which the default is the ANSEL *character encoding*.
+Considerations for reading specific *character encodings* can be found
+in {§encodings}.
 
 ### Detecting a character encoding                             {#detected-enc}
 
@@ -494,22 +505,30 @@ ELF.  It is used here purely as an example.
 
 Otherwise, if the *octet stream* begins with a byte-order mark (U+FEFF)
 encoded in UTF-8, the *detected character encoding* *shall* be UTF-8; or
-if the application supports the *optional* UTF-8 encoding UTF-16 and the
-*octet steam* beings with a byte-order mark encoded in UTF-16 of either
+if the application supports the *optional* UTF-16 encoding and the
+*octet steam* begins with a byte-order mark encoded in UTF-16 of either
 endianness, the *detected character encoding* *shall* be UTF-16 of the
 appropriate endianness.  The byte-order mark *shall* be removed from the
 *octet stream* before further processing.
 
-Otherwise, if the *octet stream* begins with any ASCII *character*
-(U+0001 to U+007F) encoded in UTF-16 of either endianness, his encoding
-*shall* be the *detected character encoding*. 
+Otherwise, if the application supports the *optional* UTF-16 encoding
+and the *octet stream* begins with any ASCII *character* (U+0001 to
+U+007F) encoded in UTF-16 of either endianness, this encoding *shall* be
+the *detected character encoding*. 
 
-Otherwise, applications *may* try to detect other character encodings by
-examining the *octet stream*, but this is *not recommended*.
+{.example} ELF files typically begin with the *character* "`0`".  In
+the big endian form of UTF-16, sometimes called UTF-16BE, this is
+encoded with the hexadecimal *octets* `00 30`.  These two *octets* will
+be detected as an ASCII *character* encoded in UTF-16, and the *detected
+charcter encoding* will be determined to be UTF-16BE.
+
+Otherwise, applications *may* try to detect other encodings by examining
+the *octet stream* in an implementation-defined manner, but this is 
+*not recommended*.
 
 {.note}  One situation where it might be necessary to try to detect
 another encoding is if the application needs to support (as an
-extension) a *character encoding* like EBCDIC or UTF-16 which is not
+extension) a *character encoding* like EBCDIC or UTF-32 which is not
 compatible with ASCII.
 
 Otherwise, there is no *detected character encoding*.
@@ -557,26 +576,26 @@ using the *detected character encoding*.
 
 If there is no *detected character encoding*, the application *shall*
 convert each *octet* to the *character* whose *code point* is the value
-of *octet*.  If, in this case, the value of the *octet* is not the *code
-point* of a valid *character*, that *octet* *shall* be ignored while
-scanning for the *specified character encoding* and no error issued.
+of *octet*.  An application *may* given an error if the null *octet*
+`00` is encountered.
 
 {.note}  This is equivalent to using the ISO-8859-1 *character encoding*
 if there is no *detected character encoding*.  As defined in §2 of
 [Basic Concepts], *code point* U+0000 does not correspond to a valid
-*character*, however the *octet* with value `00` *must* be ignored
-rather than resuling in an error.  This is because the actual *character
-encoding* might be something which maps this octet to a different
-*character*, possibly as part of a multibyte encoding.  The same is true
-of octets corresponding to those control *characters* matching the
+*character*.  In principle, the *octet* `00` might occur in the
+representation of a valid *character* in some *character encoding*, but
+most *character encodings* avoid this and it cannot happen in the ASCII,
+ANSEL or UTF-8 *character encodings*.  The same is true of octets
+corresponding to those control *characters* matching the
 `RestrictedChar` production in §2 of [Basic Concepts], which [Basic
 Concepts] allows an application to reject.
 
-The *characters* from the initial portion of the *octet stream* are
+*Characters* from the initial portion of the *octet stream* are
 parsed into *lines strings* as described in {§line-strings}, each
 *line string* is *whitespace normalised* as described in §2 of [Basic
-Concepts], and all lowercase ASCII letters (U+0061 to U+007A)
-converted to the corresponding uppercase letter (U+0041 to U+005A)
+Concepts], and all lowercase ASCII *characters* (U+0061 to U+007A)
+converted to the corresponding uppercase *characters* (U+0041 to
+U+005A).
 
 {.note} *Whitespace normalisation* and conversion to uppercase only
 applies for the purpose of determining the *specified character set*.
@@ -588,8 +607,8 @@ being used provisionally while scanning for the *specified character
 encoding*.
 
 Once normalised in this manner, the first *line string* of the file
-*must* be exactly "`0 HEAD`"; if it is not, the application *should*
-issue an error and stop trying to parse the *octet stream* as ELF.  If
+*must* be exactly "`0 HEAD`"; otherwise the application *must*
+issue an error and cease parse the *octet stream* as ELF.  If
 the application encounters a subsequent normalised *line string*
 beginning with a `0` digit (U+0030) followed by a space *character*
 (U+0020), the application *shall* stop scanning for a *specified
@@ -610,10 +629,17 @@ If the remainder of the *line string* is exactly "`ASCII`", "`ANSEL`" or
 "`UTF-8`", then the *specified character encoding* *shall* be ASCII,
 ANSEL or UTF-8, respectively.
 
-{.example ...}  It is *recommended* that ELF documents use UTF-8 and
-record this using the following `CHAR` *line*:
+{.example ...}  It is *recommended* that all ELF documents use UTF-8 and
+record this using a `CHAR` *line* as follows:
 
+    0 HEAD
     1 CHAR UTF-8
+
+This `CHAR` *line string* will be found while scanning for the
+*specified character encoding*.  The *line string* begins with "`1
+CHAR`" followed by a space *character*; the remainder of the *line
+string* is "`UTF-8`" so the *specified character encoding* is recognised
+as UTF-8.
 {/}
 
 Otherwise, if the remainder of the *line string* is exactly "`UNICODE`"
@@ -621,17 +647,20 @@ and the *detected character encoding* is UTF-16 in either endianness,
 the *specified character encoding* *shall* be the UTF-16 in that
 endianness.
 
-{.note} [GEDCOM 5.5.1] only says that the *string* "`UNICODE`" is used
-to specify the UTF-16 encoding, though without naming the encoding as
-such, and without specifying which endianness is meant.  If the *octet
-stream* is a valid ELF document encoded in UTF-16 then the *detected
-character encoding* will be set accordingly.
+{.note} [GEDCOM 5.5.1] says that the *string* "`UNICODE`" is used to
+specify the UTF-16 encoding, though without naming the encoding as such,
+and without specifying which endianness is meant.  If the *octet stream*
+is a valid ELF document encoded in UTF-16 and the application supports
+UTF-16, then the *detected character encoding* will have been determined
+accordingly.
 
 Otherwise, the application *may* determine the *specified character
-encoding* in an implementation defined way.  In doing so, it *may* read
-one further *line string* and if it begins with "`2 VERS`" followed by a
-space *character* (U+0020), the application *may* use the remainder of
-that *line string* to help determine the *specified character encoding*.
+encoding* from the remainder of the *line string* and the *detected
+character encoding* in an implementation-defined way.  The application
+*may* read one further *line string*, and if it begins with "`2 VERS`"
+followed by a space *character* (U+0020), the application *may* also use
+the remainder of that *line string* in determining the *specified
+character encoding*.
 
 {.example ...}  It is fairly common to find "`ANSI`" on the `CHAR`
 *line*, though this has never been a legal option in any version of
@@ -657,30 +686,60 @@ encoding* of the octet stream.  Otherwise, the *character encoding*
 *shall* default to be ANSEL.
 
 {.note}  ANSEL is the default *character encoding* for compatibility
-with GEDCOM, despite being *deprecated* in ELF.
+with GEDCOM, despite being it being *deprecated* in ELF.
 
 If the *character encoding* is one which the application does not
-support, it should issue an error and stop reading the file.
+support, the application *shall* issue an error and stop reading the
+file.
 
 ### Character encodings                                           {#encodings}
 
 Support for reading the ASCII, ANSEL and UTF-8 *character encodings* is
-*required* by this standard.  Applications may *optionally* support the
-UTF-16 *character encoding* in either its big or little endian forms, or
-both.  The ANSEL or UTF-16 *character encodings* are *deprecated*.
+*required* by this standard.  Application support for the 
+UTF-16 *character encoding* is *optional*.  Applications *may* support
+it in either its big or little endian forms, both, or neither.  The
+ANSEL or UTF-16 *character encodings* are *deprecated*.
 
 {.ednote}  We considered making support for ANSEL *optional*, but after
-doing some researching into how frequently current GEDCOM files were
-encoded using ANSEL (as opposed to claiming to be ANSEL but actually
-using the ASCII subset of ANSEL), we felt it had to be *required*.
+researching  how frequently current GEDCOM files were encoded using
+ANSEL (as opposed to claiming to be ANSEL but actually using the ASCII
+subset of ANSEL), the TSC felt it had to be *required*.
 
 The UTF-8 and UTF-16 *character encodings* are the Unicode encoding
 forms defined in §2.5 of [ISO 10646], and the specifics of the big and
 little endian forms of UTF-16 are defined in §2.6 of [ISO 10646].  
 
-{.note}  As these are encodings of Unicode, they naturally decode into a
-sequence of Unicode *characters* without requiring conversion between
-character sets. 
+{.note}  UTF-8 is a variable-width *character encoding* that uses
+between one and four *octets* to encode a *character*.  It is backwards
+compatible with ASCII, so ASCII *characters* are encoded to a single
+*octet* and other *characters* require more.  For example, the Czech
+given name "Miloš" is encoded using the *octet* sequence `4D 69 6C 6F C5
+A1` where the last two *octets* encode the *character* "š".  Only
+*characters* outside Unicode's Basic Multilingual Plane &mdash; that is
+*characters* with a *code point* of U+10000 or higher &mdash; are
+encoded with four *octets*.  An example is the ancient Chinese
+*character* "𠀡" which is encoded using the *octets* `F0 A0 80 A1`.
+Such *characters* can occasionally be found encoded using six *octets*
+(e.g. `ED A1 80 ED B0 A1` for "𠀡").  This form, which is called CESU-8
+and is not valid UTF-8, typically results from an incorrect
+serialisation of UTF-16 data as UTF-8.  ELF neither requires nor
+prohibits *conformant* applications from reading these CESU-8 forms, but
+they *must not* be generated when serialising data as UTF-8.
+
+{.note}  UTF-16 is also a variable-width *character encoding* which
+normally uses two *octets* to encode a *character*, but uses four
+*octets* for *characters* outside the Basic Multilingual Plane.  When
+only two *octets* are used, UTF-16 is identical to an earlier
+fixed-width *character encoding* called UCS-2 which was unable to encode
+*characters* outside the Basic Multilingual Plane.  *Conformant*
+applications are *required* by §2 of [Basic Concepts] to support
+*characters* outside the Basic Multilingual Plane, and therefore
+applications which opt to support UTF-16 *must* ensure they do not
+implement support for only UCS-2.
+
+{.note}  As UTF-8 and UTF-16 are encodings of Unicode, they naturally
+decode into a sequence of Unicode *characters* without requiring
+conversion between character sets.
 
 The *character encoding* referred to as ASCII in this standard is the US
 version of ASCII which, for the purpose of this standard, is defined as
@@ -692,15 +751,17 @@ partly to avoid uncertainty over which of several incompatible
 definitions of ASCII is meant, partly because the Unicode standard is
 much more readily available than the ASCII one, and partly because ASCII
 allows certain punctuation marks a be used as combining diacritics when
-they follow the backspace *character* (U+0008).  This cannot be used
-legally in GEDCOM as the backspace *character* is not permitted.  Unicode
-provides separate combining diacritics and does not allow this use.
+they follow the backspace *character* (U+0008).  This use of ASCII
+combining diacritics is not included in [ISO 10646], and is forbidden in
+both GEDCOM and ELF as the backspace *character* *must not* occur.
+Unicode provides a separate set of combining diacritics which are
+permitted in ELF.
 
 ANSEL refers to the Extended Latin Alphabet Coded Character Set for
 Bibliographic Use defined in [ANSEL].  If an ELF file is determined to
 use the ANSEL *character encoding* it *must* be converted into a
 sequence of Unicode *characters* before it can be processed further.
-This is discussed in §3.3.1.  
+This is discussed in {§ansel}.
 
 If other *character encodings* are supported, they too must be converted
 into a sequence of Unicode *characters* for further processing.
@@ -718,7 +779,7 @@ be regarded as such too for our purpose; but ANSEL is a different
 a further distinction between *encoding forms* like UTF-8 and UTF-16, and
 *encoding schemes* like UTF-16BE and UTF-16LE.
 
-#### Converting ANSEL to Unicode
+#### Converting ANSEL to Unicode                                      {#ansel}
 
 {.ednote} Add material from `ansel-to-unicode.md`.
 
@@ -743,54 +804,221 @@ endings used on Unix, Linux and modern Mac OS (U+000A), the
 traditional Mac OS form (U+000D), and Windows line endings (U+000D
 U+000A).  Unlike the equivalent production in [GEDCOM 5.5.1], this does
 not match a line feed followed by a carriage return (U+000A U+000D)
-which was used as a line ending on BBC and Acorn computers in certain
-contexts.  In ELF, this sequence is parsed as two *line breaks* with an
-intervening blank line which gets ignored.
+which was used as a line ending on BBC and Acorn computers in some
+specific contexts.  In ELF, this sequence is parsed as two *line breaks*
+with an intervening blank *line string* which gets ignored.
 
-Any leading or trailing *whitespace* is removed from the *line string*.
-If this results in a *line string* which is an empty *string*, the empty
-*line string* is discarded.
+Any leading *whitespace* *shall* be removed from the *line string*, and
+any trailing *whitespace* *should* also be removed.  If this results in
+a *line string* which is an empty *string*, the empty *line string* is
+discarded.
+
+{.note ...} These operations resolve ambiguities in [GEDCOM 5.5.1], and
+might therefore be a change from some current implementations'
+interpretation of the GEDCOM standard.  On the one hand, §1 of [GEDCOM
+5.5.1] say that leading *whitespace*, including extra line terminators,
+should be allowed and ignored when reading;  on the other hand, the
+relevant grammar production does not permit any such leading
+*whitespace*.  For maximal compatibility with existing data, a
+*conformant* ELF application *must* accept and ignore leading
+*whitespace* and blank lines, but *must not* generate them.
+
+For trailing *whitespace*, [GEDCOM 5.5.1] is even less clear.  Twice,
+once in §2 and again Appendix&nbsp;A, it states that applications
+sometimes remove trailing *whitespace*, but without saying whether this
+behaviour is legal; certainly it implies it is not required.  There
+is little consistency in the behaviour of current applications, so any
+resolution to this will result in an incompatibility some applications.
+In ELF, the removal of trailing *whitespace* is *recommended*, and a
+future version of ELF is likely to make this *required*.  It is
+explicitly not *required* in this standard so that applications *may*
+decide whether to remove trailing *whitespace* based on the identity of
+the application that produce the file.  Applications *should not* leave
+trailing *whitespace* on *line strings* unconditionally.
+
+The Unicode escape mechanism defined in {§unicode-escape} provides ELF
+applications with a way of serialising a value which legitimately ends
+in *whitespace* without it being removed.
+{/}
+
+{.ednote}  FHISO's general philosophy regarding *whitespace* is that,
+where possible, ELF should avoid placing any significance on invisible
+difference in *whitespace*.  This includes the difference between spaces
+and tabs, and trailing *whitespace* on *lines*.
+
+### Parsing lines                                                     {#lines}
+
+To parse a *line string* into a *line*, the *line string* *must* match
+the following `Line` production:
+
+    Line ::= Number S (XRefID S)? Tag (S Pointer | S String)?
+
+{.note ...}  The `Line` production does not allow leading or trailing
+*whitespace* because this has already been removed in the process of
+creating *line strings*.  The `S` production is defined in §2 of [Basic
+Concepts] and matches any on-empty sequence of *whitespace*
+*characters*, though because carriage returns and line feeds are always
+treated as *line breaks* which delimit *line strings*, in practice the
+`S` production can only match space or horizontal tab *characters*.
+Allowing tabs or multiple space *characters* is a departure from [GEDCOM
+5.5.1], but one that is commonly implemented in current applications.
+
+*Whitespace* is *required* between each of the four components of the
+*line*.  This is a change from [GEDCOM 5.5.1] where the grammar says
+that the delimiter is an *optional* space character.  Documents written
+using very early versions of GEDCOM frequently took advantage of this to
+merge the *level*, *structure identifier* and *tag* together, as in
+"`0@I1@INDI`".  This is not permitted permitted in ELF.
+{/}
+
+{.ednote}  It would be simple enough to modify the grammar so that
+"`0@I1@INDI`" would still be supported, and this could make ELF
+Serialisation backwards compatible with GEDCOM 1.0.  However the
+facility is almost never found in GEDCOM 5.5 or 5.5.1 files, and is
+often not supported in applications.  It may even be a error that it is
+still permitted in the GEDCOM grammar.  Files created for earlier
+versions of GEDCOM are only very rarely encountered and their data model
+is incompatible with [ELF Data Model].  There seems to be little benefit
+to supporting earlier versions of GEDCOM in the serialisation layer but
+not in the data model.
+
+The `Line` production contains an ambiguity as any *string* which
+matches the `Pointer` production necessarily also matches the `String`
+production.  *Conformant* applications *must* treat the payload as a
+*pointer* if it matches the `Pointer` production, and only as a *string*
+if it does not.
+
+{.ednote ...}  An earlier draft of this standard used the following
+`PayloadString` production in place of the general-purpose `String`
+production.  This ensures that only strings with correctly escaped "at"
+signs (U+0040) are allowed in a *payload*.  This removes this ambiguity
+from the grammar by ensuring *pointers* do not match the `PayloadString`
+production.
+
+    PayloadString ::= PayloadItem*
+    PayloadItem   ::= [^#x40] | "@@" | Escape
+    Escape        ::= "@#" [^#x40#xA#xD]* "@"
+
+This draft does not do this because it would require all "at" signs to
+be correctly escaped.   In practice, unescaped "at" signs are fairly
+commonly found in GEDCOM files, particularly in the *payload* of `EMAIL`
+*lines*.  It is fairly easy to specify ELF so that these can be
+accommodated and this draft does so at the cost of introducing this
+ambiguity into the grammar.  In practice it is not anticipated that the
+ambiguity will cause implementers difficulties and many current products
+appear to allow unescaped "at" signs in the manner proposed here.
+{/}
+
+The `Line` production contains a second ambiguity: when there are
+multiple *characters* of *whitespace* following a *tag* on a *line*
+whose *payload* is a *string*, the second and subsequent *whitespace*
+*characters* can be parsed by the `S` production or the `String`
+production.  Applications *should* resolve this ambiguity by matching
+the `S` production to the shortest possible non-empty sequence of
+*whitespace* so that any additional *whitespace* is considered to be
+part of the *payload*.
+
+{.note ...} This ambiguity is inherited from [GEDCOM 5.5.1].  On the one
+hand, the grammar in §1 of [GEDCOM 5.5.1] allows at most one space
+*character* and any further space *characters* are therefore considered
+part of the *payload*.  On the other hand, Appendix&nbsp;A says that
+some applications look for the first non-space *character* to denote the
+start of the *payload*, and recommends against doing this with the
+*payload* of the `CONT` tag.
+
+This ambiguity is most problematic on `CONC` *lines* where it can result
+in unwanted *whitespace* being inserted in the middle of a word, or 
+necessary *whitespace* being lost between words; it can also cause
+problems with any *payload* which has leading *whitespace* which needs
+to be preserved.
+To avoid this, using the `CONC` mechanism to split the *payload* next to
+*whitespace* is *not recommended*, and the Unicode escaped in
+{§unicode-escape} provides a means of preventing important leading
+*whitespace* from being lost.  These allow ELF applications to avoid
+depending on this undefined behaviour.
+{/}
+
+{.ednote}  This standard could have *required* leading *whitespace* to
+be preserved in *payloads*.  This standard doesn't do that in part to
+discourage applications from relying on it instead of avoiding the
+problem.  In general, we would rather the standard did not attach
+significance to differences in *whitespace*, and it is possible FHISO
+might want to remove the ambiguity in the future by requiring the
+*payload* to begin with a non-*whitespace* *character*.  Ensuring valid
+ELF files do not have leading *whitespace* in *payloads* should help
+make this possible.
+
+The `Number`, `XRefID` and `Tag` productions encodes the *level*, the
+*structure identifier* and the *tag* of the *line*, respectively.  The
+`String` and `Pointer` productions encode the *payload* of the *line*,
+depending on whether the *payload* is a *string* or a *pointer*,
+respectively.  The *structure identifier* and *payload* are both
+*optional*.
+
+    Number  ::= "0" | [1-9] [0-9]*
+    XRefID  ::= "@" [a-zA-Z0-9_] [^@:!]* "@"
+    Tag     ::= [0-9a-zA-Z_]+
+    String  ::= Char+
+    Pointer ::= "@" [a-zA-Z0-9_] [^@]* "@"
+
+{.ednote} The current working draft of [Basic Concepts] has a `String`
+production which is defined as `Char*`.  The `String` production here
+only matches a non-empty *string*.  This is to avoid any difference
+arising between a *line* with no *payload* and a *line* whose payload is
+an empty *string*.  However it may be better to remove this potential
+ambiguity in a different way.
+
+{.example ...}
+    0 @I1@ INDI
+    1 NAME Cleopatra
+    1 FAMC @F2@
+
+This ELF fragment contains three *lines*.  The first *line* has a
+*level* of `0`, a *structure identifier* of `@I1@`, and a *tag* of
+`INDI`; it has no *payload*.  Neither the second nor the third *line*
+has a *structure identifier*, and both have a *payload*: on the second
+line the *payload* is the *string* "`Cleopatra`", while the *payload* of
+the third *line* is a pointer, `@F2@`.
+{/}
 
 ### Serialising lines
 
-{.ednote} This section needs work.
+{.ednote} The payload needs escaping, either here or in the next
+section.
 
-The sequence of *lines* representing the *dataset*
-is encoded as an *octet stream* by
+Each *line* *shall* be converted to a *line string* by concatenating
+together the *level*, *structure identifier*, *tag* and *payload* as
+described by the `Line` *production* given in {§lines}.  
 
-1. Convert each *line* into a *string* consisting of
+If most of the *lines* being serialised originated from the same ELF
+file and are being re-serialised unaltered, a *conformant* application
+*may* preserve the original syntactic form of these *line string*.
+Otherwise, the application *must* serialise all *line strings* with a
+single space *character* (U+0020) for each `S` production in the `Line`
+production.
 
-    a. Optionally any amount of *whitespace*, which SHOULD be omitted
-    b. The *level* encoded as a decimal integer with no leading 0
-    c. A *delimiter*, should SHOULD be a single space (U+0020)
-    d. If the *line* has an *xref_id*,
-        i. The *xref_id*
-        ii. A *delimiter*, should SHOULD be a single space (U+0020)
-    e. The *tag*
-    f. If the *line* has a *payload*,
-        i. A single space (U+0020)
-        ii. The *payload*
+{.note}  This standard allows applications to preserve the syntactic
+form of *line strings* so that applications which carry out small
+in-place edits to an ELF file are *conformant*.  Otherwise, this is 
+*not recommended*.
 
-{.note} [GEDCOM 5.5.1] does not allow parsing delimiters other than a single space
-in steps (c) and (d.ii) above,
-but other delimiters are used in some extant files.
+*Line strings* *shall* be concatenated into a single *string*, with a
+*line break* between each *line string* and after the last one.  All 
+*line breaks* inserted *must* have identical lexical forms matching the
+`LB` production in {§line-strings}.
 
-{.note} [GEDCOM 5.5.1] is inconsistent in if it allows more-than-one-space for (f.i) above; in some places it clearly states that only a single space is allowed and in others it implies any delimiter may be present.
-Requiring a single space allows leading spaces to in *payloads*,
-which otherwise would require *unicode escapes* to encode.
+{.note}  Applications can choose whether to use Windows line endings
+(U+000D U+000A), traditional Mac OS line endings (U+000D), or the line
+endings used on Unix, Linux and modern Mac OS (U+000A), but *must not*
+to use mix these in the same file.
 
-2. Concatenate those *strings* into a single *string*
-    with a single *line break* between each *line*.
-    
-    All of the *line breaks* used SHOULD be the same,
-    and SHOULD be one of
-    the *character* U+000A, the *character* U+000D,
-    or the two-*character* sequence U+000D U+000A.
+Finally, the resulting *string* is encoded into an *octet stream*
+using the *character encoding* that was documented in the *serialisation
+metadata* *tagged structure* with *tag* "`CHAR`" (see
+{§encoding}).  Applications are only *required* to support the UTF-8
+*character encoding* when serialising, and this *should* be the default.
 
-3. Encoding the resulting *string* into and *octet stream*
-    using the same *character encoding*
-    that was documented in the *serialisation metadata*
-    *tagged structure* with *tag* "`CHAR`" (see {§encoding})
+{.ednote} Check the above paragraph.
 
 ## Levels and lines
 
@@ -1238,7 +1466,7 @@ containing an *ELF Schema* defining the full data model in *structure type descr
 
 {.ednote} Is `application/x-fhiso-elf1-schema` a MIME-type we are happy with?
 
-{.example ...} When using the [ELF-DataModel] version 1.0.0,
+{.example ...} When using the [ELF Data Model] version 1.0.0,
 the *serialisation schema* could be serialised as
 
 ````gedcom
@@ -1702,7 +1930,7 @@ it becomes the *undefined tag identifier* `elf:Undefined#ERROR`.
     W3C Recommendation.
     See <https://www.w3.org/TR/xml-names11/>.
 
-[ELF-DataModel]
+[ELF Data Model]
 :   FHISO (Family History Information Standards Organisation)
     *Extended Legacy Format (ELF): Data Model.*
 
