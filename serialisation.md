@@ -334,10 +334,10 @@ Each is defined in {§glossary}.
 
 {.ednote}  *Line*, *octet*, *octet stream*, *record* and *structure* are
 now defined in {§overview}, while *character encoding* is defined in
-{§parsing-enc}, and *line break* is defined in {§line-strings}.  The
-notion of a *delimiter* is being removed.  *Dataset* and *document* are
-very nearly defined in {§overview} too, but we don't currently discuss
-*metadata* there &mdash; this is an issue which needs resolving.
+{§parsing-linestrs}, and *line break* is defined in {§line-strings}.
+The notion of a *delimiter* is being removed.  *Dataset* and *document*
+are very nearly defined in {§overview} too, but we don't currently
+discuss *metadata* there &mdash; this is an issue which needs resolving.
 
 Character encoding
 :   The scheme used to map between an *octet stream*
@@ -451,16 +451,18 @@ Xref Structure
     - it may have an optional *xref_id*.
     - its payload, if present, is always a *string*, not a *pointer*.
 
-## Parsing and serialising lines                                {#parsing-enc}
+## Parsing and serialising line strings                    {#parsing-linestrs}
 
 In order to parse an ELF document, an application *shall* first convert
-the *octet stream* into a sequence of *lines*.  The way in which
-*octets* are mapped to *characters* is called the **character encoding**
-of the document.  ELF supports several different *character encodings*.
-Determining which is used is a two-stage process, with the first stage
-being to determine the **detected character encoding** of the *octet
-stream* per {§detected-enc}.  Frequently there will be no *detected
-character encoding*.  
+the *octet stream* into a sequence of **line strings**, which are
+*strings* containing the unparsed lexical representations of *lines*.
+
+The way in which *octets* are mapped to *characters* is called the
+**character encoding** of the document.  ELF supports several different
+*character encodings*.  Determining which is used is a two-stage
+process, with the first stage being to determine the **detected
+character encoding** of the *octet stream* per {§detected-enc}.
+Frequently there will be no *detected character encoding*.  
 
 {.note}  The purpose of this step is twofold: first, it allows
 non-ASCII-compatible *character encodings* like UTF-16 to be supported;
@@ -477,6 +479,13 @@ for the ELF document; otherwise the *detected character encoding* is
 used, failing which the default is the ANSEL *character encoding*.
 Considerations for reading specific *character encodings* can be found
 in {§encodings}.
+
+Once the *character encoding* is determined, the *octet stream* can be
+converted into a sequence of *characters* which are assembled into *line
+strings* as described in {§line-strings}.  The process of serialising a
+*line string* back into an *octet stream* is far simpler as the intended
+*character encoding* is already known; this process is described in
+{§serialising-line-strings}.
 
 ### Detecting a character encoding                             {#detected-enc}
 
@@ -786,16 +795,14 @@ a further distinction between *encoding forms* like UTF-8 and UTF-16, and
 ### Line strings                                               {#line-strings}
 
 Before *characters* from the *octet stream* can be parsed into *lines*,
-they must be assembled into **line strings**, which are *strings*
-containing the lexical representations of *lines* before they have been
-parsed.
+they must be assembled into *line strings*.  This is done by appending
+*characters* to the *line string* until a *line break* is encountered,
+at which point the *character* or *characters* forming the *line break*
+are discarded and a new *line string* is begun.  
 
-*Characters* are appended to the *line string* until a *line break* is
-encountered, at which point the *character* or *characters* forming the
-*line break* are discarded and a new *line string* is begun.  A **line
-break** is defined as a line feed (U+000A), or carriage return (U+000D)
-followed by an *optional* line feed (U+000A).  It matches the following
-`LB` production:
+A **line break** is defined as a line feed (U+000A), or carriage return
+(U+000D) followed by an *optional* line feed (U+000A).  It matches the
+following `LB` production:
 
     LB  ::=  #xD #xA? | #xA
 
@@ -846,17 +853,40 @@ where possible, ELF should avoid placing any significance on invisible
 difference in *whitespace*.  This includes the difference between spaces
 and tabs, and trailing *whitespace* on *lines*.
 
+### Serialising line strings                       {#serialising-line-strings}
+
+*Line strings* are serialised by concatenating them together to form a
+single *string*, inserting a *line break* between each *line string* and
+after the last one.  All *line breaks* inserted *must* have identical
+lexical forms matching the `LB` production in {§line-strings}.
+
+{.note}  Applications can choose whether to use Windows line endings
+(U+000D U+000A), traditional Mac OS line endings (U+000D), or the line
+endings used on Unix, Linux and modern Mac OS (U+000A), but *must not*
+to use mix these in the same file.
+
+Finally, the resulting *string* is encoded into an *octet stream*
+using the *character encoding* that was documented in the *serialisation
+metadata* *tagged structure* with *tag* "`CHAR`" (see
+{§encoding}).  Applications are only *required* to support the UTF-8
+*character encoding* when serialising, and this *should* be the default.
+
+{.ednote} Check the above paragraph.
+
+
+## Parsing and serialising structures                       {#parsing-structs}
+
 ### Parsing lines                                                     {#lines}
 
-To parse a *line string* into a *line*, the *line string* *must* match
-the following `Line` production:
+For a *line string* to be parsed into a *line*, it *must* match the
+following `Line` production:
 
     Line ::= Number S (XRefID S)? Tag (S Pointer | S String)?
 
 {.note ...}  The `Line` production does not allow leading or trailing
 *whitespace* because this has already been removed in the process of
 creating *line strings*.  The `S` production is defined in §2 of [Basic
-Concepts] and matches any on-empty sequence of *whitespace*
+Concepts] and matches any non-empty sequence of *whitespace*
 *characters*, though because carriage returns and line feeds are always
 treated as *line breaks* which delimit *line strings*, in practice the
 `S` production can only match space or horizontal tab *characters*.
@@ -910,7 +940,7 @@ appear to allow unescaped "at" signs in the manner proposed here.
 {/}
 
 The `Line` production contains a second ambiguity: when there are
-multiple *characters* of *whitespace* following a *tag* on a *line*
+multiple *characters* of *whitespace* following the *tag* on a *line*
 whose *payload* is a *string*, the second and subsequent *whitespace*
 *characters* can be parsed by the `S` production or the `String`
 production.  Applications *should* resolve this ambiguity by matching
@@ -981,7 +1011,158 @@ line the *payload* is the *string* "`Cleopatra`", while the *payload* of
 the third *line* is a pointer, `@F2@`.
 {/}
 
-### Serialising lines
+A *line string* which does not match the `Line` production is called an
+**unparsable line string**.  A *conformant* application *may* issue an
+error on encountering an *unparsable line string* and stop parsing
+the input stream.  If the application continues processing, the
+*unparsable line string* *shall* be converted into an *error line* as
+described in {§error-lines}.
+
+{.note} Empty *line strings* or *line strings* consisting only of
+*whitespace* are never *unparsable line strings* because they have
+already been removed from the input stream.
+
+The **previous level** of a *line* or *unparsable line string* is
+defined as the *level* of the closest preceding *line* with a *tag*
+other than `CONT`, `CONC` or `ERROR`.  The first *line* in the input
+stream has no *previous level*.
+
+{.example ...}
+    0 INDI
+    1 NOTE The 16th President of the United States.
+    2 CONT Assassinated by John Wilkes Booth.
+    0 TRLR
+
+In this example, the *previous level* of the `TRLR` *line* is `1`, which
+is the *level* of the `NOTE` *line*, because the *line* immediately
+preceding the `TRLR` *line* has a `CONT` *tag*.
+{/}
+
+#### Error lines                                                {#error-lines}
+
+An **error line** is a *line* used to encode the data found in an
+*unparsable line string* or *lines* that are erroneous in certain
+specific ways.  It has a *tag* of `ERROR`, and a *level* that is one
+greater than its *previous level*.
+
+{.note} An *error line* cannot be generated from the first *line string*
+in the input stream because *conformant* applications are *required* to
+check that the first *line string* is exactly "`0 HEAD`" while
+determining the *specified character encoding* per {§specified-enc}.
+This *string* is guaranteed to be valid as the first *line* of the input
+stream which ensures that any *unparsable line string* or other
+erroneous *line* will always have a *previous level* as there will
+always be a earlier *line* with a *tag* other than `CONT`, `CONC` or
+`ERROR`.
+
+If the *error line* is being generated from an *unparsable line string*,
+it *shall* have no *structure identifier*, and a *payload* which is a
+*string* consisting of the entire *unparsable line string*.
+
+{.example ...}
+    0 HEAD
+    unexpected content
+    0 TRLR
+
+In this example, the second *line string* does not match the `Line`
+production and is therefore an *unparsable line string*.   The *previous
+level* of this *unparsable line string* is `0`, the *level* of the
+`HEAD` *line*.  If the application does not stop processing on
+encountering it, the *unparsable line string* is converted into an
+*error line* with *level* `1`, an `ERROR` *tag*, and a *payload* of
+"`unexpected content`".
+
+    0 HEAD
+    1 ERROR unexpected content
+    0 TRLR
+{/}
+
+
+### Grouping lines into structures
+
+Once *line strings* have been parsed into *lines*, the sequence of
+*lines* is converted into a hierarchy of *tagged structures*.  A
+**tagged structure** is an incompletely processed form of a *structure*,
+and consists of a *tag*, an *optional* payload which is either a
+*string* or a *pointer*, and a sequence of zero or more child *tagged
+structures* known as its *substructures*.
+
+{.note}  The definition of a *tagged structure* is identical to the
+definition of a *structure*, except that a *tagged structure* has a
+*tag* where a *structure* has a *type identifier*.  *Tags* are converted
+to *type identifiers* at a later stage of parsing.
+
+The conversion of *lines* into *tagged structures* is defined
+recursively.  Each *line* represents the start of a new *tagged
+structure*, with the *tag* and *payload* of the *line* becoming the
+*tag* and *payload* of the *tagged structure*, respectively.  
+
+### Error lines
+
+
+A **too deep** *line* is one that has a *level* more than one greater than its *previous level*.
+If there is no such preceding *line* then the *line* is *too deep* unless its *level* is 0.
+
+If the *error line* is being generated from a *too-deep line*, it
+*shall* have the same *structure identifier* as the *too-deep line*, and
+a *payload* which is a *string* consisting of the entire *too-deep line* 
+serialised as a *line string* per {§serialising-lines}.
+
+
+{.ednote ...} To do: pick one of the following:
+
+- The *line string* that represents an *error line* is just the *error line*'s *payload*;
+    the *level* and *tag* MUST NOT be included.
+
+- The *line string* that represents an *error line* SHALL include the *error line*'s *level* and *tag*,
+    like any other *line*.
+
+- The *line string* that represents an *error line* MAY either include the *error line*'s *level* and *tag*,
+    like any other *line*; or MAY be just the *error line*'s *payload* with no *level* or *tag*.
+{/}
+
+{.note} Because "`ERROR`" MUST NOT be the *tag* of any *tag definition*,
+the *structure type definition* of the *structure* corresponding to an *error line*
+is the *undefined tag identifier* `elf:Undefined#ERROR`.
+
+{.example ...} The following invalid input
+
+    0 HEAD
+    1 CHAR UTF-8
+    1 SCHMA
+    unexpected nonsense
+    2 SCHMA https://fhiso.org/TR/elf-data-model/v1.0.0
+    0 @N1@ NOTE This is text
+    1 CONT more text
+    2 CONT still more text
+    1 SOUR @S1@
+    1 CONT attached to nothing
+    0 @S1@ SOUR
+    2 @XYZ@ NOTE text
+    0 TRLR
+
+contains three *error lines*:
+
+- "`unexpected nonsense`" is *unparseable*
+    and is treated as it if were "`2 ERROR unexpected nonsense`"
+
+- "`2 CONT still more text`" is *too deep*.
+    It's *level* is 2 greater than the *previous level*
+    (because the "`1 CONT more text`" line is not counted as a *previous level*)
+    and is treated as it if were "`1 ERROR 2 CONT still more text`"
+
+- "`2 @XYZ@ NOTE text`" has a *level* 2 greater than the *previous level*
+    and is treated as it if were "`1 @XYZ@ ERROR 2 NOTE text`"
+
+One other *line* will be identified as `elf:Undefined`:
+
+- "`1 CONT attached to nothing`" is not an *additional line*
+    as a *substructure* precedes it,
+    and `CONT` has no *tag definition*
+{/}
+
+
+### Serialising lines                                     {#serialising-lines}
 
 {.ednote} The payload needs escaping, either here or in the next
 section.
@@ -1002,25 +1183,8 @@ form of *line strings* so that applications which carry out small
 in-place edits to an ELF file are *conformant*.  Otherwise, this is 
 *not recommended*.
 
-*Line strings* *shall* be concatenated into a single *string*, with a
-*line break* between each *line string* and after the last one.  All 
-*line breaks* inserted *must* have identical lexical forms matching the
-`LB` production in {§line-strings}.
 
-{.note}  Applications can choose whether to use Windows line endings
-(U+000D U+000A), traditional Mac OS line endings (U+000D), or the line
-endings used on Unix, Linux and modern Mac OS (U+000A), but *must not*
-to use mix these in the same file.
-
-Finally, the resulting *string* is encoded into an *octet stream*
-using the *character encoding* that was documented in the *serialisation
-metadata* *tagged structure* with *tag* "`CHAR`" (see
-{§encoding}).  Applications are only *required* to support the UTF-8
-*character encoding* when serialising, and this *should* be the default.
-
-{.ednote} Check the above paragraph.
-
-## Levels and lines
+### Serialising
 
 Each *xref structure* is encoded as a sequence of one or more *lines*.
 
@@ -1128,80 +1292,25 @@ If the serialisation decides to split either *extended line* with `CONC`s, it MU
 in a way that splits up the pairs of "`@`"s.
 {/}
 
-### Error lines
+{.ednote} The following example needs moving somewhere more sensible.
 
-A *line string* SHALL be parsed as an **error line**
-if it is either *unparseable* or its *line* is *too deep*.
+{.example ...}
+    0 @I1@ INDI
+    2 DATE 3 JUN 2019 
+    3 TIME 01:15:00
+    @ TRLR
 
-An **unparseable** line is one that does not match production `Parseable`
-
-    Parseable ::= Delim? [0-9]+ (Delim XrefID)? Delim Tag (Delim [^#A#D]*)?
-
-A **too deep** *line* is one that has a *level* more than one greater than its *previous level*.
-The **previous level** of a *line* is the *level* of the closest preceding *line* that is not an *error line*
-and has a *tag* that is neither "`CONT`" nor "`CONC`" nor "`ERROR`".
-If there is no such preceding *line* then the *line* is *too deep* unless its *level* is 0.
-
-An **error line** has *tag* `ERROR`;
-and a *level* equal to the 1 + its *previous level*.
-If generated by a *too deep* *line* with an *xref_id*,
-the *error line* has that same *xref_id*; otherwise it has no *xref_id*.
-Its *payload* is
-
-- the entire *unparseable* line, if generated by an *unparseable* line; or
-- the serialised *level*, *tag*, and *payload* of the *too deep* *line* otherwise.
-
-{.ednote ...} To do: pick one of the following:
-
-- The *line string* that represents an *error line* is just the *error line*'s *payload*;
-    the *level* and *tag* MUST NOT be included.
-
-- The *line string* that represents an *error line* SHALL include the *error line*'s *level* and *tag*,
-    like any other *line*.
-
-- The *line string* that represents an *error line* MAY either include the *error line*'s *level* and *tag*,
-    like any other *line*; or MAY be just the *error line*'s *payload* with no *level* or *tag*.
+In this example, the second *line* has a *level* which is two greater
+than the level of the previous *line*.  It is therefore considered an
+*unparsable line string*.  The third *line* is also considered an
+*unparsable line string* because the previous *line* is an *unparseable
+line string* meaning the closest preceding *line* which is not an
+*unparsable line string* is the first *line* which had level `0`.
+The fourth *line* is not an *unparsable line string* because it has the
+same *level* as its closest preceding *line* which is not an *unparsable
+line string*.
 {/}
 
-{.note} Because "`ERROR`" MUST NOT be the *tag* of any *tag definition*,
-the *structure type definition* of the *structure* corresponding to an *error line*
-is the *undefined tag identifier* `elf:Undefined#ERROR`.
-
-{.example ...} The following invalid input
-
-    0 HEAD
-    1 CHAR UTF-8
-    1 SCHMA
-    unexpected nonsense
-    2 SCHMA https://fhiso.org/TR/elf-data-model/v1.0.0
-    0 @N1@ NOTE This is text
-    1 CONT more text
-    2 CONT still more text
-    1 SOUR @S1@
-    1 CONT attached to nothing
-    0 @S1@ SOUR
-    2 @XYZ@ NOTE text
-    0 TRLR
-
-contains three *error lines*:
-
-- "`unexpected nonsense`" is *unparseable*
-    and is treated as it if were "`2 ERROR unexpected nonsense`"
-
-- "`2 CONT still more text`" is *too deep*.
-    It's *level* is 2 greater than the *previous level*
-    (because the "`1 CONT more text`" line is not counted as a *previous level*)
-    and is treated as it if were "`1 ERROR 2 CONT still more text`"
-
-- "`2 @XYZ@ NOTE text`" has a *level* 2 greater than the *previous level*
-    and is treated as it if were "`1 @XYZ@ ERROR 2 NOTE text`"
-
-One other *line* will be identified as `elf:Undefined`:
-
-- "`1 CONT attached to nothing`" is not an *additional line*
-    as a *substructure* precedes it,
-    and `CONT` has no *tag definition*
-{/}
 
 
 ## Encoding with `@`
