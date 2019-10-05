@@ -114,7 +114,8 @@ attached to the capitalisation of grammar symbols.  *Conforming*
 applications *must not* generate data not conforming to the syntax given
 here, but non-conforming syntax *may* be accepted and processed by a
 *conforming* application in an implementation-defined manner, providing
-a warning is issued to the user.
+a warning is issued to the user, except where this standard says
+otherwise.
 
 {.note} In this form of EBNF, *whitespace* is only permitted where it
 is explicitly stated in the grammar.  It is not automatically permitted
@@ -259,13 +260,14 @@ An *octet stream* which this standard requires an *ELF parser* to be
 able to read is called a **conformant source**.
 
 {.note}  An *octet stream* which an *ELF parser* *must* be able to
-read, but can process in an implementation-defined manner is nonetheless
-a *conformant source*.
+read successfully, but can process in an implementation-defined manner
+is nonetheless a *conformant source*.
 
-If the input to an *ELF parser* is not a *conformant source*, the
-application *must* either terminate processing that *octet stream* or
-present a warning or error message to the user.  If it continues
-processing, it does so in an implementation-defined manner.
+If the input to an *ELF parser* is not a *conformant source*, unless
+this standard says otherwise, the application *must* either terminate
+processing that *octet stream* or present a warning or error message to
+the user.  If it continues processing, it does so in an
+implementation-defined manner.
 
 This standard also recognises a class of application which reads data in
 the ELF serialisation format, applies a small number of changes to that
@@ -984,7 +986,7 @@ not in the data model.
 
 The `Line` production contains an ambiguity as any *string* which
 matches the `Pointer` production necessarily also matches the `String`
-production.  *Conformant* applications *must* treat the payload as a
+production.  *ELF parsers* *must* treat the payload as a
 *pointer* if it matches the `Pointer` production, and only as a *string*
 if it does not.
 
@@ -1082,7 +1084,7 @@ the third *line* is a pointer, `@F2@`.
 {/}
 
 A *line string* which does not match the `Line` production is called an
-**unparsable line string**.  A *conformant* application *may* issue an
+**unparsable line string**.  An *ELF parser* *may* issue an
 error on encountering an *unparsable line string* and stop parsing
 the input stream.  If the application continues processing, the
 *unparsable line string* *shall* be converted into an *error line* as
@@ -1108,22 +1110,38 @@ is the *level* of the `NOTE` *line*, because the *line* immediately
 preceding the `TRLR` *line* has a `CONT` *tag*.
 {/}
 
+A **too-deep line** is a *line* that has a *level* more than one greater
+than its *previous level*.  If there is no *previous level* then 
+*line* is a *too-deep line* unless its *level* is 0.  If an application
+parses a *too-deep line*, it *may* issue an error and stop parsing the
+input stream.
+
+{.example ...}
+    0 @S1@ SOUR
+    2 NOTE text
+    0 @N1@ NOTE This is text
+    1 CONT more text
+    2 CONT still more text
+
+The second and fifth *lines* of this example are both *too-deep lines*.
+In both cases, they have a *level* of 2 and a *previous level* of 0.  In
+the case of the fifth *line*, this is because the previous *line* has a
+`CONT` *tag* and so is ignored when determining the *previous level*.
+{/}
+
+{.note} *ELF parsers* are *required* to check that the first *line
+string* is exactly "`0 HEAD`" while determining the *specified character
+encoding* per {§specified-enc}, so the first *line* cannot be a
+*unparsable line string* or a *too-deep line*, which in turn guarantees
+that all subsequent *lines* have a *previous level*.
+
 #### Error lines                                                {#error-lines}
 
-An **error line** is a *line* used to encode the data found in an
-*unparsable line string* or *lines* that are erroneous in certain
-specific ways.  It has a *tag* of `ERROR`, and a *level* that is one
-greater than its *previous level*.
-
-{.note} An *error line* cannot be generated from the first *line string*
-in the input stream because *conformant* applications are *required* to
-check that the first *line string* is exactly "`0 HEAD`" while
-determining the *specified character encoding* per {§specified-enc}.
-This *string* is guaranteed to be valid as the first *line* of the input
-stream which ensures that any *unparsable line string* or other
-erroneous *line* will always have a *previous level* as there will
-always be a earlier *line* with a *tag* other than `CONT`, `CONC` or
-`ERROR`.
+An **error line** is an *optional* facility used to encode malformed
+data and continue reading the input file.  It is a *line* which encodes
+the data found in an *unparsable line string* or *lines* that are
+erroneous in certain specific ways.  It has a *tag* of `ERROR`, and a
+*level* that is one greater than its *previous level*.
 
 If the *error line* is being generated from an *unparsable line string*,
 it *shall* have no *structure identifier*, and a *payload* which is a
@@ -1147,8 +1165,14 @@ encountering it, the *unparsable line string* is converted into an
     0 TRLR
 {/}
 
+If an *ELF parser* reads a *line* with a tag of `ERROR`, this is also
+considered to be an *error line*, and the application *may* issue an
+error and stop parsing the input stream.
 
-### Grouping lines into structures
+{.note} This can occur when an ELF document containing errors is read,
+the errors converted into *error lines* which are later exported.
+
+### Assembling tagged structures
 
 Once *line strings* have been parsed into *lines*, the sequence of
 *lines* is converted into a hierarchy of *tagged structures*.  A
@@ -1163,15 +1187,112 @@ definition of a *structure*, except that a *tagged structure* has a
 to *type identifiers* at a later stage of parsing.
 
 The conversion of *lines* into *tagged structures* is defined
-recursively.  Each *line* represents the start of a new *tagged
-structure*, with the *tag* and *payload* of the *line* becoming the
-*tag* and *payload* of the *tagged structure*, respectively.  
+recursively.  To read a *tagged structure*, the parser starts by reading
+its first *line*, and creating a *tagged structure* using the *tag* and
+*payload* of the *line* as the *tag* and *payload* of the new *tagged
+structure*.  
+
+The parser then repeatedly inspects the next *line* to determine whether
+it represents the start of a *substructure* of the *tagged structure*
+being read.  When the next *line* has a *level* less than or equal to
+the *level* of the first *line* of the *tagged structure*, then there
+are no further *substructures* and the application has finished reading
+the *tagged structure*.  
+
+{.example ...}
+    1 DEAT Y
+    0 TRLR
+
+In the above ELF fragment, the parser reads the first *line* and creates a
+*tagged structure* with a `DEAT` *tag* and a *payload* of "`Y`".  It
+then inspects the following *line*, but because the following *line* has
+a *level* of 0 which is less than the *level* of the first *line* of the
+`DEAT` *structure*, this indicates that the `DATE` *structure* has no
+*substructures*.
+{/}
+
+If the next *line* is not a *too-deep line* and has a *level* exactly
+one greater than the *level* of the first *line* of the *tagged
+structure* being read, the parser *shall* recursively parse this *line*
+as the first *line* of a new *tagged structure*, and append the
+resulting new *tagged structure* to the list of *substructures* being
+read.  Parsing continues by inspecting the following *line* to see if it
+is the start of another *substructure*, as described above.
+
+{.example ...}
+    0 @I1@ INDI
+    1 NAME Elizabeth
+    1 BIRT
+    2 DATE 21 APR 1926
+    0 TRLR
+
+In this fragment, an application reads the first *line* and creates an
+`INDI` *structure*.  The next *line* has a *level* one greater than the
+*level* of the `INDI` *line*, so is parsed as the start of a
+*substructure*.  The parser creates a `NAME` *structure*, and as the
+*level* of the following *line* is no greater than the *level* of the
+`NAME` *line*, the `NAME` *structure* has no *substructures*.  The
+`NAME` *structure* is appended as a *substructure* of the `INDI`
+*structure*.
+
+The parser then repeats the process, looking for further *substructures*
+of the `INDI` *tagged structure*.  The `BIRT` *line* is also one greater
+than the *level* of the `INDI` *line*, so is also parsed as the start of
+a *substructure*, but this time it has a *substructure* of its own,
+namely the `DATE` *structure*.  The `TRLR` *line* has a *level* of 0
+which tells the parser there are no further *substructures* of the
+`INDI` *structure*.  
+
+The result is an `INDI` *structure* with two *substructures* with *tags*
+`NAME` and `BIRT`, respectively, the latter of which has a
+*substructure* of its own with tag `DATE`.  
+{/}
+
+If the next *line* is a *too-deep line*, an *ELF parser* *shall*
+recursively parse the *too-deep line* as the first *line* of a new
+*tagged structure*.  Once this new *tagged structure* has been read, its
+*tag* is replaced with a *tag* of `ERROR`, and its *payload* *shall* be
+replaced with a *line string* generated from the *too-deep line* by
+serialising it per {§serialising-lines}.  The resulting *tagged
+structure* *shall* be appended to the list of *substructures* being
+read, and parsing continues from the next line.
+
+{.example ...}  The following ELF fragment has a missing line.
+
+    0 @I1@ INDI
+    2 PLAC Москва
+    3 ROMN Moscow
+    1 NAME Ivan IV
+    0 TRLR
+
+The parser successfully reads the first *line* and then start looking
+for *substructures*.  Because the next *line* has a *level* of 2, which
+is more than one greater than 0, it is a *too-deep line*.  The parser
+*must* now read the *level*-2 `PLAC` *structure* with its *level*-3
+`ROMN` *substructure*. The application then re-serialises the *too-deep
+line* back into a *line string*, "`3 PLAC Москва`", which is used to
+overwrite the *payload* of the `PLAC` *structure*.  The *tag* of this
+*structure* is replaced with `ERROR`, and it is added as a
+*substructure* of the `INDI` *structure*.  Parsing then continues, and
+recognises the `NAME` *line* as a well-formed *substructure* of the
+`INDI` *structure*.  The result is as if the application had read the
+following fragment:
+
+    0 @I1@ INDI
+    1 ERROR 2 PLAC Москва
+    2 ROMN Moscow
+    1 NAME Ivan IV
+    0 TRLR
+{/}
+
+A *tagged structure* with a *tag* of `ERROR` is called a **error
+structure**, and support for them is *optional*.  Applications not
+supporting *error structures* *must* terminate processing on
+encountering an *unparsable line string*, *too-long line* or *error
+line*.
 
 ### Error lines
 
-
-A **too deep** *line* is one that has a *level* more than one greater than its *previous level*.
-If there is no such preceding *line* then the *line* is *too deep* unless its *level* is 0.
 
 If the *error line* is being generated from a *too-deep line*, it
 *shall* have the same *structure identifier* as the *too-deep line*, and
@@ -1191,38 +1312,12 @@ serialised as a *line string* per {§serialising-lines}.
     like any other *line*; or MAY be just the *error line*'s *payload* with no *level* or *tag*.
 {/}
 
-{.note} Because "`ERROR`" MUST NOT be the *tag* of any *tag definition*,
-the *structure type definition* of the *structure* corresponding to an *error line*
-is the *undefined tag identifier* `elf:Undefined#ERROR`.
 
 {.example ...} The following invalid input
 
-    0 HEAD
-    1 CHAR UTF-8
-    1 SCHMA
-    unexpected nonsense
-    2 SCHMA https://fhiso.org/TR/elf-data-model/v1.0.0
     0 @N1@ NOTE This is text
-    1 CONT more text
-    2 CONT still more text
     1 SOUR @S1@
     1 CONT attached to nothing
-    0 @S1@ SOUR
-    2 @XYZ@ NOTE text
-    0 TRLR
-
-contains three *error lines*:
-
-- "`unexpected nonsense`" is *unparseable*
-    and is treated as it if were "`2 ERROR unexpected nonsense`"
-
-- "`2 CONT still more text`" is *too deep*.
-    It's *level* is 2 greater than the *previous level*
-    (because the "`1 CONT more text`" line is not counted as a *previous level*)
-    and is treated as it if were "`1 ERROR 2 CONT still more text`"
-
-- "`2 @XYZ@ NOTE text`" has a *level* 2 greater than the *previous level*
-    and is treated as it if were "`1 @XYZ@ ERROR 2 NOTE text`"
 
 One other *line* will be identified as `elf:Undefined`:
 
