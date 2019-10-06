@@ -1148,7 +1148,7 @@ above, and otherwise *must not*.
 
 {.example}  The *dual year* "`1616/8`" is not in abbreviated form
 because there is no *logical year* number ending in 8 which is at most
-one year away from the *historical year* 1618.  This is therefore
+one year away from the *historical year* 1616.  This is therefore
 considered an unabbreviated *dual year*, representing the *historical
 year* 1618 and the *logical year* 8.  Very probably this will result in
 the *date* not being *well-formed* in the applicable *calendar*, in which
