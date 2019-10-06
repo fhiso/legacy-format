@@ -359,7 +359,7 @@ date* as it identifies a particular *calendar month*, but not a specific
 *calendar day* within that month.
 
 {.note}  Under this definition, an *incomplete date* is a *date* when it
-is being used to identify a particular *calendar date*, but with limited
+is being used to identify a particular *calendar day*, but with limited
 *precision*.  
 
 An **epoch** is an *instant* which serves as a reference point for a
