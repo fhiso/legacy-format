@@ -982,7 +982,7 @@ names, and *must* be at least three *characters* long.
 
 {.example}  The French Republican *calendar* has twelve months named
 Vendémiaire, Brumaire, Frimaire, Nivôse, Pluviôse, Ventôse, Germinal,
-Floréal, Prairial, Messidor, Thermidor and Fructidor.  If ELF, as
+Floréal, Prairial, Messidor, Thermidor and Fructidor.  In ELF, as
 described in {§french}, these are abbreviated `VEND`, `BRUM`, `FRIM`,
 `NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER` and
 `FRUC`.  In addition, each year had five or six consecutive intercalary
