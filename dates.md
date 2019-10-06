@@ -625,7 +625,7 @@ of the uncertainty is from lack of knowledge of what happened and when.
 
 {.ednote}  This whole section may vanish in a future draft.
 
-The *datatypes* defined in this standard are *not recommended* for us in
+The *datatypes* defined in this standard are *not recommended* for use in
 serialisation formats other than with ELF.
 
 {.ednote ...} In due course we need to decide FHISO's preferred way of
