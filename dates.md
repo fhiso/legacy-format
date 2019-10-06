@@ -454,7 +454,7 @@ dates were recorded in these forms.
 ### Uncertainty                                           {#uncertainty}
 
 The **precision** of a stated value, such as a *date*, is a measure of
-how specificity with which the value has been specified: the more
+the specificity with which the value has been specified: the more
 specifically, the greater the *precision*.  Values with relatively high
 or low *precision* may be described as relatively **precise** or
 **imprecise**, respectively.
