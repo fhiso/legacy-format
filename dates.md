@@ -1241,7 +1241,7 @@ paragraph:
 > interchangeable.
 
 This was added to allow the Julian and Gregorian *calendars* to define
-"`B.C.E.`" as an alias for the "`B.C.`", however the current draft does
+"`B.C.E.`" as an alias for "`B.C.`", however the current draft does
 not do that, and it seems an unnecessary complication.  If the BCE form
 is added, this paragraph needs reinstating.
 {/}
@@ -1302,9 +1302,9 @@ that its *precision* is lower than would have been the case without the
 *date* is estimated using statistical likelihoods or cultural norms.
 
 {.example}  If it is known that the first and third children in a family
-were born in 1897 and 1900, the second child's birth *may* be recorded
-as "`ABT 1899`" as the *date* of birth is fairly well bounded, even if
-twins were involved.  
+were born in 1897 and 1900, respectively, the second child's birth *may*
+be recorded as "`ABT 1899`" as the *date* of birth is fairly well
+bounded, even if twins were involved.  
 
 {.note}  The `ABT` token is currently by far the most commonly used of
 the three approximated tokens.
