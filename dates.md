@@ -2559,7 +2559,7 @@ calendar could consider their age in years to be several years greater
 than if they were reckoning their age using the Gregorian calendar
 because the Islamic *calendar year* is around 11 *calendar days* shorter
 than the Gregorian *calendar year*.  ELF does not provide a means of
-specifying which *calendar* was when recording an *age*.
+specifying which *calendar* was used when recording an *age*.
 
 {.note}  A future version of ELF may add facilities to specify which
 *calendar* is being used for *ages* and also to allow an explicit
