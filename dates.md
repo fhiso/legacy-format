@@ -1319,7 +1319,7 @@ four were born between 1897 and 1900, a researcher might conclude that
 it is probable that next child was born shortly afterwards and estimate
 the *date* of birth as "`EST 1903`".  The `ABT` token *should not* be used
 in this case, unless there is additional evidence that the fourth child
-was not much younger.
+was not very much younger.
 
 {.example}  It can sometimes be useful to provide a crude estimate of
 an individual's *date* of birth.  If a baptism register records a
@@ -1964,7 +1964,7 @@ founding of the First Republic, nor are zero or negative *logical years*
 permitted.
 
 {.ednote}  If it proves undesirable to have an anonymous *epoch name*,
-the usual phrase are "l'époque républicaine" and "l'ère de la republique".
+the usual phrases are "l'époque républicaine" and "l'ère de la republique".
 An *epoch name* of "`E.R.`" would therefore seem appropriate.
 
 The *logical year* *shall* be an integer greater than 0 and *should*
