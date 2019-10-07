@@ -5,7 +5,7 @@ date: 4 October 2019
 numbersections: true
 ...
 
-# ELF Serialisation Format
+# Extended Legacy Format (ELF):<br/> Serialisation Format
 
 {.ednote ...} This is an **exploratory draft** of the serialisation
 format for FHISO's proposed suite of Extended Legacy Format (ELF)
@@ -152,6 +152,9 @@ At a logical level, an ELF document is built from **structures**, the name
 ELF gives to the basic hierarchical data structures used to represent
 data.  Each *structure* consists of:
 
+*  an *optional* *structure identifier*, which, if present, is a
+   *string* used to uniquely identify the *structure* within the
+   document;
 *  a *type identifier*, which is a *term* that encodes the meaning of
    the *structure*;
 *  an *optional* *payload*, which is either a *string* or a *pointer* to
@@ -239,7 +242,7 @@ identifier*.
 
 A *conformant* application which parses the ELF serialisation format is
 called an **ELF parser**.  A *conformant* application which outputs data
-in the ELF serialisation format is callen an **ELF writer**.  
+in the ELF serialisation format is called an **ELF writer**.  
 
 {.note} Many applications will be both *ELF parsers* and *ELF writers*.
 
@@ -765,7 +768,7 @@ UTF-8 *character encodings*.  *ELF writers* are only *required* to
 support the UTF-8 *character encoding*.  Support for the UTF-16
 *character encoding* is *optional*, and applications *may* support it in
 either its big or little endian forms, both, or neither.  The
-ANSEL and UTF-16 *character encodings* are both *deprecated*.
+ASCII, ANSEL and UTF-16 *character encodings* are all *deprecated*.
 
 {.ednote}  We considered making support for ANSEL *optional*, but after
 researching  how frequently current GEDCOM files were encoded using
@@ -966,22 +969,26 @@ Allowing tabs or multiple space *characters* is a departure from [GEDCOM
 5.5.1], but one that is commonly implemented in current applications.
 
 *Whitespace* is *required* between each of the four components of the
-*line*.  This is a change from [GEDCOM 5.5.1] where the grammar says
-that the delimiter is an *optional* space character.  Documents written
-using very early versions of GEDCOM frequently took advantage of this to
-merge the *level*, *structure identifier* and *tag* together, as in
-"`0@I1@INDI`".  This is not permitted permitted in ELF.
+*line*.  This is arguably a change from [GEDCOM 5.5.1] where the `delim`
+grammar production says that the delimiter is an *optional* space
+character.  Almost certainly a typo in the grammar that has persisted
+through several versions of GEDCOM, and GEDCOM does not intend the space
+to be *optional*.  However documents written using very early versions
+of GEDCOM – long before its current grammar productions were written –
+did frequently merge the *level*, *structure identifier* and *tag*
+together, as in "`0@I1@INDI`".  This is not permitted permitted in ELF.
 {/}
 
 {.ednote}  It would be simple enough to modify the grammar so that
-"`0@I1@INDI`" would still be supported, and this could make ELF
-Serialisation backwards compatible with GEDCOM 1.0.  However the
-facility is almost never found in GEDCOM 5.5 or 5.5.1 files, and is
-often not supported in applications.  It may even be a error that it is
-still permitted in the GEDCOM grammar.  Files created for earlier
-versions of GEDCOM are only very rarely encountered and their data model
-is incompatible with [ELF Data Model].  There seems to be little benefit
-to supporting earlier versions of GEDCOM in the serialisation layer but
+"`0@I1@INDI`" would still be supported, and this could help make ELF
+Serialisation backwards compatible with GEDCOM 1.0.  However the TSC
+know of no use of in files identifying as GEDCOM 5.x files, and is not
+generally supported in applications.  Almost certainly it is an error
+arising from confusion over the two different uses of `[`&hellip;`]` in
+GEDCOM grammar productions.  Files created using earlier versions of
+GEDCOM are only very rarely encountered and their data model is
+incompatible with [ELF Data Model].  There seems to be little benefit to
+supporting earlier versions of GEDCOM in the serialisation layer but
 not in the data model.
 
 The `Line` production contains an ambiguity as any *string* which
@@ -1015,9 +1022,9 @@ The `Line` production contains a second ambiguity: when there are
 multiple *characters* of *whitespace* following the *tag* on a *line*
 whose *payload* is a *string*, the second and subsequent *whitespace*
 *characters* can be parsed by the `S` production or the `String`
-production.  Applications *should* resolve this ambiguity by matching
-the `S` production to the shortest possible non-empty sequence of
-*whitespace* so that any additional *whitespace* is considered to be
+production.  Applications are *recommended* to resolve this ambiguity by
+matching the `S` production to the shortest possible non-empty sequence
+of *whitespace* so that any additional *whitespace* is considered to be
 part of the *payload*.
 
 {.note ...} This ambiguity is inherited from [GEDCOM 5.5.1].  On the one
@@ -1034,7 +1041,7 @@ necessary *whitespace* being lost between words; it can also cause
 problems with any *payload* which has leading *whitespace* which needs
 to be preserved.
 To avoid this, using the `CONC` mechanism to split the *payload* next to
-*whitespace* is *not recommended*, and the Unicode escaped in
+*whitespace* is *not recommended*, and the *Unicode escape* mechanism in
 {§unicode-escape} provides a means of preventing important leading
 *whitespace* from being lost.  These allow ELF applications to avoid
 depending on this undefined behaviour.
@@ -1042,13 +1049,15 @@ depending on this undefined behaviour.
 
 {.ednote}  This standard could have *required* leading *whitespace* to
 be preserved in *payloads*.  This standard doesn't do that in part to
-discourage applications from relying on it instead of avoiding the
-problem.  In general, we would rather the standard did not attach
-significance to differences in *whitespace*, and it is possible FHISO
-might want to remove the ambiguity in the future by requiring the
-*payload* to begin with a non-*whitespace* *character*.  Ensuring valid
-ELF files do not have leading *whitespace* in *payloads* should help
-make this possible.
+discourage applications from relying on behaviour will be misinterpreted
+in some current applications, and instead use *Unicode escapes* to
+escape the first character on a line when it is significant whitespace.
+In general, the TSC would rather ELF did not attach significance to
+differences in *whitespace*, and it is possible FHISO might opt to
+remove the ambiguity in the future by requiring the *payload* to begin
+with a non-*whitespace* *character*.  But more likely, a future version
+of ELF will change the recommendation to preserve leading whitespace
+into a requirement.
 
 The `Number`, `XRefID` and `Tag` productions encodes the *level*, the
 *structure identifier* and the *tag* of the *line*, respectively.  The
@@ -1138,10 +1147,10 @@ that all subsequent *lines* have a *previous level*.
 #### Error lines                                                {#error-lines}
 
 An **error line** is an *optional* facility used to encode malformed
-data and continue reading the input file.  It is a *line* which encodes
-the data found in an *unparsable line string* or *lines* that are
-erroneous in certain specific ways.  It has a *tag* of `ERROR`, and a
-*level* that is one greater than its *previous level*.
+data, so that an *ELF parser* continue reading the input file.  It
+is a *line* which encodes the data found in an *unparsable line string*
+or *lines* that are erroneous in certain ways.  It has a *tag* of
+`ERROR`, and a *level* that is one greater than its *previous level*.
 
 If the *error line* is being generated from an *unparsable line string*,
 it *shall* have no *structure identifier*, and a *payload* which is a
@@ -1177,9 +1186,17 @@ the errors converted into *error lines* which are later exported.
 Once *line strings* have been parsed into *lines*, the sequence of
 *lines* is converted into a hierarchy of *tagged structures*.  A
 **tagged structure** is an incompletely processed form of a *structure*,
-and consists of a *tag*, an *optional* payload which is either a
-*string* or a *pointer*, and a sequence of zero or more child *tagged
-structures* known as its *substructures*.
+and consists:
+
+*  an *optional* *structure identifier*, which, if present, is a
+   *string* used to uniquely identify the *structure* within the
+   document;
+*  a *tag*, which is a *string* that encodes the meaning of
+   the *structure*;
+*  an *optional* *payload*, which is either a *string* or a *pointer* to
+   another *structure*; and 
+*  a sequence of zero or more child *tagged structures* known as its
+   *substructures*.  
 
 {.note}  The definition of a *tagged structure* is identical to the
 definition of a *structure*, except that a *tagged structure* has a
@@ -1188,16 +1205,23 @@ to *type identifiers* at a later stage of parsing.
 
 The conversion of *lines* into *tagged structures* is defined
 recursively.  To read a *tagged structure*, the parser starts by reading
-its first *line*, and creating a *tagged structure* using the *tag* and
-*payload* of the *line* as the *tag* and *payload* of the new *tagged
-structure*.  
+its first *line*, and creates a *tagged structure* whose *structure
+identifier*, *tag* and *payload* are the *structure identifier*, *tag*
+and *payload*, respectively, for the first *line*.  The *level* of the
+first *line* of the *tagged structure* is referred to in this section as
+the **current level**.  
+
+{.note}  During normal parsing, the *current level* can also be thought
+of as the recursion depth, but this is not the case when parsing
+*too-deep lines* into *error structures*.  Once the application has
+finished reading the *tagged structure*, its *current level* is no
+longer needed.
 
 The parser then repeatedly inspects the next *line* to determine whether
 it represents the start of a *substructure* of the *tagged structure*
-being read.  When the next *line* has a *level* less than or equal to
-the *level* of the first *line* of the *tagged structure*, then there
-are no further *substructures* and the application has finished reading
-the *tagged structure*.  
+being read.  If the next *line* has a *level* less than or equal to
+the *current level*, there are no further *substructures* and the
+application has finished reading the *tagged structure*.  
 
 {.example ...}
     1 DEAT Y
@@ -1211,13 +1235,17 @@ a *level* of 0 which is less than the *level* of the first *line* of the
 *substructures*.
 {/}
 
-If the next *line* is not a *too-deep line* and has a *level* exactly
-one greater than the *level* of the first *line* of the *tagged
-structure* being read, the parser *shall* recursively parse this *line*
-as the first *line* of a new *tagged structure*, and append the
-resulting new *tagged structure* to the list of *substructures* being
-read.  Parsing continues by inspecting the following *line* to see if it
-is the start of another *substructure*, as described above.
+Otherwise, the application *shall* recursively parse the next
+*line* as the first *line* of a new *tagged structure*.  Once this new
+*tagged structure* has been fully parsed, the application *shall*
+determine whether any of the conditions in {§error-structures} apply,
+and if so convert the new *tagged structure* into an *error structure*
+as described in {§error-structures}.  Regardless of whether the new
+*tagged structure* is converted into a *error structure*, it is appended
+to the list of *substructures* being read.
+
+Parsing continues by inspecting the following *line* to see if it is the
+start of another *substructure*, as described above.
 
 {.example ...}
     0 @I1@ INDI
@@ -1248,21 +1276,34 @@ The result is an `INDI` *structure* with two *substructures* with *tags*
 *substructure* of its own with tag `DATE`.  
 {/}
 
+#### Error structures                                      {#error-structures}
+
+An **error structure** is an *optional* facility closely related to an
+*error line*, and used for the same purpose.  It is a *tagged structure*
+with a *tag* of `ERROR`, and is used to record the data found in certain
+erroneous constructs.
+
+Once an *ELF parser* has read a *substructure*, it *shall* determine
+whether or not it needs converting to an *error structure*.
+
+{.ednote} TODO
+
 If the next *line* is a *too-deep line*, an *ELF parser* *shall*
 recursively parse the *too-deep line* as the first *line* of a new
 *tagged structure*.  Once this new *tagged structure* has been read, its
-*tag* is replaced with a *tag* of `ERROR`, and its *payload* *shall* be
-replaced with a *line string* generated from the *too-deep line* by
-serialising it per {§serialising-lines}.  The resulting *tagged
-structure* *shall* be appended to the list of *substructures* being
-read, and parsing continues from the next line.
+*tag* is replaced with a *tag* of `ERROR`, and its *payload* is replaced
+with a *line string* generated from the *too-deep line* by serialising
+it per {§serialising-lines}, which *shall* include the original,
+incorrect *level*. The resulting *tagged structure* *shall* be appended
+to the list of *substructures* being read, and parsing continues from
+the next line.
 
 {.example ...}  The following ELF fragment has a missing line.
 
     0 @I1@ INDI
     2 PLAC Москва
     3 ROMN Moscow
-    1 NAME Ivan IV
+    1 NAME Иван Васильевич
     0 TRLR
 
 The parser successfully reads the first *line* and then start looking
@@ -1290,6 +1331,7 @@ structure**, and support for them is *optional*.  Applications not
 supporting *error structures* *must* terminate processing on
 encountering an *unparsable line string*, *too-long line* or *error
 line*.
+
 
 ### Error lines
 
@@ -1378,7 +1420,10 @@ with a *line break* inserted before the *payload* of each *additional line* with
 Because the *payload* of a *line* MUST NOT contain a *line-break*, there MUST be exactly one "`CONT`"-*tagged* *additional line* per *line-break* in the *xref structure*'s *payload*.
 The number of "`CONC`"-*tagged* *additional lines* may be picked arbitrarily, subject to the following:
 
-- Each *line* SHOULD be no more than 255 octets after being encoded in the *character encoding*.
+- Each *line* SHOULD be no more than 255 octets after a *line break* has
+  been added and the result encoded in the target *character encoding*.
+  This *recommended* limit is increased to 510 octets if the target
+  *character encoding* is UTF-16.
 
 {.note} GEDCOM *required* that *lines* not exceed 255 *characters*;
 this does not seem to be a real restriction in most current applications,
@@ -1623,6 +1668,8 @@ Any *character* MAY be represented with a **unicode escape** consisting of:
 2.  A hexadecimal encoding of the *character*'s *code point*
 3.  The two characters U+0040 and U+0020 (i.e., "`@ `")
 
+{.ednote} Can we make the final space *optional*?
+
 A *unicode escape* MUST be used for each *character* that cannot be encoded
 in the target *character encoding*;
 and SHOULD NOT be used otherwise.
@@ -1634,6 +1681,17 @@ it is not clear if that idea was better than simply clarifying that ambiguity.
 
 {.example} If a *tagged structure*'s *payload* is "`João`" and the *character encoding* is `ASCII`,
 the *xref structure*'s *payload* is "`Jo@#UE3@ o`" (or "`Joa@U#303@ o`" if the original used a combining diacritic).
+
+{.ednote} Unicode escapes use GEDCOM's general escape sequence syntax,
+in which the character after the `@#` prefix denotes the type of
+escape.  In GEDCOM 5.5, the only escape type is `D`, used for calendars,
+though other escapes have been used in older versions of GEDCOM.  In
+particular, `A` was used auxiliary file references, `C` was used to
+switch character set, `F` was used for file inclusion, and `L` was used
+to specify the length of a block of non-GEDCOM data included immediately
+after the escape.  FHISO are unlikely to reuse these escapes, unless for
+a compatible purpose.
+
 
 ### Encoding `@`s
 

@@ -1,4 +1,4 @@
-SOURCES := data-model.md serialisation.md dates.md
+SOURCES := data-model.md serialisation.md dates.md primer.md
 include ../website/run-pandoc.mk
 
 dates.pdf dates.html: DateValue.md DatePeriod.md
