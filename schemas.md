@@ -1,16 +1,17 @@
 ---
 title: "Extended Legacy Format (ELF)"
-subtitle: Serialisation Format
+subtitle: Schemas
 date: 8 October 2019
 numbersections: true
 ...
 
-# Extended Legacy Format (ELF):<br/> Serialisation Format
+# Extended Legacy Format (ELF):<br/> Schemas
 
-{.ednote ...} This is an **exploratory draft** of the serialisation
-format for FHISO's proposed suite of Extended Legacy Format (ELF)
-standards.  This document is not endorsed by the FHISO membership, and
-may be updated, replaced or obsoleted by other documents at any time.
+{.ednote ...} This is an **exploratory draft** of the schema mechanism
+which provides an extensibility and validation framework for FHISO's
+proposed suite of Extended Legacy Format (ELF) standards.  This document
+is not endorsed by the FHISO membership, and may be updated, replaced or
+obsoleted by other documents at any time.
 
 Comments on this draft should be directed to the
 [tsc-public@fhiso.org](http://tech.fhiso.org/tsc-public) mailing list.
@@ -38,8 +39,7 @@ backward-compatible reformulation of GEDCOM under the name ELF, the new
 name having been chosen to avoid confusion with any other updates or
 extensions to GEDCOM, or any future use of the name by The Church of
 Jesus Christ of Latter-day Saints.  This document is one of five that
-form the initial suite of ELF standards, known collectively as ELF
-1.0.0:
+form the initial suite of ELF standards, known collectively as ELF 1.0.0:
 
 * **ELF: Primer**.  This is not a formal standard, but is being
   released alongside the ELF standards to provide a broad overview of
@@ -135,6 +135,22 @@ The grammar productions in this standard uses the `S` and `Char`
 productions defined in §2 of [Basic Concepts] to match any non-empty
 sequence of *whitespace* *characters* or any valid *character*,
 respectively.
+
+This standard uses the *prefix notation*, as defined in §4.3 of [Basic
+Concepts], when discussing specific *terms*.  The following *prefix*
+bindings are assumed in this standard:
+
+------           -----------------------------------------------
+`elf`            `https://terms.fhiso.org/elf/`
+`ex`             `https://example.com/`
+------           -----------------------------------------------
+
+{.note} Although *prefix notation* is included in this standard document
+(see {§prefix}), that is only in the context of serialised data.
+When used outside of a serialised example, prefix notation is simply a
+notational convenience to make the standard easier to read.
+
+{.ednote} Review the previous note.
 
 ## Overview                                                        {#overview}
 
@@ -503,856 +519,6 @@ Xref Structure
     - it may have an optional *xref_id*.
     - its payload, if present, is always a *string*, not a *pointer*.
 
-## Parsing and serialising line strings                    {#parsing-linestrs}
-
-In order to parse an ELF document, an *ELF parser* *shall* first convert
-the *octet stream* into a sequence of **line strings**, which are
-*strings* containing the unparsed lexical representations of *lines*.
-
-The way in which *octets* are mapped to *characters* is called the
-**character encoding** of the document.  ELF supports several different
-*character encodings*.  Determining which is used is a two-stage
-process, with the first stage being to determine the **detected
-character encoding** of the *octet stream* per {§detected-enc}.
-Frequently there will be no *detected character encoding*.  
-
-{.note}  The purpose of this step is twofold: first, it allows
-non-ASCII-compatible *character encodings* like UTF-16 to be supported;
-and secondly, it removes any byte-order mark that might be present in
-the *octet stream*.
-
-Next, the initial portion of the *octet stream* is converted to
-*characters* using the *detected character encoding*, failing which in
-an ASCII-compatible manner.  This *character* sequence is then scanned
-for a `CHAR` *line* whose *payload* identifies the **specified character
-encoding**.  This process is described in {§specified-enc}.  If there is
-a *specified character encoding*, it is used as the *character encoding*
-for the ELF document; otherwise the *detected character encoding* is
-used, failing which the default is the ANSEL *character encoding*.
-Considerations for reading specific *character encodings* can be found
-in {§encodings}.
-
-Once the *character encoding* is determined, the *octet stream* can be
-converted into a sequence of *characters* which are assembled into *line
-strings* as described in {§line-strings}.  The process of serialising a
-*line string* back into an *octet stream* is far simpler as the intended
-*character encoding* is already known; this process is described in
-{§serialising-line-strings}.
-
-### Detecting a character encoding                             {#detected-enc}
-
-{.note} For applications that choose not to support the *optional*
-UTF-16 *character encoding*, the process described in this section can
-be as simple as skipping over a UTF-8 byte-order mark, and determining
-the *detected character encoding* to be UTF-8 if a byte-order mark was
-present.
-
-If a *character encoding* is specified via any supported external means,
-such as an HTTP `Content-Type` header, this *should* be taken as to be
-the *detected character encoding*.
-
-{.example ...}  Suppose the ELF file was download using HTTP and the
-response included this header:
-
-    Content-Type: text/plain; charset=UTF-8
-
-If an application supports taking the *detected character encoding* from
-an HTTP `Content-Type` header, the *detected character encoding*
-*should* be UTF-8.
-
-Note that the use of the MIME type `text/plain` is *not recommended* for
-ELF.  It is used here purely as an example. 
-{/}
-
-Otherwise, if the *octet stream* begins with a byte-order mark (U+FEFF)
-encoded in UTF-8, the *detected character encoding* *shall* be UTF-8; or
-if the application supports the *optional* UTF-16 encoding and the
-*octet steam* begins with a byte-order mark encoded in UTF-16 of either
-endianness, the *detected character encoding* *shall* be UTF-16 of the
-appropriate endianness.  The byte-order mark *shall* be removed from the
-*octet stream* before further processing.
-
-Otherwise, if the application supports the *optional* UTF-16 encoding
-and the *octet stream* begins with any ASCII *character* (U+0001 to
-U+007F) encoded in UTF-16 of either endianness, this encoding *shall* be
-the *detected character encoding*. 
-
-{.example} ELF files typically begin with the *character* "`0`".  In
-the big endian form of UTF-16, sometimes called UTF-16BE, this is
-encoded with the hexadecimal *octets* `00 30`.  These two *octets* will
-be detected as an ASCII *character* encoded in UTF-16, and the *detected
-charcter encoding* will be determined to be UTF-16BE.
-
-Otherwise, applications *may* try to detect other encodings by examining
-the *octet stream* in an implementation-defined manner, but this is 
-*not recommended*.
-
-{.note}  One situation where it might be necessary to try to detect
-another encoding is if the application needs to support (as an
-extension) a *character encoding* like EBCDIC or UTF-32 which is not
-compatible with ASCII.
-
-Otherwise, there is no *detected character encoding*.
-
-{.note ...} In this case, for the *octet stream* to be understood, it
-must use a 7- or 8-bit *character encoding* that is sufficiently
-compatible with ASCII that the `CHAR` *line* can be read.  The only 7 or
-8-bit *character encodings* defined in this standard are ASCII, ANSEL
-and UTF-8 which encode ASCII *characters* identically.  These will all
-be understood correctly if there is no *detected character encoding*.
-
-Some *character encodings* with minor differences from ASCII can also be
-understood correctly.  An example is the Japanese Shift-JIS *character
-encoding* which uses the *octets* 5C and 7E to encode the yen currency
-sign (U+00A5) and overline *character* (U+203E) where ASCII has a
-backslash (U+005C) and tilde (U+007E).  An application does not need to
-understand these *characters* in order to scan for a `CHAR` *line*.
-{/}
-
-{.note ...} These cases can be summarised as follows, where `xx` denotes
-any *octet* with a hexadecimal value between `01` and `7F`, inclusive:
-
-----------------  -------------------------------------------------
-Initial octets    Detected character encoding
-----------------  -------------------------------------------------
-`EF BB BF`        UTF-8, with byte-order mark
-
-`FF FE`           UTF-16, little endian, with byte-order mark
-
-`FE FF`           UTF-16, big endian, with byte-order mark
-
-`xx 00`           UTF-16, little endian, without byte-order mark
-
-`00 xx`           UTF-16, big endian, without byte-order mark
-
-Otherwise         None
-----------------  -------------------------------------------------
-{/}
-
-### Specified character encodings                             {#specified-enc}
-
-To determine the *specified character encoding*, the initial portion of
-the *octet stream* *shall* temporarily be converted to *characters*
-using the *detected character encoding*.  
-
-If there is no *detected character encoding*, the application *shall*
-convert each *octet* to the *character* whose *code point* is the value
-of *octet*.  An application *may* given an error if the null *octet*
-`00` is encountered.
-
-{.note}  This is equivalent to using the ISO-8859-1 *character encoding*
-if there is no *detected character encoding*.  As defined in §2 of
-[Basic Concepts], *code point* U+0000 does not correspond to a valid
-*character*.  In principle, the *octet* `00` might occur in the
-representation of a valid *character* in some *character encoding*, but
-most *character encodings* avoid this and it cannot happen in the ASCII,
-ANSEL or UTF-8 *character encodings*.  The same is true of octets
-corresponding to those control *characters* matching the
-`RestrictedChar` production in §2 of [Basic Concepts], which [Basic
-Concepts] allows an application to reject.
-
-*Characters* from the initial portion of the *octet stream* are
-parsed into *lines strings* as described in {§line-strings}, each
-*line string* is *whitespace normalised* as described in §2 of [Basic
-Concepts], and all lowercase ASCII *characters* (U+0061 to U+007A)
-converted to the corresponding uppercase *characters* (U+0041 to
-U+005A).
-
-{.note} *Whitespace normalisation* and conversion to uppercase only
-applies for the purpose of determining the *specified character set*.
-Neither process is otherwise applied to all *line strings*.  It is done
-here to simplify scanning for the *specified character set*, but without
-requiring full parsing of *line strings* into a *lines*, which might
-result in errors if actual *character encoding* is different to the one
-being used provisionally while scanning for the *specified character
-encoding*.
-
-Once normalised in this manner, the first *line string* of the file
-*must* be exactly "`0 HEAD`"; otherwise the application *must*
-issue an error and cease parse the *octet stream* as ELF.  If
-the application encounters a subsequent normalised *line string*
-beginning with a `0` digit (U+0030) followed by a space *character*
-(U+0020), the application *shall* stop scanning for a *specified
-character encoding*.
-
-{.note}  A *line string* beginning with a "`0`" encodes the start of the
-next *record*, and therefore the end of the `HEAD` *record*.  The
-*specified character encoding* is given in a `CHAR` *line* in the `HEAD`
-*record*; a `CHAR` *line* found elsewhere in the file *must not* be used
-to supply the *specified character encoding*.
-
-If the application encounters a *line string* beginning with "`1 CHAR`"
-followed by a space *character* (U+0020) while scanning for the
-*specified character encoding*, then the remainder of the *line string*
-*shall* be used to determine the *specified character encoding*.
-
-If the remainder of the *line string* is exactly "`ASCII`", "`ANSEL`" or
-"`UTF-8`", then the *specified character encoding* *shall* be ASCII,
-ANSEL or UTF-8, respectively.
-
-{.example ...}  It is *recommended* that all ELF documents use UTF-8 and
-record this using a `CHAR` *line* as follows:
-
-    0 HEAD
-    1 CHAR UTF-8
-
-This `CHAR` *line string* will be found while scanning for the
-*specified character encoding*.  The *line string* begins with "`1
-CHAR`" followed by a space *character*; the remainder of the *line
-string* is "`UTF-8`" so the *specified character encoding* is recognised
-as UTF-8.
-{/}
-
-Otherwise, if the remainder of the *line string* is exactly "`UNICODE`"
-and the *detected character encoding* is UTF-16 in either endianness,
-the *specified character encoding* *shall* be the UTF-16 in that
-endianness.
-
-{.note} [GEDCOM 5.5.1] says that the *string* "`UNICODE`" is used to
-specify the UTF-16 encoding, though without naming the encoding as such,
-and without specifying which endianness is meant.  If the *octet stream*
-is a valid ELF document encoded in UTF-16 and the application supports
-UTF-16, then the *detected character encoding* will have been determined
-accordingly.
-
-Otherwise, the application *may* determine the *specified character
-encoding* from the remainder of the *line string* and the *detected
-character encoding* in an implementation-defined way.  The application
-*may* read one further *line string*, and if it begins with "`2 VERS`"
-followed by a space *character* (U+0020), the application *may* also use
-the remainder of that *line string* in determining the *specified
-character encoding*.
-
-{.example ...}  It is fairly common to find "`ANSI`" on the `CHAR`
-*line*, though this has never been a legal option in any version of
-GEDCOM.  It typically refers to one of several Windows code pages, most
-frequently CP-1252 which was the Windows default code page for English
-language installations and for several other Western European languages.
-However other code pages exist, and an application localised for, say,
-Hungarian might encode the file using CP-1250.  In principle a `VERS`
-*line* could contain information to specify the particular code page
-used, as in the following ELF fragment, but in practice this is rare.  
-
-    0 HEAD
-    1 CHAR ANSI
-    2 VERS 1250
-{/}
-
-Otherwise, there is no *specified character encoding*.
-
-If there is a *specified character encoding*, it *shall* be used as the
-*character encoding* of the *octet stream*.  Otherwise, if there is a
-*detected character encoding*, it *shall* be used as the *character
-encoding* of the octet stream.  Otherwise, the *character encoding*
-*shall* default to be ANSEL.
-
-{.note}  ANSEL is the default *character encoding* for compatibility
-with GEDCOM, despite being it being *deprecated* in ELF.
-
-If the *character encoding* is one which the application does not
-support, the application *shall* issue an error and stop reading the
-file.
-
-### Character encodings                                           {#encodings}
-
-*ELF parsers* are *required* to support reading the ASCII, ANSEL and
-UTF-8 *character encodings*.  *ELF writers* are only *required* to
-support the UTF-8 *character encoding*.  Support for the UTF-16
-*character encoding* is *optional*, and applications *may* support it in
-either its big or little endian forms, both, or neither.  The
-ASCII, ANSEL and UTF-16 *character encodings* are all *deprecated*.
-
-{.ednote}  We considered making support for ANSEL *optional*, but after
-researching  how frequently current GEDCOM files were encoded using
-ANSEL (as opposed to claiming to be ANSEL but actually using the ASCII
-subset of ANSEL), the TSC felt it had to be *required*.
-
-The UTF-8 and UTF-16 *character encodings* are the Unicode encoding
-forms defined in §9.2 of [ISO 10646], and the specifics of the big and
-little endian forms of UTF-16 are defined in §9.3 of [ISO 10646].  
-
-{.ednote} Work out whether we're going to cite ISO 10646 or the Unicode
-standard, and get check the section numbers.  
-
-{.note}  UTF-8 is a variable-width *character encoding* that uses
-between one and four *octets* to encode a *character*.  It is backwards
-compatible with ASCII, so ASCII *characters* are encoded to a single
-*octet* and other *characters* require more.  For example, the Czech
-given name "Miloš" is encoded using the *octet* sequence `4D 69 6C 6F C5
-A1` where the last two *octets* encode the *character* "š".  Only
-*characters* outside Unicode's Basic Multilingual Plane &mdash; that is
-*characters* with a *code point* of U+10000 or higher &mdash; are
-encoded with four *octets*.  An example is the ancient Chinese
-*character* "𠀡" which is encoded using the *octets* `F0 A0 80 A1`.
-Such *characters* can occasionally be found encoded using six *octets*
-(e.g. `ED A1 80 ED B0 A1` for "𠀡").  This form, which is called CESU-8
-and is not valid UTF-8, typically results from an incorrect
-serialisation of UTF-16 data as UTF-8.  Input containing CESU-8 forms
-but purporting to be UTF-8 is not a *conformant source*, however 
-*ELF parsers* *may* read it providing they issue a warning to the user.
-*ELF writers* *must not* generate CESU-8 when serialising data as UTF-8.
-
-{.note}  UTF-16 is also a variable-width *character encoding* which
-normally uses two *octets* to encode a *character*, but uses four
-*octets* for *characters* outside the Basic Multilingual Plane.  When
-only two *octets* are used, UTF-16 is identical to an earlier
-fixed-width *character encoding* called UCS-2 which was unable to encode
-*characters* outside the Basic Multilingual Plane.  *Conformant*
-applications are *required* by §2 of [Basic Concepts] to support
-*characters* outside the Basic Multilingual Plane, and therefore
-applications which opt to support UTF-16 *must* ensure they do not
-implement support for only UCS-2.
-
-{.note}  As UTF-8 and UTF-16 are encodings of Unicode, they naturally
-decode into a sequence of Unicode *characters* without requiring
-conversion between character sets.
-
-The *character encoding* referred to as ASCII in this standard is the US
-version of ASCII which, for the purpose of this standard, is defined as
-the subset of UTF-8 which uses only Unicode characters U+0001 to U+007F.
-
-{.note} The US ASCII *character encoding* is normally defined in
-[ASCII], but this standard defines it in terms of [ISO 10646].  This is
-partly to avoid uncertainty over which of several incompatible
-definitions of ASCII is meant, partly because the Unicode standard is
-much more readily available than the ASCII one, and partly because ASCII
-allows certain punctuation marks a be used as combining diacritics when
-they follow the backspace *character* (U+0008).  This use of ASCII
-combining diacritics is not included in [ISO 10646], and is forbidden in
-both GEDCOM and ELF as the backspace *character* *must not* occur.
-Unicode provides a separate set of combining diacritics which are
-permitted in ELF.
-
-ANSEL refers to the Extended Latin Alphabet Coded Character Set for
-Bibliographic Use defined in [ANSEL].  If an ELF file is determined to
-use the ANSEL *character encoding* it *must* be converted into a
-sequence of Unicode *characters* before it can be processed further.
-This is discussed in {§ansel}.
-
-If other *character encodings* are supported, they too must be converted
-into a sequence of Unicode *characters* for further processing.
-
-{.note}  This standard makes no recommendation on how applications
-should represent sequences of Unicode *characters* internally, and the
-UTF-8, UTF-16 and UTF-32 *character encodings* each have advantages.
-
-{.ednote}  This standard currently makes no distinction between a
-*character set* and a *character encoding*, but arguably it would be
-cleaner to make this distinction.  Then UTF-16 and UTF-8 are different
-*character encodings* of the same Unicode *character set*, and ASCII may
-be regarded as such too for our purpose; but ANSEL is a different
-*character set* and requires conversion to Unicode.  [ISO 10646] makes
-a further distinction between *encoding forms* like UTF-8 and UTF-16, and
-*encoding schemes* like UTF-16BE and UTF-16LE.
-
-#### Converting ANSEL to Unicode                                      {#ansel}
-
-{.ednote} Add material from `ansel-to-unicode.md`.
-
-### Line strings                                               {#line-strings}
-
-Before *characters* from the *octet stream* can be parsed into *lines*,
-they must be assembled into *line strings*.  This is done by appending
-*characters* to the *line string* until a *line break* is encountered,
-at which point the *character* or *characters* forming the *line break*
-are discarded and a new *line string* is begun.  
-
-A **line break** is defined as a line feed (U+000A), or carriage return
-(U+000D) followed by an *optional* line feed (U+000A).  It matches the
-following `LB` production:
-
-    LB  ::=  #xD #xA? | #xA
-
-{.note}  This definition of a *line break* matches the form of line
-endings used on Unix, Linux and modern Mac OS (U+000A), the
-traditional Mac OS form (U+000D), and Windows line endings (U+000D
-U+000A).  Unlike the equivalent production in [GEDCOM 5.5.1], this does
-not match a line feed followed by a carriage return (U+000A U+000D)
-which was used as a line ending on BBC and Acorn computers in some
-specific contexts.  In ELF, this sequence is parsed as two *line breaks*
-with an intervening blank *line string* which gets ignored.
-
-Any leading *whitespace* *shall* be removed from the *line string*, and
-any trailing *whitespace* *should* also be removed.  If this results in
-a *line string* which is an empty *string*, the empty *line string* is
-discarded.
-
-{.note ...} These operations resolve ambiguities in [GEDCOM 5.5.1], and
-might therefore be a change from some current implementations'
-interpretation of the GEDCOM standard.  On the one hand, §1 of [GEDCOM
-5.5.1] say that leading *whitespace*, including extra line terminators,
-should be allowed and ignored when reading;  on the other hand, the
-relevant grammar production does not permit any such leading
-*whitespace*.  For maximal compatibility with existing data, a
-*conformant* ELF application *must* accept and ignore leading
-*whitespace* and blank lines, but *must not* generate them.
-
-For trailing *whitespace*, [GEDCOM 5.5.1] is even less clear.  Twice,
-once in §2 and again Appendix&nbsp;A, it states that applications
-sometimes remove trailing *whitespace*, but without saying whether this
-behaviour is legal; certainly it implies it is not required.  There
-is little consistency in the behaviour of current applications, so any
-resolution to this will result in an incompatibility some applications.
-In ELF, the removal of trailing *whitespace* is *recommended*, and a
-future version of ELF is likely to make this *required*.  It is
-explicitly not *required* in this standard so that applications *may*
-decide whether to remove trailing *whitespace* based on the identity of
-the application that produce the file.  Applications *should not* leave
-trailing *whitespace* on *line strings* unconditionally.
-
-The Unicode escape mechanism defined in {§unicode-escape} provides ELF
-applications with a way of serialising a value which legitimately ends
-in *whitespace* without it being removed.
-{/}
-
-{.ednote}  FHISO's general philosophy regarding *whitespace* is that,
-where possible, ELF should avoid placing any significance on invisible
-difference in *whitespace*.  This includes the difference between spaces
-and tabs, and trailing *whitespace* on *lines*.
-
-### Serialising line strings                       {#serialising-line-strings}
-
-*Line strings* are serialised by concatenating them together to form a
-single *string*, inserting a *line break* between each *line string* and
-after the last one.  All the inserted *line breaks* *must* have
-identical lexical forms matching the `LB` production in {§line-strings}.
-
-{.note}  Applications can choose whether to use Windows line endings
-(U+000D U+000A), traditional Mac OS line endings (U+000D), or the line
-endings used on Unix, Linux and modern Mac OS (U+000A), but *must not*
-to use mix these in the same file.
-
-Finally, the resulting *string* is encoded into an *octet stream*
-using the *character encoding* that was documented in the *serialisation
-metadata* *tagged structure* with *tag* "`CHAR`" (see
-{§encoding}).  *ELF writers* are only *required* to support the UTF-8
-*character encoding*, and this *should* be the default in applications
-supporting additional *character encodings*.
-
-{.ednote} Check the above paragraph.  We probably want a later section
-to define an *output encoding*.
-
-If the *character encoding* is one which allows a byte-order mark
-(U+FEFF) to be encoded, an *ELF writer* *may* prepend one the *octet
-stream*.  This is *recommended* when serialising to UTF-16, but is *not
-recommended* when serialising to UTF-8.
-
-{.note} This follows the advice in §2.6 of [Unicode] that "Use
-of a BOM is neither required nor recommended for UTF-8".
-
-
-## Parsing and serialising structures                       {#parsing-structs}
-
-### Parsing lines                                                     {#lines}
-
-For a *line string* to be parsed into a *line*, it *must* match the
-following `Line` production:
-
-    Line ::= Number S (XRefID S)? Tag (S Pointer | S String)?
-
-{.note ...}  The `Line` production does not allow leading or trailing
-*whitespace* because this has already been removed in the process of
-creating *line strings*.  The `S` production is defined in §2 of [Basic
-Concepts] and matches any non-empty sequence of *whitespace*
-*characters*, though because carriage returns and line feeds are always
-treated as *line breaks* which delimit *line strings*, in practice the
-`S` production can only match space or horizontal tab *characters*.
-Allowing tabs or multiple space *characters* is a departure from [GEDCOM
-5.5.1], but one that is commonly implemented in current applications.
-
-*Whitespace* is *required* between each of the four components of the
-*line*.  This is arguably a change from [GEDCOM 5.5.1] where the `delim`
-grammar production says that the delimiter is an *optional* space
-character.  Almost certainly a typo in the grammar that has persisted
-through several versions of GEDCOM, and GEDCOM does not intend the space
-to be *optional*.  However documents written using very early versions
-of GEDCOM – long before its current grammar productions were written –
-did frequently merge the *level*, *structure identifier* and *tag*
-together, as in "`0@I1@INDI`".  This is not permitted permitted in ELF.
-{/}
-
-{.ednote}  It would be simple enough to modify the grammar so that
-"`0@I1@INDI`" would still be supported, and this could help make ELF
-Serialisation backwards compatible with GEDCOM 1.0.  However the TSC
-know of no use of in files identifying as GEDCOM 5.x files, and is not
-generally supported in applications.  Almost certainly it is an error
-arising from confusion over the two different uses of `[`&hellip;`]` in
-GEDCOM grammar productions.  Files created using earlier versions of
-GEDCOM are only very rarely encountered and their data model is
-incompatible with [ELF Data Model].  There seems to be little benefit to
-supporting earlier versions of GEDCOM in the serialisation layer but
-not in the data model.
-
-The `Line` production contains an ambiguity as any *string* which
-matches the `Pointer` production necessarily also matches the `String`
-production.  *ELF parsers* *must* treat the payload as a
-*pointer* if it matches the `Pointer` production, and only as a *string*
-if it does not.
-
-{.ednote ...}  An earlier draft of this standard used the following
-`PayloadString` production in place of the general-purpose `String`
-production.  This ensures that only strings with correctly escaped "at"
-signs (U+0040) are allowed in a *payload*.  This removes this ambiguity
-from the grammar by ensuring *pointers* do not match the `PayloadString`
-production.
-
-    PayloadString ::= PayloadItem*
-    PayloadItem   ::= [^#x40] | "@@" | Escape
-    Escape        ::= "@#" [^#x40#xA#xD]* "@"
-
-This draft does not do this because it would require all "at" signs to
-be correctly escaped.   In practice, unescaped "at" signs are fairly
-commonly found in GEDCOM files, particularly in the *payload* of `EMAIL`
-*lines*.  It is fairly easy to specify ELF so that these can be
-accommodated and this draft does so at the cost of introducing this
-ambiguity into the grammar.  In practice it is not anticipated that the
-ambiguity will cause implementers difficulties and many current products
-appear to allow unescaped "at" signs in the manner proposed here.
-{/}
-
-The `Line` production contains a second ambiguity: when there are
-multiple *characters* of *whitespace* following the *tag* on a *line*
-whose *payload* is a *string*, the second and subsequent *whitespace*
-*characters* can be parsed by the `S` production or the `String`
-production.  Applications are *recommended* to resolve this ambiguity by
-matching the `S` production to the shortest possible non-empty sequence
-of *whitespace* so that any additional *whitespace* is considered to be
-part of the *payload*.
-
-{.note ...} This ambiguity is inherited from [GEDCOM 5.5.1].  On the one
-hand, the grammar in §1 of [GEDCOM 5.5.1] allows at most one space
-*character* and any further space *characters* are therefore considered
-part of the *payload*.  On the other hand, Appendix&nbsp;A says that
-some applications look for the first non-space *character* to denote the
-start of the *payload*, and recommends against doing this with the
-*payload* of the `CONT` tag.
-
-This ambiguity is most problematic on `CONC` *lines* where it can result
-in unwanted *whitespace* being inserted in the middle of a word, or 
-necessary *whitespace* being lost between words; it can also cause
-problems with any *payload* which has leading *whitespace* which needs
-to be preserved.
-To avoid this, using the `CONC` mechanism to split the *payload* next to
-*whitespace* is *not recommended*, and the *Unicode escape* mechanism in
-{§unicode-escape} provides a means of preventing important leading
-*whitespace* from being lost.  These allow ELF applications to avoid
-depending on this undefined behaviour.
-{/}
-
-{.ednote}  This standard could have *required* leading *whitespace* to
-be preserved in *payloads*.  This standard doesn't do that in part to
-discourage applications from relying on behaviour will be misinterpreted
-in some current applications, and instead use *Unicode escapes* to
-escape the first character on a line when it is significant whitespace.
-In general, the TSC would rather ELF did not attach significance to
-differences in *whitespace*, and it is possible FHISO might opt to
-remove the ambiguity in the future by requiring the *payload* to begin
-with a non-*whitespace* *character*.  But more likely, a future version
-of ELF will change the recommendation to preserve leading whitespace
-into a requirement.
-
-The `Number`, `XRefID` and `Tag` productions encodes the *level*, the
-*structure identifier* and the *tag* of the *line*, respectively.  The
-`String` and `Pointer` productions encode the *payload* of the *line*,
-depending on whether the *payload* is a *string* or a *pointer*,
-respectively.  The *structure identifier* and *payload* are both
-*optional*.
-
-    Number  ::= "0" | [1-9] [0-9]*
-    XRefID  ::= "@" [a-zA-Z0-9_] [^@:!]* "@"
-    Tag     ::= [0-9a-zA-Z_]+
-    String  ::= Char+
-    Pointer ::= "@" [a-zA-Z0-9_] [^@]* "@"
-
-{.ednote} The current working draft of [Basic Concepts] has a `String`
-production which is defined as `Char*`.  The `String` production here
-only matches a non-empty *string*.  This is to avoid any difference
-arising between a *line* with no *payload* and a *line* whose payload is
-an empty *string*.  However it may be better to remove this potential
-ambiguity in a different way.
-
-{.example ...}
-    0 @I1@ INDI
-    1 NAME Cleopatra
-    1 FAMC @F2@
-
-This ELF fragment contains three *lines*.  The first *line* has a
-*level* of `0`, a *structure identifier* of `@I1@`, and a *tag* of
-`INDI`; it has no *payload*.  Neither the second nor the third *line*
-has a *structure identifier*, and both have a *payload*: on the second
-line the *payload* is the *string* "`Cleopatra`", while the *payload* of
-the third *line* is a pointer, `@F2@`.
-{/}
-
-**Malformed lines** are *lines* or *line strings* which contain certain
-particular types of syntactic error.  Input containing a *malformed
-line* is a *non-conformant source*.  If an *ELF parser* encounters a
-*malformed line*, it *shall* terminate processing the input file.
-
-{.note} These parsing rules have been written to be very tolerant of
-unusual input.  *Malformed lines* are considered sufficiently serious
-errors that an *ELF parser* *must not* issue a warning to the user an
-continue in an implementation-defined manner, despite this usually
-being permitted when a *non-conformant source* is encountered.
-
-Any *line string* which does not match the `Line` production is a
-*malformed line*.
-
-{.note} Empty *line strings* or *line strings* consisting only of
-*whitespace* are not *malformed lines*, despite not matching the `Line`
-production, because they have already been removed from the input
-stream.
-
-The **previous level** of a *line* is defined as the *level* of the
-closest preceding *line*.  The first *line* in the input stream has no
-*previous level*.
-
-{.example ...}
-    0 INDI
-    1 NOTE The 16th President of the United States.
-    2 CONT Assassinated by John Wilkes Booth.
-    0 TRLR
-
-In this example, the *previous level* of the `TRLR` *line* is `2`, which
-is the *level* of the `NOTE` *line*.
-{/}
-
-Any *line* that has a *level* more than one greater than its *previous
-level* is a *malformed line*.  This does not apply to the first *line*
-in the input stream which is never a *malformed line*.
-
-{.example ...}  The following ELF fragment has a missing line.
-
-    0 @I1@ INDI
-    2 PLAC Москва
-    3 ROMN Moscow
-    1 NAME Иван Васильевич
-    0 TRLR
-
-The second *line* of this example is a *malformed line* because 
-it has a *level* of 2 and a *previous level* of 0.  
-{/}
-
-{.note} *ELF parsers* are *required* to check that the first *line
-string* is exactly "`0 HEAD`" while determining the *specified character
-encoding* per {§specified-enc}, which means the first *line* must always
-have a *level* of 0.
-
-### Assembling tagged structures
-
-Once *line strings* have been parsed into *lines*, the sequence of
-*lines* is converted into a hierarchy of *tagged structures*.  A
-**tagged structure** is an incompletely processed form of a *structure*,
-and consists:
-
-*  an *optional* *structure identifier*, which, if present, is a
-   *string* used to uniquely identify the *structure* within the
-   document;
-*  a *tag*, which is a *string* that encodes the meaning of
-   the *structure*;
-*  an *optional* *payload*, which is either a *string* or a *pointer* to
-   another *structure*; and 
-*  a sequence of zero or more child *tagged structures* known as its
-   *substructures*.  
-
-{.note}  The definition of a *tagged structure* is identical to the
-definition of a *structure*, except that a *tagged structure* has a
-*tag* where a *structure* has a *type identifier*.  *Tags* are converted
-to *type identifiers* at a later stage of parsing.
-
-The conversion of *lines* into *tagged structures* is defined
-recursively.  To read a *tagged structure*, the parser starts by reading
-its first *line*, and creates a *tagged structure* whose *structure
-identifier*, *tag* and *payload* are the *structure identifier*, *tag*
-and *payload*, respectively, for the first *line*.  The *level* of the
-first *line* of the *tagged structure* is referred to in this section as
-the **current level**.  
-
-{.note}  The *current level* can also be thought of as the recursion
-depth.  Once the application has finished reading the *tagged
-structure*, its *current level* is no longer needed.
-
-The parser then repeatedly inspects the next *line* to determine whether
-it represents the start of a *substructure* of the *tagged structure*
-being read.  If the next *line* has a *level* less than or equal to
-the *current level*, there are no further *substructures* and the
-application has finished reading the *tagged structure*.  
-
-{.example ...}
-    1 DEAT Y
-    0 TRLR
-
-In the above ELF fragment, the parser reads the first *line* and creates a
-*tagged structure* with a `DEAT` *tag* and a *payload* of "`Y`".  It
-then inspects the following *line*, but because the following *line* has
-a *level* of 0 which is less than the *level* of the first *line* of the
-`DEAT` *structure*, this indicates that the `DATE` *structure* has no
-*substructures*.
-{/}
-
-Otherwise, the application *shall* recursively parse the next *line* as
-the first *line* of a new *tagged structure* and append it to the list
-of *substructures* being read.  Parsing continues by inspecting the
-following *line* to see if it is the start of another *substructure*, as
-described above.
-
-{.example ...}
-    0 @I1@ INDI
-    1 NAME Elizabeth
-    1 BIRT
-    2 DATE 21 APR 1926
-    0 TRLR
-
-In this fragment, an application reads the first *line* and creates an
-`INDI` *structure*.  The next *line* has a *level* one greater than the
-*level* of the `INDI` *line*, so is parsed as the start of a
-*substructure*.  The parser creates a `NAME` *structure*, and as the
-*level* of the following *line* is no greater than the *level* of the
-`NAME` *line*, the `NAME` *structure* has no *substructures*.  The
-`NAME` *structure* is appended as a *substructure* of the `INDI`
-*structure*.
-
-The parser then repeats the process, looking for further *substructures*
-of the `INDI` *tagged structure*.  The `BIRT` *line* is also one greater
-than the *level* of the `INDI` *line*, so is also parsed as the start of
-a *substructure*, but this time it has a *substructure* of its own,
-namely the `DATE` *structure*.  The `TRLR` *line* has a *level* of 0
-which tells the parser there are no further *substructures* of the
-`INDI` *structure*.  
-
-The result is an `INDI` *structure* with two *substructures* with *tags*
-`NAME` and `BIRT`, respectively, the latter of which has a
-*substructure* of its own with tag `DATE`.  
-{/}
-
-### Unescaping and continuation lines
-
-{.ednote} `CONC` and `CONT` *lines* positioned after other *lines* are
-*malformed lines*.  So are nested `CONC` or `CONT` *lines*.
-
-### Serialising lines                                     {#serialising-lines}
-
-{.ednote} The payload needs escaping, either here or in the next
-section.
-
-Each *line* *shall* be converted to a *line string* by concatenating
-together the *level*, *structure identifier*, *tag* and *payload* as
-described by the `Line` *production* given in {§lines}.  The application
-*must* serialise all *line strings* with a single space *character*
-(U+0020) for each `S` production in the `Line` production.
-
-
-### Serialising
-
-Each *xref structure* is encoded as a sequence of one or more *lines*.
-
-These are of three kinds, in order:
-
-1. The **first line** of the *xref structure*
-2. Zero or more **additional lines** of the *xref structure*
-3. The *lines* that encode each of the *xref structure*'s *substructures* (if any)
-
-{.note} The constraint that *additional lines* come before the *lines* of *substructures* is never mentioned by [GEDCOM 5.5.1]. ELF includes it because it appears to have been universally applied by GEDCOM implementations, and some may depend upon it.
-
-The **level** of each line is a non-negative integer.
-The *level* of a *first line* is 0 if the *xref structure* is a *record*
-or the *serialisation metadata* *tagged structures* with *tag* "`HEAD`" and "`TRLR`";
-otherwise it is one greater than the *level* of the *first line* of its *superstructure*.
-The *level* of an *additional line* is one greater than the *level* of its *xref structure*'s *first line*.
-
-Each *first line* has the same *xref_id* (if any) and *tag* as its corresponding *xref line*.
-Each *additional line* has no *xref_id* and either "`CONT`" or "`CONC`" as its *tag*.
-
-{.note} Because an *xref structure* MUST NOT have either "`CONC`" or "`CONT`" as its *tag* (see {§tag-serialisation}), it is unambiguous which *lines* are *additional lines* and which *first line* they correspond to.
-
-The *payload* of the *xref structure*
-is the concatenation of the *payloads* of the *first line* and all *additional lines*,
-with a *line break* inserted before the *payload* of each *additional line* with *tag* "`CONT`".
-Because the *payload* of a *line* MUST NOT contain a *line-break*, there MUST be exactly one "`CONT`"-*tagged* *additional line* per *line-break* in the *xref structure*'s *payload*.
-The number of "`CONC`"-*tagged* *additional lines* may be picked arbitrarily, subject to the following:
-
-- Each *line* SHOULD be no more than 255 octets after a *line break* has
-  been added and the result encoded in the target *character encoding*.
-  This *recommended* limit is increased to 510 octets if the target
-  *character encoding* is UTF-16.
-
-{.note} GEDCOM *required* that *lines* not exceed 255 *characters*;
-this does not seem to be a real restriction in most current applications,
-and hence has been reduced to *recommended* status.
-We recommend bytes instead of *characters* because the implied 
-purpose of this limit (enabling code to use fixed-width buffers)
-would limit by bytes, not characters.
-
-
-- The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* SHOULD NOT have an empty *payload*.
-- The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* MUST NOT end with a *delimiter*.
-- A "`CONC`"-*tagged* *line*' *payload* SHOULD NOT begin with a *delimiter*.
-
-{.note ...} [GEDCOM 5.5.1] is inconsistent in its discussion of leading and trailing *whitespace*.
-
-- The first of rule in the section "Grammar Rules" in Chapter 1 REQUIRES that spaces be after, not before, a `CONC` split; they (nonsensically) require the same for `CONT`s as well.
-- The grammar for `optional_line_value` in Chapter 1 allows both leading and trailing space, with no permission to remove it.
-- The definition of `CONC {CONCATENATION}` in Appendix A says an implementation MAY "look for the first non-space starting after the tag to determine the beginning of the value" and hence leading spaces MUST NOT appear.
-- The definition of `CONT {CONTINUED}` in Appendix A says an implementation MUST keep leading spaces in a `CONT` as an exception to the usual rules.
-- The definition of `NOTE_STRUCTURE` in Chapter 2 says that "most operating systems will strip off the trailing space and the space is lost in the reconstitution of the note."
-
-The RECOMMENDATIONS above are compatible with the most restrictive of these,
-while the REQUIREMENTS with the most limiting of them.
-{/}
-
-{.example ...}
-Suppose an *xref structure*
-*tag* is "`NOTE`";
-it's *payload* is "`This is a test\nwith one line break`";
-and its *superstructure*'s *superstructure* is a *record*.
-This *xref structure* requires at least two *lines*
-(because it contains one *line break*) and may use more.
-It could be serialised in many ways, such as
-
-````gedcom
-2 NOTE This is a test
-3 CONT with one line break
-````
-
-or
-
-````gedcom
-2 NOTE This i
-3 CONC s a test
-3 CONT with on
-3 CONC e line break
-````
-{/}
-
-- Each *line*'s *payload* MUST contain an even number of U+0040 (`@`).
-    However, during parsing, this constraint SHALL NOT be enforced in any way.
-
-{.note} [GEDCOM 5.5.1] gives no guidance how to handle unmatched "`@`", but they are relatively common in gedcom files. The above policy is intended to resolve common invalid files in an intuitive way.
-
-{.example ...} Given the following non-*conformant* data
-
-    1 EMAI name@example.com
-    2 DATE @#DGREG
-    3 CONC ORIAN@ 2 JAN 2019
-
-a *conformant* application will concatenate these *lines* normally during parsing
-
-    1 EMAI name@example.com
-    2 DATE @#DGREGORIAN@ 2 JAN 2019
-
-creating a valid date escape in the `DATE`-*tagged* *extended line*.
-The unmatched `@` in the `EMAI`-*tagged* *line* is left unchanged during parsing.
-
-Upon re-serialisation, the unmatched @ in the "`EMAI`" will be doubled when converting to an *xref structure*,
-but the date escape will not be modified
-
-    1 EMAI name@@example.com
-    2 DATE @#DGREGORIAN@ 2 JAN 2019
-
-If the serialisation decides to split either *extended line* with `CONC`s, it MUST NOT do so
-in a way that splits up the pairs of "`@`"s.
-{/}
-
 
 ## Encoding with `@`
 
@@ -1562,8 +728,7 @@ The *tagged structures* representing the *dataset* are ordered as follows:
     
     - A *serialisation metadata* *tagged structure* with *tag* "`CHAR`" and *payload* identifying the *character encoding* used; see {§encoding} for details.
     
-    - A *serialisation metadata* *tagged structure* with *tag* "`SCHMA`"
-      and no *payload*, with *substructures* encoding the *ELF Schema*.
+    - A *serialisation metadata* *tagged structure* with *tag* "`SCHMA`" and no *payload*, with *substructures* encoding the *ELF Schema*; see {§schema} for details.
     
     - Each *tagged structure* with the *superstructure type identifier* `elf:Metadata`,
         in an order consistent with the partial order of *structures* present in the *metadata*.
@@ -1597,6 +762,195 @@ Encoding  Description
 It is REQUIRED that the encoding used should be able to represent all code points within the *string*;
 *unicode escapes* (see {§unicode-escape}) allow this to be achieved for any supported encoding.
 It is RECOMMENDED that `UTF-8` be used for all datasets.
+
+
+### ELF Schema                                                       {#schema}
+
+The **ELF Schema** is a *serialisation metadata* *tagged structure*
+with *tag* "`SCHMA`" and no *payload*;
+it may contain as *substructures* any number of 
+*external schema structures*,
+*prefix abbreviation structures*,
+*IRI definition structures*,
+and
+*escape preservation structures*.
+
+If, during parsing, no *ELF Schema* is found, the *default ELF schema* defined in {§default-schema} SHALL be used.
+
+{.ednote} Do we need to make the default dependant on the `GEDC` metadata?
+
+If multiple *ELF Schemas* are found, they SHALL be treated as if all of their *substructures* were part of the same *ELF schema*.
+
+During serialisation exactly one *ELF Schema* SHOULD be included.
+
+#### External schema structure
+
+An **external schema structure** is a *tagged structure*
+with an *ELF Schema* as its *superstructure*,
+*tag* `SCHMA`, no *substructures*, and an IRI as its *payload*.
+The IRI SHOULD use the `http` or `https` scheme
+and an HTTP GET request sent to it with an `Accept` header of `application/x-fhiso-elf1-schema`
+SHOULD return a *dataset* serialised in accordance with this specification
+containing an *ELF Schema* defining the full data model in *structure type descriptions*.
+
+{.ednote} Is `application/x-fhiso-elf1-schema` a MIME-type we are happy with?
+
+{.example ...} When using the [ELF Data Model] version 1.0.0,
+the *serialisation schema* could be serialised as
+
+````gedcom
+0 HEAD
+1 SCHMA
+2 SCHMA https://fhiso.org/TR/elf-data-model/v1.0.0
+````
+{/}
+
+{.example} An HTTP GET request sent to it with an `Accept` header of `application/x-fhiso-elf1-schema` to `https://fhiso.org/TR/elf-data-model/v1.0.0` will return the contents of {§default-schema} or the equivalent.
+
+When retrieving a serialised *dataset* via an HTTP GET request to the IRI of an *external schema structure*,
+all contents of that *dataset* except *ELF Schemas* SHALL be ignored.
+Additional *external schema structure* SHOULD NOT be present within that *ELF Schema*
+and if they are, they MAY be ignored.
+
+{.note} The recommendation against external schema structures inside other external schema structures is designed to simplify parsing.
+
+
+#### Prefix abbreviation structure                                   {#prefix}
+
+{.ednote} Should this section cite §4.3 of [Basic Concepts] instead of its current text?
+
+A **prefix abbreviation structure** is a *tagged structure*
+with an *ELF Schema* as its *superstructure*,
+*tag* `PRFX`, and no *substructures*.
+Its *payload* consist of two *whitespace*-separated tokens:
+the first is a **prefix** and the second is that *prefix*'s corresponding IRI.
+
+To **prefix expand** a *string*, if that *string* begins with a defined *prefix* followed by a colon (U+003A `:`) then replace that *prefix* and colon with the *prefix*'s corresponding IRI.
+To **prefix shorten** a *string*, replace it with a *string* that *prefix expansion* would convert to the original *string*.
+
+{.example ...} Given a `PRFX`
+
+    2 PRFX elf https://fhiso.org/elf/
+
+the IRI `https://fhiso.org/elf/ADDRESS` may be abbreviated as `elf:ADDRESS`.
+{/}
+
+
+#### IRI definition structure
+
+An **IRI definition structure** is a *tagged structure*
+with an *ELF Schema* as its *superstructure* and *tag* "`IRI`".
+Its payload is an IRI,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during parsing.
+The remainder of this section calls this *prefix expanded* payload $I$.
+An *IRI definition structure* may have, as *substructures*, any number of
+*supertype definition structures* and 
+*tag definition structures*.
+
+A **supertype definition structure** is a *tagged structure*
+with an *IRI definition structure* as its *superstructure*, *tag* "`ISA`", and no *substructures*.
+Its payload is a *structure type identifier*
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during parsing.
+The remainder of this section calls this *prefix expanded* payload $I'$.
+Each *supertype definition structure* encodes a single *supertype definition*, specifying that $I'$ is a *supertype* of $I$.
+
+{.example ...} That `elf:ParentPointer` is a *supertype* of `elf:PARENT1_POINTER` can be encoded in a *supertype definition structure* as
+
+```gedcom
+2 IRI elf:PARENT1_POINTER
+3 ISA elf:ParentPointer
+```
+{/}
+
+
+A **tag definition structure** is a *tagged structure*
+with an *IRI definition structure* as its *superstructure*, *tag* "`TAG`", and no *substructure*.
+Its payload is a *whitespace*-separated list of two or more tokens.
+The first token $T$ MUST match production `Tag`;
+each remaining token $S$ is an IRI,
+which MAY be *prefix shortened* during serialisation and MUST be *prefix expanded* during parsing.
+Each such $S$ encodes an *tag definition* between *structure type identifier* $I$ and (*tag*, *superstructure type identifier*) pair $(T, S)$.
+
+{.example ...} The following *tag definitions*
+
+- the *structure type identifier* of "`HUSB`" is `elf:Parent1Age` if its *superstructure* is an `elf:FamilyEvent`.
+- the *structure type identifier* of "`HUSB`" is `elf:PARENT1_POINTER` if its *superstructure* is an `elf:FAM_RECORD`.
+- the *structure type identifier* of "`FORM`" is `elf:MULTIMEDIA_FORMAT` if  its *superstructure* is an `elf:MULTIMEDIA_RECORD`.
+- the *structure type identifier* of "`FORM`" is `elf:MULTIMEDIA_FORMAT` if  its *superstructure* is an `elf:MULTIMEDIA_FILE_REFERENCE`.
+- the *structure type identifier* of "`EMAIL`" is `elf:ADDRESS_EMAIL` if  its *superstructure* is an `elf:Agent`.
+- the *structure type identifier* of "`EMAI`" is `elf:ADDRESS_EMAIL` if  its *superstructure* is an `elf:Agent`.
+
+can be encoded in *tag definition structures* as
+
+```gedcom
+0 HEAD
+1 SCHMA
+2 PRFX elf https://fhiso.org/elf/
+2 IRI elf:PARENT1_POINTER
+3 TAG HUSB elf:FAM_RECORD
+2 IRI elf:Parent1Age
+3 TAG HUSB elf:FamilyEvent
+2 IRI elf:MULTIMEDIA_FORMAT
+3 TAG FORM elf:MULTIMEDIA_FILE_REFERENCE elf:MULTIMEDIA_RECORD
+2 IRI elf:ADDRESS_EMAIL
+3 TAG EMAIL elf:Agent
+3 TAG EMAI elf:Agent
+```
+{/}
+
+
+#### Escape-preserving tags
+
+{.note} This entire section, and all of the related functionality, is present to help cope with the idiosyncratic behaviour of date escapes in [GEDCOM 5.5.1]. Escapes in previous editions of GEDCOM were serialisation-specific and if encountered in ELF should generally be ignored, but date escapes are instead part of a microformat. While escape-preserving tags are not elegant, they are adequate to handle this idiosyncrasy.
+
+{.ednote} I wrote the above note from somewhat fuzzy memory. It might be good to review and summarise all the uses of escapes in various GEDCOM releases...
+
+Some *tags* may be defined as **escape-preserving tags**, each with a list of single-character **preserved escape types** each of which MUST match production `UserEscType`.
+
+    UserEscType ::= [A-TV-Z]
+
+An **escape preservation structure** is a *tagged structure*
+with an *ELF schema* as its *superstructure*, *tag* "`ESC`", and no *substructures*.
+Its payload is composed of two *whitespace*-separated tokens;
+the first is the *escape-preserving tag* and the second is a concatenation of all *preserved escape types* of that *tag*;
+each *preserved escape type* SHOULD be included in the second token only once.
+
+Two *escape preservation structures* MUST NOT differ only in the set of *preserved escape sequences* they define for a given *tag*.
+
+Escape-preserving tags are included for backwards compatibility,
+and MUST NOT be used for new extensions.
+
+{.note} The only known *escape-preserving tag* is "`DATE`", with the *preserved escape type* of "`D`"
+
+{.example ...} The following is the only *escape preservation structure* in ELF 1.0.0:
+
+    0 HEAD
+    1 SCHMA
+    2 ESC DATE D
+{/}
+
+{.example ...} The following defines *tag* `_OLD_EXTENSION` to preserve `G` and `Q` escapes:
+
+    0 HEAD
+    1 SCHMA
+    2 ESC _OLD_EXTENSION QG
+
+The `ESC` could have equivalently been written as 
+
+    2 ESC _OLD_EXTENSION GQ
+
+or even
+
+    2 ESC _OLD_EXTENSION QGGQQQGGGG
+
+... though that last version is needlessly redundant and verbose and is NOT RECOMMENDED.
+
+Such a definition MUST NOT be used except as backwards compatibility support for an escape-dependent `_OLD_EXTENSION` that predates ELF 1.0.0.
+{/}
+
+{.note} This specification uses *tag* and not *structure type* to indicate *escape preservation*
+because the main motivating case (`DATE`) applies it to all of the several *structure types* that share that *tag*.
+
 
 
 
@@ -1759,8 +1113,7 @@ that can be created at any location within the dataset during deserialisation.
 
 {.note} [GEDCOM 5.5.1] never intentionally violates the above RECOMMENDATION, but via a typo it provides both `EMAI` and `EMAIL` as *tags* for `elf:ADDRESS_EMAIL`. Other aliases exist due to similar mistakes in applications and to multiple extensions inserting the same concept via different *tags*. The ability to handle these aliases is the reason this is a RECOMMENDATION, not a REQUIREMENT, in ELF.
 
-- the *tag definitions* in the default ELF Schema (see §XX of [ELF
-  Schemas]) SHOULD be used in place of any alternative *tag definitions* for the same *structures* in the same contexts.
+- the *tag definitions* in the default ELF Schema (see {§default-schema}) SHOULD be used in place of any alternative *tag definitions* for the same *structures* in the same contexts.
 
 Each *structure* is converted to a *tagged structure* with the *tag* being
 
@@ -1914,6 +1267,13 @@ it becomes the *undefined tag identifier* `elf:Undefined#ERROR`.
 :    The Unicode Consortium.
      *The Unicode Standard – Core Specification*, version 12.1.0.
      See <https://www.unicode.org/versions/Unicode12.1.0/>.
+
+## Appendix A: Default Schema                                  {#default-schema}
+
+The following is a minimal ELF file with the default *ELF Schema*,
+which includes all *tag definitions* and *supertype definitions* listed in [Elf-DataModel].
+
+{#include schema.ged}
 
 \vfill
 
