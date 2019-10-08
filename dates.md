@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 30 December 2018
+date: 8 October 2019
 numbersections: true
 ...
 
@@ -45,14 +45,24 @@ FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
 name having been chosen to avoid confusion with any other updates or
 extensions to GEDCOM, or any future use of the name by The Church of
-Jesus Christ of Latter-day Saints.  This document is one of three that
-form the initial suite of ELF standards, known collectively as ELF 1.0.0:
+Jesus Christ of Latter-day Saints.  This document is one of five that
+form the initial suite of ELF standards, known collectively as ELF
+1.0.0:
+
+* **ELF: Primer**.  This is not a formal standard, but is being
+  released alongside the ELF standards to provide a broad overview of
+  ELF written in a less formal style.  It gives particular emphasis to
+  how ELF differs from GEDCOM.
 
 * **ELF: Serialisation Format**.  This standard defines a
   general-purpose serialisation format based on the GEDCOM data format
-  which encodes a *dataset* as a hierarchical series of *lines*, and
-  provides low-level facilities such as escaping and extensibility
-  mechanisms.
+  which encodes a dataset as a hierarchical series of lines, and
+  provides low-level facilities such as escaping.
+
+* **ELF: Schemas**.  This standard defines flexible extensibility and
+  validation mechanisms on top of the serialisation layer.  Although it
+  is an *optional* component of ELF 1.0.0, future ELF extensions to ELF
+  will be defined using ELF schemas.
 
 * **ELF: Date, Age and Time Microformats**.  This standard defines
   microformats for representing dates, ages and times in arbitrary calendars,
@@ -60,15 +70,15 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   Republican and Hebrew calendars.  
 
 * **ELF: Data Model**.  This standard defines a data model based on the
-  lineage-linked GEDCOM form, reformulated in terms of the
-  serialisation model described in this document.  It is not a major
-  update to the GEDCOM data model, but rather a basis for future
-  extension.
+  lineage-linked GEDCOM form, reformulated to be usable with the ELF
+  serialisation model and schemas.  It is not a major update to the
+  GEDCOM data model, but rather a basis for future extension and
+  revision.
 
-{.ednote}  At the time this draft was published, neither [ELF Data
-Model] nor [ELF Serialisation] were yet at the stage of having a first
-public draft available, however FHISO's Technical Standing Committee
-(TSC) are working on them and hope to have first drafts available soon.  
+{.ednote}  At the time this draft was published, none of the other
+documents are yet at the stage of having a first public draft available,
+however FHISO's Technical Standing Committee (TSC) are working on them
+and hope to have first drafts available soon.  
 
 An explanation of the conventions used in this standard can be found in
 {§conventions}, and the general concepts associated with time, calendars
@@ -2780,7 +2790,7 @@ specification.
 \vfill
 
 ----
-Copyright © 2018, [Family History Information Standards Organisation,
+Copyright © 2018–19, [Family History Information Standards Organisation,
 Inc](https://fhiso.org/).
 The text of this standard is available under the
 [Creative Commons Attribution 4.0 International
