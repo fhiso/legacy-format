@@ -817,9 +817,38 @@ written with any alternative form of *whitespace*.
 of the use case that lead to its inclusion and have removed it again.
 
 {.note}  [GEDCOM 5.5.1] includes one further *calendar escape*,
-`@#ROMAN@`, which it reserved for future use, presumably for use with
+`@#DROMAN@`, which it reserved for future use, presumably for use with
 Roman Republican *calendar*.  This standard does not reserve this
 *calendar escape*.
+
+{.ednote ...}  Should we standardise a basic Roman calendar using the
+*calendar escape* `@#DROMAN@`?  The lengths of the months would be left
+unspecified, for the simple reason that they are not always known, though
+we might safely limit the *calendar day* to being a two digit number.
+It would probably use the twelve *month names* of the Gregorian
+calendar, including `JUL` and `AUG`, despite them being called Quintilis
+and Sextilis at the time.   We would need a *month name* for
+Intercalaris, the intercalary month inserted in or after February.  As
+`INT` risks conflicting with the *date modifier* for *interpreted
+dates*, `MER` might be best as Intercalaris was also called Mercedonius.
+We would also need *month names* for Intercalaris Prior and Intercalaris
+Posterior, the two exceptional inserted in 46&nbsp;BC to realign the
+calendar with the equinoxes in preparation for the introduction of
+the Julian calendar.  `IC1` and `IC2` would work.  The `A.D.` and `B.C.`
+*epoch names* would be supported.  `A.U.C.` (for *ab urbe condita* –
+since the founding of Rome) would need careful consideration.
+
+The need for this calendar arises surprisingly often.  Pompey, the 
+famous Roman general, was born on 29 September 106&nbsp;BC, as reckoned
+in the Roman calendar, but this date cannot be converted into the
+proleptic Julian or Gregorian calendar with certainty because the
+precise lengths of the years around this time are not known.  A
+comprehensive discussion of this can be found in [Roman Dates].
+Even though no genealogies back to Roman times can currently be proved,
+they are commonly encountered, and the fact that a genealogy cannot be
+proved does not necessarily mean it is not useful to record it, perhaps
+for the purpose of critical review.
+{/}
 
 The `@#DUNKNOWN@` *calendar escape* is permanently reserved.  Third
 parties *must not* define calendars with this name and applications
@@ -1008,9 +1037,9 @@ names* *must not* be used.
 long to avoid conflicting with *epoch names*.
 
 The following words are reserved and *must not* be used as *month
-names* in any calendar: `ABT`, `AFT`, `AND`, `BEF`, `BET`, `CAL`, `EST`,
-`EVERY`, `FOR`, `FROM`, `INT`, `POS`, `REP`, `TIME`, `UNCERT`, `UNK` and
-`ZONE`.
+names* in any calendar: `ABT`, `AFT`, `AND`, `BCE`, `BEF`, `BET`, `CAL`,
+`EST`, `EVERY`, `FOR`, `FROM`, `INT`, `POS`, `REP`, `TIME`, `UNCERT`,
+`UNK` and `ZONE`.
 
 {.note}  Many of these words have specific meanings in the ELF *date*
 *datatypes*.  The words `EVERY`, `FOR`, `POS`, `REP`, `TIME`, `UNCERT`,
@@ -1697,7 +1726,10 @@ omitted.
 
 {.ednote} Do we want "`B.C.E.`" and "`C.E.`" (standing for Before Common
 Era and Common Era, respectively) as aliases?  There is no technical
-justification for adding them.
+justification for adding them.  Supporting "`BCE`" as an alias for
+"`B.C.E.`" is problematic as it is three letters long, meaning matches
+the `Month` production rather than `Epoch` production.  However "`BCE`"
+has been reserved so it cannot be used as a *month name*.
 
 Regardless of *epoch name*, the *logical year* *shall* be an integer
 greater than 0.
@@ -1943,7 +1975,7 @@ in place of the *logical year* in the preceding rules.
 definition of the Julian *calendar*, because subtracting 5 from 1 gives
 &minus;4 which is divisible by 4.  In fact, the year 5&nbsp;BC was
 almost certainly not a *leap year* as the Augustan reform was still
-taking effect at this point.  There is disagreement between historians
+taking effect at this point.  There is disagreement between scholars
 on the exact details of the reform, but is generally accepted that by
 AD&nbsp;8 the rule for *leap years* given above was being applied
 correctly.  Any use of the Julian calendar (in its final Augustan form)
@@ -2759,7 +2791,7 @@ specification.
 
 [GEDCOM X Dates]
 :    Intellectual Reserve Inc.  *The GEDCOM X Date Format*.
-     Stable draft, accessed December 2018.  See <http://gedcomx.org/>.
+     Stable draft, accessed December 2018.  (See <http://gedcomx.org/>.)
 
 [ISO 8601]
 :   ISO (International Organization for Standardization).  *ISO
@@ -2775,6 +2807,11 @@ specification.
 :   FHISO (Family History Information Standards Organisation).
     *The Pattern Datatype*.  First public draft.
     (See <https://fhiso.org/TR/patterns>.)
+
+[Roman Dates]
+:   Chris Bennett. "Roman Dates."  Website, accessed October 2019.  
+    (See <http://www.instonebrewer.com/TyndaleSites/Egypt/ptolemies/chron/chronology.htm>.)
+    Last updated 2012.
 
 [XSD Pt2]
 :   W3C (World Wide Web Consortium). *W3C XML Schema Definition Language 
