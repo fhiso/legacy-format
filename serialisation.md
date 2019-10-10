@@ -144,29 +144,97 @@ human-readable.
 
 At a logical level, an ELF document is built from **structures**, the name
 ELF gives to the basic hierarchical data structures used to represent
-data.  Each *structure* consists of:
+data.  ELF uses two types of *structure*: *tagged structures* and *typed
+structures*.  The serialisation layer described in this standard
+only deals with *tagged structures*, and the word *structure* is
+frequently used in this document to refer to what is properly a *tagged
+structure*.
 
-*  an *optional* *structure identifier*, which, if present, is a
-   *string* used to uniquely identify the *structure* within the
-   document;
-*  a *type identifier*, which is a *term* that encodes the meaning of
-   the *structure*;
-*  an *optional* *payload*, which is either a *string* or a *pointer* to
-   another *structure*; and 
+A **tagged structure** consists of:
+
+*  an *optional* *cross-reference identifier* used to identify the
+   *structure* within the document; 
+*  a *tag*, which is a *string* encoding the meaning of the *structure*;
+*  an *optional* *payload*, which can be considered the value of the
+   *structure*; and
 *  a sequence of zero or more child *structures* known as its
-   *substructures*.  
+   *substructures*.  These can nest arbitrarily deep in a hierarchical
+   manner.
 
-{.note} GEDCOM includes a means for splitting a logical document into
-multiple physical documents, sometimes called volumes.  This dates to an
-era when documents were commonly stored and shipped on floppy disks, and
-a large GEDCOM document might exceed the storage capacity of a single
-disk.  This functionality is no longer necessary and is not widely
-implemented in present applications.  This functionality is not included
-in ELF.
+{.note}  This maps quite closely, though not perfectly, to a standard
+entity–attribute–value model.  In a *structure* with one or more
+*substructures*, the parent *structure* serves as the entity being
+described, and its *substructures* each encode an attribute–value pair.   
+In a *structure* with a *payload*, the *tag* and *payload*
+function in as an attribute–value pairs, with the *tag* identifying the
+particular piece of information being recorded and the *payload* being
+its value.  It is normal for a *structure* to either have a *payload* or
+*substructures*, but not both; however this not a requirement of ELF,
+and the [ELF Data Model] contains several *structures* where this is not
+true.  The `FAMC` *structure* is an example.  Such *structures* do not
+neatly fit into the entity–attribute–value paradigm.
 
-A top-level *structure* which is not a *substructure* of any other
-*structure* is called a **record**.  An ELF document or **dataset** can
-have arbitrarily many *records*.
+The *tag* describes how the *structure* is to be interpreted, and
+*structures* are commonly referred to by their *tag* in this standard.
+
+{.example}  A *structure* whose *tag* is the *string* "`NOTE`" will
+often be called a `NOTE` *structure*.
+
+{.note} This standard defines a small number of *tags* which are used for
+recording data needed by at the serialisation layer to correctly
+interpret an ELF document.  The [ELF Data Model] defines a large set of
+*tags* for use in recording genealogical data in a GEDCOM-compatible
+manner.   However ELF is a general-purpose data format that can be used
+to represent arbitrary data; [ELF Schemas] provides a mechanism for
+defining *tags* for other purposes, including to extend the [ELF Data
+Model].
+
+The *payload* is either a *literal* or a *pointer* to another
+*structure*.  A **literal** is a *string* which is tagged with a
+*datatype name* and sometimes also a *language tag*.
+
+{.note} Making the *payload* a *literal* rather than a plain *string* is
+an extension to GEDCOM.  *Datatypes* are defined in §6 of [Basic
+Concepts], and are used in the *optional* extensibility mechanism for
+ELF described in [ELF Schemas]; however, for the purpose of this
+standard, a *datatype name* is simply an IRI that may be associated with
+the *string* to help interpret it.  *Language tags* are defined in §3 of
+[Basic Concepts].
+
+{.example} A simple example *structure* might have a *tag* of "`AUTH`"
+and a *payload* which is a *literal* consisting of the *string*
+"`鈴木眞年`" tagged with the *language tag* `ja`.  The *datatype name*
+is ignored in this example.  The `AUTH` *tag* is defined in [ELF Data
+Model] as meaning "the name of the primary creator of the source", and
+鈴木眞年 is the name of genealogist Suzuki Matoshi, written in his
+native Japanese language, which is denoted by the *language tag* `ja`.
+
+{.ednote} Move the definition of *literal* to [Basic Concepts].
+
+When the *payload* of a *structure* is a *pointer*, this represents a
+link between two *structures*, with the *pointer* in one *structure*
+referencing the *cross-reference identifier* in a second *structure*.
+
+{.note}  In this version of ELF, a *pointer* *must* have the same
+lexical form as a *cross-reference identifier* used in the same
+document.  Both [GEDCOM 5.5.1] and this ELF standard reserve syntax so
+that a future standard may use *pointers* to reference *structures* in
+other documents.
+
+{.example}  The [ELF Data Model] uses *pointers* to form links between
+family records denoted by the `FAM` *tag*, and individual records
+denoted by the `INDI` *tag*.  These links are how genealogical
+relationships are represented in ELF.  A `FAM` *structure* may contain a
+`CHIL` *substructure* whose *payload* is a *pointer*.  Elsewhere in the
+document, there will be an `INDI` *structure* whose *cross-reference
+identifier* is identical to the *pointer* in the *payload* of the `CHIL`
+*substructure* of the `FAMC` *structure*.  This is stating that the
+person represented by the `INDI` *structure* is a child of the family
+represented by the `FAM` *structure*.
+
+A top-level *structure*, meaning a *structure* which is not a
+*substructure* of any other *structure*, is called a **record**.  An ELF
+document or **dataset** can have arbitrarily many *records*.
 
 {.ednote}  This is either not strictly true or at least misleading,
 because `HEAD` and `TRLR` are not *records*.  Probably.
@@ -176,31 +244,19 @@ because `HEAD` and `TRLR` are not *records*.  Probably.
 But unlike XML, which has a single root-level element, an ELF *dataset*
 typically has multiple *records*.
 
-The ELF serialisation format is a general purpose format that can be
-used to represent arbitrary data, depending on the *type identifiers*
-used in the *dataset*.  A particular set of *type identifiers*, together
-with their meanings and restrictions on how they are to be used, is
-called a **data model**.  
-
-{.note}  The ELF serialisation format is designed to be useable with
-various *data models*; however it is anticipated that most files using
-the ELF serialisation format will use the data model described in [ELF
-Data Model], which is based on and compatible with GEDCOM's
-lineage-linked form.
-
 At a lexical level, a *structure* is encoded as sequence of **lines**,
-each terminated with a *line break*.  The first *line* encodes the *type
-identifier* and *payload* of the *structure*, while any *substructures*
-are encoded in order on subsequent *lines*.  Each *line* consists of the
-following components, in order:
+each terminated with a *line break*.  The first *line* encodes the
+*cross-reference identifier*, *tag* and *payload* of the *structure*,
+while any *substructures* are encoded in order on subsequent *lines*.
+Each *line* consists of the following components, in order, separated by
+*whitespace*:
 
 *  a *level*, which is a non-negative decimal *integer* that records how
    many levels of *substructures* deep the current *structure* is nested;
-*  an *optional* *structure identifier*, which is an identifier written
-   between two "at" signs (U+0040) that can be referenced by a *pointer*
-   in the payload of another *structure*; 
-*  a *tag*, which encodes the *type identifier* of the *structure*; and
-*  the *optional* *payload* of the *structure* encoded by the *line*.
+*  the *optional* *cross-reference identifier* of the *structure* being
+   encoded by the *line*;
+*  a *tag* of the *structure* being encoded; and
+*  the *optional* *payload* of the *structure*.
 
 {.example ...}
     0 HEAD
@@ -219,7 +275,7 @@ have, respectively, three, one and zero *substructures*, which are
 denoted by the *lines* with *level* `1`.   The *structure* represented
 by the *line* with a `CHAR` *tag* is a *substructure* of the `HEAD`
 *record* because there is no intervening *line* with *level* one less
-than `1` (i.e.  `0`); the *structure* represented by the `NAME` *line*
+than `1`; the *structure* represented by the `NAME` *line*
 naming Charlemagne is a *substructure* of the `INDI` *record*, as that
 is the preceding *line* with a *level* `0`.   The `TRLR` *record* is an
 example of a *record* with no *substructures*.
@@ -228,7 +284,7 @@ Five of the *lines* in this example document have a *payload*.  For
 example, the *payload* of the `FORM` *line* is the *string*
 "`LINEAGE-LINKED`", while the *payload* of the `NAME` *line* is the
 *string* "`Charlemagne`".  None of the *lines* in this example have
-*payload* which are *pointers*, nor do any have a *structure
+*payload* which are *pointers*, nor do any have a *cross-reference
 identifier*.
 {/}
 
@@ -328,20 +384,12 @@ The parsing process can be summarised as follows:
     - converting *xrefs* to *pointers*, with a special "point to null" if this fails
     - unescaping `@` *characters*
     - preserving valid *escapes* and removing others
-    - converting *unicode escapes* into their represented *characters*,
-
-5. the *tagged structures* that represent the *schema* are parsed
-
-6. *tags* are converted into *structure type identifiers* using the *schema*
-    and the resulting *structures* placed in the *metadata* or *document* as appropriate.
-    *Tags* with no corresponding *structure type identifier* are converted into appropriate *undefined tag identifiers*.
+    - converting *unicode escapes* into their represented *characters*.
 
 
 ### Serialisation                                               {#serialising}
 
 The semantics of serialisation are defined by the following procedural outline.
-
-1. Each *structure* is assigned a *tag* based on its *structure type identifier*, *superstructure type identifier*, and a *schema* which MAY be augmented during serialisation to allow all *structures* to have a *tag*.
 
 2. The *tagged structures* are ordered and additional *tagged structures* created to represent *serialisation metadata*.
     
@@ -374,22 +422,13 @@ The semantics of serialisation are defined by the following procedural outline.
     - converting *strings* to octets using the *character encoding*
 
 
-### Constructs
-
-This document uses five externally-visible constructs:
-*dataset*, *metadata*, *document*, *structure*, and *octet stream*.
-For clarity of presentation, it also uses several intermediate constructs internally:
-*line*, *xref structure*, and *tagged structure*.
-Each is defined in {§glossary}.
-
 ### Glossary                                                       {#glossary}
 
-{.ednote}  *Line*, *octet*, *octet stream*, *record* and *structure* are
-now defined in {§overview}, while *character encoding* is defined in
-{§parsing-linestrs}, and *line break* is defined in {§line-strings}.
-The notion of a *delimiter* is being removed.  *Dataset* and *document*
-are very nearly defined in {§overview} too, but we don't currently
-discuss *metadata* there &mdash; this is an issue which needs resolving.
+{.ednote}  *Record* and *structure* are now defined in {§overview},
+while *character encoding* is defined in {§parsing-linestrs}.  *Dataset*
+and *document* are very nearly defined in {§overview} too, but we don't
+currently discuss *metadata* there &mdash; this is an issue which needs
+resolving.
 
 Character encoding
 :   The scheme used to map between an *octet stream*
@@ -398,48 +437,15 @@ Character encoding
 Dataset
 :   *Metadata* and a *document*.
 
-Delimiter
-:   A sequence of one or more space or tabulation characters.
-
-        Delim ::= [#20#9]+
-    
-    During serialisation, a single space (U+0020) SHOULD be used
-    each place a *delimiter* is expected.
 
 Document
 :   An unordered set of *structures*.
-
-Line
-:   1. A *level*, a non-negative *integer*
-    2. An optional *xref_id*
-    3. A *tag*, a *string* matching production `Tag`
-    4. An optional *payload*, which is a *string* containing any number of *characters*, but which *must not* contain a *line-break*.
-
-Line break
-:   A sequence of one or more newline and/or carriage return characters.
-
-        LB ::= [#A#D]+
-
-    During serialisation, each *line break* MUST be one of 
-    
-    - a single newline (U+000A)
-    - a single carriage return (U+000D)
-    - a single carriage return followed by a single newline (U+000D U+000A)
-    
-    The same string SHOULD be used each place a *line break* is expected.
 
 Metadata
 :   A collections of *structures* intended to describe information about the dataset as a whole.
     
     The relative order of *structures* with the same *structure type identifier* SHALL be preserved within this collection;
     the relative order of *structures* with distinct *structure type identifiers* is not defined by this specification.
-
-Octet
-:   One of 256 values, often represented as the numbers 0 through 255.
-    Also called a "byte."
-
-Octet Stream
-:   A sequence of octets.
 
 Record
 :   A *structure*, *tagged structure*, or *xref structure* whose *superstructure* is the *document*.
@@ -490,12 +496,6 @@ Tagged Structure
     
     - it has a *tag* instead of a *structure type identifier*.
     - its *substructures* are stored in a sequence with defined order, not in a partially-ordered collection.
-
-Undefined tag identifier
-:   A *term* containing a single `#` (U+0023)
-    with `elf:Undefined` before it
-    and a *string* matching production `Tag` after it.
-    The *string* after the U+0023 is called the *tag* of the *undefined tag identifier*.
 
 Xref Structure
 :   Like a *tagged structure*, except
@@ -967,7 +967,7 @@ character.  Almost certainly a typo in the grammar that has persisted
 through several versions of GEDCOM, and GEDCOM does not intend the space
 to be *optional*.  However documents written using very early versions
 of GEDCOM – long before its current grammar productions were written –
-did frequently merge the *level*, *structure identifier* and *tag*
+did frequently merge the *level*, *cross-reference identifier* and *tag*
 together, as in "`0@I1@INDI`".  This is not permitted permitted in ELF.
 {/}
 
@@ -1052,10 +1052,10 @@ of ELF will change the recommendation to preserve leading whitespace
 into a requirement.
 
 The `Number`, `XRefID` and `Tag` productions encodes the *level*, the
-*structure identifier* and the *tag* of the *line*, respectively.  The
-`String` and `Pointer` productions encode the *payload* of the *line*,
-depending on whether the *payload* is a *string* or a *pointer*,
-respectively.  The *structure identifier* and *payload* are both
+*cross-reference identifier* and the *tag* of the *line*, respectively.
+The `String` and `Pointer` productions encode the *payload* of the
+*line*, depending on whether the *payload* is a *string* or a *pointer*,
+respectively.  The *cross-reference identifier* and *payload* are both
 *optional*.
 
     Number  ::= "0" | [1-9] [0-9]*
@@ -1077,9 +1077,9 @@ ambiguity in a different way.
     1 FAMC @F2@
 
 This ELF fragment contains three *lines*.  The first *line* has a
-*level* of `0`, a *structure identifier* of `@I1@`, and a *tag* of
+*level* of `0`, a *cross-reference identifier* of `@I1@`, and a *tag* of
 `INDI`; it has no *payload*.  Neither the second nor the third *line*
-has a *structure identifier*, and both have a *payload*: on the second
+has a *cross-reference identifier*, and both have a *payload*: on the second
 line the *payload* is the *string* "`Cleopatra`", while the *payload* of
 the third *line* is a pointer, `@F2@`.
 {/}
@@ -1138,61 +1138,66 @@ string* is exactly "`0 HEAD`" while determining the *specified character
 encoding* per {§specified-enc}, which means the first *line* must always
 have a *level* of 0.
 
-### Assembling tagged structures
+### Assembling structures
 
 Once *line strings* have been parsed into *lines*, the sequence of
-*lines* is converted into a hierarchy of *tagged structures*.  A
-**tagged structure** is an incompletely processed form of a *structure*,
-and consists:
+*lines* is converted into a sequence of *records*. 
 
-*  an *optional* *structure identifier*, which, if present, is a
-   *string* used to uniquely identify the *structure* within the
-   document;
-*  a *tag*, which is a *string* that encodes the meaning of
-   the *structure*;
-*  an *optional* *payload*, which is either a *string* or a *pointer* to
-   another *structure*; and 
-*  a sequence of zero or more child *tagged structures* known as its
-   *substructures*.  
+This process starts by parsing the first *line* as the first *line* of a
+*structure* using the procedure given in this section.  This *structure*
+will be the first *record* in the *dataset*.  If that *record* has
+*substructures* then additional *lines* will be read in parsing it.  If
+further *lines* remain after the first *record* has been fully parsed,
+then the first of them is parsed as first *line* of another *structure*,
+which will be next *record* in the *dataset*.  This process continues
+until no further *lines* remain, at which point the *dataset* has the
+been fully read.
 
-{.note}  The definition of a *tagged structure* is identical to the
-definition of a *structure*, except that a *tagged structure* has a
-*tag* where a *structure* has a *type identifier*.  *Tags* are converted
-to *type identifiers* at a later stage of parsing.
+{.note} The process described in this section, together with the
+guarantee provided by {§specified-enc} that the first *line* is always
+"`0 HEAD`", ensures that the first *line* of every *record* necessarily
+has a *level* of 0.
 
-The conversion of *lines* into *tagged structures* is defined
-recursively.  To read a *tagged structure*, the parser starts by reading
-its first *line*, and creates a *tagged structure* whose *structure
-identifier*, *tag* and *payload* are the *structure identifier*, *tag*
-and *payload*, respectively, for the first *line*.  The *level* of the
-first *line* of the *tagged structure* is referred to in this section as
-the **current level**.  
+{.note} GEDCOM includes a means for splitting a logical document into
+multiple physical documents, sometimes called volumes.  This dates to an
+era when documents were commonly stored and shipped on floppy disks, and
+a large GEDCOM document might exceed the storage capacity of a single
+disk.  This functionality is no longer necessary and is not widely
+implemented in present applications.  This functionality is not included
+in ELF.
+
+The conversion of *lines* into *structures* is defined recursively.  To
+read a *structure*, the parser starts by reading its first *line*, and
+creates a *structure* whose *cross-reference identifier*, *tag* and
+*payload* are the *cross-reference identifier*, *tag* and *payload*,
+respectively, for the first *line*.  The *level* of the first *line* of
+the *structure* is referred to in this section as the **current level**.  
 
 {.note}  The *current level* can also be thought of as the recursion
-depth.  Once the application has finished reading the *tagged
-structure*, its *current level* is no longer needed.
+depth.  Once the application has finished reading the *structure*, its
+*current level* is no longer needed.
 
 The parser then repeatedly inspects the next *line* to determine whether
-it represents the start of a *substructure* of the *tagged structure*
-being read.  If the next *line* has a *level* less than or equal to
-the *current level*, there are no further *substructures* and the
-application has finished reading the *tagged structure*.  
+it represents the start of a *substructure* of the *structure* being
+read.  If the next *line* has a *level* less than or equal to the
+*current level*, there are no further *substructures* and the
+application has finished reading the *structure*.  
 
 {.example ...}
     1 DEAT Y
     0 TRLR
 
 In the above ELF fragment, the parser reads the first *line* and creates a
-*tagged structure* with a `DEAT` *tag* and a *payload* of "`Y`".  It
-then inspects the following *line*, but because the following *line* has
-a *level* of 0 which is less than the *level* of the first *line* of the
+*structure* with a `DEAT` *tag* and a *payload* of "`Y`".  It then
+inspects the following *line*, but because the following *line* has a
+*level* of 0 which is less than the *level* of the first *line* of the
 `DEAT` *structure*, this indicates that the `DATE` *structure* has no
 *substructures*.
 {/}
 
 Otherwise, the application *shall* recursively parse the next *line* as
-the first *line* of a new *tagged structure* and append it to the list
-of *substructures* being read.  Parsing continues by inspecting the
+the first *line* of a new *structure* and append it to the list of
+*substructures* being read.  Parsing continues by inspecting the
 following *line* to see if it is the start of another *substructure*, as
 described above.
 
@@ -1213,12 +1218,12 @@ In this fragment, an application reads the first *line* and creates an
 *structure*.
 
 The parser then repeats the process, looking for further *substructures*
-of the `INDI` *tagged structure*.  The `BIRT` *line* is also one greater
-than the *level* of the `INDI` *line*, so is also parsed as the start of
-a *substructure*, but this time it has a *substructure* of its own,
-namely the `DATE` *structure*.  The `TRLR` *line* has a *level* of 0
-which tells the parser there are no further *substructures* of the
-`INDI` *structure*.  
+of the `INDI` *structure*.  The `BIRT` *line* is also one greater than
+the *level* of the `INDI` *line*, so is also parsed as the start of a
+*substructure*, but this time it has a *substructure* of its own, namely
+the `DATE` *structure*.  The `TRLR` *line* has a *level* of 0 which
+tells the parser there are no further *substructures* of the `INDI`
+*structure*.  
 
 The result is an `INDI` *structure* with two *substructures* with *tags*
 `NAME` and `BIRT`, respectively, the latter of which has a
@@ -1236,7 +1241,7 @@ The result is an `INDI` *structure* with two *substructures* with *tags*
 section.
 
 Each *line* *shall* be converted to a *line string* by concatenating
-together the *level*, *structure identifier*, *tag* and *payload* as
+together the *level*, *cross-reference identifier*, *tag* and *payload* as
 described by the `Line` *production* given in {§lines}.  The application
 *must* serialise all *line strings* with a single space *character*
 (U+0020) for each `S` production in the `Line` production.
@@ -1285,8 +1290,10 @@ would limit by bytes, not characters.
 
 
 - The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* SHOULD NOT have an empty *payload*.
-- The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* MUST NOT end with a *delimiter*.
-- A "`CONC`"-*tagged* *line*' *payload* SHOULD NOT begin with a *delimiter*.
+- The *payload* of a *line* preceding a "`CONC`"-*tagged* *line* MUST
+  NOT end with a *whitespace*.
+- A "`CONC`"-*tagged* *line*' *payload* SHOULD NOT begin with
+  *whitespace*.
 
 {.note ...} [GEDCOM 5.5.1] is inconsistent in its discussion of leading and trailing *whitespace*.
 
@@ -1507,7 +1514,7 @@ and SHOULD NOT be used otherwise.
 
 {.ednote} Earlier drafts of this specification suggested using `@#U20@` in place of U+0020
 when a *line*'s *payload* begins or ends with a space.
-Given the inherent ambiguity in the handling of *delimiters* at the ends of a *line*'s *payloads*,
+Given the inherent ambiguity in the handling of *whitespace* at the ends of a *line*'s *payloads*,
 it is not clear if that idea was better than simply clarifying that ambiguity.
 
 {.example} If a *tagged structure*'s *payload* is "`João`" and the *character encoding* is `ASCII`,
@@ -1733,10 +1740,10 @@ has a defined *tag* without a *tag definition*.
 
 New *tag definitions* may be selected arbitrarily, subject to the limitations on *tags* (see {§tags}) and *tag definitions* (see {§tag-definitions}) and to the following:
 
-- the *tag* MUST NOT be "`CONT`", "`CONC`", "`ERROR`", "`UNDEF`",
+- the *tag* MUST NOT be "`CONT`", "`CONC`", "`UNDEF`",
     or the *tag* of any *undefined tag identifier* in the *dataset*.
 
-{.note} "`CONT`", "`CONC`", "`ERROR`", and "`UNDEF`" are special *tags*
+{.note} "`CONT`", "`CONC`", and "`UNDEF`" are special *tags*
 that can be created at any location within the dataset during deserialisation.
 
 - the *structure type identifier* MUST NOT be any of 
@@ -1839,11 +1846,6 @@ add the *structure type identifier* from the the applicable *tag definition*.
 If there is no applicable *tag definition*, or if there are multiple applicable *tag definitions*
 providing different *structure type identifiers*,
 then the *structure type identifier* SHALL be `elf:Undefined` if the *tag* is `UNDEF`, or the *undefined tag identifier* constructed by concatenating `elf:Undefined#` and the *tag* otherwise.
-
-{.note} The special tag "`ERROR`" does not require special handling;
-because it never has a *tag definition*,
-it becomes the *undefined tag identifier* `elf:Undefined#ERROR`.
-
 
 ## References
 
