@@ -100,9 +100,10 @@ application *must* also be *conformant* with the referenced parts of
 [Basic Concepts].  Concepts defined in that standard are used here
 without further definition.
 
-{.note} In particular, precise meaning of *string*, *character*,
-*whitespace*, *whitespace normalisation* and *term* are given in [Basic
-Concepts].
+{.note} In particular, precise meaning of *character*, *code point*,
+*string*, *whitespace*, *whitespace normalisation*, *line break*, *line
+break normalisation*, *language tag*, *term* and *literal* are given in
+[Basic Concepts].
 
 Certain facilities in this standard are described as **deprecated**,
 which is a warning that they are likely to be removed from a future
@@ -190,13 +191,14 @@ defining *tags* for other purposes, including to extend the [ELF Data
 Model].
 
 The *payload* is either a *literal* or a *pointer* to another
-*structure*.  A **literal** is a *string* which is tagged with a
-*datatype name* and sometimes also a *language tag*.
+*structure*.  
 
-{.note} Making the *payload* a *literal* rather than a plain *string* is
-an extension to GEDCOM.  *Datatypes* are defined in §6 of [Basic
-Concepts], and are used in the *optional* extensibility mechanism for
-ELF described in [ELF Schemas]; however, for the purpose of this
+{.note}  A *literal* is defined in §6.5 of [Basic Concepts] as a
+*string* which is tagged with a *datatype name* and sometimes also a
+*language tag*.  Making the *payload* a *literal* rather than a plain
+*string* is an extension to GEDCOM.  *Datatypes* are defined in §6 of
+[Basic Concepts], and are used in the *optional* extensibility mechanism
+for ELF described in [ELF Schemas]; however, for the purpose of this
 standard, a *datatype name* is simply an IRI that may be associated with
 the *string* to help interpret it.  *Language tags* are defined in §3 of
 [Basic Concepts].
@@ -371,20 +373,20 @@ The parsing process can be summarised as follows:
        encoding*; and
     c. splitting on *line breaks* per {§line-strings}.
 
-2. *Line strings* are parsed as *lines* by parsing the *level*, *tag*,
-   *xref_id*, and *payload* of each *line*.
+2. *Line strings* are parsed as *lines* per {§lines}.
 
-3. *Lines* are parsed into *xref structures* by
+3. *Lines* are assembled into *records*, each of which are hierarchies
+of *tagged structures*, as described in {§tagged-structs}.
 
-    - re-merging `CONC` and `CONT`-split *payloads*; violations of splitting rules are ignored
-    - using *levels* to properly nest *xref structures*
-
-4. *xref structures* are parsed into *tagged structures* by simultaneously
+4. These *tagged structures* are then processed by:
 
     - converting *xrefs* to *pointers*, with a special "point to null" if this fails
     - unescaping `@` *characters*
     - preserving valid *escapes* and removing others
-    - converting *unicode escapes* into their represented *characters*.
+    - converting *unicode escapes* into their represented *characters*,
+      and
+    - merging `CONC` and `CONT`-split *payloads*
+
 
 
 ### Serialisation                                               {#serialising}
@@ -653,7 +655,7 @@ Concepts] allows an application to reject.
 
 *Characters* from the initial portion of the *octet stream* are
 parsed into *lines strings* as described in {§line-strings}, each
-*line string* is *whitespace normalised* as described in §2 of [Basic
+*line string* is *whitespace normalised* as described in §2.1 of [Basic
 Concepts], and all lowercase ASCII *characters* (U+0061 to U+007A)
 converted to the corresponding uppercase *characters* (U+0041 to
 U+005A).
@@ -857,24 +859,31 @@ they must be assembled into *line strings*.  This is done by appending
 at which point the *character* or *characters* forming the *line break*
 are discarded and a new *line string* is begun.  
 
-A **line break** is defined as a line feed (U+000A), or carriage return
-(U+000D) followed by an *optional* line feed (U+000A).  It matches the
-following `LB` production:
+{.note}  A *line break* is defined in §2.1 of [Basic Concepts] as a line
+feed (U+000A), or carriage return (U+000D) followed by an *optional*
+line feed (U+000A).  Unlike the equivalent production in [GEDCOM 5.5.1],
+this does not match a line feed followed by a carriage return (U+000A
+U+000D) which was used as a line ending on BBC and Acorn computers in
+some specific contexts.  In ELF, this sequence is parsed as two *line
+breaks* with an intervening blank *line string* which gets ignored.
 
-    LB  ::=  #xD #xA? | #xA
+*ELF readers* *should* avoid imposing a limit on the length of *line
+strings* and *must* ordinarily be able to handle *line strings* of up to
+65,535 *characters* in length.
 
-{.note}  This definition of a *line break* matches the form of line
-endings used on Unix, Linux and modern Mac OS (U+000A), the
-traditional Mac OS form (U+000D), and Windows line endings (U+000D
-U+000A).  Unlike the equivalent production in [GEDCOM 5.5.1], this does
-not match a line feed followed by a carriage return (U+000A U+000D)
-which was used as a line ending on BBC and Acorn computers in some
-specific contexts.  In ELF, this sequence is parsed as two *line breaks*
-with an intervening blank *line string* which gets ignored.
+{.note}  This lower bound on the maximum supported *line string* length
+is intentionally expressed in *characters* and not *octets*, as by the
+time the *octet stream* is split into *line strings*, the *octets* have
+been decoded into the application's internal representation of
+*characters*.  It is no longer common practice to parse lines using
+fixed-length buffers, but an application doing so and using a
+variable-width encoding such as UTF-8 or UTF-16 internally *must* allow
+for this when determining the buffer length.
 
-Any leading *whitespace* *shall* be removed from the *line string*, and
-any trailing *whitespace* *should* also be removed.  If this results in
-a *line string* which is an empty *string*, the empty *line string* is
+Any leading *whitespace* *shall* be removed from the *line string*, but
+trailing *whitespace* *must not* also be removed except in the case that
+the *line string* is entirely *whitespace*.  If this results in a *line
+string* which is an empty *string*, the empty *line string* is
 discarded.
 
 {.note ...} These operations resolve ambiguities in [GEDCOM 5.5.1], and
@@ -888,21 +897,17 @@ relevant grammar production does not permit any such leading
 *whitespace* and blank lines, but *must not* generate them.
 
 For trailing *whitespace*, [GEDCOM 5.5.1] is even less clear.  Twice,
-once in §2 and again Appendix&nbsp;A, it states that applications
+once in §2 and once in Appendix&nbsp;A, it states that applications
 sometimes remove trailing *whitespace*, but without saying whether this
 behaviour is legal; certainly it implies it is not required.  There
 is little consistency in the behaviour of current applications, so any
 resolution to this will result in an incompatibility some applications.
-In ELF, the removal of trailing *whitespace* is *recommended*, and a
-future version of ELF is likely to make this *required*.  It is
-explicitly not *required* in this standard so that applications *may*
-decide whether to remove trailing *whitespace* based on the identity of
-the application that produce the file.  Applications *should not* leave
-trailing *whitespace* on *line strings* unconditionally.
+In ELF, the trailing *whitespace* *must* be preserved.
 
 The Unicode escape mechanism defined in {§unicode-escape} provides ELF
 applications with a way of serialising a value which legitimately ends
-in *whitespace* without it being removed.
+in *whitespace* without it being removed by older, non-ELF-aware
+applications.
 {/}
 
 {.ednote}  FHISO's general philosophy regarding *whitespace* is that,
@@ -915,7 +920,7 @@ and tabs, and trailing *whitespace* on *lines*.
 *Line strings* are serialised by concatenating them together to form a
 single *string*, inserting a *line break* between each *line string* and
 after the last one.  All the inserted *line breaks* *must* have
-identical lexical forms matching the `LB` production in {§line-strings}.
+identical lexical forms.
 
 {.note}  Applications can choose whether to use Windows line endings
 (U+000D U+000A), traditional Mac OS line endings (U+000D), or the line
@@ -948,44 +953,45 @@ of a BOM is neither required nor recommended for UTF-8".
 For a *line string* to be parsed into a *line*, it *must* match the
 following `Line` production:
 
-    Line ::= Number S (XRefID S)? Tag (S Pointer | S String)?
+    Line ::= Number S (XRefID S)? Tag (S Pointer S? | S String)?
 
-{.note ...}  The `Line` production does not allow leading or trailing
-*whitespace* because this has already been removed in the process of
-creating *line strings*.  The `S` production is defined in §2 of [Basic
-Concepts] and matches any non-empty sequence of *whitespace*
-*characters*, though because carriage returns and line feeds are always
-treated as *line breaks* which delimit *line strings*, in practice the
-`S` production can only match space or horizontal tab *characters*.
-Allowing tabs or multiple space *characters* is a departure from [GEDCOM
-5.5.1], but one that is commonly implemented in current applications.
+{.note ...}  The `Line` production does not allow leading *whitespace*
+because this has already been removed in the process of creating *line
+strings*.  The `S` production is defined in §2 of [Basic Concepts] and
+matches any non-empty sequence of *whitespace* *characters*, though
+because carriage returns and line feeds are always treated as *line
+breaks* which delimit *line strings*, in practice the `S` production can
+only match space or horizontal tab *characters*.  Allowing tabs or
+multiple space *characters* is a departure from [GEDCOM 5.5.1], but one
+that is commonly implemented in current applications.
 
 *Whitespace* is *required* between each of the four components of the
 *line*.  This is arguably a change from [GEDCOM 5.5.1] where the `delim`
 grammar production says that the delimiter is an *optional* space
-character.  Almost certainly a typo in the grammar that has persisted
-through several versions of GEDCOM, and GEDCOM does not intend the space
-to be *optional*.  However documents written using very early versions
+character.  But almost certainly that is a typo in the grammar that has
+persisted through several versions of GEDCOM, and GEDCOM does not intend
+the space to be *optional*.  Documents written using very early versions
 of GEDCOM – long before its current grammar productions were written –
 did frequently merge the *level*, *cross-reference identifier* and *tag*
-together, as in "`0@I1@INDI`".  This is not permitted permitted in ELF.
+together, as in "`0@I1@INDI`", but this is not permitted permitted in
+ELF.
 {/}
 
 {.ednote}  It would be simple enough to modify the grammar so that
-"`0@I1@INDI`" would still be supported, and this could help make ELF
+"`0@I1@INDI`" would be supported, and this could help make ELF
 Serialisation backwards compatible with GEDCOM 1.0.  However the TSC
-know of no use of in files identifying as GEDCOM 5.x files, and is not
-generally supported in applications.  Almost certainly it is an error
-arising from confusion over the two different uses of `[`&hellip;`]` in
-GEDCOM grammar productions.  Files created using earlier versions of
-GEDCOM are only very rarely encountered and their data model is
-incompatible with [ELF Data Model].  There seems to be little benefit to
-supporting earlier versions of GEDCOM in the serialisation layer but
-not in the data model.
+know of no uses of this in files identifying as GEDCOM 5.x files, and is
+not generally supported in applications.  Almost certainly it is an
+error arising from confusion over the two different uses of
+`[`&hellip;`]` in GEDCOM grammar productions.  Files created using
+earlier versions of GEDCOM are only very rarely encountered and their
+data model is incompatible with [ELF Data Model].  There seems to be
+little benefit to supporting earlier versions of GEDCOM in the
+serialisation layer but not in the data model.
 
 The `Line` production contains an ambiguity as any *string* which
 matches the `Pointer` production necessarily also matches the `String`
-production.  *ELF parsers* *must* treat the payload as a
+production.  *ELF parsers* *must* treat the *payload* as a
 *pointer* if it matches the `Pointer` production, and only as a *string*
 if it does not.
 
@@ -1014,18 +1020,17 @@ The `Line` production contains a second ambiguity: when there are
 multiple *characters* of *whitespace* following the *tag* on a *line*
 whose *payload* is a *string*, the second and subsequent *whitespace*
 *characters* can be parsed by the `S` production or the `String`
-production.  Applications are *recommended* to resolve this ambiguity by
-matching the `S` production to the shortest possible non-empty sequence
-of *whitespace* so that any additional *whitespace* is considered to be
+production.  Applications *must* resolve this ambiguity by matching the
+`S` production to the shortest possible non-empty sequence of
+*whitespace* so that any additional *whitespace* is considered to be
 part of the *payload*.
 
-{.note ...} This ambiguity is inherited from [GEDCOM 5.5.1].  On the one
-hand, the grammar in §1 of [GEDCOM 5.5.1] allows at most one space
-*character* and any further space *characters* are therefore considered
-part of the *payload*.  On the other hand, Appendix&nbsp;A says that
-some applications look for the first non-space *character* to denote the
-start of the *payload*, and recommends against doing this with the
-*payload* of the `CONT` tag.
+{.note ...} This ambiguity is inherited from GEDCOM, and Appendix&nbsp;A
+of [GEDCOM 5.5.1] warns that some applications look for the first
+non-space *character* as the start of the *payload*.  There is no
+explicit statement that such applications are non-compliant, and this
+has left some doubt as to whether or not this behaviour permitted.  In
+ELF this is explicitly not allowed.
 
 This ambiguity is most problematic on `CONC` *lines* where it can result
 in unwanted *whitespace* being inserted in the middle of a word, or 
@@ -1038,18 +1043,6 @@ To avoid this, using the `CONC` mechanism to split the *payload* next to
 *whitespace* from being lost.  These allow ELF applications to avoid
 depending on this undefined behaviour.
 {/}
-
-{.ednote}  This standard could have *required* leading *whitespace* to
-be preserved in *payloads*.  This standard doesn't do that in part to
-discourage applications from relying on behaviour will be misinterpreted
-in some current applications, and instead use *Unicode escapes* to
-escape the first character on a line when it is significant whitespace.
-In general, the TSC would rather ELF did not attach significance to
-differences in *whitespace*, and it is possible FHISO might opt to
-remove the ambiguity in the future by requiring the *payload* to begin
-with a non-*whitespace* *character*.  But more likely, a future version
-of ELF will change the recommendation to preserve leading whitespace
-into a requirement.
 
 The `Number`, `XRefID` and `Tag` productions encodes the *level*, the
 *cross-reference identifier* and the *tag* of the *line*, respectively.
@@ -1138,7 +1131,7 @@ string* is exactly "`0 HEAD`" while determining the *specified character
 encoding* per {§specified-enc}, which means the first *line* must always
 have a *level* of 0.
 
-### Assembling structures
+### Assembling structures                                    {#tagged-structs}
 
 Once *line strings* have been parsed into *lines*, the sequence of
 *lines* is converted into a sequence of *records*. 
@@ -1601,7 +1594,8 @@ Encoding  Description
 {.note}  This value is read as the *specified character encoding* per
 {§specified-enc}.
 
-It is REQUIRED that the encoding used should be able to represent all code points within the *string*;
+It is REQUIRED that the encoding used should be able to represent all
+*code points* within the *string*;
 *unicode escapes* (see {§unicode-escape}) allow this to be achieved for any supported encoding.
 It is RECOMMENDED that `UTF-8` be used for all datasets.
 
