@@ -211,8 +211,6 @@ Model] as meaning "the name of the primary creator of the source", and
 鈴木眞年 is the name of genealogist Suzuki Matoshi, written in his
 native Japanese language, which is denoted by the *language tag* `ja`.
 
-{.ednote} Move the definition of *literal* to [Basic Concepts].
-
 When the *payload* of a *structure* is a *pointer*, this represents a
 link between two *structures*, with the *pointer* in one *structure*
 referencing the *cross-reference identifier* in a second *structure*.
@@ -639,19 +637,18 @@ using the *detected character encoding*.
 
 If there is no *detected character encoding*, the application *shall*
 convert each *octet* to the *character* whose *code point* is the value
-of *octet*.  An application *may* given an error if the null *octet*
-`00` is encountered.
+of *octet*.  An application *shall* issue an error and stop processing
+the *octet stream* if the null *octet* `00` is encountered.  *Restricted
+characters*, as defined in §2.3 of [Basic Concepts], *may* be handled in
+an implementation-defined manner.
 
 {.note}  This is equivalent to using the ISO-8859-1 *character encoding*
 if there is no *detected character encoding*.  As defined in §2 of
-[Basic Concepts], *code point* U+0000 does not correspond to a valid
-*character*.  In principle, the *octet* `00` might occur in the
-representation of a valid *character* in some *character encoding*, but
-most *character encodings* avoid this and it cannot happen in the ASCII,
-ANSEL or UTF-8 *character encodings*.  The same is true of octets
-corresponding to those control *characters* matching the
-`RestrictedChar` production in §2 of [Basic Concepts], which [Basic
-Concepts] allows an application to reject.
+[Basic Concepts], *code point* U+0000 is not a *character*.  In
+principle, the *octet* `00` might occur in the representation of a valid
+*character* in some *character encoding*, but almost all *character
+encodings* avoid this and it cannot happen in the ASCII, ANSEL or UTF-8
+*character encodings*.  
 
 *Characters* from the initial portion of the *octet stream* are
 parsed into *lines strings* as described in {§line-strings}, each
@@ -957,7 +954,7 @@ following `Line` production:
 
 {.note ...}  The `Line` production does not allow leading *whitespace*
 because this has already been removed in the process of creating *line
-strings*.  The `S` production is defined in §2 of [Basic Concepts] and
+strings*.  The `S` production is defined in §2.1 of [Basic Concepts] and
 matches any non-empty sequence of *whitespace* *characters*, though
 because carriage returns and line feeds are always treated as *line
 breaks* which delimit *line strings*, in practice the `S` production can
