@@ -864,18 +864,13 @@ U+000D) which was used as a line ending on BBC and Acorn computers in
 some specific contexts.  In ELF, this sequence is parsed as two *line
 breaks* with an intervening blank *line string* which gets ignored.
 
-*ELF readers* *should* avoid imposing a limit on the length of *line
-strings* and *must* ordinarily be able to handle *line strings* of up to
-65,535 *characters* in length.
+*ELF readers* *must* be able to handle arbitrarily long *line strings*,
+subject to limits of available system resources.
 
-{.note}  This lower bound on the maximum supported *line string* length
-is intentionally expressed in *characters* and not *octets*, as by the
-time the *octet stream* is split into *line strings*, the *octets* have
-been decoded into the application's internal representation of
+{.note}  This is a change from [GEDCOM 5.5.1] which says that *line
+strings* together with the following *line break* *must not* exceed 255
 *characters*.  It is no longer common practice to parse lines using
-fixed-length buffers, but an application doing so and using a
-variable-width encoding such as UTF-8 or UTF-16 internally *must* allow
-for this when determining the buffer length.
+fixed-length buffers, and ELF effectively prohibits this.
 
 Any leading *whitespace* *shall* be removed from the *line string*, but
 trailing *whitespace* *must not* also be removed except in the case that
@@ -906,11 +901,6 @@ applications with a way of serialising a value which legitimately ends
 in *whitespace* without it being removed by older, non-ELF-aware
 applications.
 {/}
-
-{.ednote}  FHISO's general philosophy regarding *whitespace* is that,
-where possible, ELF should avoid placing any significance on invisible
-difference in *whitespace*.  This includes the difference between spaces
-and tabs, and trailing *whitespace* on *lines*.
 
 ### Serialising line strings                       {#serialising-line-strings}
 
@@ -1128,6 +1118,23 @@ string* is exactly "`0 HEAD`" while determining the *specified character
 encoding* per {§specified-enc}, which means the first *line* must always
 have a *level* of 0.
 
+### Unescaping payloads
+
+ELF uses the "at" sign (`@`; U+0040) in the representation of
+*pointers*, as well as in *escape sequences* which are used to encode
+a special processing instructions in a *payload* which is a *string*.
+Other uses of the "at" sign *should* be escaped by doubling it as `@@`,
+and *must* be when it would result in an ambiguity.
+
+{.note}  [GEDCOM 5.5.1] says they *must* be escaped, but many current
+applications fail to do this.  This is particularly relevant to the
+`EMAIL` *structure* which almost invariably has a payload containing
+one "at" sign, and is often not properly escaped.  *Payloads* with a
+single "at" sign are never legal in GEDCOM.  ELF requires such
+*payloads* to be interpreted as if the "at" sign had been escaped.
+
+
+
 ### Assembling structures                                    {#tagged-structs}
 
 Once *line strings* have been parsed into *lines*, the sequence of
@@ -1225,6 +1232,9 @@ The result is an `INDI` *structure* with two *substructures* with *tags*
 {.ednote} `CONC` and `CONT` *lines* positioned after other *lines* are
 *malformed lines*.  So are nested `CONC` or `CONT` *lines*.
 
+Applications *must not* assign significance to where `CONC` tags are 
+inserted nor to how many are present in the serialization of a payload.
+
 ### Serialising lines                                     {#serialising-lines}
 
 {.ednote} The payload needs escaping, either here or in the next
@@ -1258,7 +1268,7 @@ The *level* of an *additional line* is one greater than the *level* of its *xref
 Each *first line* has the same *xref_id* (if any) and *tag* as its corresponding *xref line*.
 Each *additional line* has no *xref_id* and either "`CONT`" or "`CONC`" as its *tag*.
 
-{.note} Because an *xref structure* MUST NOT have either "`CONC`" or "`CONT`" as its *tag* (see {§tag-serialisation}), it is unambiguous which *lines* are *additional lines* and which *first line* they correspond to.
+{.note} Because an *xref structure* MUST NOT have either "`CONC`" or "`CONT`" as its *tag*, it is unambiguous which *lines* are *additional lines* and which *first line* they correspond to.
 
 The *payload* of the *xref structure*
 is the concatenation of the *payloads* of the *first line* and all *additional lines*,
@@ -1621,225 +1631,7 @@ A *tag* SHOULD begin with an underscore (`_`, U+005F) unless it is defined in a 
 *Structure type identifiers* are serialised as *tags*
 by utilizing *tag definitions* and *supertypes*, as outlined below.
 
-#### Supertypes
-
-A **supertype definition** specifies one *structure type identifier* that is defined to be a **supertype** of another.
-
-{.example ...} The following are example *supertype definitions* in the *default ELF schema*:
-
-- `elf:FamilyEvent` is a supertype of `elf:MARRIAGE`
-- `elf:Event` is a supertype of `elf:FamilyEvent`
-- `elf:Agent` is a supertype of `elf:SUBMITTER_RECORD`
-- `elf:Record` is a supertype of `elf:SUBMITTER_RECORD`
-{/}
-
-An **eventual supertype** of a *structure type identifier* is either
-
-- the *structure type identifier* itself
-- an *eventual supertype* of at least one of the *structure type identifier*'s *supertypes*
-
-{.example ...} Continuing the previous example,
-
-- `elf:MARRIAGE`, `elf:FamilyEvent`, and `elf:Event` are *eventual supertypes* of `elf:MARRIAGE`
-- `elf:FamilyEvent`, and `elf:Event` are *eventual supertypes* of `elf:FamilyEvent`
-- `elf:SUBMITTER_RECORD`, `elf:Agent`, and `elf:Record` are *eventual supertypes* of `elf:SUBMITTER_RECORD`
-{/}
-
-If $X$ is an *eventual supertype* of $Y$, then $Y$ is an **eventual subtype** of $X$.
-
-{.example ...} Continuing the previous example,
-
-- `elf:MARRIAGE`, `elf:FamilyEvent`, and `elf:Event` are *eventual subtypes* of `elf:Event`
-- `elf:SUBMITTER_RECORD` and `elf:Agent` are *eventual subtypes* of `elf:Agent`
-- `elf:SUBMITTER_RECORD` and `elf:Record` are *eventual subtypes* of `elf:Record`
-{/}
-
-The *supertype* defined in this specification is only intended to facilitate *tag definitions*
-and MUST NOT be taken to indicate any semantic relationship between the structure types they describe.
-
-{.note} It is expected that underlying data models will often define
-a semantic supertype-like relationship that mirrors the *supertype definitions* in this document;
-see [Elf-DataModel] for an example of what this might look like.
-The prohibition against assuming such from the *supertype definitions* alone
-provides a clearer separation between data model and serialisation.
-
-{.ednote} We could decide to REQUIRE that any *supertype definition*
-has meaning in the underlying data model;
-I chose not to do so in this draft as it required discussing semantics,
-which this specification otherwise does not need to do.
-
-#### Tag definitions                                        {#tag-definitions}
-
-The correspondence between *tags* and *structure type identifiers* is provided by a set of **tag definitions**.
-Each *tag definition* gives the unique *structure type identifier* that a particular *tag* corresponds to if its *superstructure type identifier* is an *eventual subtype* of a given *superstructure type identifier*.
-
-{.example ...} The following are example *tag definitions* in the *default ELF schema*:
-
-- the *structure type identifier* of "`HUSB`" is `elf:Parent1Age` if its *superstructure* is an `elf:FamilyEvent`.
-- the *structure type identifier* of "`HUSB`" is `elf:PARENT1_POINTER` if its *superstructure* is an `elf:FAM_RECORD`.
-- the *structure type identifier* of "`CAUS`" is `elf:CAUSE_OF_EVENT` if  its *superstructure* is an `elf:Event`.
-
-If a *tagged structure* has *tag* "`CAUS`" and *superstructure type identifier* `elf:MARRIAGE`, it's *structure type identifier* is `elf:CAUSE_OF_EVENT` because of the last of the above *tag definitions*
-and because `elf:MARRIAGE` is an *eventual subtype* of `elf:Event`.
-{/}
-
-The set of *tag definitions* and *supertype definitions*
-MUST NOT provide two (or more) different *structure type identifiers* for any single *structure*.
-
-{.example ...} The following, taken together, are not permitted
-
-- `elf:Agent` is a *supertype* of `elf:SUBMITTER_RECORD`.
-- `elf:Record` is a *supertype* of `elf:SUBMITTER_RECORD`.
-- `ex:AgentKind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Agent`.
-- `ex:RecordKind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Record`.
-
-These provide two contradictory *tag definitions*
-for the tag "`_EX_KIND`" as a *substructure* of an `elf:SUBMITTER_RECORD`.
-{/}
-
-{.example ...} The following, taken together, are permitted
-
-- `elf:Agent` is a *supertype* of `elf:SUBMITTER_RECORD`.
-- `elf:Record` is a *supertype* of `elf:SUBMITTER_RECORD`.
-- `ex:Kind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Agent`.
-- `ex:Kind` is the *structure type identifier* of an "`_EX_KIND`" if its *superstructure* is an `elf:Record`.
-
-These provide two *tag definitions*
-for the tag "`_EX_KIND`" as a *substructure* of an `elf:SUBMITTER_RECORD`,
-but because both provide the same *structure type identifier*
-they are permitted.
-{/}
-
-A *tag definition* is said to apply to a *structure*
-if and only if the *structure*'s *structure type identifier* is that of the *tag definition*
-and its *superstructure type identifier* is an *eventual subtype* of the *tag definition*'s *superstructure type identifier*.
-
-A *tag definition* is said to apply to a *tagged structure*
-if and only if the *tagged structure*'s *tag* is that of the *tag definition*
-and its *superstructure type identifier* is an *eventual subtype* of the *tag definition*'s *superstructure type identifier*.
-
-
-### Serialisation                                         {#tag-serialisation}
-
-During serialisation, a *conformant* application SHALL ensure the presence of sufficient *tag definitions*
-that at each *structure* has a defined *tag*,
-creating new *tag definitions* if needed to achieve this end.
-
-{.note} The above is not the same as saying that a *tag definition* is created for each *structure type identifier*
-because a *structure* with identifier "`elf:Undefined`" or an *undefined tag identifier*
-has a defined *tag* without a *tag definition*.
-
-New *tag definitions* may be selected arbitrarily, subject to the limitations on *tags* (see {§tags}) and *tag definitions* (see {§tag-definitions}) and to the following:
-
-- the *tag* MUST NOT be "`CONT`", "`CONC`", "`UNDEF`",
-    or the *tag* of any *undefined tag identifier* in the *dataset*.
-
-{.note} "`CONT`", "`CONC`", and "`UNDEF`" are special *tags*
-that can be created at any location within the dataset during deserialisation.
-
-- the *structure type identifier* MUST NOT be any of 
-    "`elf:Document`",
-    "`elf:Metadata`",
-    "`elf:Undefined`",
-    or an *undefined tag identifier*.
-
-{.note} "`elf:Undefined`" *structures* are used for errors and are serialised differently than other *structures*.
-
-- the (*tag*, *superstructure type identifier*) pair MUST NOT be any of 
-    (`HEAD`, `elf:Document`), 
-    (`TRLR`, `elf:Document`), 
-    (`CHAR`, `elf:Metadata`), or 
-    (`SCHMA`, `elf:Metadata`).
-
-{.note} These tags and contexts are reserved for encoding *serialisation metadata*.
-
-- all *tag definitions* for a given *structure type identifier* SHOULD use the same *tag*
-
-{.note} [GEDCOM 5.5.1] never intentionally violates the above RECOMMENDATION, but via a typo it provides both `EMAI` and `EMAIL` as *tags* for `elf:ADDRESS_EMAIL`. Other aliases exist due to similar mistakes in applications and to multiple extensions inserting the same concept via different *tags*. The ability to handle these aliases is the reason this is a RECOMMENDATION, not a REQUIREMENT, in ELF.
-
-- the *tag definitions* in the default ELF Schema (see §XX of [ELF
-  Schemas]) SHOULD be used in place of any alternative *tag definitions* for the same *structures* in the same contexts.
-
-Each *structure* is converted to a *tagged structure* with the *tag* being
-
-- `UNDEF` if the *structure type identifier* is `elf:Undefined`.
-
-- The *tag* of the *undefined tag identifier* if the *structure type identifier* is an *undefined tag identifier*.
-
-- The *tag* from one of the *tag definitions* that applies to that *structure* otherwise.
-
-    In the event that more than one such *tag* exists, applications SHOULD select the same *tag* in each instance where this choice exists.
-
-{.note} If processing *structures* into *tagged structures* in place,
-it may be easiest to perform a postorder traversal of each *structure* hierarchy;
-this way the *superstructure* of a *structure* being converted will still have a *structure type identifier*,
-not a *tag*,
-which will simplify looking up applicable *tag definitions*.
-
-The *substructures* of a *tagged structure* are stored in a sequence, not set.
-This ordering of *substructures* of a *tagged structure* MUST maintain the relative order
-of those *substructures* that were ordered in the corresponding *structure*.
-It is RECOMMENDED that all *substructures* with the same *tag* be grouped together, but doing so is NOT REQUIRED.
-
-{.example ...} Consider the following *structure* hierarchy
-
-- `elf:INDIVIDUAL_RECORD`
-    - `elf:BIRTH`
-        - `elf:DATE_VALUE` 20 JUN 1881
-    - `elf:GRADUATION`s:
-        1. `elf:GRADUATION`
-            - `elf:AGE_AT_EVENT` 18
-        2. `elf:GRADUATION`
-            - `elf:AGE_AT_EVENT` 22
-
-This may be converted to any of the following three *tagged structure* hierarchies, though the second is NOT RECOMMENDED:
-
-- `INDI`
-    1. `BIRTH`
-        - `DATE` 20 JUN 1881
-    2. `GRAD`
-        - `AGE` 18
-    3. `GRAD`
-        - `AGE` 22
-
-- `INDI`
-    1. `GRAD`
-        - `AGE` 18
-    2. `BIRTH`
-        - `DATE` 20 JUN 1881
-    3. `GRAD`
-        - `AGE` 22
-
-- `INDI`
-    1. `GRAD`
-        - `AGE` 18
-    2. `GRAD`
-        - `AGE` 22
-    3. `BIRTH`
-        - `DATE` 20 JUN 1881
-
-However, the following puts the *tagged structure* graduations in a different order than the corresponding *structure* graduations and MUST NOT be used:
-
-- `INDI`
-    1. `GRAD`
-        - `AGE` 22
-    2. `GRAD`
-        - `AGE` 18
-    3. `BIRTH`
-        - `DATE` 20 JUN 1881
-{/}
-
-### Parsing
-
-When parsing *tagged structures* into *structures*,
-add the *structure type identifier* from the the applicable *tag definition*.
-
-If there is no applicable *tag definition*, or if there are multiple applicable *tag definitions*
-providing different *structure type identifiers*,
-then the *structure type identifier* SHALL be `elf:Undefined` if the *tag* is `UNDEF`, or the *undefined tag identifier* constructed by concatenating `elf:Undefined#` and the *tag* otherwise.
-
 ## References
-
 
 ### Normative references
 
