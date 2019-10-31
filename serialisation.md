@@ -1727,7 +1727,7 @@ encoding (which is *not recommended*) of the *string* "`@@`".
 #### Identifying escapes                                      {#identify-escs}
 
 To identify all the *escaped ats* and *escape sequences* in a *string
-payload*,, an *ELF parser* scans the string from beginning to end
+payload*, an *ELF parser* scans the string from beginning to end
 looking for "at" signs (U+0040), and then inspects the next *character*,
 if there is one, to determine how the "at" sign is to be interpreted.
 
