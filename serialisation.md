@@ -2051,9 +2051,6 @@ A *tag* SHOULD begin with an underscore (`_`, U+005F) unless it is defined in a 
 "`23`" and "`UUID`" are also valid, but SHOULD NOT be used as they are not defined in a FHISO standard and do not begin with an underscore.
 "`_UNCLE_OF_THE_BRIDE`" is valid, but SHOULD NOT be used as it is 19 *characters* long, more than the 15-*character* recommended maximum length.
 
-*Structure type identifiers* are serialised as *tags*
-by utilizing *tag definitions* and *supertypes*, as outlined below.
-
 ## References
 
 ### Normative references
