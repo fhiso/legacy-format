@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Serialisation Format
-date: 8 October 2019
+date: 31 October 2019
 numbersections: true
 ...
 
@@ -102,8 +102,10 @@ without further definition.
 
 {.note} In particular, precise meaning of *character*, *code point*,
 *string*, *whitespace*, *whitespace normalisation*, *line break*, *line
-break normalisation*, *language tag*, *term* and *literal* are given in
-[Basic Concepts].
+break normalisation*, *language tag* and *langauge-tagged string* are
+given in [Basic Concepts].  The word *tag* is defined in [Basic
+Concepts], but this standard does not make use of that definition and
+uses the word for an unrelated concept defined in {§tags}.
 
 Certain facilities in this standard are described as **deprecated**,
 which is a warning that they are likely to be removed from a future
@@ -190,26 +192,22 @@ to represent arbitrary data; [ELF Schemas] provides a mechanism for
 defining *tags* for other purposes, including to extend the [ELF Data
 Model].
 
-The *payload* is either a *literal* or a *pointer* to another
-*structure*.  
+The *payload* is either a *language-tagged string* or a *pointer* to
+another *structure*.  
 
-{.note}  A *literal* is defined in §6.5 of [Basic Concepts] as a
-*string* which is tagged with a *datatype name* and sometimes also a
-*language tag*.  Making the *payload* a *literal* rather than a plain
-*string* is an extension to GEDCOM.  *Datatypes* are defined in §6 of
-[Basic Concepts], and are used in the *optional* extensibility mechanism
-for ELF described in [ELF Schemas]; however, for the purpose of this
-standard, a *datatype name* is simply an IRI that may be associated with
-the *string* to help interpret it.  *Language tags* are defined in §3 of
+{.note}  A *language-tagged string* is defined in §3.1 of [Basic
+Concepts] as a *string* which is tagged with a *language tag*.  Making
+the *payload* a *language-tagged string* rather than a plain
+*string* is an extension to GEDCOM.  *Language tags* are defined in §3 of
 [Basic Concepts].
 
 {.example} A simple example *structure* might have a *tag* of "`AUTH`"
-and a *payload* which is a *literal* consisting of the *string*
-"`鈴木眞年`" tagged with the *language tag* `ja`.  The *datatype name*
-is ignored in this example.  The `AUTH` *tag* is defined in [ELF Data
-Model] as meaning "the name of the primary creator of the source", and
-鈴木眞年 is the name of genealogist Suzuki Matoshi, written in his
-native Japanese language, which is denoted by the *language tag* `ja`.
+and a *payload* which is a *language-tagged string* consisting of the
+*string* "`鈴木眞年`" tagged with the *language tag* `ja`.  The `AUTH`
+*tag* is defined in [ELF Data Model] as meaning "the name of the primary
+creator of the source", and 鈴木眞年 is the name of genealogist Suzuki
+Matoshi, written in his native Japanese language, which is denoted by
+the *language tag* `ja`.
 
 When the *payload* of a *structure* is a *pointer*, this represents a
 link between two *structures*, with the *pointer* in one *structure*
@@ -251,11 +249,11 @@ while any *substructures* are encoded in order on subsequent *lines*.
 Each *line* consists of the following components, in order, separated by
 *whitespace*:
 
-*  a *level*, which is a non-negative decimal *integer* that records how
-   many levels of *substructures* deep the current *structure* is nested;
+*  a *level*, which is an *integer* that records how deeply the current
+   *structure* is nested; 
 *  the *optional* *cross-reference identifier* of the *structure* being
    encoded by the *line*;
-*  a *tag* of the *structure* being encoded; and
+*  the *tag* of the *structure* being encoded; and
 *  the *optional* *payload* of the *structure*.
 
 {.example ...}
@@ -354,15 +352,21 @@ the output allowed from *ELF writers* apply.  These relaxations allow
 fully parsing those parts of their input which are not going to be
 changed.
 
+This standard has an *optional* dependency on the [ELF Schemas]
+standard, which provides additional functionality for validating ELF
+documents and extending the ELF data model.  An application which
+conforms to the [ELF Schemas] standard is described as **schema-aware**.
+
 ### Parsing                                                         {#parsing}
     
 The parsing process can be summarised as follows:
 
-1. An *octet stream* is converted to a sequence of *line strings* by
+1. An *octet stream* is converted to a sequence of *line strings* by:
 
     a. determining its *character encoding* by 
     
-        i.  detecting a *character encoding* per {§detected-enc}, and 
+        i.  identifying the *detected character encoding* per 
+            {§detected-enc}, and 
         ii. using that *detected character encoding* to look for a
             *specified character encoding* in the *serialisation
             metadata* per {§specified-enc};
@@ -371,19 +375,27 @@ The parsing process can be summarised as follows:
        encoding*; and
     c. splitting on *line breaks* per {§line-strings}.
 
-2. *Line strings* are parsed as *lines* per {§lines}.
+2. *Line strings* are converted into *records* by:
 
-3. *Lines* are assembled into *records*, each of which are hierarchies
-of *tagged structures*, as described in {§tagged-structs}.
+    a. parsing *line strings* into *lines* per {§lines};
+    b. assembling *lines* into *records*, each of which are hierarchies
+       of *tagged structures*, as described in {§tagged-structs}; and
+    c. if the parser is *schema-aware*, converting *tagged structures*
+       into *typed structures*, as described in [ELF Schemas].
 
-4. These *tagged structures* are then processed by:
+3. The *payloads* of each *structure* (which will be either *typed
+   structures* or *tagged structures* depending on whether the
+   application is *schema-aware*) is then unescaped by:
 
-    - converting *xrefs* to *pointers*, with a special "point to null" if this fails
-    - unescaping `@` *characters*
-    - preserving valid *escapes* and removing others
-    - converting *unicode escapes* into their represented *characters*,
-      and
-    - merging `CONC` and `CONT`-split *payloads*
+    a. identifying all *escaped ats* and *escape sequences* per
+       {§identify-escs};
+    b. verifying that each *escape sequence* is a *permitted escape* per
+       {§permitted-escs}; 
+    c. replacing each *escaped at* with a single "at" sign; and
+    d. replacing each *Unicode escape* with the *character* it encodes
+       per {§unicode-escape}.
+
+4.  Merging `CONC` and `CONT`-split *payloads*
 
 
 
@@ -926,8 +938,8 @@ to define an *output encoding*.
 
 If the *character encoding* is one which allows a byte-order mark
 (U+FEFF) to be encoded, an *ELF writer* *may* prepend one the *octet
-stream*.  This is *recommended* when serialising to UTF-16, but is *not
-recommended* when serialising to UTF-8.
+stream*.  This is *recommended* when serialising to UTF-16, but is 
+*not recommended* when serialising to UTF-8.
 
 {.note} This follows the advice in §2.6 of [Unicode] that "Use
 of a BOM is neither required nor recommended for UTF-8".
@@ -940,7 +952,7 @@ of a BOM is neither required nor recommended for UTF-8".
 For a *line string* to be parsed into a *line*, it *must* match the
 following `Line` production:
 
-    Line ::= Number S (XRefID S)? Tag (S Pointer S? | S String)?
+    Line ::= Number S (XRefLabel S)? Tag (S Payload)?
 
 {.note ...}  The `Line` production does not allow leading *whitespace*
 because this has already been removed in the process of creating *line
@@ -960,8 +972,7 @@ persisted through several versions of GEDCOM, and GEDCOM does not intend
 the space to be *optional*.  Documents written using very early versions
 of GEDCOM – long before its current grammar productions were written –
 did frequently merge the *level*, *cross-reference identifier* and *tag*
-together, as in "`0@I1@INDI`", but this is not permitted permitted in
-ELF.
+together, as in "`0@I1@INDI`", but this is not permitted in ELF.
 {/}
 
 {.ednote}  It would be simple enough to modify the grammar so that
@@ -975,6 +986,149 @@ earlier versions of GEDCOM are only very rarely encountered and their
 data model is incompatible with [ELF Data Model].  There seems to be
 little benefit to supporting earlier versions of GEDCOM in the
 serialisation layer but not in the data model.
+
+{.example ...}
+    0 @I1@ INDI
+    1 NAME Cleopatra
+    1 FAMC @F2@
+
+This ELF fragment contains three *lines*.  The first *line* has a
+*level* of `0`, a *cross-reference identifier* of `@I1@`, and a *tag* of
+`INDI`; it has no *payload*.  Neither the second nor the third *line*
+has a *cross-reference identifier*, and both have a *payload*: on the second
+line the *payload* is the *string* "`Cleopatra`", while the *payload* of
+the third *line* is a pointer, `@F2@`.
+{/}
+
+**Malformed lines** are *lines* or *line strings* which contain certain
+particular types of syntactic error.  Input containing a *malformed
+line* is a *non-conformant source*.  If an *ELF parser* encounters a
+*malformed line*, it *shall* terminate processing the input file.
+
+{.note} These parsing rules have been written to be very tolerant of
+unusual input.  *Malformed lines* are considered sufficiently serious
+errors that an *ELF parser* *must not* issue a warning to the user an
+continue in an implementation-defined manner, despite this usually
+being permitted when a *non-conformant source* is encountered.
+
+Any *line string* which does not match the `Line` production is a
+*malformed line*.
+
+{.note} Empty *line strings* or *line strings* consisting only of
+*whitespace* are not *malformed lines*, despite not matching the `Line`
+production, because they have already been removed from the input
+stream.
+
+#### Levels
+
+The `Number` production encodes the **level** of the *line*, which is a
+non-negative decimal *integer* that records how many levels of
+*substructures* deep the current *structure* is nested.
+
+    Number  ::=  "0" | [1-9] [0-9]*
+
+{.note}  ELF allows the *level* to be arbitrarily large, whereas 
+[GEDCOM 5.5.1] limits *levels* to two decimal digits.  This is not
+expected to cause any practical differences as neither [GEDCOM 5.5.1]
+nor the [ELF Data Model] nest *structures* deeply.
+
+The **previous level** of a *line* is defined as the *level* of the
+closest preceding *line*.  The first *line* in the input stream has no
+*previous level*.
+
+{.example ...}
+    0 INDI
+    1 NOTE The 16th President of the United States.
+    2 CONT Assassinated by John Wilkes Booth.
+    0 TRLR
+
+In this example, the *previous level* of the `TRLR` *line* is `2`, which
+is the *level* of the `NOTE` *line*.
+{/}
+
+Any *line* that has a *level* more than one greater than its *previous
+level* is a *malformed line*.  This does not apply to the first *line*
+in the input stream which is never a *malformed line*.
+
+{.example ...}  The following ELF fragment has a missing line.
+
+    0 @I1@ INDI
+    2 PLAC Москва
+    3 ROMN Moscow
+    1 NAME Иван Васильевич
+    0 TRLR
+
+The second *line* of this example is a *malformed line* because 
+it has a *level* of 2 and a *previous level* of 0.  
+{/}
+
+{.note} *ELF parsers* are *required* to check that the first *line
+string* is exactly "`0 HEAD`" while determining the *specified character
+encoding* per {§specified-enc}, which means the first *line* must always
+have a *level* of 0.
+
+#### Cross-reference identifiers
+
+The `XRefLabel` production encodes the **cross-reference identifier** of
+the *line*, which is used when referencing one *structure* from another
+using a *pointer*.  It is encoded with an "at" signs (`@`; U+0040)
+before and after it, which are not themselves part of *cross-reference
+identifer*, and *may* be omitted when there is no need to refer to the
+*structure*.
+
+    XRefLabel  ::=  "@" XRefID "@"
+    XRefID     ::=  [a-zA-Z0-9]+
+
+{.example ...}  The following is a well-formed *line* with a
+*cross-reference identifier* of "`I1`":
+
+    0 @I1@ INDI
+{/}
+
+{.note}  [GEDCOM 5.5.1] allows *cross-reference identifiers* to contain
+any *character*, so long as it starts with an alphanumeric *character*.
+ELF restricts *cross-reference identifiers* to be wholly alphanumeric.
+
+{.ednote}  Is this restriction acceptable?  There's no strong technical
+need to limit the *characters*, other than to prohibit `@` and any
+*character* reserved for future use in *pointers*, which is currently
+just `:` and `!`.  Perhaps we should allow `_`, `-` and `.` to be a bit
+more similar to IDs in XML?
+
+#### Tags                                                              {#tags}
+
+The `Tag` production encodes the **tag** of the *line* which is a 
+*required* *string* that denotes the meaning of the data encoded on the
+*line*.
+
+    Tag  ::=  [0-9a-zA-Z_]+
+
+#### Payloads
+
+The **payload** of a *line* is an *optional* value associated with the
+*line*, and is encoded by the `Pointer` production.  If present, it
+*shall* be either a *string* or a *pointer*.  These are encoded by the
+`String` and `Pointer` productions, respectively.  The `String`
+production is given in §2 of [Basic Concepts] as a sequence of zero or
+more *characters*.  
+
+    Payload ::= Pointer S? | String
+    Pointer ::= "@" [a-zA-Z0-9_] [^@]* "@"
+
+{.note}  Even though the *payload* of a *line* is encoding the *payload*
+of a *tagged structure*, which is either a *language-tagged string* or a
+*pointer*, the *payload* of a *line* is a plain *string* or a *pointer*.
+This is because the *language tag* is encoded on separate *lines*.
+
+Applications *must* treat a *line* with an omitted *payload* and a
+*line* with a *payload* consisting of an empty *string* identically.
+
+{.note} It is an artefact of the grammar that this distinction exists at
+all.  If the *line string* ends with a *tag* followed by *whitespace*,
+then the `Line` production matches via the `S String` alternative, with
+an empty *string*; however if the *line string* ends with a *tag* with
+no subsequent *whitespace*, then the `Line` production matches without
+the final *optional* `Payload` component.  
 
 The `Line` production contains an ambiguity as any *string* which
 matches the `Pointer` production necessarily also matches the `String`
@@ -990,8 +1144,10 @@ from the grammar by ensuring *pointers* do not match the `PayloadString`
 production.
 
     PayloadString ::= PayloadItem*
-    PayloadItem   ::= [^#x40] | "@@" | Escape
-    Escape        ::= "@#" [^#x40#xA#xD]* "@"
+    PayloadItem   ::= PayloadChar | EscapedAt | EscapeSeq
+    PayloadChar   ::= [^#x40#xA#xD]
+    EscapedAt     ::= "@@"
+    EscapeSeq     ::= "@#" [A-Z] PayloadChar* "@"
 
 This draft does not do this because it would require all "at" signs to
 be correctly escaped.   In practice, unescaped "at" signs are fairly
@@ -1031,124 +1187,21 @@ To avoid this, using the `CONC` mechanism to split the *payload* next to
 depending on this undefined behaviour.
 {/}
 
-The `Number`, `XRefID` and `Tag` productions encodes the *level*, the
-*cross-reference identifier* and the *tag* of the *line*, respectively.
-The `String` and `Pointer` productions encode the *payload* of the
-*line*, depending on whether the *payload* is a *string* or a *pointer*,
-respectively.  The *cross-reference identifier* and *payload* are both
-*optional*.
-
-    Number  ::= "0" | [1-9] [0-9]*
-    XRefID  ::= "@" [a-zA-Z0-9_] [^@:!]* "@"
-    Tag     ::= [0-9a-zA-Z_]+
-    String  ::= Char+
-    Pointer ::= "@" [a-zA-Z0-9_] [^@]* "@"
-
-{.ednote} The current working draft of [Basic Concepts] has a `String`
-production which is defined as `Char*`.  The `String` production here
-only matches a non-empty *string*.  This is to avoid any difference
-arising between a *line* with no *payload* and a *line* whose payload is
-an empty *string*.  However it may be better to remove this potential
-ambiguity in a different way.
-
-{.example ...}
-    0 @I1@ INDI
-    1 NAME Cleopatra
-    1 FAMC @F2@
-
-This ELF fragment contains three *lines*.  The first *line* has a
-*level* of `0`, a *cross-reference identifier* of `@I1@`, and a *tag* of
-`INDI`; it has no *payload*.  Neither the second nor the third *line*
-has a *cross-reference identifier*, and both have a *payload*: on the second
-line the *payload* is the *string* "`Cleopatra`", while the *payload* of
-the third *line* is a pointer, `@F2@`.
-{/}
-
-**Malformed lines** are *lines* or *line strings* which contain certain
-particular types of syntactic error.  Input containing a *malformed
-line* is a *non-conformant source*.  If an *ELF parser* encounters a
-*malformed line*, it *shall* terminate processing the input file.
-
-{.note} These parsing rules have been written to be very tolerant of
-unusual input.  *Malformed lines* are considered sufficiently serious
-errors that an *ELF parser* *must not* issue a warning to the user an
-continue in an implementation-defined manner, despite this usually
-being permitted when a *non-conformant source* is encountered.
-
-Any *line string* which does not match the `Line` production is a
-*malformed line*.
-
-{.note} Empty *line strings* or *line strings* consisting only of
-*whitespace* are not *malformed lines*, despite not matching the `Line`
-production, because they have already been removed from the input
-stream.
-
-The **previous level** of a *line* is defined as the *level* of the
-closest preceding *line*.  The first *line* in the input stream has no
-*previous level*.
-
-{.example ...}
-    0 INDI
-    1 NOTE The 16th President of the United States.
-    2 CONT Assassinated by John Wilkes Booth.
-    0 TRLR
-
-In this example, the *previous level* of the `TRLR` *line* is `2`, which
-is the *level* of the `NOTE` *line*.
-{/}
-
-Any *line* that has a *level* more than one greater than its *previous
-level* is a *malformed line*.  This does not apply to the first *line*
-in the input stream which is never a *malformed line*.
-
-{.example ...}  The following ELF fragment has a missing line.
-
-    0 @I1@ INDI
-    2 PLAC Москва
-    3 ROMN Moscow
-    1 NAME Иван Васильевич
-    0 TRLR
-
-The second *line* of this example is a *malformed line* because 
-it has a *level* of 2 and a *previous level* of 0.  
-{/}
-
-{.note} *ELF parsers* are *required* to check that the first *line
-string* is exactly "`0 HEAD`" while determining the *specified character
-encoding* per {§specified-enc}, which means the first *line* must always
-have a *level* of 0.
-
-### Unescaping payloads
-
-ELF uses the "at" sign (`@`; U+0040) in the representation of
-*pointers*, as well as in *escape sequences* which are used to encode
-a special processing instructions in a *payload* which is a *string*.
-Other uses of the "at" sign *should* be escaped by doubling it as `@@`,
-and *must* be when it would result in an ambiguity.
-
-{.note}  [GEDCOM 5.5.1] says they *must* be escaped, but many current
-applications fail to do this.  This is particularly relevant to the
-`EMAIL` *structure* which almost invariably has a payload containing
-one "at" sign, and is often not properly escaped.  *Payloads* with a
-single "at" sign are never legal in GEDCOM.  ELF requires such
-*payloads* to be interpreted as if the "at" sign had been escaped.
-
-
-
 ### Assembling structures                                    {#tagged-structs}
 
 Once *line strings* have been parsed into *lines*, the sequence of
 *lines* is converted into a sequence of *records*. 
 
-This process starts by parsing the first *line* as the first *line* of a
-*structure* using the procedure given in this section.  This *structure*
-will be the first *record* in the *dataset*.  If that *record* has
-*substructures* then additional *lines* will be read in parsing it.  If
-further *lines* remain after the first *record* has been fully parsed,
-then the first of them is parsed as first *line* of another *structure*,
-which will be next *record* in the *dataset*.  This process continues
-until no further *lines* remain, at which point the *dataset* has the
-been fully read.
+This process starts by parsing the first *line* of the input as the
+first *line* of a *tagged structure* using the procedure given
+{§recursive-parsing}.  This *structure* is the first *record* in
+the *dataset* which is the **header record**.  If that *record* has
+*substructures* then additional *lines* will be read while parsing it.
+If further *lines* remain after the first *record* has been fully
+parsed, then the first of the remaining lines is parsed as first *line*
+of another *tagged structure*, which will be next *record* in the
+*dataset*.  This process continues until no further *lines* remain, at
+which point the *dataset* has the been fully read.
 
 {.note} The process described in this section, together with the
 guarantee provided by {§specified-enc} that the first *line* is always
@@ -1163,12 +1216,38 @@ disk.  This functionality is no longer necessary and is not widely
 implemented in present applications.  This functionality is not included
 in ELF.
 
+{.ednote} The first *record* is actually the *header* and needs
+additional processing.
+
+If an *ELF reader* is *schema-aware*, once each *reccord* has been
+assembled using the algorithm in {§recursive-parsing}, it *shall* be
+converted into a *typed structure* as described in [ELF Schemas].
+
+If the last *record* has a *tag* of `TRLR`, and no *cross-reference
+identifier*, *payload* or *substructures*, it is discarded.  Otherwise 
+it is a *malformed structure* as defined in {§error-structures}.  
+
+#### Recursive parsing                                    {#recursive-parsing}
+
 The conversion of *lines* into *structures* is defined recursively.  To
 read a *structure*, the parser starts by reading its first *line*, and
-creates a *structure* whose *cross-reference identifier*, *tag* and
-*payload* are the *cross-reference identifier*, *tag* and *payload*,
-respectively, for the first *line*.  The *level* of the first *line* of
-the *structure* is referred to in this section as the **current level**.  
+creates a *tagged structure* whose *cross-reference identifier* and *tag*
+are the *cross-reference identifier* and *tag* of the first *line*,
+respectively.  The *payload* of the new *tagged structure* is the
+*payload* of the first *line*, tagged initially with the "`und`"
+*language tag* if the *payload* of the first *line* is a *string*.  A
+*payload* which is a *language-tagged string* is referred to as a
+**string payload**.
+
+{.note}  A default *language tag* is needed because the *payload* of a
+*line* is either a *string* or a *pointer*, while the *payload* of a
+*tagged structure* is either a *language-tagged string* or a *pointer*.
+
+{.ednote} Add a note saying which section causes the actual *language
+tag* to be set.
+
+The *level* of the first *line* of the *structure* is referred to in
+this section as the **current level**.  
 
 {.note}  The *current level* can also be thought of as the recursion
 depth.  Once the application has finished reading the *structure*, its
@@ -1226,6 +1305,29 @@ The result is an `INDI` *structure* with two *substructures* with *tags*
 `NAME` and `BIRT`, respectively, the latter of which has a
 *substructure* of its own with tag `DATE`.  
 {/}
+
+#### Errors in structures                                  {#error-structures}
+
+This standard defines two classes of error that can arise when
+processing a *structure*.
+
+A **malformed structure** is a *structure* with a sufficiently serious
+error that an *ELF parser* *must* detect the error and *must* terminate
+processing the input file upon encountering one.
+
+A **non-conformant structure** is a *structure* with a less serious
+error.  Input containing either a *malformed structure* or a
+*non-conformant structure* is a *non-conformant source*.
+
+{.note}  When a *non-conformant structure* is encountered, the usual
+rules for *non-conformant sources* apply.  An *ELF parser* *must*
+either terminate parsing or warn the user about the error.  If it
+continues processing the *structure*, it does so in an
+implementation-defined manner.
+
+{.note}  The [ELF Schemas] standard defines a third class of erroneous
+*structure* called *invalid structures*.  *ELF parsers* are not required
+to detect these and need not issue an warning if they do.
 
 ### Unescaping and continuation lines
 
@@ -1338,59 +1440,428 @@ or
 
 {.example ...} Given the following non-*conformant* data
 
-    1 EMAI name@example.com
+    1 EMAIL name@example.com
     2 DATE @#DGREG
     3 CONC ORIAN@ 2 JAN 2019
 
 a *conformant* application will concatenate these *lines* normally during parsing
 
-    1 EMAI name@example.com
+    1 EMAIL name@example.com
     2 DATE @#DGREGORIAN@ 2 JAN 2019
 
 creating a valid date escape in the `DATE`-*tagged* *extended line*.
-The unmatched `@` in the `EMAI`-*tagged* *line* is left unchanged during parsing.
+The unmatched `@` in the `EMAIL`-*tagged* *line* is left unchanged during parsing.
 
-Upon re-serialisation, the unmatched @ in the "`EMAI`" will be doubled when converting to an *xref structure*,
+Upon re-serialisation, the unmatched @ in the "`EMAIL`" will be doubled when converting to an *xref structure*,
 but the date escape will not be modified
 
-    1 EMAI name@@example.com
+    1 EMAIL name@@example.com
     2 DATE @#DGREGORIAN@ 2 JAN 2019
 
 If the serialisation decides to split either *extended line* with `CONC`s, it MUST NOT do so
 in a way that splits up the pairs of "`@`"s.
 {/}
 
+## Escaping                                                        {#escaping}
 
-## Encoding with `@`
+Once *structures* have been assembled from the *lines* forming them, and
+converted to a *typed structures* if the application is *schema-aware*,
+any *string payloads* need to be unescaped.
 
-ELF uses the *character* U+0040 (commercial at, `@`)
-to encode several special cases when encoding a *tagged structure*
-as an *xref structure*.
-In particular,
+ELF uses the "at" sign (`@`; U+0040) in the representation of
+*pointers*, as well as in *escape sequences* which are used to encode
+a special processing instructions in a *string payload*.  Other uses of
+the "at" sign in *payloads* which are *strings* *should* be escaped, and
+*must* be when not escaping it would result in an ambiguity.
 
-- *pointers* are encoded be assigning an *xref_id* to the pointed-to *tagged structure* and using it as an *xref* in the pointing *payload*
-- *characters* outside the *character encoding* are encoded as *unicode escapes*
-- *escapes* that are not *preserved escapes* are removed
-- `@` that are not part of *escapes* are encoded as `@@`
+{.note}  [GEDCOM 5.5.1] says they *must* be escaped, but many current
+applications fail to do this.  This is particularly relevant to the
+`EMAIL` *structure* which almost invariably has a payload containing
+one "at" sign, and is often not properly escaped in real-world data.
+*Payloads* with a single "at" sign are never legal in GEDCOM.  ELF
+requires such *payloads* to be interpreted as if the "at" sign had been
+escaped.
 
-All of these steps involve `@`s, and MUST NOT be applied to one another's `@`s;
-semantically, they are applied concurrently.
+ELF provides two escape mechanisms which can escape an "at" sign in a
+*payload*.  The *recommended* mechanism is to use an *escaped at*,
+defined in {§escaped-at}.  The alternative is to use a *Unicode
+escape*, which is a more general escape mechanism defined in
+{§unicode-escape} that allows arbitrary Unicode *characters* to be
+encoded.  *Unicode escapes* are an example of an *escape sequence*,
+which is a general facility for embedding special processing
+instructions in a *string payload*.  *Escape sequences* are defined in
+{§escape-seq}.
 
-During parsing, there is an inherent ambiguity when there are several contiguous `@` in the payload.
-These SHALL be resolved in an earliest-match-first order.
+### Escaped ats                                                  {#escaped-at}
 
-{.example ...} The following *xref structure*'s *payloads* are split into sequences as indicated:
+{.ednote}  Style question: should we write *escaped ats* or *escaped
+at's*?  Most style guides allow an apostrophe when forming the plural of
+a word which is not normally a noun, as here.  Writing the standard in
+such a way that the plural is never needed has proved challenging.
 
-*payload* of *xref structure*       decomposed as
+An **escaped at** is a *string* matching the `EscapedAt` production
+below, and is used to represent a single "at" sign in a *string
+payload*.
+
+    EscapedAt  ::=  "@@"
+
+{.example ...}  An *escaped at* simply doubles up the "at" sign.  Thus,
+the email address `name@example.com` *should* be encoded as follows:
+
+    1 EMAIL name@@example.com
+{/}
+
+### Escape sequences                                             {#escape-seq}
+
+An **escape sequence** is a *string* that can be used in a *string
+payload* to denote some form of special processing instruction.  
+
+{.note}  It is the intention that *escape sequences* are only used to
+denote processing instructions that are carried out at the serialisation
+layer, as defined in this standard or a subsequent version of it.  The
+use of *escape sequences* to denote calendars in [ELF Dates] is not an
+example of the intended use of *escape sequences* in ELF, though it is
+supported for compatibility with [GEDCOM 5.5.1].
+
+An *escape sequence* *shall* match the `EscapeSeq` following production.
+
+    EscapeSeq    ::=  "@#" EscapeType EscapeValue "@"
+    EscapeType   ::=  [A-Z]
+    EscapeValue  ::=  [^#x40#xA#xD]*
+
+{.example ...}  The following *line* contains an *escape sequence*:
+
+    2 DATE @#DFRENCH R@ 6 COMP 11
+
+*Escape sequences* containing internal spaces are explicitly allowed by
+this standard and this example uses the `D` *escape type* to write a
+date using the French Republican calendar defined in §4.3 of [ELF
+Dates].
+{/}
+
+{.note ...}  This production differs in two ways from the equivalent
+production in [GEDCOM 5.5.1].  First, the *character* immediately
+following the initial "`@#`" *must* be an upper-case ASCII letter in
+ELF.  This was formerly a requirement in GEDCOM too, but was dropped
+after GEDCOM 5.3; nevertheless, all uses of *escape sequences* in past
+and present GEDCOM standards have conformed to this syntax requirement,
+and ELF reintroduces it.
+
+Secondly, the production does not require a *character* after the final
+"at" sign, meaning that a space *character* immediately after an *escape
+sequence* is treated as part of a *string payload* and not as part of
+the *escape sequence*.  This change has been made so that *Unicode
+escapes* can be used internally in a word, without requiring a space
+afterwards.  For example, the Portuguese name João might be encoded as:
+
+    1 NAME Jo@#UE3@o
+{/}
+
+{.ednote ...}  Is the second change likely to cause problems?  Are there
+current applications which will issue an error when they encounter a
+*escape sequence* which is not followed by a space, but will accept
+unknown *escape sequences*?
+{/}
+
+The **escape type** of an *escape sequence* is the single *character*
+matched by `EscapeType` production.  It defines how the *escape
+sequence* is to be interpreted.  This standard defines one *escape
+type*: the *character* `U` is used to represent *Unicode escapes*, as
+defined in {§unicode-escape}.
+
+{.note}  [ELF Dates] defines the `D` *escape type* for specifying
+calendar names, and this is the sole use of *escape sequences* in
+[GEDCOM 5.5.1].  Previous versions of GEDCOM have used the `A` *escape
+type* for referencing multimedia objects in auxiliary files, `C` for
+switching *character encoding*, `F` for including data from another
+file, and `L` for recording the number of *octets* of binary data
+immediately following.  ELF does not support these *character escapes*,
+but FHISO is unlikely to reuse these *escape types* in future version of
+ELF unless for a compatible feature.
+
+This standard reserves all possible *escape types* for future FHISO use.
+Third parties *must not* use their own *escape sequences*, except as
+permitted by a FHISO standard.  
+
+{.note}  This restriction is necessary because only 26 *escape types* are
+possible, and between ELF and past versions of GEDCOM, six of these have
+already been used.  A future ELF standard may define an extensibility
+mechanism for *escape sequences* which will allow third parties to
+define their own *escape sequences* in a way that does not need
+exclusive use a *escape type*.
+
+{.ednote ...}  This extensibility mechanism is likely to be in [ELF
+Schemas], and could be as simple as a *escape type* to IRI mapping to
+define how the *escape type* is used in that particular document.  For
+example,
+
+    0 SCHMA
+    1 ESC B https://example.com/binary-escape
+
+Possibly this will be included in ELF 1.0, and if so, the paragraph above
+reserving all *escape sequences* will need changing.  But the TSC do not
+consider this feature a priority for ELF 1.0.
+{/}
+
+The **escape value** of an *escape sequence* is the *string* matched by
+the `EscapeValue` production.  The meaning of the *escape value* and any
+restrictions on its content or format depend on the particular *escape
+type*.  The only general restriction placed on all *escape values* is
+that they *must not* the "at" sign (U+0040), line feed (U+000A), or
+carriage return (U+000D).
+
+{.ednote}  This means that it is not possible to put arbitrary IRIs in
+an *escape value*, something which may need considering more carefully
+in the future, especially if there is any plan to turn calendar escapes
+into a more general datatype escape mechanism.  The problem is that "at"
+signs are allowed in IRIs, and does in `mailto` IRIs or `http` IRIs
+with embedded userinfo.
+
+### Unicode escapes                                          {#unicode-escape}
+
+A **Unicode escape** is a type of *escape sequence* that allows
+arbitrary Unicode *characters* to be encoded ELF files, regardless of
+the *character encoding* used for the file.  *ELF parsers* are
+*required* to support *Unicode escapes*.
+
+{.note}  This feature is new in ELF.  [GEDCOM 5.5.1] has no means of
+encoding *characters* that cannot be encoded in the target *character
+encoding*.  Even though ELF does not require applications to support
+output in any *character encoding* other than UTF-8, it is anticipated
+that many applications will continue to do so for compatibility reasons.
+There are also situations where certain *characters* might get
+misinterpreted and corrupted in transit or when processed by legacy
+applications, and it would be safer to escape them.
+
+*Unicode escapes* use the `U` *escape type* and *shall* have an *escape
+value* which matches the following `UnicodeEsc` production, and which is
+*code point* of the *character* being escaped, expressed in hexadecimal.
+
+    UnicodeEsc  ::=  [0-9A-Fa-f]+ 
+
+{.example ...} If the Portuguese name "`João`" is being written to an
+ELF file using the ASCII *character encoding*, it *must* be encoded in
+one of the two following ways:
+
+    1 NAME Jo@#UE3@o
+    1 NAME Joa@U#303@o
+
+These differ depending on whether the name was written using a
+precomposed 'a' with tilde *character* (U+00E3), or using a combining
+tilde *character* (U+0303).  [Basic Concepts] allows any *string* to be
+converted into Unicode Normalization Form C, which converts the latter
+form to the former, so an *ELF writer* need not preserve the form in
+which the accented character was originally entered.
+{/}
+
+*ELF writers* *must* use a *Unicode escape* to encode *characters* that
+cannot be encoded in the target *character encoding*, but *should not*
+use them otherwise without a specific need, and *should* prefer an
+*escaped at* to a *Unicode escape* when escaping an "at" sign (U+0040).
+
+{.note}  This is to maximise compatibility with [GEDCOM 5.5.1] which
+does not have *Unicode escapes*, but which does support the *escaped
+"at"*.
+
+{.example}  An application *may* use *Unicode escapes* to escape the
+first or last *character* of a *string payload* when it is *whitespace*,
+if the ELF file is likely to be processed by a legacy GEDCOM application
+which is known not to preserve leading or trailing *whitespace*, and if
+preservation of that *whitespace* is important.  Such applications exist
+because the [GEDCOM 5.5.1] is somewhat unclear on whether leading and
+trailing *whitespace* had to be preserved, and different applications
+have adopted different implementation strategies.
+
+{.ednote ...}  Should we extend the *Unicode escape* syntax to allow
+multiple *character* to be encoded in a single *escape sequence*?  This
+could be done simply enough by extending the syntax to:
+
+    UnicodeEsc  ::=  S? HexNumber (S HexNumber)* S?
+    HexNumber   ::=  [0-9A-Fa-f]+
+
+This would allow a shorter and easier to read encoding of names in
+non-Latin scripts.  For example, the Arabic name عزيز‎ (Aziz) could
+be encoded in any of the following ways:
+
+    1 NAME عزيز
+    1 NAME @#U639@@#U632@@#U64A@@#U632@
+    1 NAME @#U 639 632 64A 632@
+
+We might also make the entire *escape value* optional, as per the
+following version of the `UnicodeEsc` production, so that `@#U@` is a
+null escape, which might have use in guarding the end of a line against
+accidental deletion in transit. 
+
+    UnicodeEsc  ::=  ( S? HexNumber (S HexNumber)* S? )?
+{/}
+
+### Unescaping string payloads                                {#payload-unesc}
+
+In order to unescape a *string payload* of a *structure*, an *ELF
+parser* *shall* first identify all *escaped ats* and *escape sequences*
+in the *string payload* per {§identify-escs}.  
+
+Next, the *ELF parser* *shall* verify that each identified *escape
+sequence* is a *permitted escape* for the *structure* in whose *payload*
+it was found, as described in {§permitted-escs}.
+
+Finally, each identified *escaped at* is replaced with a
+single "at" sign, and each identified *Unicode escape* is replaced with
+the *character* it encodes.  *Escape sequences* other than *Unicode
+escapes* are left unaltered.
+
+{.note ...}  Because all *escaped ats* and *escape sequences* are
+identified before any are unescaped, it is not possible to apply both
+forms of escaping sequentially to a single *character*.  For example,
+neither of the following *structures* are valid ways of encoding a
+*string payload* consisting of a single "at" sign.
+
+    0 NOTE @@#40@@
+    0 NOTE @#40@@#40@
+
+The former is the *recommended* way of encoding a *payload* which
+consists of the *string* "`@#40@`", while the latter is an alternate
+encoding (which is *not recommended*) of the *string* "`@@`".
+{/}
+
+#### Identifying escapes                                      {#identify-escs}
+
+To identify all the *escaped ats* and *escape sequences* in a *string
+payload*,, an *ELF parser* scans the string from beginning to end
+looking for "at" signs (U+0040), and then inspects the next *character*,
+if there is one, to determine how the "at" sign is to be interpreted.
+
+If the following *character* is another "at" sign, then an *ELF parser*
+*shall* identify the two "at" signs as an *escaped at*, and then resume
+scan for "at" signs from the *character* following the second "at" sign.
+
+{.example ...}  The `@@` in the *payload* of the following *structure*
+is identified as an *escaped at*.
+
+    1 EMAIL name@@example.com
+{/}
+
+Otherwise, if the following *character* is the number sign (`#`;
+U+0023), then an *ELF parser* *shall* identify these two characters as
+the start of an *escape sequence*, terminating at the subsequent "at"
+sign.  If there is no subsequent "at" sign, or if the *string*
+identified as an *escape sequence* does not match the `EscapeSeq`
+production, the *structure* containing this *string payload* is a
+*non-conformant structure*.  If a syntactically correct *escape
+sequence* was identified, the *ELF parser* *shall* resume scanning for
+"at" signs from the *character* following the second "at" sign.
+
+{.example ...}  In this example, the `@#` is treated as the start of an
+*escape sequence*, but because there is no subsequent `@`, it is a
+*non-conformant structure*, and an *ELF parser* *must* either terminate
+parsing or issue a warning to the user.
+
+    0 NOTE Lines containing only a @# are non-conformant.
+{/}
+
+{.example ...} If the *character* immediately after the `@#` is not an
+upper-case ASCII letter, the *escape sequence* does not match the
+`EscapeSeq` production and the result is also a *non-conformant
+sturcture*.  This example is a *non-conformant structure* for that
+reason.
+
+    0 NOTE Following a @# with a @ isn't necessarily conformant.
+{/}
+
+Otherwise, the "at" sign is treated as a regular *character*, and
+scanning for "at" signs continues from the next *character*.  This
+facility for treating unescaped "at" signs as regular *characters* is
+*deprecated*.
+
+{.example ...}  This applies in the following *structure*, where the
+"at" sign has not been properly escaped.
+
+    1 EMAIL name@example.com
+
+*ELF parsers* *must* accept this, but a future version of ELF is likely
+to make this a *non-conformant structure*.
+{/}
+
+{.example ...} The following table illustrates how some more complicated
+*string payloads* are parsed.
+
+*String payload*                    Parsed as 
 -------------------------------     ----------------------------------------------
 "`name@example.com`"                "`name`", "`@`", "`example.com`"
 "`name@@example.com`"               "`name`", "`@@`", "`example.com`"
 "`name@@@example.com`"              "`name`", "`@@`", "`@`", "`example.com`"
 "`name@@@@example.com`"             "`name`", "`@@`", "`@@`", "`example.com`"
-"`some@#XYZ@ thing`"                "`some`", "`@#XYZ@ `", "`thing`"
-"`some@@#XYZ@ thing`"               "`some`", "`@@`", "`#XYZ`", "`@`", "` thing`"
-"`some@@@#XYZ@ thing`"              "`some`", "`@@`", "`@#XYZ@ `", "`thing`"
+"`some@#XYZ@thing`"                 "`some`", "`@#XYZ@ `", "`thing`"
+"`some@@#XYZ@thing`"                "`some`", "`@@`", "`#XYZ`", "`@`", "`thing`"
+"`some@@@#XYZ@thing`"               "`some`", "`@@`", "`@#XYZ@`", "`thing`"
 {/}
+
+#### Permitted escapes                                       {#permitted-escs}
+
+A **permitted escape** is an *escape sequence* with an *escape type*
+that is permitted to occur in a particular *structure*.  If a *string
+payload* contains an *escape sequence* other than an *permitted escape*,
+the *structure* is a *non-conformant structure*.
+
+If the application is *schema-aware*, *permitted escapes* are identified
+as described in the [ELF Schemas] standard.  Otherwise, *permitted
+escapes* are identified as described in this section.
+
+If the *escape type* is `U`, then the *escape sequence* is a *permitted
+escape* unless it occurs in the *header record* in the payload of a
+*structure* with the *tag* `CHAR`, `VERS`, `FORM` or `ELF`.
+
+{.note}  *Unicode escapes* are not permitted in these four *structures*
+in order to ensure compatibility with [GEDCOM 5.5.1] and to simplify the
+process of identifying which version of ELF or GEDCOM is being use, and
+what the *specified character encoding* is.
+
+{.example ...}  The following ELF document contains a *Unicode escape*
+in a `CHAR` *structure* in the *header record*.  This is not a
+*permitted escape*, and the *header record* is therefore a
+*non-conformant structure*.  The *ELF parser* *must* either terminate
+processing or issue a warning on reading this.
+
+    0 HEAD
+    1 CHAR UTF@#U2D@8
+    0 TRLR
+{/}
+
+If the *escape type* is `D`, then the *escape sequence* is a *permitted
+escape*.
+
+{.example ...}  The following *structure* contains two instances of
+*escape sequences* with the *escape type* `D`, which is denotes a
+*calendar escape* in §3.1.1 of [ELF Dates].  Both uses are *permitted
+escapes*, despite the fact that ages, as defined in §6 of [ELF Dates],
+do not allow the use of *calendar escapes*.
+
+    1 DEAT
+    2 DATE @#DJULIAN@ 30 JAN 1649
+    2 AGE @#DJULIAN@ 48y
+{/}
+
+{.note}  *Escape sequences* with the `D` *escape type* are *permitted
+escapes* everywhere so that that serialisation layer is compatible with
+future versions of ELF which may choose to allow *calendar escapes* in
+other contexts.  For example, a future version of ELF could allow
+*calendar escapes* to be used with ages because the length of a year can
+depend on the calendar being used.  *Schema-aware* applications are 
+better able to determine whether the *calendar escape* is really a
+*permitted escape*.
+
+An *escape sequence* with any other *escape type* is a *permitted
+escape*.
+
+{.note}  This means unknown *escape type* are accepted, preserved as
+part of the *payload* of the *structure* assuming the *structure* allows
+arbitrary content in its *payload*, and re-exported as an *escape
+sequence*.  This behaviour is intended to maximise compatibility with
+future versions of ELF.  Again, *schema-aware* applications are better
+able to determine whether this is the right behaviour for a given
+*escape type*.
+
+## Encoding with `@`
 
 ### Pointer conversion
 
@@ -1442,14 +1913,6 @@ and/or provide disambiguation heuristics for pointer-to-multiple-things situatio
 
 ### Escape preservation and removal
 
-An **escape** is a substring of a *string*-valued *payload* of either a *tagged structure* or *xref structure*
-which matched production `Escape`.
-Its **escape type** is the portion of the *escape* that was matched by `EscType`.
-
-    Escape   ::= "@#" EscType EscText "@ "
-    EscType  ::= [A-Z]
-    EscText  ::= [^#xA#xD#x40]*
-
 If the **escape type** is `U` (U+0055), the *escape* is a *unicode escape* and its handling is discussed in {§unicode-escape};
 otherwise, it is handled according to this section.
 
@@ -1491,44 +1954,6 @@ Implementations that had assigned semantics to them
 were actually imposing non-standard semantics to those payloads
 which are more accurately handled by using an alternative *ELF schema* to map those *tags*
 to different *structure type identifiers* with those semantics documented.
-
-### Unicode escapes                                          {#unicode-escape}
-
-{.note} [GEDCOM 5.5.1] neither has a notion of *unicode escape*
-nor any other feature for achieving the same end.
-*Unicode escapes* are designed to provide a means for encoding any *character*
-in any *character encoding*
-in a way that is maximally backwards-compatible from [GEDCOM 5.5.1].
-
-Any *character* MAY be represented with a **unicode escape** consisting of:
-
-1.  The three characters U+0040, U+0023, and U+0055 (i.e., "`@#U`")
-2.  A hexadecimal encoding of the *character*'s *code point*
-3.  The two characters U+0040 and U+0020 (i.e., "`@ `")
-
-{.ednote} Can we make the final space *optional*?
-
-A *unicode escape* MUST be used for each *character* that cannot be encoded
-in the target *character encoding*;
-and SHOULD NOT be used otherwise.
-
-{.ednote} Earlier drafts of this specification suggested using `@#U20@` in place of U+0020
-when a *line*'s *payload* begins or ends with a space.
-Given the inherent ambiguity in the handling of *whitespace* at the ends of a *line*'s *payloads*,
-it is not clear if that idea was better than simply clarifying that ambiguity.
-
-{.example} If a *tagged structure*'s *payload* is "`João`" and the *character encoding* is `ASCII`,
-the *xref structure*'s *payload* is "`Jo@#UE3@ o`" (or "`Joa@U#303@ o`" if the original used a combining diacritic).
-
-{.ednote} Unicode escapes use GEDCOM's general escape sequence syntax,
-in which the character after the `@#` prefix denotes the type of
-escape.  In GEDCOM 5.5, the only escape type is `D`, used for calendars,
-though other escapes have been used in older versions of GEDCOM.  In
-particular, `A` was used auxiliary file references, `C` was used to
-switch character set, `F` was used for file inclusion, and `L` was used
-to specify the length of a block of non-GEDCOM data included immediately
-after the escape.  FHISO are unlikely to reuse these escapes, unless for
-a compatible purpose.
 
 
 ### Encoding `@`s
@@ -1610,8 +2035,6 @@ It is RECOMMENDED that `UTF-8` be used for all datasets.
 
 ## Tags
 
-### Definitions                                                        {#tags}
-
 A **tag** is a *string* that matches production `Tag`
 
     Tag ::= [0-9a-zA-Z_]+
@@ -1648,11 +2071,9 @@ by utilizing *tag definitions* and *supertypes*, as outlined below.
     *Basic Concepts for Genealogical Standards*.  Public draft.
     (See <https://fhiso.org/TR/basic-concepts>.)
 
-[ASCII]
-:   ANSI (American National Standards Institute).
-    *ANSI X3.4-1986.
-    Coded Character Sets -- 7-Bit American National Standard Code for Information Interchange (7-Bit ASCII)*.
-    1986.
+[ELF Schema]
+:   FHISO (Family History Information Standards Organisation)
+    *Extended Legacy Format (ELF): Schema.*
 
 [ISO 10646]
 :   ISO (International Organization for Standardization).
@@ -1662,27 +2083,46 @@ by utilizing *tag definitions* and *supertypes*, as outlined below.
 
 [RFC 2119]
 :   IETF (Internet Engineering Task Force).
-    *RFC 2119:
-    Key words for use in RFCs to Indicate Requirement Levels.*
+    *RFC 2119: Key words for use in RFCs to Indicate Requirement Levels.*
     Scott Bradner, 1997.
     (See <http://tools.ietf.org/html/rfc2119>.)
 
 [XML]
 :   W3C (World Wide Web Consortium).
     *Extensible Markup Language (XML) 1.1*, 2nd edition.
-    Tim Bray, Jean Paoli, C. M. Sperberg-McQueen, Eve Maler, François Yergeau, and John Cowan eds., 2006.
-    W3C Recommendation.
+    Tim Bray, Jean Paoli, C. M. Sperberg-McQueen, Eve Maler, François Yergeau, 
+    and John Cowan eds., 2006.  W3C Recommendation.
     (See <https://www.w3.org/TR/xml11/>.)
 
 ### Other references
+
+[ASCII]
+:   ANSI (American National Standards Institute).
+    *ANSI X3.4-1986.
+    Coded Character Sets -- 7-Bit American National Standard Code for Information Interchange (7-Bit ASCII)*.
+    1986.
+
+[GEDCOM 5.5]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 5.5.  1996.
 
 [GEDCOM 5.5.1]
 :   The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
 
-[GEDCOM 5.5]
-:   The Church of Jesus Christ of Latter-day Saints.
-    *The GEDCOM Standard*, release 5.5.  1996.
+[ELF Data Model]
+:   FHISO (Family History Information Standards Organisation)
+    *Extended Legacy Format (ELF): Data Model.*
+
+[ELF Dates]
+:   FHISO (Family History Information Standards Organisation)
+    *Extended Legacy Format (ELF): Date, Age and Time Microformats.*
+    Public draft.  (See <https://fhiso.org/TR/elf-dates>.)
+
+[Unicode]
+:    The Unicode Consortium.
+     *The Unicode Standard – Core Specification*, version 12.1.0.
+     See <https://www.unicode.org/versions/Unicode12.1.0/>.
 
 [XML Names]
 :   W3 (World Wide Web Consortium).
@@ -1690,15 +2130,6 @@ by utilizing *tag definitions* and *supertypes*, as outlined below.
     Tim Bray, Dave Hollander, Andrew Layman and Richard Tobin, eds., 2006.
     W3C Recommendation.
     See <https://www.w3.org/TR/xml-names11/>.
-
-[ELF Data Model]
-:   FHISO (Family History Information Standards Organisation)
-    *Extended Legacy Format (ELF): Data Model.*
-
-[Unicode]
-:    The Unicode Consortium.
-     *The Unicode Standard – Core Specification*, version 12.1.0.
-     See <https://www.unicode.org/versions/Unicode12.1.0/>.
 
 \vfill
 
