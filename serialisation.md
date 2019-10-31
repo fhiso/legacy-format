@@ -1523,7 +1523,7 @@ use of *escape sequences* to denote calendars in [ELF Dates] is not an
 example of the intended use of *escape sequences* in ELF, though it is
 supported for compatibility with [GEDCOM 5.5.1].
 
-An *escape sequence* *shall* match the `EscapeSeq` following production.
+An *escape sequence* *shall* match the following `EscapeSeq` production.
 
     EscapeSeq    ::=  "@#" EscapeType EscapeValue "@"
     EscapeType   ::=  [A-Z]
