@@ -391,12 +391,10 @@ The parsing process can be summarised as follows:
        {§identify-escs};
     b. verifying that each *escape sequence* is a *permitted escape* per
        {§permitted-escs}; 
-    c. replacing each *escaped at* with a single "at" sign; and
+    c. replacing each *escaped at* with a single "at" sign; 
     d. replacing each *Unicode escape* with the *character* it encodes
-       per {§unicode-escape}.
-
-4.  Merging `CONC` and `CONT`-split *payloads*
-
+       per {§unicode-escape}; and
+    e. merging *continuation lines* per {§merge-conts}.
 
 
 ### Serialisation                                               {#serialising}
