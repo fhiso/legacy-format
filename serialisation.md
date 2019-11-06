@@ -952,7 +952,8 @@ of a BOM is neither required nor recommended for UTF-8".
 For a *line string* to be parsed into a *line*, it *must* match the
 following `Line` production:
 
-    Line ::= Number S (XRefLabel S)? Tag (S Payload)?
+    Line        ::=  Number S (XRefLabel S)? Tag (PayloadSep Payload)?
+    PayloadSep  ::=  #x20 | #x9
 
 {.note ...}  The `Line` production does not allow leading *whitespace*
 because this has already been removed in the process of creating *line
@@ -964,10 +965,19 @@ only match space or horizontal tab *characters*.  Allowing tabs or
 multiple space *characters* is a departure from [GEDCOM 5.5.1], but one
 that is commonly implemented in current applications.
 
+Only a single *character* of *whitespace* is permitted before the
+*payload* in the `PayloadSep` production.  This clarifies an ambiguity
+in [GEDCOM 5.5.1] where Appendix&nbsp;A warns that some applications
+look for the first non-space *character* as the start of the *payload*.
+There is no explicit statement that such applications are non-compliant,
+and this has left some doubt as to whether or not this behaviour
+permitted.  In ELF this is explicitly not allowed for *payloads* which
+are *strings*.
+
 *Whitespace* is *required* between each of the four components of the
 *line*.  This is arguably a change from [GEDCOM 5.5.1] where the `delim`
 grammar production says that the delimiter is an *optional* space
-character.  But almost certainly that is a typo in the grammar that has
+character.  Almost certainly that is a typo in the grammar that has
 persisted through several versions of GEDCOM, and GEDCOM does not intend
 the space to be *optional*.  Documents written using very early versions
 of GEDCOM – long before its current grammar productions were written –
@@ -1063,7 +1073,7 @@ it has a *level* of 2 and a *previous level* of 0.
 {/}
 
 {.note} *ELF parsers* are *required* to check that the first *line
-string* is exactly "`0 HEAD`" while determining the *specified character
+string* is "`0 HEAD`" while determining the *specified character
 encoding* per {§specified-enc}, which means the first *line* must always
 have a *level* of 0.
 
@@ -1112,7 +1122,7 @@ The **payload** of a *line* is an *optional* value associated with the
 production is given in §2 of [Basic Concepts] as a sequence of zero or
 more *characters*.  
 
-    Payload ::= Pointer S? | String
+    Payload ::= S? Pointer S? | String
     Pointer ::= "@" [a-zA-Z0-9_] [^@]* "@"
 
 {.note}  Even though the *payload* of a *line* is encoding the *payload*
@@ -1157,34 +1167,6 @@ accommodated and this draft does so at the cost of introducing this
 ambiguity into the grammar.  In practice it is not anticipated that the
 ambiguity will cause implementers difficulties and many current products
 appear to allow unescaped "at" signs in the manner proposed here.
-{/}
-
-The `Line` production contains a second ambiguity: when there are
-multiple *characters* of *whitespace* following the *tag* on a *line*
-whose *payload* is a *string*, the second and subsequent *whitespace*
-*characters* can be parsed by the `S` production or the `String`
-production.  Applications *must* resolve this ambiguity by matching the
-`S` production to the shortest possible non-empty sequence of
-*whitespace* so that any additional *whitespace* is considered to be
-part of the *payload*.
-
-{.note ...} This ambiguity is inherited from GEDCOM, and Appendix&nbsp;A
-of [GEDCOM 5.5.1] warns that some applications look for the first
-non-space *character* as the start of the *payload*.  There is no
-explicit statement that such applications are non-compliant, and this
-has left some doubt as to whether or not this behaviour permitted.  In
-ELF this is explicitly not allowed.
-
-This ambiguity is most problematic on `CONC` *lines* where it can result
-in unwanted *whitespace* being inserted in the middle of a word, or 
-necessary *whitespace* being lost between words; it can also cause
-problems with any *payload* which has leading *whitespace* which needs
-to be preserved.
-To avoid this, using the `CONC` mechanism to split the *payload* next to
-*whitespace* is *not recommended*, and the *Unicode escape* mechanism in
-{§unicode-escape} provides a means of preventing important leading
-*whitespace* from being lost.  These allow ELF applications to avoid
-depending on this undefined behaviour.
 {/}
 
 ### Assembling structures                                    {#tagged-structs}
@@ -1329,27 +1311,7 @@ implementation-defined manner.
 *structure* called *invalid structures*.  *ELF parsers* are not required
 to detect these and need not issue an warning if they do.
 
-### Unescaping and continuation lines
-
-{.ednote} `CONC` and `CONT` *lines* positioned after other *lines* are
-*malformed lines*.  So are nested `CONC` or `CONT` *lines*.
-
-Applications *must not* assign significance to where `CONC` tags are 
-inserted nor to how many are present in the serialization of a payload.
-
-### Serialising lines                                     {#serialising-lines}
-
-{.ednote} The payload needs escaping, either here or in the next
-section.
-
-Each *line* *shall* be converted to a *line string* by concatenating
-together the *level*, *cross-reference identifier*, *tag* and *payload* as
-described by the `Line` *production* given in {§lines}.  The application
-*must* serialise all *line strings* with a single space *character*
-(U+0020) for each `S` production in the `Line` production.
-
-
-### Serialising
+### Serialising structures
 
 Each *xref structure* is encoded as a sequence of one or more *lines*.
 
@@ -1461,6 +1423,34 @@ but the date escape will not be modified
 If the serialisation decides to split either *extended line* with `CONC`s, it MUST NOT do so
 in a way that splits up the pairs of "`@`"s.
 {/}
+
+### Serialising lines                                     {#serialising-lines}
+
+{.ednote} The payload needs escaping, either here or in the next
+section.
+
+Each *line* *shall* be converted to a *line string* by concatenating
+together the *level*, *cross-reference identifier*, *tag* and *payload* as
+described by the `Line` *production* given in {§lines}.  The application
+*must* serialise all *line strings* with a single space *character*
+(U+0020) for each `S` or `PayloadSep` production in the `Line`
+production, and *must not* put additional *whitespace* before or after
+*payloads* which are *pointers*.
+
+{.example ...}  Although *ELF parsers* are *required* to be able to read
+the following *line string*, *ELF writers* *must not* produce this
+*line string*.
+
+    1 FAMC  @F9@
+
+There are two space *characters* after the `FAMC` *tag* in this example.
+When parsing, the first space is matched by the `PayloadSep` production
+while the second is matched by the *optional* `S` production that comes
+before the *pointer* in the `Payload` production.  *ELF writers* *must
+not* insert additional *whitespace* before the pointer, and therefore 
+*must not* produce this *line string*.
+{/}
+
 
 ## Escaping                                                        {#escaping}
 
@@ -1695,17 +1685,91 @@ accidental deletion in transit.
     UnicodeEsc  ::=  ( S? HexNumber (S HexNumber)* S? )?
 {/}
 
+### Line continuation                                             {#line-cont}
+
+ELF allows the *string payload* of a *structure* to be split across two
+or more consecutive *lines*.  When this is done, the first *line* which
+contains the start of the *string payload* is called the **continued
+line** and the subsequent *line* or *lines* which contain the remainder
+of the *string payload* are called **continuation lines**.  Any *line*
+with a *tag* of `CONT` or `CONC` is a *continuation line*.
+
+{.note} It is in principle possible for an ELF schema to assign other
+*tags* for this purpose or to use these *tags* for other purposes, but
+the [ELF Schemas] says this *must not* be done.
+
+`CONT` *continuation lines* are used when the value encoded in a
+*string payload* needs to contain *line breaks*.  The part of the
+*string payload* following each *line break* is placed on a
+*continuation line* using the `CONT` *tag*, and the *line break* itself
+is removed from encoded version of the *payload*.
+
+{.example ...} `CONC` *continuation lines* are commonly used when
+preserving the layout of fragment of a text found in a source, such as
+the following three lines of text found on a sepulchral brass:
+
+    4 TEXT Pray for the soule of Edward Cowrtney esquyer secunde son
+    5 CONT of sr Willm Cowrtney knyght of Povderam, which dyed the 
+    5 CONT firrst day of mch Ano dom mvcix on whos soule ihu have mci
+{/}
+
+`CONC` *continuation lines* are used when it is desirable to split a
+*string payload* which does not contain a convenient *line break*
+across several *lines*.  The *payload* is split at an arbitrary place
+which *should* be between two *characters* that are not *whitespace*.
+
+{.note}  Although *ELF readers* are *required* to support arbitrarily
+long *lines*, it is *recommended* for compatibility with [GEDCOM 5.5.1]
+that *ELF writers* *should* split *lines* in such a way that no *line
+string* exceeds 255 *characters* in length.  It is *recommended* that
+the split is mid-word because GEDCOM parsers have historically not
+always preserved leading or trailing *whitespace* on lines.  If a
+*string payload* is split adjacent to a *whitespace* *character* and the
+result is read by such an application, the *whitespace* between two
+words can become lost.
+
+{.example ...}  `CONC` *continuation lines* can also be useful for
+breaking *string payloads* when shorter *lines* are desirable – such as
+to prevent the examples in this standard from line-wrapping.
+
+    1 NOTE Prof. D. H. Kelley speculates that the mother of King Ecg
+    2 CONC berht of Wessex was a daughter of Æthelbeorht II of Kent.
+
+In the fragment above, the `NOTE` *structure* has a *string payload*
+which contains no *line breaks* and where the name Ecgberht is single
+word.
+{/}
+
+Applications *must not* assign significance to where `CONC`
+*continuation lines* are inserted nor to how many are present in the
+serialisation of a *string payload*.
+
+{.ednote ...}  The TSC considered adding a third type of *continuation
+line*, which would have provisionally used a `CONSP` *tag*.  It was
+designed for splitting on a space *character* without relying on leading
+or trailing *whitespace* being preserved in the *payload* of *lines*.
+It would have worked like `CONT`, except that instead of replacing a
+*line break* it would replace a space *character* (U+0020). 
+
+    1 NOTE This is a long line which has been
+    2 CONSP split using the new mechanism.
+
+After further consideration and consultation it was felt that the use
+cases for this were not sufficient to justify adding a new feature to
+ELF, however the TSC welcome further opinions on this.
+{/}
+
+
+
 ### Unescaping string payloads                                {#payload-unesc}
 
 In order to unescape a *string payload* of a *structure*, an *ELF
 parser* *shall* first identify all *escaped ats* and *escape sequences*
-in the *string payload* per {§identify-escs}.  
+in the *string payload* per {§identify-escs}, and verify that each
+identified *escape sequence* is a *permitted escape* for the *structure*
+in whose *payload* it was found, as described in {§permitted-escs}.
 
-Next, the *ELF parser* *shall* verify that each identified *escape
-sequence* is a *permitted escape* for the *structure* in whose *payload*
-it was found, as described in {§permitted-escs}.
-
-Finally, each identified *escaped at* is replaced with a
+Next, each identified *escaped at* is replaced with a
 single "at" sign, and each identified *Unicode escape* is replaced with
 the *character* it encodes.  *Escape sequences* other than *Unicode
 escapes* are left unaltered.
@@ -1722,6 +1786,18 @@ neither of the following *structures* are valid ways of encoding a
 The former is the *recommended* way of encoding a *payload* which
 consists of the *string* "`@#40@`", while the latter is an alternate
 encoding (which is *not recommended*) of the *string* "`@@`".
+{/}
+
+Finally, any *substructures* corresponding to *continuation lines* are
+identified and their *payloads* merged into the *payload* of their
+parent *structure*, as described in {§merge-conts}.
+
+{.note ...} As *continuation lines* are merged after *escaped ats* and
+*Unicode escapes* are unescaped, the *payload* of following *structure*
+is the literal *string* "`@#U21@`" and not a exclamation mark (U+0021):
+
+    0 NOTE @
+    1 CONC #U21@
 {/}
 
 #### Identifying escapes                                      {#identify-escs}
@@ -1860,6 +1936,109 @@ sequence*.  This behaviour is intended to maximise compatibility with
 future versions of ELF.  Again, *schema-aware* applications are better
 able to determine whether this is the right behaviour for a given
 *escape type*.
+
+{.ednote} Revisit this, and either merge the paragraphs about `D`
+*escape sequences* and other *escape sequences*, or have them say
+different things.
+
+#### Merging continuation lines                                 {#merge-conts}
+
+A *substructure* identified as a *continuation line* is called a
+**continuation substructure**.  In a *schema-aware* application,
+*continuation substructures* are identified as described in [ELF
+Schemas]; in other applications, *continuation substructures* are
+identified by searching the list of *substructures* for those with a
+*tag* `CONT` or `CONC`.  
+
+A *continuation substructure* is a *malformed structure* if it has a
+*cross-reference identifier*, or has a non-empty list of
+*substructures*, or is a *substructure* of a *continuation
+substructure*, or is preceded in the list of *substructures* by a
+*structure* other than a *continuation substructure*.  Likewise, any
+*record* whose *tag* is `CONT` or `CONC` is a *malformed structure*.
+
+{.note}  *Continuation substructures* *may* have an empty *payload*, and
+a *structure* *may* have a mixture of `CONC` and `CONT` *continuation
+substructures*.
+
+{.example ...}  The third *line* of this example is a *malformed
+structure* because the `NOTE` *structure* has another *substructure*
+before the *continuation substructure* – namely, the `REFN` *structure*.
+
+    0 NOTE Start of note
+    1 REFN 5bb43407-9f24-4b42-b00e-c32cc0f09d21
+    1 CONT End of note
+{/}
+
+A *continuation substructure* is a *non-conformant structure* if it has
+a *payload* which is a *pointer*.
+
+{.example ...}  The second *line* of this example is a *non-conformant
+structure* because it is a *continuation structure* whose *payload* is a
+*pointer*.
+
+    0 @N1@ NOTE This can be found in:
+    1 CONT @F1@
+
+The `NOTE` *line* is the *continued line*, and has a valid
+*cross-reference identifier*.  It is only *continuation lines* and not
+*continued lines* that *must not* have *cross-reference identifiers*.
+{/}
+
+{.note} *Continuation lines* containing *pointers* are considered a less
+serious error than the other ways in which *continuation lines* might be
+malformed.  This is because these are more likely to appear in legacy
+data.  If these *lines* were considered *malformed structures*, an *ELF
+parser* would be *required* to halt parsing on encountering them.  By
+making them only *non-conformant structures*, an *ELF parser* *may*
+still halt parsing, but *may* alternatively opt to issue a warning and
+continue parsing, perhaps by treating the *pointer* as a *string
+payload* instead.  
+
+If a *structure* has any *continuation substructures*, each is merged
+with the parent *structure* in the order they appear in the list of
+*substructures*, as follows.
+
+If a `CONC` *continuation substructure* is encountered, an *ELF parser*
+*shall* first append a *line break* to the *payload* of the parent
+*structure*.  The form of *line break* appended is
+implementation-defined, but all inserted *line breaks* *must* have
+identical lexical forms.
+
+{.note}  A *line break* is defined in §2.1 of [Basic Concepts] as a line
+feed (U+000A), carriage return (U+000D) or carriage return and line feed
+pair (U+000D U+000A).  These are native line endings used on Unix, Linux
+and modern Mac OS; older versions of Mac OS; and Windows, respectively.
+It is anticipated, though not *required*, that an application will use
+the relevant native form of *line break* for that platform.
+
+Then, regardless of the type of *continuation substructure*, the 
+*payload* of the *continuation substructure* *shall* be appended to the
+*payload* of the parent *structure*, and the *continuation substructure*
+is removed from the parent's list *substructures*.
+
+{.example ...}  This `NOTE` *structure* has three *continuation
+substructures* followed by one other *substructure*.
+
+    0 NOTE This paragraph is sufficiently long that it has proved con
+    1 CONC venient to wrap it onto a second line.
+    1 CONT
+    1 CONT This is a short paragraph.
+    1 REFN 8e445bb6-cb27-4c12-8c74-e051395639c2
+
+None of the *lines* in this example contain trailing *whitespace*.  Once
+*continuation substructures* have been merged, this example consists of
+a `NOTE` *structure* whose *string payload* is:
+
+    This paragraph is sufficiently long that it has proved convenient to wrap it onto a second line.\n\nThis is a short paragraph.
+
+In this explanation, `\n` denotes a *line break* of unspecified form.
+This is not part of the ELF syntax.
+
+After merging *continuation substructures*, the `NOTE` *structure* has
+just one *substructure* – the `REFN` *structure*.
+{/}
+
 
 ## Encoding with `@`
 
