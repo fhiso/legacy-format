@@ -355,7 +355,8 @@ changed.
 This standard has an *optional* dependency on the [ELF Schemas]
 standard, which provides additional functionality for validating ELF
 documents and extending the ELF data model.  An application which
-conforms to the [ELF Schemas] standard is described as **schema-aware**.
+conforms to the [ELF Schemas] standard is described as **schema-aware**;
+other applications are described as **non-schema-aware**.
 
 ### Parsing                                                         {#parsing}
     
@@ -1048,7 +1049,9 @@ using a *pointer*, and *may* be omitted when there is no need to refer to the
 after it, which are not themselves part of *cross-reference identifer*.
 
     XRefLabel  ::=  "@" XRefID "@"
-    XRefID     ::=  [a-zA-Z0-9]+
+    XRefID     ::=  IDChar+
+    IDChar     ::=  [A-Za-z0-9] | [?$&'*+,;=._~-]
+                      | [#xA0-#xD7FF] | [#xF900-#xFFEF] | [#x10000-#xEFFFF]
 
 {.example ...}  The following is a well-formed *line* with a
 *cross-reference identifier* of "`I1`":
@@ -1056,15 +1059,44 @@ after it, which are not themselves part of *cross-reference identifer*.
     0 @I1@ INDI
 {/}
 
-{.note}  [GEDCOM 5.5.1] allows *cross-reference identifiers* to contain
-any *character*, so long as it starts with an alphanumeric *character*.
-ELF restricts *cross-reference identifiers* to be wholly alphanumeric.
+{.note ...}  [GEDCOM 5.5.1] allows *cross-reference identifiers* to
+contain any *character* other than a space (U+0020), the "at" sign
+(U+0040), the C0, C1 and DEL control *characters* (U+0001 to U+001F,
+U+0080 to U+009F, and U+007F), so long as it starts with an alphanumeric
+ASCII *character*.  ELF removes the requirement that the first
+*character* of a *cross-reference identifier* be an alphanumeric ASCII
+*character*, and explicitly allows non-ASCII *characters* in
+*cross-reference identifiers*, though it prohibits the following
+*characters* which were allowed in GEDCOM:
 
-{.ednote}  Is this restriction acceptable?  There's no strong technical
-need to limit the *characters*, other than to prohibit `@` and any
-*character* reserved for future use in *pointers*, which is currently
-just `:` and `!`.  Perhaps we should allow `_`, `-` and `.` to be a bit
-more similar to IDs in XML?
+*Characters*                    Reason for exclusion
+---------------------------     ----------------------------------------------
+`! :`                           Reserved in ELF and GEDCOM *pointers*
+`# % [ ] < > " { } | \ ^ \` `   Require escaping in IRI fragment identifiers
+`( ) /`                         Reserved for future FHISO use
+*Private use characters*        Ambiguous without agreed meaning
+`[#xFFF0-#xFFFE]`               Require escaping in IRI fragment identifiers
+---------------------------     ----------------------------------------------
+
+FHISO anticipates using *cross-reference identifiers* in IRI fragment
+identifiers in a future ELF standard, and have therefore prohibited all
+*characters* which [RFC 3987] says have to be escaped in this context.
+{/}
+
+{.ednote}  Is the set of permitted *characters* right?  Even though
+GEDCOM seems to allow everything, in practice only alphanumeric ASCII
+*characters* seem to be used in actual GEDCOM data.  It would probably
+therefore be safe to remove further punctuation *characters*, if
+desired.
+
+For maximum compatibility, *ELF writers* *should* prefer
+*cross-reference identifiers* which only use ASCII *characters*.
+
+{.note} The status of *code points* above U+00FE in *cross-reference
+identifiers* is not entirely clear in [GEDCOM 5.5.1].  None of its
+grammatical production mention them, though it seems likely its
+`otherchar` production is intended to include all non-ASCII
+*characters* and not just U+0080 to U+00FE.
 
 #### Tags                                                              {#tags}
 
@@ -1077,7 +1109,7 @@ The `Tag` production encodes the **tag** of the *line* which is a
 #### Payloads
 
 The **payload** of a *line* is an *optional* value associated with the
-*line*, and is encoded by the `Pointer` production.  If present, it
+*line*, which is encoded by the `Pointer` production.  If present, it
 *shall* be either a *string* or a *pointer*, which are encoded by the
 `PayloadString` and `Pointer` productions, respectively.  The `String`
 production is given in §2 of [Basic Concepts] as a sequence of zero or
@@ -1134,7 +1166,7 @@ Once *line strings* have been parsed into *lines*, the sequence of
 
 This process starts by parsing the first *line* of the input as the
 first *line* of a *tagged structure* using the procedure given
-{§recursive-parsing}.  If that *record* has *substructures* then
+{§first-pass}.  If that *record* has *substructures* then
 additional *lines* will be read while parsing it.  This *structure* is
 the first *record* in the *dataset* which *shall* be the *header
 record*.  
@@ -1145,7 +1177,7 @@ specification, e.g. to extract the schemas and default language.
 If further *lines* remain after the *header record* has been fully
 parsed, then the first of the remaining lines is parsed as first *line*
 of the next *record* in the *dataset*, again using the procedure given
-in {§recursive-parsing}.  This process is repeated until no further
+in {§first-pass}.  This process is repeated until no further
 *lines* remain, at which point the *dataset* has the been fully read.
 
 {.note} The process described in this section, together with the
@@ -1153,23 +1185,10 @@ guarantee provided by {§specified-enc} that the first *line* is always
 "`0 HEAD`", ensures that the first *line* of every *record* necessarily
 has a *level* of 0.
 
-If an *ELF parser* is *schema-aware*, once each *record* has been
-assembled using the algorithm in {§recursive-parsing}, it *shall* be
-converted into a *typed structure* as described in [ELF Schemas].
-
-Next, the *ELF parser* *shall* unescape each *record*.  This is done
-recursively.  First, if the *payload* of the *record* is a *string
-payload*, it is unescaped as described in {§payload-unesc}.  Then the
-parser proceeds recursively to each *substructure* in order, unescaping
-its *payload*. 
-
-{.ednote} Change this into a second pass in which the conversion to
-*typed structures*, unescaping and language tagging are all done.
-
 If the last *record* has a *tag* of `TRLR`, and no *cross-reference
 identifier*, *payload* or *substructures*, it is discarded.  Such a
-*record* is called a **trailer record**.  If the last *record*
-is not a *trailer record*, it is a *malformed structure* as defined in
+*record* is called a **trailer record**.  If the last *record* is not a
+*trailer record*, it is a *malformed structure* as defined in
 {§error-structures}.  
 
 {.note} [GEDCOM 5.5.1] includes a mechanism for splitting a logical
@@ -1181,10 +1200,16 @@ a large GEDCOM document might exceed the storage capacity of a single
 disk.  This functionality is no longer necessary and is not widely
 implemented in present applications.  It is not supported in ELF.
 
-Any *structure* other than the *trailer record* which has a *tag* of
-`TRLR` is a *malformed structure*.
+Once each *record* has been assembled, an *ELF parser* *shall* make a
+second pass over the *record* processing it as described in
+{§second-pass}.  This does not apply to the discarded *trailer record*.
 
-#### Recursive parsing                                    {#recursive-parsing}
+{.ednote} At the moment an *ELF parser* *may* do assemble all
+*structures* per {§first-pass}, then make a second pass over each
+*record* per {§second-pass}, or *may* do the second pass over each
+*record* immediately after it has been assembled.  This might change.
+
+#### First pass                                                  {#first-pass}
 
 The conversion of *lines* into *structures* is defined recursively.  To
 read a *structure*, the parser starts by reading its first *line*, and
@@ -1266,6 +1291,35 @@ The result is an `INDI` *structure* with two *substructures* with *tags*
 `NAME` and `BIRT`, respectively, the latter of which has a
 *substructure* of its own with tag `DATE`.  
 {/}
+
+#### Second pass                                                {#second-pass}
+
+Once each of *record* has been assembled, an *ELF parser* *shall* make a
+second pass over the *record*, processing it and its *substructures*
+recursively.  Each step of the recursion proceeds as follows.
+
+First, if the *structure* has a *tag* of `CONC`, `CONT` or `TRLR`, it is
+a *malformed structure*.
+
+{.note}  The `CONC` or `CONT` *tags* are reserved for use in
+*continuation lines*, as described in {§line-cont}.  They are removed
+while their parent *structure* is being processed in this second pass,
+and therefore no longer exist when processing recurses into the
+*substructures*.  The `TRLR` *tag* is reserved for the *trailer
+record* which is removed before this second pass.
+
+Next, if the *ELF parser* is *schema-aware*, the *tagged structure*
+*shall* be converted into a *typed structure* as described in [ELF
+Schemas].
+
+Next, if the *payload* of *structure* is a *string payload*, it is
+unescaped as described in {§payload-unesc}.
+
+{.note}  This step removes any *escaped at signs*, *Unicode escapes* or
+*continuation lines* from the *structure*.
+
+Finally, each *substructure* is processed recursively as described in
+this section.
 
 #### Errors in structures                                  {#error-structures}
 
@@ -1933,29 +1987,35 @@ depend on the calendar being used.  *Schema-aware* applications are
 better able to determine whether the *calendar escape* is really a
 *permitted escape*.
 
-An *escape sequence* with any other *escape type* is a *permitted
+An *escape sequence* with any other *escape type* is not a *permitted
 escape*.
 
-{.note}  This means unknown *escape type* are accepted, preserved as
-part of the *payload* of the *structure* assuming the *structure* allows
-arbitrary content in its *payload*, and re-exported as an *escape
-sequence*.  This behaviour is intended to maximise compatibility with
-future versions of ELF.  Again, *schema-aware* applications are better
-able to determine whether this is the right behaviour for a given
-*escape type*.
-
-{.ednote} Revisit this, and either merge the paragraphs about `D`
-*escape sequences* and other *escape sequences*, or have them say
-different things.
+{.note}  This means that when a *non-schema-aware* application
+encounters a *escape sequence* which is not defined in ELF 1.0, it
+treats the *structure* containing it as a *non-conformant structure* and
+*must* either issue a warning or terminate processing.  This behaviour
+has been chosen because *escape sequences* are intended to be used in
+ELF to represent processing instructions that need handling in the
+serialisation layer.  This is how *escape sequences* were originally
+used in GEDCOM and is true of *Unicode escapes* in ELF.  Calendar
+escapes do not conform to this model, as they are interpreted by the
+data model.  It is FHISO's current intention not to make further use of
+data model *escape sequences* and eventually to *deprecate* calendar
+escapes.  If a future version of ELF does introduce further *escape
+sequences* which need handling in the data model, they will not be
+backwards compatible with *non-schema-aware* ELF 1.0 applications.
 
 #### Merging continuation lines                                 {#merge-conts}
 
-A *substructure* identified as a *continuation line* is called a
-**continuation substructure**.  In a *schema-aware* application,
-*continuation substructures* are identified as described in [ELF
-Schemas]; in other applications, *continuation substructures* are
-identified by searching the list of *substructures* for those with a
-*tag* `CONT` or `CONC`.  
+*Substructures* with a *tag* of `CONC` or `CONT` are called a 
+**continuation substructures**.  They correspond to *continuation
+lines*.
+
+{.note}  In a *schema-aware* application, the current *structure* has
+been converted into a *typed structure* at the point when continuation
+lines are merged as per this section, however their *substructures* have
+not yet been converted.  Therefore, *continuation substructures* can be
+identified by their *tag*, even in *schema-aware* applications.
 
 A *continuation substructure* is a *malformed structure* if it has a
 *cross-reference identifier*, or has a non-empty list of
