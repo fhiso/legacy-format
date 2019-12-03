@@ -1613,6 +1613,222 @@ not* insert additional *whitespace* before the pointer, and therefore
 *must not* produce this *line string*.
 {/}
 
+## Header metadata                                                   {#header}
+
+The **header record** is the first *record* in an ELF document.  It
+*shall* have a `HEAD` *tag*, no *payload* and no *cross-reference
+identifier*.  The *substructures* of the *header record* are called
+**metadata structures**, and contain information about the dataset as a
+whole.
+
+Certain *metadata structures*, which are referred to as **serialisation
+metadata structures**, are processed by the *ELF parser* during parsing
+and then removed from the dataset.  Each *serialisation metadata
+structure* encodes one piece of **serialisation metadata**, as
+determined by the *tag* of the *serialisation metadata structure*.  The
+*serialisation metadata* affects how the *ELF parser* processes the
+file.
+
+This standard defines five types of *serialisation metadata*, as given
+in the following table.
+
+*Tag*    *Serialisation metadata*
+-------- --------------------------------------
+`CHAR`   *specified character encoding*, as defined in {§specified-enc}
+`ELF`    *ELF serialisation version*, as defined in {§serialisation-version}
+`GED`    *legacy GEDCOM version*, as defined in {§gedcom-version}
+`PLANG`  *default payload language*
+`SCHMA`  *schema reference*
+-------- --------------------------------------
+
+{.note}  These *tags* are not reserved in other context, except as
+specified in **§XXX** for the `PLANG` *tag*.  This standard does not
+reserve any *tags* for future use as *serialisation metadata
+structures*.  If a future standard adds new ones, they will only be
+interpreted conditionally based on the *ELF serialisation version*.
+
+{.ednote} Fix this reference.
+
+{.note}  The escaping facilities in {§escaping}, including *Unicode
+escapes* and *continuation lines*, cannot be used in *serialisation
+metadata structures* because these facilities are only interpreted after
+the *serialisation metadata structures* have been processed.  Other
+*metadata structures* *may* use these facilities.
+
+{.example ...}  The following fragment does not contain a *Unicode
+escape* in the `ELF` *serialisation metadata structure*, and so does not
+represent the version 1.0.  It is simply interpreted as the *string*
+"`1@#U2E@0`".  This is not a valid *version number*, as defined in
+{§version-numbers}, and therefore the `ELF` *structure* is a
+*non-conformant structure*.  An *ELF parser* *must* either terminate
+processing on encountering it, or issue a warning.
+
+    0 HEAD
+    1 ELF 1@#U2E@0
+{/}
+
+{.example ...}  The following fragment contains a `NOTE` *metadata
+structure* whose payload, after unescaping, is the string "`Ceci est une
+longue note à propos de ce document`".
+
+    0 HEAD
+    1 NOTE Ceci est une longue note @#UC0@ pro
+    2 CONC pos de ce document
+    2 PLANG fr
+    0 TRLR
+
+This is allowed because the `NOTE` *tag* does not denote a
+*serialisation metadata structure*.  The `PLANG` *substructure* does not
+denote a *serialisation metadata structure* because it is not a direct
+*substructure* of the *header record*.
+{/}
+
+### Version numbers                                         {#version-numbers}
+
+The *payload* of the `ELF` *serialisation metadata structure*, and the
+*payload* of the `VERS` *substructure* of the `GEDC` *serialisation
+metadata structure* both contain a **version number**, which is a
+*string* used to record the version of a standard that matches the
+following `Version` production:
+
+    Version  ::=  Integer "." Integer ( "." Integer )?
+    Integer  ::=  [0-9]+
+
+The three components represented by the `Integer` production are decimal
+integers, and *may* include leading zeros which are ignored.  These
+components are called the **major version**, **minor version** and
+**revision number**, respectively.  If the *revision number* is omitted,
+a value of 0 is assumed.
+
+{.example ...}  The following three *numbers version* are exactly
+equivalent:
+
+    1 ELF 1.0
+    1 ELF 1.0.0
+    1 ELF 1.000
+
+{/}
+
+#### ELF serialisation version                        {#serialisation-version}
+
+The **ELF serialisation version** is a *version number* located in the
+*payload* of the `ELF` *serialisation metadata structure*, and 
+indicates the version of the ELF Serialisation standard with which the
+document complies.  
+
+The *version number* of this version of the standard is 1.0.0.  An *ELF
+writer* producing output according to this standard *must* include this
+*ELF serialisation version* in the output if the generated file contains
+any *Unicode escapes*, *schema references*, *payload languages* or
+*payload datatypes*.
+
+{.note}  This is not an absolute requirement so that *ELF writers* can
+produce output that can be read by strict GEDCOM parsers which reject
+input containing any unknown *tags* other than *legacy extension tags*,
+or *escape sequences*.
+
+If an *ELF parser* is reading a document with an *ELF serialisation
+version* which differs from the *version number* of this standard only
+by the *revision number*, the *ELF parser* *must* parse the input
+according to this standard.
+
+If an *ELF parser* encounters an *ELF serialisation version* which has a
+different *minor version* to this standard, but the same *major
+version*, it *should* parse the input according to this standard, but
+*should* issue a warning to the user that the document is in an unknown
+version of ELF.
+
+If an *ELF parser* encounters an *ELF serialisation version* with a
+different *major version*, the document is a *non-conformant source*.
+
+{.note}  These rules are designed to handle forwards compatibility.  A
+future version of this standard is likely to need to change these to
+better handle backwards compatibility with earlier versions of ELF.
+
+#### Legacy GEDCOM version                                   {#gedcom-version}
+
+The **legacy GEDCOM version** is a *version number* located in the
+*payload* of the `VERS` *substructure* of the `GEDC` *serialisation
+metadata structure*, and indicates the version of GEDCOM which the
+document is compatible with.
+
+This standard, when used together with the [ELF Data Model], is
+compatible with both GEDCOM 5.5 and GEDCOM 5.5.1.  An *ELF writer*
+producing output according to this standard *must* include a *legacy
+GEDCOM version* of either `5.5` or `5.5.1` in the output if it omitted
+the *ELF serialisation version* or if it included no *schema references*
+in the output, and *should* do so otherwise if the document conforms to
+the [ELF Data Model].
+
+{.note}  This recommendation means that a *legacy GEDCOM version* might
+be generated claiming compatibility with a version of GEDCOM that it is
+not strictly compatible with.  In practice, it is common to encounter
+GEDCOM files that are not strictly compatible with the claimed version
+of GEDCOM, and GEDCOM parsers are typically tolerant in what they
+accept.  Nevertheless, an *ELF writer* can always opt not to include a
+*legacy GEDCOM version*, so long as an *ELF serialisation version* and
+appropriate *schema reference* are included.
+
+{.ednote}  When parsing ...
+
+### Parsing serialisation metadata                         {#parsing-metadata}
+
+Once a *header record* has been assembled as described in {§first-pass},
+the *ELF parser* *shall* iterate over its *substructures* looking for
+*structures* with a *tag* of `CHAR`, `ELF`, `GED`, `PLANG` or `SCHMA`.
+These *substructures* are identified as *serialisation metadata
+structures* and processed as specified in this section.
+
+Any *serialisation metadata structure*, or any *structure* nested within
+a *serialisation metadata structure* regardless of the depth of the
+nesting, is a *non-conformant structure* if it has a *cross-reference
+identifier*, or if it has a *tag* of `HEAD`, `TRLR`, `CONC` or `CONT`,
+or if it has a *payload* which is a *pointer*.
+
+{.example ...} The `SCHMA` *structure* in the following document is a
+*non-conformant structure*:
+
+    0 HEAD
+    1 SCHMA https://example.com/this/is/a/very/long/IRI
+    2 CONC /which/has/been/continued/on/to/two/lines
+    0 TRLR
+
+{/}
+
+{.note}  For forward compatibility, this standard does not put limits on
+what *substructures* a *serialisation metadata structure* can have.
+Unknown *substructures* are ignored.
+
+If a *header record* contains two or more *serialisation metadata
+structures* with the same *tag*, and that *tag* is not `SCHMA`, the
+second and subsequent *serialisation metadata structures* are
+*non-conformant structures*.
+
+{.example ...}  The second `PLANG` *structure* in this ELF fragment is a
+*non-conformant structure* as a document *must not* have multiple 
+*default payload languages*.  An *ELF parser* *must* either terminate
+processing the file or issue a warning.
+  
+    0 HEAD
+    1 PLANG nds
+    1 PLANG de
+
+{/}
+
+If the *serialisation metadata structure* has a *tag* of `CHAR`, it is
+deleted from the *header record* with no further processing.
+
+{.note}  This *serialisation metadata structure* contains the *specified
+character encoding* which was already read in {§specified-enc}.
+
+If the *serialisation metadata structure* has a *tag* of `ELF`, and its
+*payload* is a valid *version number*, that *version number* is
+interpreted as the *ELF serialisation version* as described in
+{§serialisation-version}, and the *structure* is deleted from the
+*header record*.  If its *payload* is not a valid *version number*, it
+is a *non-conformant structure*.
+
+
 
 ## Escaping                                                        {#escaping}
 
@@ -2220,222 +2436,6 @@ does not form part of the ELF syntax.
 After merging *continuation substructures*, the `NOTE` *structure* has
 just one *substructure* – the `REFN` *structure*.
 {/}
-
-## Header metadata                                                   {#header}
-
-The **header record** is the first *record* in an ELF document.  It
-*shall* have a `HEAD` *tag*, no *payload* and no *cross-reference
-identifier*.  The *substructures* of the *header record* are called
-**metadata structures**, and contain information about the dataset as a
-whole.
-
-Certain *metadata structures*, which are referred to as **serialisation
-metadata structures**, are processed by the *ELF parser* during parsing
-and then removed from the dataset.  Each *serialisation metadata
-structure* encodes one piece of **serialisation metadata**, as
-determined by the *tag* of the *serialisation metadata structure*.  The
-*serialisation metadata* affects how the *ELF parser* processes the
-file.
-
-This standard defines five types of *serialisation metadata*, as given
-in the following table.
-
-*Tag*    *Serialisation metadata*
--------- --------------------------------------
-`CHAR`   *specified character encoding*, as defined in {§specified-enc}
-`ELF`    *ELF serialisation version*, as defined in {§serialisation-version}
-`GED`    *legacy GEDCOM version*, as defined in {§gedcom-version}
-`PLANG`  *default payload language*
-`SCHMA`  *schema reference*
--------- --------------------------------------
-
-{.note}  These *tags* are not reserved in other context, except as
-specified in **§XXX** for the `PLANG` *tag*.  This standard does not
-reserve any *tags* for future use as *serialisation metadata
-structures*.  If a future standard adds new ones, they will only be
-interpreted conditionally based on the *ELF serialisation version*.
-
-{.ednote} Fix this reference.
-
-{.note}  The escaping facilities in {§escaping}, including *Unicode
-escapes* and *continuation lines*, cannot be used in *serialisation
-metadata structures* because these facilities are only interpreted after
-the *serialisation metadata structures* have been processed.  Other
-*metadata structures* *may* use these facilities.
-
-{.example ...}  The following fragment does not contain a *Unicode
-escape* in the `ELF` *serialisation metadata structure*, and so does not
-represent the version 1.0.  It is simply interpreted as the *string*
-"`1@#U2E@0`".  This is not a valid *version number*, as defined in
-{§version-numbers}, and therefore the `ELF` *structure* is a
-*non-conformant structure*.  An *ELF parser* *must* either terminate
-processing on encountering it, or issue a warning.
-
-    0 HEAD
-    1 ELF 1@#U2E@0
-{/}
-
-{.example ...}  The following fragment contains a `NOTE` *metadata
-structure* whose payload, after unescaping, is the string "`Ceci est une
-longue note à propos de ce document`".
-
-    0 HEAD
-    1 NOTE Ceci est une longue note @#UC0@ pro
-    2 CONC pos de ce document
-    2 PLANG fr
-    0 TRLR
-
-This is allowed because the `NOTE` *tag* does not denote a
-*serialisation metadata structure*.  The `PLANG` *substructure* does not
-denote a *serialisation metadata structure* because it is not a direct
-*substructure* of the *header record*.
-{/}
-
-### Version numbers                                         {#version-numbers}
-
-The *payload* of the `ELF` *serialisation metadata structure*, and the
-*payload* of the `VERS` *substructure* of the `GEDC` *serialisation
-metadata structure* both contain a **version number**, which is a
-*string* used to record the version of a standard that matches the
-following `Version` production:
-
-    Version  ::=  Integer "." Integer ( "." Integer )?
-    Integer  ::=  [0-9]+
-
-The three components represented by the `Integer` production are decimal
-integers, and *may* include leading zeros which are ignored.  These
-components are called the **major version**, **minor version** and
-**revision number**, respectively.  If the *revision number* is omitted,
-a value of 0 is assumed.
-
-{.example ...}  The following three *numbers version* are exactly
-equivalent:
-
-    1 ELF 1.0
-    1 ELF 1.0.0
-    1 ELF 1.000
-
-{/}
-
-#### ELF serialisation version                        {#serialisation-version}
-
-The **ELF serialisation version** is a *version number* located in the
-*payload* of the `ELF` *serialisation metadata structure*, and 
-indicates the version of the ELF Serialisation standard with which the
-document complies.  
-
-The *version number* of this version of the standard is 1.0.0.  An *ELF
-writer* producing output according to this standard *must* include this
-*ELF serialisation version* in the output if the generated file contains
-any *Unicode escapes*, *schema references*, *payload languages* or
-*payload datatypes*.
-
-{.note}  This is not an absolute requirement so that *ELF writers* can
-produce output that can be read by strict GEDCOM parsers which reject
-input containing any unknown *tags* other than *legacy extension tags*,
-or *escape sequences*.
-
-If an *ELF parser* is reading a document with an *ELF serialisation
-version* which differs from the *version number* of this standard only
-by the *revision number*, the *ELF parser* *must* parse the input
-according to this standard.
-
-If an *ELF parser* encounters an *ELF serialisation version* which has a
-different *minor version* to this standard, but the same *major
-version*, it *should* parse the input according to this standard, but
-*should* issue a warning to the user that the document is in an unknown
-version of ELF.
-
-If an *ELF parser* encounters an *ELF serialisation version* with a
-different *major version*, the document is a *non-conformant source*.
-
-{.note}  These rules are designed to handle forwards compatibility.  A
-future version of this standard is likely to need to change these to
-better handle backwards compatibility with earlier versions of ELF.
-
-#### Legacy GEDCOM version                                   {#gedcom-version}
-
-The **legacy GEDCOM version** is a *version number* located in the
-*payload* of the `VERS` *substructure* of the `GEDC` *serialisation
-metadata structure*, and indicates the version of GEDCOM which the
-document is compatible with.
-
-This standard, when used together with the [ELF Data Model], is
-compatible with both GEDCOM 5.5 and GEDCOM 5.5.1.  An *ELF writer*
-producing output according to this standard *must* include a *legacy
-GEDCOM version* of either `5.5` or `5.5.1` in the output if it omitted
-the *ELF serialisation version* or if it included no *schema references*
-in the output, and *should* do so otherwise if the document conforms to
-the [ELF Data Model].
-
-{.note}  This recommendation means that a *legacy GEDCOM version* might
-be generated claiming compatibility with a version of GEDCOM that it is
-not strictly compatible with.  In practice, it is common to encounter
-GEDCOM files that are not strictly compatible with the claimed version
-of GEDCOM, and GEDCOM parsers are typically tolerant in what they
-accept.  Nevertheless, an *ELF writer* can always opt not to include a
-*legacy GEDCOM version*, so long as an *ELF serialisation version* and
-appropriate *schema reference* are included.
-
-{.ednote}  When parsing ...
-
-### Parsing serialisation metadata                         {#parsing-metadata}
-
-Once a *header record* has been assembled as described in {§first-pass},
-the *ELF parser* *shall* iterate over its *substructures* looking for
-*structures* with a *tag* of `CHAR`, `ELF`, `GED`, `PLANG` or `SCHMA`.
-These *substructures* are identified as *serialisation metadata
-structures* and processed as specified in this section.
-
-Any *serialisation metadata structure*, or any *structure* nested within
-a *serialisation metadata structure* regardless of the depth of the
-nesting, is a *non-conformant structure* if it has a *cross-reference
-identifier*, or if it has a *tag* of `HEAD`, `TRLR`, `CONC` or `CONT`,
-or if it has a *payload* which is a *pointer*.
-
-{.example ...} The `SCHMA` *structure* in the following document is a
-*non-conformant structure*:
-
-    0 HEAD
-    1 SCHMA https://example.com/this/is/a/very/long/IRI
-    2 CONC /which/has/been/continued/on/to/two/lines
-    0 TRLR
-
-{/}
-
-{.note}  For forward compatibility, this standard does not put limits on
-what *substructures* a *serialisation metadata structure* can have.
-Unknown *substructures* are ignored.
-
-If a *header record* contains two or more *serialisation metadata
-structures* with the same *tag*, and that *tag* is not `SCHMA`, the
-second and subsequent *serialisation metadata structures* are
-*non-conformant structures*.
-
-{.example ...}  The second `PLANG` *structure* in this ELF fragment is a
-*non-conformant structure* as a document *must not* have multiple 
-*default payload languages*.  An *ELF parser* *must* either terminate
-processing the file or issue a warning.
-  
-    0 HEAD
-    1 PLANG nds
-    1 PLANG de
-
-{/}
-
-If the *serialisation metadata structure* has a *tag* of `CHAR`, it is
-deleted from the *header record* with no further processing.
-
-{.note}  This *serialisation metadata structure* contains the *specified
-character encoding* which was already read in {§specified-enc}.
-
-If the *serialisation metadata structure* has a *tag* of `ELF`, and its
-*payload* is a valid *version number*, that *version number* is
-interpreted as the *ELF serialisation version* as described in
-{§serialisation-version}, and the *structure* is deleted from the
-*header record*.  If its *payload* is not a valid *version number*, it
-is a *non-conformant structure*.
-
 
 ## Encoding with `@`
 
