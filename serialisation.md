@@ -259,11 +259,11 @@ Each *line* consists of the following components, in order, separated by
 
 {.example ...}
     0 HEAD
+    1 CHAR UTF-8
     1 GEDC
     2 VERS 5.5.1
-    2 ELF 1.0.0
     2 FORM LINEAGE-LINKED
-    1 CHAR UTF-8
+    1 ELF 1.0.0
     0 INDI
     1 NAME Charlemagne
     0 TRLR
@@ -272,7 +272,7 @@ This ELF document has three *lines* with *level* `0` which mark the
 start of the three top-level *structures* or *records*.  These *records*
 have, respectively, three, one and zero *substructures*, which are
 denoted by the *lines* with *level* `1`.   The *structure* represented
-by the *line* with a `CHAR` *tag* is a *substructure* of the `HEAD`
+by the *line* with a `ELF` *tag* is a *substructure* of the `HEAD`
 *record* because there is no intervening *line* with *level* one less
 than `1`; the *structure* represented by the `NAME` *line*
 naming Charlemagne is a *substructure* of the `INDI` *record*, as that
@@ -283,7 +283,7 @@ Five of the *lines* in this example document have a *payload*.  For
 example, the *payload* of the `FORM` *line* is the *string*
 "`LINEAGE-LINKED`", while the *payload* of the `NAME` *line* is the
 *string* "`Charlemagne`".  None of the *lines* in this example have
-*payload* which are *pointers*, nor do any have a *cross-reference
+*payloads* which are *pointers*, nor do any have a *cross-reference
 identifier*.
 {/}
 
@@ -1669,10 +1669,10 @@ processing on encountering it, or issue a warning.
 
 {.example ...}  The following fragment contains a `NOTE` *metadata
 structure* whose payload, after unescaping, is the string "`Ceci est une
-longue note à propos de ce document`".
+note longue à propos de ce document`".
 
     0 HEAD
-    1 NOTE Ceci est une longue note @#UC0@ pro
+    1 NOTE Ceci est une note longue @#UC0@ pro
     2 CONC pos de ce document
     2 PLANG fr
     0 TRLR
