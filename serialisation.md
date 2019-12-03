@@ -193,7 +193,8 @@ defining *tags* for other purposes, including to extend the [ELF Data
 Model].
 
 The *payload* is either a *language-tagged string* or a *pointer* to
-another *structure*.  
+another *structure*.  A *payload* which is a *language-tagged string* is
+referred to as a **string payload**.
 
 {.note}  A *language-tagged string* is defined in §3.1 of [Basic
 Concepts] as a *string* which is tagged with a *language tag*.  Making
@@ -380,22 +381,27 @@ The parsing process can be summarised as follows:
 
     a. parsing *line strings* into *lines* per {§lines};
     b. assembling *lines* into *records*, each of which are hierarchies
-       of *tagged structures*, as described in {§tagged-structs}; and
-    c. if the parser is *schema-aware*, converting *tagged structures*
-       into *typed structures*, as described in [ELF Schemas].
+       of *tagged structures*, as described in {§first-pass}.
 
-3. The *payloads* of each *structure* (which will be either *typed
-   structures* or *tagged structures* depending on whether the
-   application is *schema-aware*) is then unescaped by:
+3. The *header record* is parsed for *serialisation metadata* per
+   {§parsing-metadata}.
 
-    a. identifying all *escaped at signs* and *escape sequences* per
-       {§identify-escs};
-    b. verifying that each *escape sequence* is a *permitted escape* per
-       {§permitted-escs}; 
-    c. replacing each *escaped at sign* with a single "at" sign; 
-    d. replacing each *Unicode escape* with the *character* it encodes
-       per {§unicode-escape}; and
-    e. merging *continuation lines* per {§merge-conts}.
+4. A second pass is made recursively over each *record*, processing it
+   per {§second-pass}:
+
+    a. if the parser is *schema-aware*, converting *tagged structures*
+       into *typed structures*, as described in [ELF Schemas]; and 
+
+    b. each *string payload* is unescaped by:
+
+        i.   identifying all *escaped at signs* and *escape sequences*
+             per {§identify-escs};
+        ii.  verifying that each *escape sequence* is a *permitted
+             escape* per {§permitted-escs}; 
+        iii. replacing each *escaped at sign* with a single "at" sign; 
+        iv.  replacing each *Unicode escape* with the *character* it
+             encodes per {§unicode-escape}; and
+        v.   merging *continuation lines* per {§merge-conts}.
 
 
 ### Serialisation                                               {#serialising}
@@ -839,7 +845,7 @@ U+000D) which was used as a line ending on BBC and Acorn computers in
 some specific contexts.  In ELF, this sequence is parsed as two *line
 breaks* with an intervening blank *line string* which gets ignored.
 
-*ELF readers* *must* be able to handle arbitrarily long *line strings*,
+*ELF parsers* *must* be able to handle arbitrarily long *line strings*,
 subject to limits of available system resources.
 
 {.note}  This is a change from [GEDCOM 5.5.1] which says that *line
@@ -970,7 +976,7 @@ This ELF fragment contains three *lines*.  The first *line* has a
 `INDI`; it has no *payload*.  Neither the second nor the third *line*
 has a *cross-reference identifier*, and both have a *payload*: on the second
 line the *payload* is the *string* "`Cleopatra`", while the *payload* of
-the third *line* is a pointer, `@F2@`.
+the third *line* is a *pointer*, `@F2@`.
 {/}
 
 **Malformed lines** are *lines* or *line strings* which contain certain
@@ -1040,7 +1046,7 @@ string* is "`0 HEAD`" while determining the *specified character
 encoding* per {§specified-enc}, which means the first *line* must always
 have a *level* of 0.
 
-#### Cross-reference identifiers
+#### Cross-reference identifiers                                   {#xref-ids}
 
 The `XRefLabel` production encodes the **cross-reference identifier** of
 the *line*, which is used when referencing one *structure* from another
@@ -1090,7 +1096,14 @@ therefore be safe to remove further punctuation *characters*, if
 desired.
 
 For maximum compatibility, *ELF writers* *should* prefer
-*cross-reference identifiers* which only use ASCII *characters*.
+*cross-reference identifiers* which only use ASCII *characters*, and
+*should* make the first *character* of a *cross-reference identifier* a
+letter (U+0041 to U+005A or U+0061 to U+007A), decimal digit (U+0030 to
+U+0039) or underscore (U+005F).
+
+{.note} [GEDCOM 5.5.1] requires the first *character* of a
+*cross-reference identifer* to match [A-Za-z0-9_].  This is downgraded
+to a recommendation in ELF.
 
 {.note} The status of *code points* above U+00FE in *cross-reference
 identifiers* is not entirely clear in [GEDCOM 5.5.1].  None of its
@@ -1106,17 +1119,73 @@ The `Tag` production encodes the **tag** of the *line* which is a
 
     Tag  ::=  [0-9a-zA-Z_]+
 
+The ELF suite of standards defines a selection of *tags* for
+representing genealogical data.   
+
+{.note}  These are mostly defined in the [ELF Data Model] standard.
+
+Third parties *may* define additional *tags* for use in ELF documents in
+two ways.  The first way, which is *deprecated*, is to use a *legacy
+extension tag*.  These are *tags* beginning with an underscore (`_`,
+U+005F).  No *legacy extension tags* are defined in the ELF standards,
+and third parties can use them arbitrarily.
+
+{.example ...}  The `_UID` *tag* is a *legacy extension tag* which has been
+implemented in a number of current applications and typically contains
+a 128-bit UUID as defined in [RFC 4122].
+
+    1 _UID 40ea7ad8-a5ba-4a7a-bb89-615cc2bf6639
+{/}
+
+{.note}  *Legacy extension tags* are how [GEDCOM 5.5.1] allows for
+extensibilty, and ELF continues to support this.  However, there is no
+mechanism to prevent two different third parties from using the same
+*legacy extension tag* in incompatible ways.  This is why this
+mechansism is *deprecated* in ELF.
+
+{.example}  The `_UID` *legacy extension tag* described in the previous
+example has also been used in some applications to contain a 144-bit
+identifier, which was a UUID followed by a 16-bit checksum.
+Applications expecting to find a standard 128-bit UUID will likely fail
+to parse this 144-bit form.
+
+The second and preferred means of adding third-party *tags* is to define
+them in an ELF schema and reference that schema using a *schema
+reference*.
+
+{.ednote}  Revise this paragraph once the relevant section has been
+written.
+
+The `HEAD`, `TRLR`, `CONC`, `CONT`, `PLANG` and `DTYPE` *tags* are
+reserved in all contexts for recording *header records*, *trailer
+records*, *continuation lines*, *payload languages* and *payload
+datatypes* and *must not* be used in any other way.
+
+{.note}  This standard does not reserve any other *tags* for use as
+serialisation layer constructs in future versions of ELF.  If a future
+standard adds additional *tags* to this list, they will only be
+interpreted conditionally based on the *ELF serialisation version*.
+
+A *tag* *should* be no more than 15 characters in length.
+
+{.note} [GEDCOM 5.5.1] required *tags* to be unique within the first 15
+*characters* and no more than 31 *characters* in length.  As the memory
+constraints that motivated those requirements are no longer common, ELF
+makes this limit *recommended* only.
+
+{.example}  The *legacy extension tag*, `_FATHER_OF_BRIDE` is a valid
+*tag*, but *should not* be used because it is 16 *characters* long.
+
 #### Payloads
 
 The **payload** of a *line* is an *optional* value associated with the
-*line*, which is encoded by the `Pointer` production.  If present, it
+*line*, which is encoded by the `Payload` production.  If present, it
 *shall* be either a *string* or a *pointer*, which are encoded by the
 `PayloadString` and `Pointer` productions, respectively.  The `String`
 production is given in §2 of [Basic Concepts] as a sequence of zero or
 more *characters*.  
 
     Payload        ::=  S? Pointer S? | PayloadString
-    Pointer        ::=  "@" [a-zA-Z0-9_] [^#x40#xA#xD]* "@"
     PayloadString  ::=  String - ( S? Pointer S? )
 
 {.note}  Even though the *payload* of a *line* is encoding the *payload*
@@ -1159,7 +1228,44 @@ does so.  Many current products appear to allow unescaped "at" signs in
 the manner proposed here.
 {/}
 
-### Assembling structures                                    {#tagged-structs}
+A **pointer** is a *payload* which represents a link to another
+*structure*.  It is encoded using the following `Pointer` production.
+
+    Pointer  ::=  "@" [^#x23#x40#xA#xD] [^#x40#xA#xD]* "@"
+
+{.note}  This production allows any *character* in a *pointer*, except a
+line feed (U+000A) and carriage return (U+000D), which cannot appear in
+a *line string*; the "at" sign (`@`, U+0040), which is used to mark the end
+of the pointer; and the number sign (`#`, U+0023), which is only
+prohibited as the first *character* in order to distinguish *pointers*
+from *escape sequences*.
+
+{.note} Although an *ELF parser* *must* interpret any *string* matching
+the `Pointer` production as a *pointer*, in practice only those matching
+the `XRefLabel` production in {§xref-ids} are valid as pointers in ELF
+1.0.  Any other *pointers* will be discarded as invalid in **§XXX**, but
+are permitted in the grammar for future use.
+
+{.ednote}  Fix the **§XXX** reference above, once pointer checking has been
+specified.
+
+{.note ...} [GEDCOM 5.5.1] describes a *pointer* syntax similar to the
+following production:
+
+    GEDCOMPointer  ::=  "@" (IDChar+ ":")? XRefID ("!" IDChar+)? "@"
+
+The *optional* identifier before the colon (`:`, U+003A) is used to
+reference a remote file, and the *optional* identifier following the
+exclamation mark (`!`, U+0021) is used to reference a *structure* within
+a *record*.  However, GEDCOM provides no means of using these, so they
+are effectively reserved for a future version of GEDCOM.  They remain
+reserved for these purposes in ELF, and a future version of ELF is
+likely to provide a means of referencing *structures* outside the
+current document.
+{/}
+
+
+### Parsing lines into structures                            {#tagged-structs}
 
 Once *line strings* have been parsed into *lines*, the sequence of
 *lines* is converted into a sequence of *records*. 
@@ -1168,11 +1274,12 @@ This process starts by parsing the first *line* of the input as the
 first *line* of a *tagged structure* using the procedure given
 {§first-pass}.  If that *record* has *substructures* then
 additional *lines* will be read while parsing it.  This *structure* is
-the first *record* in the *dataset* which *shall* be the *header
+the first *record* in the *dataset*, and *shall* be the *header
 record*.  
 
-{.ednote} The *header record* needs additional processing and
-specification, e.g. to extract the schemas and default language.
+Once the *header record* has been read, it *shall* be parsed according
+to {§parsing-metadata} to extract the *serialisation metadata*, which
+affects the subsequent parsing of the file.
 
 If further *lines* remain after the *header record* has been fully
 parsed, then the first of the remaining lines is parsed as first *line*
@@ -1209,7 +1316,7 @@ second pass over the *record* processing it as described in
 *record* per {§second-pass}, or *may* do the second pass over each
 *record* immediately after it has been assembled.  This might change.
 
-#### First pass                                                  {#first-pass}
+#### First pass: assembling                                      {#first-pass}
 
 The conversion of *lines* into *structures* is defined recursively.  To
 read a *structure*, the parser starts by reading its first *line*, and
@@ -1228,9 +1335,6 @@ creates a *tagged structure* whose components are as follows:
 
 {.ednote} Expand the previous note to say which section causes the
 actual *language tag* to be set.
-
-A *payload* which is a *language-tagged string* is referred to as a
-**string payload**.
 
 The *level* of the first *line* of the *structure* is referred to in
 this section as the **current level**.  
@@ -1292,25 +1396,50 @@ The result is an `INDI` *structure* with two *substructures* with *tags*
 *substructure* of its own with tag `DATE`.  
 {/}
 
-#### Second pass                                                {#second-pass}
+#### Second pass: processing                                    {#second-pass}
 
 Once each of *record* has been assembled, an *ELF parser* *shall* make a
 second pass over the *record*, processing it and its *substructures*
 recursively.  Each step of the recursion proceeds as follows.
 
-First, if the *structure* has a *tag* of `CONC`, `CONT` or `TRLR`, it is
-a *malformed structure*.
+First, if the *structure* has a *tag* of `CONC`, `CONT` or `TRLR`, or if
+the *tag* is `HEAD` and the *structure* is not the first *record* of the
+input, it is a *malformed structure*.
 
-{.note}  The `CONC` or `CONT` *tags* are reserved for use in
+{.ednote}  `PLANG` and `DTYPE` may need adding to this list.
+
+{.note}  The `CONC` or `CONT` *tags* *must* only be used in
 *continuation lines*, as described in {§line-cont}.  They are removed
-while their parent *structure* is being processed in this second pass,
+when their parent *structure* is being processed in this second pass,
 and therefore no longer exist when processing recurses into the
-*substructures*.  The `TRLR` *tag* is reserved for the *trailer
-record* which is removed before this second pass.
+*substructures*.  The `TRLR` *tag* *must* only be used for the *trailer
+record* which is removed before this second pass.  The `HEAD` *tag*
+*must* only be used for the *header record*.  If any of these *tags*
+remain at this stage, it is because they have been misused.
 
 Next, if the *ELF parser* is *schema-aware*, the *tagged structure*
 *shall* be converted into a *typed structure* as described in [ELF
-Schemas].
+Schemas].  
+
+{.note ...}  A *typed structure* is defined in [ELF Schemas] as
+consisting of:
+
+*  an *optional* *cross-reference identifier*;
+*  a *structure type*, which is a *term* encoding the meaning of the 
+   *structure*;
+*  an *optional* *payload*, which is either a *literal* or a *pointer*;
+*  a sequence of zero or more child *substructures*.
+
+This differs from a *tagged structure* in two ways: first, the *tag* is
+replaced with a *structure type*, which is an IRI; and secondly, *string
+payloads* are *literals* rather than *language-typed strings*.  A
+*literal* is a *tagged string* which has both a *language tag* and a
+*datatype* as *tags*.
+
+In later stages of parsing, the *ELF parser* either acts on a *tagged
+structure* or a *typed structure*, depending on whether this conversion
+has taken place.  The word *structure* is used to refer to either.
+{/}
 
 Next, if the *payload* of *structure* is a *string payload*, it is
 unescaped as described in {§payload-unesc}.
@@ -1318,8 +1447,8 @@ unescaped as described in {§payload-unesc}.
 {.note}  This step removes any *escaped at signs*, *Unicode escapes* or
 *continuation lines* from the *structure*.
 
-Finally, each *substructure* is processed recursively as described in
-this section.
+Finally, each *substructure* of the *structure* is processed
+recursively, in order, as described in this section.
 
 #### Errors in structures                                  {#error-structures}
 
@@ -1776,7 +1905,7 @@ the following three lines of text found on a sepulchral brass:
 across several *lines*.  The *payload* is split at an arbitrary place
 which *should* be between two *characters* that are not *whitespace*.
 
-{.note}  Although *ELF readers* are *required* to support arbitrarily
+{.note}  Although *ELF parsers* are *required* to support arbitrarily
 long *lines*, it is *recommended* for compatibility with [GEDCOM 5.5.1]
 that *ELF writers* *should* split *lines* in such a way that no *line
 string* exceeds 255 *characters* in length.  It is *recommended* that
@@ -1945,24 +2074,11 @@ as described in the [ELF Schemas] standard.  Otherwise, *permitted
 escapes* are identified as described in this section.
 
 If the *escape type* is `U`, then the *escape sequence* is a *permitted
-escape* unless it occurs in the *header record* in the payload of a
-*structure* with the *tag* `CHAR`, `VERS`, `FORM` or `ELF`.
+escape*.
 
-{.note}  *Unicode escapes* are not permitted in these four *structures*
-in order to ensure compatibility with [GEDCOM 5.5.1] and to simplify the
-process of identifying which version of ELF or GEDCOM is being use, and
-what the *specified character encoding* is.
-
-{.example ...}  The following ELF document contains a *Unicode escape*
-in a `CHAR` *structure* in the *header record*.  This is not a
-*permitted escape*, and the *header record* is therefore a
-*non-conformant structure*.  The *ELF parser* *must* either terminate
-processing or issue a warning on reading this.
-
-    0 HEAD
-    1 CHAR UTF@#U2D@8
-    0 TRLR
-{/}
+{.note}  *Unicode escapes* are not permitted in *serialisation metadata
+structures*, however these have been removed from the document before
+the *ELF parser* attempts to unescape the *payload*.
 
 If the *escape type* is `D`, then the *escape sequence* is a *permitted
 escape*.
@@ -2095,16 +2211,230 @@ substructures* followed by one other *substructure*.
 
 None of the *lines* in this example contain trailing *whitespace*.  Once
 *continuation substructures* have been merged, this example consists of
-a `NOTE` *structure* whose *string payload* is:
-
-    This paragraph is sufficiently long that it has proved convenient to wrap it onto a second line.\n\nThis is a short paragraph.
-
-In this explanation, `\n` denotes a *line break* of unspecified form.
-This is not part of the ELF syntax.
+a `NOTE` *structure* whose *string payload* is "`This paragraph is
+sufficiently long that it has proved convenient to wrap it onto a second
+line.\n\nThis is a short paragraph.`" In this explanation, `\n` denotes
+a *line break* of unspecified form.  This is for exposition only and
+does not form part of the ELF syntax.
 
 After merging *continuation substructures*, the `NOTE` *structure* has
 just one *substructure* – the `REFN` *structure*.
 {/}
+
+## Header metadata                                                   {#header}
+
+The **header record** is the first *record* in an ELF document.  It
+*shall* have a `HEAD` *tag*, no *payload* and no *cross-reference
+identifier*.  The *substructures* of the *header record* are called
+**metadata structures**, and contain information about the dataset as a
+whole.
+
+Certain *metadata structures*, which are referred to as **serialisation
+metadata structures**, are processed by the *ELF parser* during parsing
+and then removed from the dataset.  Each *serialisation metadata
+structure* encodes one piece of **serialisation metadata**, as
+determined by the *tag* of the *serialisation metadata structure*.  The
+*serialisation metadata* affects how the *ELF parser* processes the
+file.
+
+This standard defines five types of *serialisation metadata*, as given
+in the following table.
+
+*Tag*    *Serialisation metadata*
+-------- --------------------------------------
+`CHAR`   *specified character encoding*, as defined in {§specified-enc}
+`ELF`    *ELF serialisation version*, as defined in {§serialisation-version}
+`GED`    *legacy GEDCOM version*, as defined in {§gedcom-version}
+`PLANG`  *default payload language*
+`SCHMA`  *schema reference*
+-------- --------------------------------------
+
+{.note}  These *tags* are not reserved in other context, except as
+specified in **§XXX** for the `PLANG` *tag*.  This standard does not
+reserve any *tags* for future use as *serialisation metadata
+structures*.  If a future standard adds new ones, they will only be
+interpreted conditionally based on the *ELF serialisation version*.
+
+{.ednote} Fix this reference.
+
+{.note}  The escaping facilities in {§escaping}, including *Unicode
+escapes* and *continuation lines*, cannot be used in *serialisation
+metadata structures* because these facilities are only interpreted after
+the *serialisation metadata structures* have been processed.  Other
+*metadata structures* *may* use these facilities.
+
+{.example ...}  The following fragment does not contain a *Unicode
+escape* in the `ELF` *serialisation metadata structure*, and so does not
+represent the version 1.0.  It is simply interpreted as the *string*
+"`1@#U2E@0`".  This is not a valid *version number*, as defined in
+{§version-numbers}, and therefore the `ELF` *structure* is a
+*non-conformant structure*.  An *ELF parser* *must* either terminate
+processing on encountering it, or issue a warning.
+
+    0 HEAD
+    1 ELF 1@#U2E@0
+{/}
+
+{.example ...}  The following fragment contains a `NOTE` *metadata
+structure* whose payload, after unescaping, is the string "`Ceci est une
+longue note à propos de ce document`".
+
+    0 HEAD
+    1 NOTE Ceci est une longue note @#UC0@ pro
+    2 CONC pos de ce document
+    2 PLANG fr
+    0 TRLR
+
+This is allowed because the `NOTE` *tag* does not denote a
+*serialisation metadata structure*.  The `PLANG` *substructure* does not
+denote a *serialisation metadata structure* because it is not a direct
+*substructure* of the *header record*.
+{/}
+
+### Version numbers                                         {#version-numbers}
+
+The *payload* of the `ELF` *serialisation metadata structure*, and the
+*payload* of the `VERS` *substructure* of the `GEDC` *serialisation
+metadata structure* both contain a **version number**, which is a
+*string* used to record the version of a standard that matches the
+following `Version` production:
+
+    Version  ::=  Integer "." Integer ( "." Integer )?
+    Integer  ::=  [0-9]+
+
+The three components represented by the `Integer` production are decimal
+integers, and *may* include leading zeros which are ignored.  These
+components are called the **major version**, **minor version** and
+**revision number**, respectively.  If the *revision number* is omitted,
+a value of 0 is assumed.
+
+{.example ...}  The following three *numbers version* are exactly
+equivalent:
+
+    1 ELF 1.0
+    1 ELF 1.0.0
+    1 ELF 1.000
+
+{/}
+
+#### ELF serialisation version                        {#serialisation-version}
+
+The **ELF serialisation version** is a *version number* located in the
+*payload* of the `ELF` *serialisation metadata structure*, and 
+indicates the version of the ELF Serialisation standard with which the
+document complies.  
+
+The *version number* of this version of the standard is 1.0.0.  An *ELF
+writer* producing output according to this standard *must* include this
+*ELF serialisation version* in the output if the generated file contains
+any *Unicode escapes*, *schema references*, *payload languages* or
+*payload datatypes*.
+
+{.note}  This is not an absolute requirement so that *ELF writers* can
+produce output that can be read by strict GEDCOM parsers which reject
+input containing any unknown *tags* other than *legacy extension tags*,
+or *escape sequences*.
+
+If an *ELF parser* is reading a document with an *ELF serialisation
+version* which differs from the *version number* of this standard only
+by the *revision number*, the *ELF parser* *must* parse the input
+according to this standard.
+
+If an *ELF parser* encounters an *ELF serialisation version* which has a
+different *minor version* to this standard, but the same *major
+version*, it *should* parse the input according to this standard, but
+*should* issue a warning to the user that the document is in an unknown
+version of ELF.
+
+If an *ELF parser* encounters an *ELF serialisation version* with a
+different *major version*, the document is a *non-conformant source*.
+
+{.note}  These rules are designed to handle forwards compatibility.  A
+future version of this standard is likely to need to change these to
+better handle backwards compatibility with earlier versions of ELF.
+
+#### Legacy GEDCOM version                                   {#gedcom-version}
+
+The **legacy GEDCOM version** is a *version number* located in the
+*payload* of the `VERS` *substructure* of the `GEDC` *serialisation
+metadata structure*, and indicates the version of GEDCOM which the
+document is compatible with.
+
+This standard, when used together with the [ELF Data Model], is
+compatible with both GEDCOM 5.5 and GEDCOM 5.5.1.  An *ELF writer*
+producing output according to this standard *must* include a *legacy
+GEDCOM version* of either `5.5` or `5.5.1` in the output if it omitted
+the *ELF serialisation version* or if it included no *schema references*
+in the output, and *should* do so otherwise if the document conforms to
+the [ELF Data Model].
+
+{.note}  This recommendation means that a *legacy GEDCOM version* might
+be generated claiming compatibility with a version of GEDCOM that it is
+not strictly compatible with.  In practice, it is common to encounter
+GEDCOM files that are not strictly compatible with the claimed version
+of GEDCOM, and GEDCOM parsers are typically tolerant in what they
+accept.  Nevertheless, an *ELF writer* can always opt not to include a
+*legacy GEDCOM version*, so long as an *ELF serialisation version* and
+appropriate *schema reference* are included.
+
+{.ednote}  When parsing ...
+
+### Parsing serialisation metadata                         {#parsing-metadata}
+
+Once a *header record* has been assembled as described in {§first-pass},
+the *ELF parser* *shall* iterate over its *substructures* looking for
+*structures* with a *tag* of `CHAR`, `ELF`, `GED`, `PLANG` or `SCHMA`.
+These *substructures* are identified as *serialisation metadata
+structures* and processed as specified in this section.
+
+Any *serialisation metadata structure*, or any *structure* nested within
+a *serialisation metadata structure* regardless of the depth of the
+nesting, is a *non-conformant structure* if it has a *cross-reference
+identifier*, or if it has a *tag* of `HEAD`, `TRLR`, `CONC` or `CONT`,
+or if it has a *payload* which is a *pointer*.
+
+{.example ...} The `SCHMA` *structure* in the following document is a
+*non-conformant structure*:
+
+    0 HEAD
+    1 SCHMA https://example.com/this/is/a/very/long/IRI
+    2 CONC /which/has/been/continued/on/to/two/lines
+    0 TRLR
+
+{/}
+
+{.note}  For forward compatibility, this standard does not put limits on
+what *substructures* a *serialisation metadata structure* can have.
+Unknown *substructures* are ignored.
+
+If a *header record* contains two or more *serialisation metadata
+structures* with the same *tag*, and that *tag* is not `SCHMA`, the
+second and subsequent *serialisation metadata structures* are
+*non-conformant structures*.
+
+{.example ...}  The second `PLANG` *structure* in this ELF fragment is a
+*non-conformant structure* as a document *must not* have multiple 
+*default payload languages*.  An *ELF parser* *must* either terminate
+processing the file or issue a warning.
+  
+    0 HEAD
+    1 PLANG nds
+    1 PLANG de
+
+{/}
+
+If the *serialisation metadata structure* has a *tag* of `CHAR`, it is
+deleted from the *header record* with no further processing.
+
+{.note}  This *serialisation metadata structure* contains the *specified
+character encoding* which was already read in {§specified-enc}.
+
+If the *serialisation metadata structure* has a *tag* of `ELF`, and its
+*payload* is a valid *version number*, that *version number* is
+interpreted as the *ELF serialisation version* as described in
+{§serialisation-version}, and the *structure* is deleted from the
+*header record*.  If its *payload* is not a valid *version number*, it
+is a *non-conformant structure*.
 
 
 ## Encoding with `@`
@@ -2221,17 +2551,6 @@ SHALL be encoded as two consecutive U+0040 (`@@`).
 {.example} The *tagged structure* *payload* "`name@example.com`"
 is serialised as the *xref structure* *payload* "`name@@example.com`"
 
-During parsing, each consecutive pair of U+0040 (`@@`) SHALL be parsed as a single U+0040 (`@`).
-
-{.example} The *xref structure* *payload* "`name@@example.com`"
-is parsed as the *tagged structure* *payload* "`name@example.com`"
-
-During parsing, a lone U+0040 is left unmodified.
-
-{.example} If an *xref structure*'s *payload* is "`name@example.com`",
-it is parsed as the *tagged structure* *payload* "`name@example.com`";
-that in turn will be re-serialised as "`name@@example.com`".
-
 ## Serialisation metadata
 
 The *tagged structures* representing the *dataset* are ordered as follows:
@@ -2277,25 +2596,6 @@ It is REQUIRED that the encoding used should be able to represent all
 *unicode escapes* (see {§unicode-escape}) allow this to be achieved for any supported encoding.
 It is RECOMMENDED that `UTF-8` be used for all datasets.
 
-
-
-## Tags
-
-A **tag** is a *string* that matches production `Tag`
-
-    Tag ::= [0-9a-zA-Z_]+
-
-A *tag* SHOULD be no more than 15 characters in length.
-
-{.note} [GEDCOM 5.5.1] required tags to be unique within the first 15 characters and no more than 31 characters in length. As memory constraints that motivated those requirements are no longer common, ELF has changed that recommended status instead.
-
-A *tag* SHOULD begin with an underscore (`_`, U+005F) unless it is defined in a FHISO standard.
-
-{.note} [GEDCOM 5.5.1] required all tags other than those it defined to begin with an underscore. ELF's use of *structure type identifiers* largely obviates that need, but it remains *recommended* in ELF 1.0.0 to support legacy systems that have special-case handling for underscore-prefixed *tags*. FHISO is considering removing that recommendation in a subsequent version of ELF.
-
-{.example} "`HEAD`" is a valid *tag*; so is "`_UUID`".
-"`23`" and "`UUID`" are also valid, but SHOULD NOT be used as they are not defined in a FHISO standard and do not begin with an underscore.
-"`_UNCLE_OF_THE_BRIDE`" is valid, but SHOULD NOT be used as it is 19 *characters* long, more than the 15-*character* recommended maximum length.
 
 ## References
 
@@ -2361,6 +2661,12 @@ A *tag* SHOULD begin with an underscore (`_`, U+005F) unless it is defined in a 
 :   FHISO (Family History Information Standards Organisation)
     *Extended Legacy Format (ELF): Date, Age and Time Microformats.*
     Public draft.  (See <https://fhiso.org/TR/elf-dates>.)
+
+[RFC 4122]
+:   IETF (Internet Engineering Task Force).
+    *RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace.*
+    P. Leach, M. Mealling and R. Salz, 2005.
+    (See <http://tools.ietf.org/html/rfc4122>.)
 
 [Unicode]
 :    The Unicode Consortium.
