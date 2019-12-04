@@ -1716,11 +1716,11 @@ The **ELF serialisation version** is a *version number* located in the
 indicates the version of the ELF Serialisation standard with which the
 document complies.  
 
-The *version number* of this version of the standard is 1.0.0.  An *ELF
-writer* producing output according to this standard *must* include this
-*ELF serialisation version* in the output if the generated file contains
-any *Unicode escapes*, *schema references*, *payload languages* or
-*payload datatypes*.
+The *version number* of this version of the standard is `1.0.0`.  An
+*ELF writer* producing output according to this standard *must* include
+this *ELF serialisation version* in the output if the generated file
+contains any *Unicode escapes*, *schema references*, *payload languages*
+or *payload datatypes*.
 
 {.note}  This is not an absolute requirement so that *ELF writers* can
 produce output that can be read by strict GEDCOM parsers which reject
@@ -1769,7 +1769,23 @@ accept.  Nevertheless, an *ELF writer* can always opt not to include a
 *legacy GEDCOM version*, so long as an *ELF serialisation version* and
 appropriate *schema reference* are included.
 
-{.ednote}  When parsing ...
+If an *ELF parser* encounters a *legacy GEDCOM version* other than `5.5`
+or `5.5.1`, the document is a *non-conformant source*.
+
+{.example ...}  The following ELF fragment encodes a *legacy GEDCOM
+version* of `5.3`, which was used by an abandoned draft of GEDCOM back
+in 1993. 
+
+    0 HEAD
+    1 GEDC
+    2 VERS 5.3
+
+An *ELF parser* *may* accept this and continue parsing the data in an
+implementation-defined manner, which might involve handling some
+constructs contrary to the ELF standards.  If an *ELF parser* does
+continue parsing this *non-conformant source*, it *must* issue a warning
+to the user.
+{/}
 
 ### Parsing serialisation metadata                         {#parsing-metadata}
 
@@ -1777,13 +1793,17 @@ Once a *header record* has been assembled as described in {§first-pass},
 the *ELF parser* *shall* iterate over its *substructures* looking for
 *structures* with a *tag* of `CHAR`, `ELF`, `GED`, `PLANG` or `SCHMA`.
 These *substructures* are identified as *serialisation metadata
-structures* and processed as specified in this section.
+structures* and each is processed as specified in this section.
 
 Any *serialisation metadata structure*, or any *structure* nested within
 a *serialisation metadata structure* regardless of the depth of the
 nesting, is a *non-conformant structure* if it has a *cross-reference
 identifier*, or if it has a *tag* of `HEAD`, `TRLR`, `CONC` or `CONT`,
 or if it has a *payload* which is a *pointer*.
+
+{.ednote}  The restriction about *pointers* might need to be relaxed in
+a future draft, depending on how exactly internal schemas are
+implemented.
 
 {.example ...} The `SCHMA` *structure* in the following document is a
 *non-conformant structure*:
@@ -1822,13 +1842,50 @@ deleted from the *header record* with no further processing.
 character encoding* which was already read in {§specified-enc}.
 
 If the *serialisation metadata structure* has a *tag* of `ELF`, and its
-*payload* is a valid *version number*, that *version number* is
+*payload* is not a valid *version number*, it is a *non-conformant
+structure*.  Otherwise, the *version number* in its *payload* is 
 interpreted as the *ELF serialisation version* as described in
 {§serialisation-version}, and the *structure* is deleted from the
-*header record*.  If its *payload* is not a valid *version number*, it
-is a *non-conformant structure*.
+*header record*.
 
+{.example ...}  The following fragment of a *header record* encodes an
+*ELF serialisation version* of `1.0`:
 
+    0 HEAD
+    1 ELF 1.0
+{/}
+
+If the *serialisation metadata structure* has a *tag* of `GEDC`, it is
+used to determine the *legacy GEDCOM version* as follows.  The
+*serialisation metadata structure* is a *non-conformant structure* if it
+has a *payload*, or if it does not have exactly one *substructure* with
+a `VERS` *tag* and exactly one *substructure* with a `FORM` *tag*, or if
+the *payload* of the `VERS` *substructure* is not a valid *version
+number*, or if the *payload* of the `FORM` *substructure* is not the
+string "`LINEAGE-LINKED`".  Otherwise, the *version number* in the
+*payload* of the `VERS` *substructure* is interpreted as the *legacy
+GEDCOM version* as described in {§gedcom-version}, and the whole
+*serialisation metadata structure* is deleted from the *header record*.
+
+{.example ...} The following fragment of a *header record* encodes an
+*legacy GEDCOM version* of `5.5`:
+
+    0 HEAD
+    1 GEDC
+    2 VERS 5.5
+    2 FORM LINEAGE-LINKED
+{/}
+
+{.example ...} The `GEDC` *serialisation metadata structure* in the
+following *header record* is a *non-conformant structure* for two
+reasons: first, its `VERS` *substructure* is not a valid *version
+number* because of the trailing "`EL`"; and secondly, because there is
+no `FORM` *substructure*.
+
+    0 HEAD
+    1 GEDC
+    2 VERS 5.5.1 EL
+{/}
 
 ## Escaping                                                        {#escaping}
 
