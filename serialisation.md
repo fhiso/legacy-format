@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Serialisation Format
-date: 31 October 2019
+date: 11 December 2019
 numbersections: true
 author:
 - Richard Smith
