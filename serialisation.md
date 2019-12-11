@@ -3,6 +3,9 @@ title: "Extended Legacy Format (ELF)"
 subtitle: Serialisation Format
 date: 31 October 2019
 numbersections: true
+author:
+- Richard Smith
+- Luther Tychonievich
 ...
 
 # Extended Legacy Format (ELF):<br/> Serialisation Format
@@ -528,24 +531,7 @@ be as simple as skipping over a UTF-8 byte-order mark, and determining
 the *detected character encoding* to be UTF-8 if a byte-order mark was
 present.
 
-If a *character encoding* is specified via any supported external means,
-such as an HTTP `Content-Type` header, this *should* be taken as to be
-the *detected character encoding*.
-
-{.example ...}  Suppose the ELF file was download using HTTP and the
-response included this header:
-
-    Content-Type: text/plain; charset=UTF-8
-
-If an application supports taking the *detected character encoding* from
-an HTTP `Content-Type` header, the *detected character encoding*
-*should* be UTF-8.
-
-Note that the use of the MIME type `text/plain` is *not recommended* for
-ELF.  It is used here purely as an example. 
-{/}
-
-Otherwise, if the *octet stream* begins with a byte-order mark (U+FEFF)
+If the *octet stream* begins with a byte-order mark (U+FEFF)
 encoded in UTF-8, the *detected character encoding* *shall* be UTF-8; or
 if the application supports the *optional* UTF-16 encoding and the
 *octet steam* begins with a byte-order mark encoded in UTF-16 of either
@@ -620,8 +606,8 @@ If there is no *detected character encoding*, the application *shall*
 convert each *octet* to the *character* whose *code point* is the value
 of *octet*.  An application *shall* issue an error and stop processing
 the *octet stream* if the null *octet* `00` is encountered.  *Restricted
-characters*, as defined in §2.3 of [Basic Concepts], *may* be handled in
-an implementation-defined manner.
+characters*, as defined in §2.3 of [Basic Concepts], *must* be accepted
+without error while determining the *specified character encoding*.
 
 {.note}  This is equivalent to using the ISO-8859-1 *character encoding*
 if there is no *detected character encoding*.  As defined in §2 of
@@ -724,10 +710,15 @@ If there is a *specified character encoding*, it *shall* be used as the
 *character encoding* of the *octet stream*.  Otherwise, if there is a
 *detected character encoding*, it *shall* be used as the *character
 encoding* of the octet stream.  Otherwise, the *character encoding*
-*shall* default to be ANSEL.
+*shall* default to be UTF-8.
 
-{.note}  ANSEL is the default *character encoding* for compatibility
-with GEDCOM, despite being it being *deprecated* in ELF.
+{.note}  This is a change from [GEDCOM 5.5.1] where the default is
+ANSEL; however, since a `CHAR` *line string* is required in all versions
+of GEDCOM since 5.4, and ELF does not aim to be compatible with versions
+older than 5.5, the default is moot.  ELF changes the default, though
+requires *ELF writers* to include a `CHAR` *serialisation metadata
+structure*.  A future version of ELF will likely remove this
+requirement.
 
 If the *character encoding* is one which the application does not
 support, the application *shall* issue an error and stop reading the
