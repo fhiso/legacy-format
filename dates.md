@@ -1546,7 +1546,8 @@ The *pattern* for this *datatype* is as follows:
 
 {#include DateValue.md}
 
-\endgroup</div>
+\endgroup
+</div>
 
 {.note}  The grammar productions given in this standard provide a more
 useful description of *datatype* for a human reader.  The *pattern*
@@ -1641,7 +1642,8 @@ The *pattern* for this *datatype* is as follows:
 
 {#include DatePeriod.md}
 
-\endgroup</div>
+\endgroup
+</div>
 
 ## Calendar definitions                                     {#calendars}
 
