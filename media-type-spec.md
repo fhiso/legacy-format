@@ -1,28 +1,13 @@
 ---
 title: "GEDCOM Media Type"
-date: 24 June 2021
+date: 25 June 2021
 numbersections: true
 editors: Luther Tychonievich
 ...
 
 # GEDCOM Media Type
 
-{.ednote ...} This is a **working draft** of a description of the GEDCOM file format independent of any particular GEDCOM specification or standard. It is intended to be fully compatible with the GEDCOM specifications in active circulation:
-
-- GEDCOM 5.5 (published by The Church of Jesus Christ of Latter-Day Saints)
-- GEDCOM 5.5.1 (published by The Church of Jesus Christ of Latter-Day Saints)
-    - including Tamura Jones's two unauthorized derivatives, which he calls the "5.5.1 Annotated Edition" and "5.5.5" respectively
-- the ELF 1.0 drafts (drafts published by FHISO)
-- FamilySearch GEDCOM 7 (published by FamilySearch)
-
-Where possible it also conforms to versions which were  previously published are no longer circulated:
-
-- GEDCOM 3.0
-- GEDCOM 4.0
-- GEDCOM 5.0
-- GEDCOM 5.3
-
-though those specifications were less formal in nature and contain sufficient ambiguity and contradiction that complete agreement with those specifications is difficult to define or defend.
+{.ednote ...} This is a **working draft** of a description of the GEDCOM file format independent of any particular GEDCOM specification or standard. It is intended to be fully compatible with GEDCOM version 5.5 through 7.0 and makes an effort to be compatible to earlier GEDCOM versions where those are not in contradiction with one another.
 
 My intention in drafting this document is to have a specification suitable for registering the `text/gedcom` Media Type with the IANA without needing to identify any particular version or data model.
 {/}
@@ -62,17 +47,17 @@ None of those preclude tags starting with or being entirely digits, but to the b
 I thus consider the rule to have been an unchanging upper-case alphanum + underscore since 4.0, with 4.0's omission of digits and 5.0's omission of underscore and failure to mention upper-case as accidental specification errors.
 {/}
 
-Each structure *shall* have either a **text payload** consisting of zero or more characters or a **pointer payload** consisting of a reference to another structure.
-A structure with a zero-character text payload is equivalently said to have "an empty payload" or "no payload".
+Each structure *shall* have either a **text payload** consisting of a (possibly empty) string or a **pointer payload** consisting of a reference to another structure within the file.
+A structure with text payload equal to the empty string is equivalently said to have "an empty payload" or "no payload".
 
 {.ednote ...}
-Every GEDCOM specification leaves open the ability to distinguish between "`1 XYZ `" and "`1 XYZ`" but no specification uses this ability. 7.0 was the first to explicitly state they were interchangeable.
+Every GEDCOM specification leaves open the ability to distinguish between an empty payload like "`1 XYZ `" and a missing payload like "`1 XYZ`" but no known specification uses this ability. 7.0 was the first to explicitly state they were interchangeable.
 {/}
 
 Each structure *may* be the **substructure** of exactly one other structure.
-A structure that is not the substructure of another structure is called a **record**.
+A structure that is not a substructure is called a **record**.
 Substructure relationships *must* be acyclic.
-The substructures of a structure are stored as a sequence, not a set, and the order of the substructures of a structure is significant unless that meaning is explicitly relaxed by a specific [GEDC version](#gedc).
+The substructures of a structure are stored as a sequence, not a set, and the order of the substructures of a structure is significant unless that significance is relaxed by the semantic model the GEDCOM file's structures conform to.
 
 {.ednote ...}
 Order rules have varied widely by version, sometimes via ambiguous statements.
@@ -85,26 +70,44 @@ Order rules have varied widely by version, sometimes via ambiguous statements.
 - 7.0 said order of a single structure type is significant, and provides a SCHMA whereby distinct tags may have the same structure type.
 {/}
 
-## GEDC Versions {#gedc}
-
 Every GEDCOM file contains two special records: the header and trailer.
 The "header" *must* have tag "`HEAD`" and no payload.
 The "trailer" it *must* have tag "`TRLR`", no payload, and no substructures.
 These *shall* be the only structures with these tags and *shall not* be pointed to by any pointer payload.
+Substructures of the header *should* provide metadata about the entire GEDCOM file
+and *should* be sufficient to identify the semantic model the GEDCOM file's structures conform to.
 
-The header *shall* have exactly one substructure with tag "`GEDC`"..
-The header *may* also have additional substructures with tags other than "`GEDC`"; if so, those substructures *should* provide metadata about the entire GEDCOM file.
 
-The header's `GEDC`-tagged substructure *shall* have no payload; *shall* not be pointed to by any pointer payload; and *shall* have at least one substructure.
-The substructures of the `GEDC`-tagged substructure of the header with their payloads and substructures jointly define the "GEDC Version" of the GEDCOM file.
+## GEDCOM for Family History {#gedc}
 
-Each GEDC Version *should* be defined in its own specification which *must* identify the specific substructures of the `GEDC`-tagged structure used to identify this version and *may* additionally specify the meaning of the GEDCOM document's content, including but not limited to
+One common use of GEDCOM files is for the storage of information related to family history, including representations of individuals, their relationships and life events.
+Several distinct standards exist for using GEDCOM in that way;
+the specific family history data standard in use is indicated by a specific substructure of the header as follows.
+
+If the header of the GEDCOM file contains exactly one structure with tag "`GEDC`", that structure and its substructures identify the semantic model the GEDCOM file's structures conform to.
+Each semantic model is described in its own specification, which define such details as
 
 - the set of tags allowed and their meaning
 - restrictions on payloads
 - semantics equivalence rules, such as relaxations of tag order or equivalences of various tags
-- which [Serialization relaxations](#relax) are permitted by this GEDC version
+- which [Serialization relaxations](#relax) are permitted
 - any [Serialization restrictions](#restrict) that conformant applications are expected to adhere to
+
+{.note ...} The Family History Department of The Church of Jesus Christ of Latter-Day Saints created GEDCOM and has published several GEDCOM specifications.
+
+Early versions of GEDCOM contained no identifying version information and cannot be reliably identified by file content alone.
+
+Four versions are identified by the `GEDC`-tagged substructure of the header having two specific substructures:
+
+- one tagged `FORM` with "`LINEAGE_LINKED`" as its payload
+- one tagged `VERS` with one of the following four strings as its payload: "`5.0`", "`5.3`", "[`5.5`](https://gedcom.io/specifications/ged55.pdf)", or "[`5.5.1`](https://gedcom.io/specifications/ged551.pdf)". The payload identifies the version of "The GEDCOM Standard" to which the file conforms.
+
+The order of these two substructures of `GEDC` is not significant.
+
+Subsequent versions are identified by the `GEDC`-tagged substructure of the header having exactly one substructure with tag `VERS` and payload being a [semantic version](https://semver.org) of "[The FamilySearch GEDCOM Specification](https://gedcom.io/specifications/FamilySearchGEDCOMv7.html)" to which the file conforms.
+
+Groups other that The Family History Department of The Church of Jesus Christ of Latter-Day Saints have also published specifications, but as of 2021 none of these have become popular.
+{/}
 
 ## Serialization {#serialize}
 
@@ -122,12 +125,14 @@ and so on.
 A structure may be given a string called its **xref** as part of serialization.
 Any two structures with an xref in a single GEDCOM file *must* have distinct xrefs.
 Any structure pointed to by a pointer payload *must* be given an xref.
+The header and trailer *must not* be given an xref.
+Other structures *may* be given an xref, which *may* be further restricted by a [serialization restriction](#restrict)
 
 The serialization of a structure consists of the concatenation of the following elements in order:
 
 1. the structure's level encoded as a base-ten integer
 2. a *delimiter*
-3. if (and only if) the structure has an xref,
+3. if the structure has an xref,
     1. an at sign (U+0040 "`@`")
     2. the structure's xref
     3. an at sign (U+0040 "`@`")
@@ -147,24 +152,33 @@ The serialization of a pointer payload consists of
 The serialization of a text payload consists of
 
 1. a single space (U+0020); if the payload is empty, this *may* be omitted
+
 2. the text of the payload, with the following modifications:
-    - the payload may be split; each *line terminator* *shall* be replaced with a CONT-split and any number of CONC-splits *may* be added before or after any character. Each split is encoded as
+
+    - insert splits into the payload as follows:
+
+        - each *line terminator* *shall* be replaced with a CONT-split
+        - and any number of CONC-splits *may* be added before or after any character.
+        
+        Each split is encoded as
+        
         1. a *line break*
         2. the structure's level plus 1, encoded as a base-ten integer
         3. a *delimiter*
         4. either `CONT` or `CONC`, depending on the split type
-        5. a single space (U+0020 "` `") which *may* be omitted if this break is immediately followed by another break or if there are no characters in the payload text after this break
-    - each at sign (U+0040 "`@`") which is either the first character of the payload text or is immediately preceded by a break, and which is not immediately followed by a number sign (U+0023 "`#`"), *shall* be represented by two at signs (U+0040 U+0040, "`@@`")
+        5. a single space (U+0020 "` `") which *may* be omitted if this split is immediately followed by another split or if there are no characters in the payload text after this split
+
+    - each at sign (U+0040 "`@`") which is either the first character of the payload text or is immediately preceded by a split, and which is not immediately followed by a number sign (U+0023 "`#`"), *shall* be represented by two at signs (U+0040 U+0040, "`@@`")
 
 
 {.ednote ...}
-The above handling of @ is sufficient to encode both the 1.0 through 5.5.1 specifications written rules where @#...@ is special nad all other @ are doubles;
-and the common practice which ignored those rules. In particular,
+The above handling of @ is sufficient to encode both (a) the 1.0 through 5.5.1 specifications written rules where @#...@ is special and all other @ are doubled;
+and (b) the common practice which ignored those rules. In particular,
 
 - it ensures a text paylaod can never be confused with a pointer
 - it keeps pre-7.0 "escape sequences" unchanged
 - it doubles the minumum number of @ to do that
-- systems that wish to double more @ can do so be defining a payload text modification as part of the GEDC Version
+- systems that wish to double more @ can do so be defining a payload text modification as part of the semantics of payloads in their specification
 {/}
 
 Each **line terminator** matches production `LineTerm`
@@ -176,7 +190,7 @@ When replacing *line terminators* with splits, two-character *line terminators* 
 {.note ...}
 Splits are encoded in a way that intentionally looks like substructures, and parsers can be written that parse every line as if it were a structure, then un-double leading at signs, then remove CONT and CONC substructures by concatenating their payloads to the superstructure's payload.
 
-However, CONT and CONC are not structures: they cannot be pointed to, cannot have pointer payloads, cannot have substructures, cannot appear as records, and cannot be further specified by a GEDC Version.
+However, CONT and CONC are not structures: they cannot be pointed to, cannot have pointer payloads, cannot have substructures, cannot appear as records, and cannot be further defined by a GEDCOM-compliant specification.
 {/}
 
 ### Canonical serialization
@@ -192,7 +206,7 @@ Canonical GEDCOM serializations are accepted by all GEDCOM processing systems an
 
 ### Serialization relaxations {#relax}
 
-GEDC Versions may chose to selectively relax canonical restrictions while still abiding by the following restrictions:
+Specifications and tools may chose to selectively relax canonical restrictions while still abiding by the following restrictions:
 
 - Each xref *shall* match production `XrefRelaxed`
 
@@ -209,7 +223,7 @@ GEDC Versions may chose to selectively relax canonical restrictions while still 
 {.example ...}
 FamilySearch GEDCOM 7.0 mostly describes the canonical form, but uses the following relaxations:
 
-- allows xref to be any length and to match `[a-zA-Z0-9_]+`
+- allows xref to be any length and to match `[A-Z0-9_]+`
 - requires line breaks to match `LineTerm` but does not require them to all be the same
 
 Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOMfile format.
@@ -226,7 +240,8 @@ Examples of such restrictions include
 - a maximum number of characters of a text payload that may be serialized without an intervening split
 - a minimum number of characters of a text payload that must appear between two CONC-splits
 - a requirement that empty payloads always (or never) include the optional space character
-- the use of a character set or set of character sets
+- which not-pointed-to structures are given xrefs
+- the use of a specific character set or set of character sets
 - the agreement between the character set and some structure in the GEDCOM file
 {/}
 
