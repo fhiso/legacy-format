@@ -210,7 +210,7 @@ Specifications and tools may chose to selectively relax canonical restrictions w
 
 - Each xref *shall* match production `XrefRelaxed`
 
-        XrefRelaxed ::= [a-zA-Z0-9_] [#x20-#x3E#41-#7E]*
+        XrefRelaxed ::= [a-zA-Z0-9_] [#x20-#x3E#x41-#7xE]*
 
 - Each line break *shall* match production `LineBreakRelaxed`
     
