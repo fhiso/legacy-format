@@ -47,11 +47,15 @@ None of those preclude tags starting with or being entirely digits, but to the b
 I thus consider the rule to have been an unchanging upper-case alphanum + underscore since 4.0, with 4.0's omission of digits and 5.0's omission of underscore and failure to mention upper-case as accidental specification errors.
 {/}
 
-Each structure *shall* have either a **text payload** consisting of a (possibly empty) string or a **pointer payload** consisting of a reference to another structure within the file.
+Each structure *shall* have either a **text payload** consisting of a (possibly empty) string or a **pointer payload** consisting of a reference to another structure, which *may* be a structure within the file or a structure not in the file.
 A structure with text payload equal to the empty string is equivalently said to have "an empty payload" or "no payload".
 
 {.ednote ...}
 Every GEDCOM specification leaves open the ability to distinguish between an empty payload like "`1 XYZ `" and a missing payload like "`1 XYZ`" but no known specification uses this ability. 7.0 was the first to explicitly state they were interchangeable.
+{/}
+
+{.ednote ...}
+The provision of structures not in the file is needed by 7.0's `@VOID@` pointers, and alluded to in 5.5's discussion of the future use of `:` in pointers.
 {/}
 
 Each structure *may* be the **substructure** of exactly one other structure.
@@ -90,6 +94,7 @@ Each semantic model is described in its own specification, which define such det
 - the set of tags allowed and their meaning
 - restrictions on payloads
 - semantics equivalence rules, such as relaxations of tag order or equivalences of various tags
+- what pointers to structures not in the file are permitted
 - which [Serialization relaxations](#relax) are permitted
 - any [Serialization restrictions](#restrict) that conformant applications are expected to adhere to
 
@@ -146,7 +151,10 @@ The serialization of a pointer payload consists of
 
 1. a single space (U+0020 "` `")
 2. an at sign (U+0040 "`@`")
-3. the xref of the pointed-to structure
+3. if the pointed-to structure is within this file,
+    the xref of the pointed-to structure.
+    
+   otherwise, a string matching `XrefRelaxed` that is not the xref of any structure in the file.
 4. an at sign (U+0040 "`@`")
 
 The serialization of a text payload consists of
@@ -223,7 +231,7 @@ Specifications and tools may chose to selectively relax canonical restrictions w
 {.example ...}
 FamilySearch GEDCOM 7.0 mostly describes the canonical form, but uses the following relaxations:
 
-- allows xref to be any length and to match `[A-Z0-9_]+`
+- allows xref to be any length and to match `[A-Z0-9_]+` but not be "`VOID`"
 - requires line breaks to match `LineTerm` but does not require them to all be the same
 
 Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOMfile format.
@@ -234,14 +242,22 @@ Because these relaxations obey the relaxed rules above, they are consistent with
 
 A specification *may* impose additional restrictions on serialization that GEDCOM file producers must obey to be considered conformant to that specification.
 
-{.example ...}
-Examples of such restrictions include
+Examples of such restrictions include but are not limited to
 
+- how to serialize pointers to structures not in the file
 - a maximum number of characters of a text payload that may be serialized without an intervening split
-- a minimum number of characters of a text payload that must appear between two CONC-splits
+- where CONC-splits are permitted
 - a requirement that empty payloads always (or never) include the optional space character
 - which not-pointed-to structures are given xrefs
 - the use of a specific character set or set of character sets
 - the agreement between the character set and some structure in the GEDCOM file
+
+{.example ...}
+FamilySearch GEDCOM 7.0 includes the following serialization restrictions:
+
+- only one external structure may be pointed to, and pointers to it are serialized as `@VOID@`
+- no CONC-splits allowed
+- records may be given xref, but substructures may not
+- must use the UTF-8 character set
 {/}
 
