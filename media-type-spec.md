@@ -151,8 +151,7 @@ The serialization of a pointer payload consists of
 
 1. a single space (U+0020 "` `")
 2. an at sign (U+0040 "`@`")
-3. if the pointed-to structure is within this file, the xref of the pointed-to structure
-    
+3. if the pointed-to structure is within this file, the xref of the pointed-to structure\
    otherwise, an xref that is not the xref of any structure in the file
 4. an at sign (U+0040 "`@`")
 
