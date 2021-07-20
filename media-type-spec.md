@@ -229,7 +229,7 @@ Specifications and tools may chose to selectively relax canonical restrictions w
 FamilySearch GEDCOM 7.0 mostly describes the canonical form, but uses the following relaxations:
 
 - allows xref to be any length
-- required xrefs match `[A-Z0-9_]+`
+- requires xrefs match `[A-Z0-9_]+`
 - requires line breaks to match `LineTerm`, but does not require them to all be the same
 
 Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOMfile format.
