@@ -23,7 +23,7 @@ We need to add lead-in text like a RFC 2119 reference, definition of character, 
 
 Each structure *shall* have a **tag** which matches production `Tag`
 
-    Tag ::= [A-Z] [A-Z0-9_]* | "_" [A-Z0-9_]*
+    Tag ::= [A-Z] [A-Z0-9_]* | "_" [A-Z0-9_]+
 
 The tags "`CONC`" and "`CONT`" are used to encode breaks in text payloads during [serialization](#serialize) and *must not* be used as the tag of any structure.
 
@@ -68,15 +68,14 @@ Order rules have varied widely by version, sometimes via ambiguous statements.
 
 - 3.0 said "The sender and receiver do not have to agree in advance on the order of field occurrence in a record" and "A sending system is not constrained to transmit records in any particular order" and "TAGs may occur in any order".
 - 4.0 said "you can send these tags in any order, as long as you preserve the data relationships".
-- 5.0 and 5.3 implied both order as significant .
-"when multiple opinions or other items are presented for which only one may be expected by a receiving system".
+- 5.0 and 5.3 gave a meaning to order "when multiple opinions or other items are presented for which only one may be expected by a receiving system".
 - 5.5 and 5.5.1 said order of a single tag is significant, but the order of distinct tags is not.
 - 7.0 said order of a single structure type is significant, and provides a SCHMA whereby distinct tags may have the same structure type.
 {/}
 
 Every GEDCOM file contains two special records: the header and trailer.
 The "header" *must* have tag "`HEAD`" and no payload.
-The "trailer" it *must* have tag "`TRLR`", no payload, and no substructures.
+The "trailer" *must* have tag "`TRLR`", no payload, and no substructures.
 These *shall* be the only structures with these tags and *shall not* be pointed to by any pointer payload.
 Substructures of the header *should* provide metadata about the entire GEDCOM file
 and *should* be sufficient to identify the semantic model the GEDCOM file's structures conform to.
@@ -111,7 +110,7 @@ The order of these two substructures of `GEDC` is not significant.
 
 Subsequent versions are identified by the `GEDC`-tagged substructure of the header having exactly one substructure with tag `VERS` and payload being a [semantic version](https://semver.org) of "[The FamilySearch GEDCOM Specification](https://gedcom.io/specifications/FamilySearchGEDCOMv7.html)" to which the file conforms.
 
-Groups other that The Family History Department of The Church of Jesus Christ of Latter-Day Saints have also published specifications, but as of 2021 none of these have become popular.
+Groups other that The Family History Department of The Church of Jesus Christ of Latter-Day Saints have also published specifications, but as of 2021 none of these have seen large-scale implementation.
 {/}
 
 ## Serialization {#serialize}
@@ -151,7 +150,7 @@ The serialization of a pointer payload consists of
 
 1. a single space (U+0020 "` `")
 2. an at sign (U+0040 "`@`")
-3. if the pointed-to structure is within this file, the xref of the pointed-to structure\
+3. if the pointed-to structure is within this file, the xref of the pointed-to structure;\
    otherwise, an xref that is not the xref of any structure in the file
 4. an at sign (U+0040 "`@`")
 
@@ -172,9 +171,9 @@ The serialization of a text payload consists of
         2. the structure's level plus 1, encoded as a base-ten integer
         3. a *delimiter*
         4. either `CONT` or `CONC`, depending on the split type
-        5. a single space (U+0020 "` `") which *may* be omitted if this split is immediately followed by another split or if there are no characters in the payload text after this split
+        5. a single space (U+0020 "` `") which *may* be omitted if this split is immediately followed by another split or if there are no characters in the text payload after this split
 
-    - each at sign (U+0040 "`@`") which is either the first character of the payload text or is immediately preceded by a split, and which is not immediately followed by a number sign (U+0023 "`#`"), *shall* be represented by two at signs (U+0040 U+0040, "`@@`")
+    - each at sign (U+0040 "`@`") which is either the first character of the text payload or is immediately preceded by a split, and which is not immediately followed by a number sign (U+0023 "`#`"), *shall* be represented by two at signs (U+0040 U+0040, "`@@`")
 
 
 {.ednote ...}
@@ -183,8 +182,8 @@ and (b) the common practice which ignored those rules. In particular,
 
 - it ensures a text paylaod can never be confused with a pointer
 - it keeps pre-7.0 "escape sequences" unchanged
-- it doubles the minumum number of @ to do that
-- systems that wish to double more @ can do so be defining a payload text modification as part of the semantics of payloads in their specification
+- it adds the minumum number of @ to meet the above two goals
+- it allows a spec to require more doubling by defining a text payload modification as part of the semantics of payloads in that spec
 {/}
 
 Each **line terminator** matches production `LineTerm`
@@ -229,8 +228,9 @@ Specifications and tools may chose to selectively relax canonical restrictions w
 {.example ...}
 FamilySearch GEDCOM 7.0 mostly describes the canonical form, but uses the following relaxations:
 
-- allows xref to be any length and to match `[A-Z0-9_]+` but not be "`VOID`"
-- requires line breaks to match `LineTerm` but does not require them to all be the same
+- allows xref to be any length
+- required xrefs match `[A-Z0-9_]+`
+- requires line breaks to match `LineTerm`, but does not require them to all be the same
 
 Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOMfile format.
 {/}
@@ -249,6 +249,7 @@ Examples of such restrictions include but are not limited to
 - which not-pointed-to structures are given xrefs
 - the use of a specific character set or set of character sets
 - the agreement between the character set and some structure in the GEDCOM file
+- limitations on permitted xrefs
 
 {.example ...}
 FamilySearch GEDCOM 7.0 includes the following serialization restrictions:
@@ -257,5 +258,6 @@ FamilySearch GEDCOM 7.0 includes the following serialization restrictions:
 - no CONC-splits allowed
 - records may be given xref, but substructures may not
 - must use the UTF-8 character set
+- xrefs must not be the specific  string "`VOID`"
 {/}
 
