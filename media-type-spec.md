@@ -234,12 +234,12 @@ However, CONT and CONC are not structures: they cannot be pointed to, cannot hav
 
 Canonical GEDCOM serializations are accepted by all GEDCOM processing systems and obey the following limitations:
 
-- Each xref *shall* be 20 characters or fewer in length
-    and *shall* match production `Tag`.
-- The same character sequence *shall* be used by each **line break** in the file,
-    and that character sequence  *shall* match production `LineTerm`.
-- Each **delimiter** *shall* be a single space character (U+0020 "` `").
-- CONC-splits *shall not* be used.
+- Each xref is 20 characters or fewer in length
+    and matches production `Tag`.
+- The same character sequence is used by each **line break** in the file,
+    and that character sequence matches production `LineTerm`.
+- Each **delimiter** is a single space character (U+0020 "` `").
+- CONC-splits are not used.
 
 ### Serialization relaxations {#relax}
 
