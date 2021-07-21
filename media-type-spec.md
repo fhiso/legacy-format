@@ -15,24 +15,56 @@ My intention in drafting this document is to have a specification suitable for r
 
 A GEDCOM file is a text file (in any character set, with or without a byte-order mark) storing a representation of a hierarchical set of **structures**.
 
-{.ednote ...}
-We need to add lead-in text like a RFC 2119 reference, definition of character, etc.
-{/}
+## General
 
-## Structures
+Where this standard gives a specific technical meaning to a word or
+phrase, that word or phrase is formatted in bold text in its initial
+definition, and in italics when used elsewhere.
+The key words **must**, **must not**, **required**, **shall**, 
+**shall not**, **should**, **should not**, **recommended**,
+**not recommended**, **may** and **optional** in this standard are to be
+interpreted as described in
+&#x5B;[RFC 2119](https://tools.ietf.org/html/rfc2119)].
+
+Indented text in grey or coloured boxes does not form a normative part
+of this standard, and is labelled as either an example or a note.  
+
+{.ednote} Editorial notes, such as this, are used to record outstanding
+issues, or points where there is not yet consensus; they will be
+resolved and removed for the final standard.  Examples and notes will be
+retained in the standard.
+
+The grammar given here uses the form of EBNF notation defined in §6 of
+&#x5B;[XML](https://www.w3.org/TR/xml11/)], except that no significance is
+attached to the capitalisation of grammar symbols.  *Conforming*
+applications *must not* generate data not conforming to the syntax given
+here, but non-conforming syntax *may* be accepted and processed by a
+*conforming* application in an implementation-defined manner.
+
+**Characters** are atomic units of text which are specified by reference to
+their **code point** number in [Unicode], without regard to any particular
+character encoding.
+A **string** is a sequence of zero or more *characters* which is used to
+encode textual data.
+
+{.ednote} I chose not to reference Basic Concepts here because all we needed from it was character and string, and only a portion of what it said about those.
+
+{.ednote} C0 Control characters are banned starting with 5.3; should we also ban them?
+
+## Structures   {#structures}
 
 Each structure *shall* have a **tag** which matches production `Tag`
 
     Tag ::= [A-Z] [A-Z0-9_]* | "_" [A-Z0-9_]+
 
-The tags "`CONC`" and "`CONT`" are used to encode breaks in text payloads during [serialization](#serialize) and *must not* be used as the tag of any structure.
+The tags "`CONC`" and "`CONT`" are used to encode breaks in text payloads during serialization (see {§serialize}) and *must not* be used as the tag of any structure.
 
 {.ednote ...}
 The rules for tags have varied by version:
 
 - 3.0 said "TAG may contain valid character except the TERMINATOR or SPACE".
 - 4.0 said "A tag can consist of any capitalized alpha characters. Use the underscore (`_`) to create a tag that is more than one word"
-- 5.0 said "A tag consists of a variable length sequence of letters and digits, beginning with a letter." 
+- 5.0 said "A tag consists of a variable length sequence of letters and digits, beginning with a letter."
 - 5.3 through 5.5.1 said
         
         alpha:= [ (0x41)-(0x5A) | (0x61)-(0x7A) | 0x5F ]
@@ -94,8 +126,8 @@ Each semantic model is described in its own specification, which define such det
 - restrictions on payloads
 - semantics equivalence rules, such as relaxations of tag order or equivalences of various tags
 - what pointers to structures not in the file are permitted
-- which [Serialization relaxations](#relax) are permitted
-- any [Serialization restrictions](#restrict) that conformant applications are expected to adhere to
+- which serialization relaxations (see {§#relax}) are permitted
+- any serialization restrictions (see {§restrict}) that conformant applications are expected to adhere to
 
 {.note ...} The Family History Department of The Church of Jesus Christ of Latter-Day Saints created GEDCOM and has published several GEDCOM specifications.
 
@@ -130,7 +162,7 @@ A structure may be given a string called its **xref** as part of serialization.
 Any two structures with an xref in a single GEDCOM file *must* have distinct xrefs.
 Any structure pointed to by a pointer payload *must* be given an xref.
 The header and trailer *must not* be given an xref.
-Other structures *may* be given an xref, which *may* be further restricted by a [serialization restriction](#restrict)
+Other structures *may* be given an xref, which *may* be further restricted by a serialization restrictions (see {§restrict}).
 
 The serialization of a structure consists of the concatenation of the following elements in order:
 
@@ -232,7 +264,7 @@ FamilySearch GEDCOM 7.0 mostly describes the canonical form, but uses the follow
 - requires xrefs match `[A-Z0-9_]+`
 - requires line breaks to match `LineTerm`, but does not require them to all be the same
 
-Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOMfile format.
+Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOM file format.
 {/}
 
 
@@ -261,3 +293,76 @@ FamilySearch GEDCOM 7.0 includes the following serialization restrictions:
 - xrefs must not be the specific  string "`VOID`"
 {/}
 
+## Character Sets
+
+The serialization process defined in {§serialize} describes a relationship between a string an a set of interlinked structures, as defined in {§structures}.
+That string can be serialized into binary data using any character set, including both unicode and non-unicode encodings.
+
+GEDCOM predates the first version of [Unicode] and has recommended different character encodings in different versions (see {§gedc}), including [US-ASCII], [ANSEL], and [Unicode].
+Some versions recommended the use of a structure with tag `CHAR` in the header of the GEDCOM file with a payload that identifies the character encoding in use.
+Specific payloads of the `CHAR`-tagged structure included:
+
+`CHAR` payload      Character sets represented
+----------------    ---------------------------------
+`ANSEL`             [ANSEL] with the [MARC-8] extensions
+`ASCII`             [US-ASCII]
+`UNICODE`           UTF-16LE or UTF-16BE, as defined by [Unicode]
+`UTF-8`             UTF-8, as defined by [Unicode]
+
+There are known to be systems that provide GEDCOM files which they indicate are in one character set
+that have a `CHAR` in the header claiming a different character set.
+Such files are in violation of their respective standards
+and there exists no reliable way to determine if the providing systems
+correctly adjusted the character encoding without modifying the `CHAR`,
+or misidentified the character encoding,
+or applied another encoding on top of the already-encoded data.
+
+
+
+
+
+## References
+
+### Normative references
+
+[ANSEL]
+:   NISO (National Information Standards Organization).
+    *ANSI/NISO Z39.47-1993. Extended Latin Alphabet Coded Character Set for Bibliographic Use*.
+    1993.
+    (See 
+    <http://www.niso.org/apps/group_public/project/details.php?project_id=10>).
+    Standard withdrawn, 2013.
+
+[MARC-8]
+:   The Library of Congress.
+    *MARC 21 Specifications for Record Structure, Character Sets, and Exchange Media*, Part 3.
+    2008.
+    (See <https://www.loc.gov/marc/specifications/speccharucs.html>)
+
+[RFC 2119]
+:   IETF (Internet Engineering Task Force).  *RFC 2119:  Key words for
+    use in RFCs to Indicate Requirement Levels.*  Scott Bradner, eds., 1997.
+    (See <https://tools.ietf.org/html/rfc2119>.)
+
+[Unicode]
+:   The Unicode Consortium.  *The Unicode Standard*, version 12.1.0.
+    2019.  (See <https://www.unicode.org/versions/Unicode12.1.0/>.)
+
+[US-ASCII]
+:   American Standards Association (ASA).
+    *American Standard Code for Information Interchange. ASA X3.4-1963.*
+    1963.
+    (See <https://www.sr-ix.com/Archive/CharCodeHist/X3.4-1963/index.html>)
+
+[XML]
+:   W3C (World Wide Web Consortium). *Extensible Markup Language (XML) 1.1*, 
+    2nd edition.  Tim Bray, Jean Paoli, C. M. Sperberg-McQueen, Eve
+    Maler, François Yergeau, and John Cowan eds., 2006.  W3C
+    Recommendation.  (See <https://www.w3.org/TR/xml11/>.)
+
+----
+Copyright © 2021, [Family History Information Standards Organisation,
+Inc](https://fhiso.org/).  
+The text of this standard is available under the
+[Creative Commons Attribution 4.0 International
+License](https://creativecommons.org/licenses/by/4.0/).
