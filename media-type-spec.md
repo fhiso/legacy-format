@@ -360,6 +360,40 @@ or applied another encoding on top of the already-encoded data.
     Maler, François Yergeau, and John Cowan eds., 2006.  W3C
     Recommendation.  (See <https://www.w3.org/TR/xml11/>.)
 
+### Other references
+
+[GEDCOM 3.0]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 3.0.  9 October 1987.
+
+[GEDCOM 4.0]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 4.0.  August 1989.
+
+[GEDCOM 5.0]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.0.  25 Sep 1991.
+
+[GEDCOM 5.3]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.3.  4 Nov 1993.
+
+[GEDCOM 5.5]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, release 5.5.  2 Jan 1996.
+    (See <https://gedcom.io/specifications/ged55.pdf>).
+
+[GEDCOM 5.5.1]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
+    Re-released without draft notice, 15 Nov 2019.
+    (See <https://gedcom.io/specifications/ged551.pdf>).
+
+[GEDCOM 7]
+:   The Church of Jesus Christ of Latter-day Saints.
+    *The FamilySearch GEDCOM Standard*, version 7.0.0. 27 May 2021.
+    (See <https://gedcom.io/specifications/FamilySearchGEDCOMv7.html>).
+
 ----
 Copyright © 2021, [Family History Information Standards Organisation,
 Inc](https://fhiso.org/).  
