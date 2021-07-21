@@ -126,7 +126,7 @@ Each semantic model is described in its own specification, which define such det
 - restrictions on payloads
 - semantics equivalence rules, such as relaxations of tag order or equivalences of various tags
 - what pointers to structures not in the file are permitted
-- which serialization relaxations (see {§#relax}) are permitted
+- which serialization relaxations (see {§relax}) are permitted
 - any serialization restrictions (see {§restrict}) that conformant applications are expected to adhere to
 
 {.note ...} The Family History Department of The Church of Jesus Christ of Latter-Day Saints created GEDCOM and has published several GEDCOM specifications.
