@@ -335,7 +335,9 @@ or applied another encoding on top of the already-encoded data.
 
 [MARC-8]
 :   The Library of Congress.
-    *MARC 21 Specifications for Record Structure, Character Sets, and Exchange Media*, Part 3.
+    "MARC-8 Encoding Environment."
+    *MARC 21 Specifications for Record Structure, Character Sets, and Exchange Media*,
+    Character sets and encoding options: Part 2.
     2008.
     (See <https://www.loc.gov/marc/specifications/speccharucs.html>)
 
