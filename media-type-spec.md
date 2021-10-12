@@ -95,9 +95,9 @@ and **CRLF** to refer to U+000A followed by U+000D.
 A **GEDC dataset** consists of a forest: a sequence of n-ary trees, where the nodes of the trees are **GEDC structures** and the children of each node are stored as a sequence, not a set.
 In addition to its position in the forest, each *structure* has
 
-- One **tag**, a string from set `Tag`
+- One **tag**, a *string* from set `Tag`
 
-- Zero or one **cross-reference identifier**, a string from set `XrefID` that is not shared by any other *cross-reference identifier* in the dataset.
+- Zero or one **cross-reference identifier**, a *string* from set `XrefID` that is not shared by any other *cross-reference identifier* in the dataset.
 
 - Exactly one of the following options:
     
@@ -136,8 +136,8 @@ More recent specifications generally operate in tier-2.
 
 Each Tier-1 *structure* can be expressed as a single line of text;
 an entire dataset is serialised by converting all *structures* to lines in a preorder traversal of the dataset
-and concatenating the lines with a string from the set `lineSep` between each one,
-optionally adding another string from the set `lineSep` at the end.
+and concatenating the lines with a *string* from the set `lineSep` between each one,
+optionally adding another *string* from the set `lineSep` at the end.
 
 Each line consists of the following:
 
@@ -147,13 +147,13 @@ Each line consists of the following:
     
     A line with *level* $n > 0$ represents a substructure of the nearest preceding line with *level* $n-1$.
 
-2. A string from set `Delim`
+2. A *string* from set `Delim`
 
 3. If the *structure* has a *cross-reference identifier*,
     1. U+0040 (commercial at, `@`)
     2. the *structure*'s *cross-reference identifier*
     3. U+0040 (commercial at, `@`)
-    4. A string from set `Delim`
+    4. A *string* from set `Delim`
 
 5. The *structure*'s *tag*
 
@@ -201,18 +201,18 @@ which identifies the character set in which this dataset was originally serialis
 
 ### CONT and CONC   {#cont-and-conc}
 
-*Structures* with the *tag* "`CONT`" or the *tag* "`CONC`" are restricted as follows:
+Each *structure* with *tag* "`CONT`" or "`CONC`" is restricted as follows:
 
 - Must not appear anywhere in tier-2 datasets
-- Must not be roots of a tree
-- Must not be a substructure of structure with *pointer payloads*
-- Must not be a substructure of structure with *tag* "`CONT`" or "`CONC`" 
+- Must not be the root of a tree
+- Must not be a substructure of a structure with a *pointer payload*
+- Must not be a substructure of a structure with *tag* "`CONT`" or "`CONC`" 
 - Any structure that appears before it in the sequence of substructures must also have *tag* "`CONT`" or "`CONC`"
 
 Additionally, these structures never have cross-reference identifiers
 and never have pointer payloads.
 
-If a *structures* with *tag* "`CONT`" or  `CONC`", or its superstructure, has no payload, it *shall* be treated as it if has an empty string payload instead.
+If a *structures* with *tag* "`CONT`" or  `CONC`" or its superstructure has no payload, it *shall* be treated as it if has an empty *string payload* instead.
 
 A *structure* whose first substructure has *tag* "`CONC`"
 can be converted to an equivalent *structure* without that substructure
@@ -221,11 +221,11 @@ by concatenating the substructure's payload to the end of the superstructure's p
 A *structure* whose first substructure has *tag* "`CONT`"
 can be converted to an equivalent *structure* without that substructure
 by concatenating one `lineBreak` followed by the substructure's payload to the end of the superstructure's payload.
-If the superstructure's string payload ended with U+000D, the `lineBreak` chosen *must not* be U+000A.
+If the superstructure's *string payload* ended with U+000D, the `lineBreak` chosen *must not* be U+000A.
 
 ## Parametrisation
 
-Several variants of GEDC datasets exist; all are broadly compatible, but some impose more restrictions than others on characters and lengths.
+Several dialects of GEDC datasets exist; all are broadly compatible, but some impose more restrictions than others on characters and lengths.
 These variants are defined by five parameters.
 
 There is one numeric parameter:
@@ -238,7 +238,7 @@ There is one numeric parameter:
     - "Unconstrained", effectively meaning ∞
     - "Unconstrained with no CONC", effectively meaning ∞ and prohibiting structures with tag `CONC` even in tier-1.
 
-There are four parameters that are sets of strings.
+There are four parameters that are sets of *strings*.
 Two (`Tag` and `XrefID`) limit contents of *structures*
 and all four constrain serialised representations.
 The serialisation-only sets (`LineSep` and `Delim`) are limited to range over a specific set of characters characters in order to facilitate [Character encoding detection].
@@ -247,49 +247,49 @@ None of these sets may ever contain the empty string.
 `Tag`
 :   The set of permitted *tags*.
     
-    This set always includes all strings matching the *pattern* `[_A-Z][_A-Z0-9]{1,7}`.
+    This set always includes all *strings* matching the *pattern* `[_A-Z][_A-Z0-9]{1,7}`.
     
-    No string in this set ever includes any character from general category *Cc* or *Z*.
+    No *string* in this set ever includes any character from general category *Cc* or *Z*.
     
-    No string in this set ever begins with U+0040 (`@`).
+    No *string* in this set ever begins with U+0040 (`@`).
     
-    The default value of this set is all strings that match the *pattern*
+    The default value of this set is all *strings* that match the *pattern*
     `[_A-Z][_A-Z0-9]*`.
 
 `XrefID`
 :   The set of permitted *cross-reference identifies*.
     
-    This set always includes all strings matching the *pattern* `[A-Z0-9]{1,15}`.
+    This set always includes all *strings* matching the *pattern* `[A-Z0-9]{1,15}`.
     
-    No string in this set ever includes any character from general category *Cc* except U+0009 (horizontal tab).
+    No *string* in this set ever includes any character from general category *Cc* except U+0009 (horizontal tab).
 
-    No string in this set ever contains U+0040 (`@`).
+    No *string* in this set ever contains U+0040 (`@`).
     
-    No string in this set ever begins with U+0023 (`#`).
+    No *string* in this set ever begins with U+0023 (`#`).
 
-    The default value of this set is all strings that match the *pattern*
+    The default value of this set is all *strings* that match the *pattern*
     `[A-Z0-9][_A-Z0-9]*`.
 
 `LineSep`
-:   The set of strings that can occur between two serialised lines.
+:   The set of *strings* that can occur between two serialised lines.
 
     This set always includes *LF*, *CR*, and *CRLF*.
 
-    This set may be defined to include additional strings
+    This set may be defined to include additional *strings*
     that begin with either *LF* or *CR*
     and contain only *LF*, *CR*, space (U+0020), and tab (U+0009).
     
     The default value for this set is its minimal value: {*LF*, *CR*, *CRLF*}.
 
 `Delim`
-:   The set of strings that can occur between the pre-payload components of a line.
+:   The set of *strings* that can occur between the pre-payload components of a line.
     
-    This set always includes the length-1 string containing just U+0020 (space).
+    This set always includes the length-1 *string* containing just U+0020 (space).
     
-    This set may be defined to include additional strings
+    This set may be defined to include additional *strings*
     contain only space (U+0020) and tab (U+0009).
 
-    The default value for this set is its minimal value: just the single-space string.
+    The default value for this set is its minimal value: just the single-space *string*.
 
 {.note ...}
 General-purpose GEDC processing libraries can be created
@@ -304,7 +304,7 @@ by parsing with the most generous possible definitions of these parameters:
 and serialise with the most limited possible definitions
 
 - `Tag` is implicit in the tags used in the dataset
-- `XrefID` is the strings matching the *pattern* `[_A-Z0-9]{1,15}`
+- `XrefID` is the *strings* matching the *pattern* `[_A-Z0-9]{1,15}`
 - `LineSep` is just CRLF, or just CR, or just LF
 - `Delim` is just a single space
 
