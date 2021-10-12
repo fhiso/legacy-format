@@ -18,12 +18,12 @@ This standard defines an object model and serialisation format called GEDC.
 GEDC is the underlying format used by many applications and specifications that predate this standard,
 including 
 
-- [PAF 2.0]: a manual for software produced by The Family History Department of The Church of Jesus Christ of Latter-Day Saints (FHD) in 1985 
-- [GEDCOM 3.0], [GEDCOM 4.0], [GEDCOM 5.0], [GEDCOM 5.3], [GEDCOM 5.5], [GEDCOM 5.5.1], [GEDCOM 5.6]: specifications published by FHD from 1986 to 2000 
-- [Event GEDCOM]: a specification published by Commsoft in 1994
-- [GEDCOM 5.5EL]: a specification published by GEDCOM-L in 2018
-- [GEDCOM 5.5.5]: a specification published by Tamura Jones in 2019
-- [GEDCOM 7.0]: a specification published by FHD in 2021
+- \[PAF 2.0]: a manual for software produced by The Family History Department of The Church of Jesus Christ of Latter-Day Saints (FHD) in 1985 
+- \[GEDCOM 3.0], \[GEDCOM 4.0], \[GEDCOM 5.0], \[GEDCOM 5.3], \[GEDCOM 5.5], \[GEDCOM 5.5.1], \[GEDCOM 5.6]: specifications published by FHD from 1986 to 2000 
+- \[Event GEDCOM]: a specification published by Commsoft in 1994
+- \[GEDCOM 5.5EL]: a specification published by GEDCOM-L in 2018
+- \[GEDCOM 5.5.5]: a specification published by Tamura Jones in 2019
+- \[GEDCOM 7.0]: a specification published by FHD in 2021
 
 Each of these documents has included a definition of GEDC integrated with a definition of a particular data model.
 Each has also included its own restrictions on certain parts of GEDC.
@@ -34,8 +34,8 @@ While most GEDCOM specifications have used GEDC,
 at least three do not:
 
 - PAF 1.0 used an incompatible format that is sometimes called "GEDCOM 1.0"
-- [GEDCOM-X] uses JSON and XML instead of GEDC
-- [GEDCOM 5.6] included two serialisations, one of which was XML
+- \[GEDCOM-X] uses JSON and XML instead of GEDC
+- \[GEDCOM 5.6] included two serialisations, one of which was XML
 :::
 
 
@@ -63,13 +63,13 @@ issues, or points where there is not yet consensus; they will be
 resolved and removed for the final standard.  Examples and notes will be
 retained in the standard.
 
-This standard depends on FHISO's **The Pattern Datatype** standard.
+This standard depends on FHISO's **The Pattern Datatype** standard described in \[FHISO Patterns].
 Concepts defined in that standard are used here without further definition.
 
-{.note} In particular, the precise meaning of *pattern*, and *match* are given in [FHISO Patterns].
+{.note} In particular, the precise meaning of *pattern*, and *match* are given in \[FHISO Patterns].
 
 **Characters** are atomic units of text which are specified by reference to
-their **code point** number in [Unicode], without regard to any particular
+their **code point** number in \[Unicode], without regard to any particular
 character encoding.
 A **string** is a sequence of zero or more *characters* which is used to
 encode textual data.
@@ -82,7 +82,7 @@ or 21 in hexadecimal.  In this standard it written U+0021.
 
 {.ednote} I chose not to reference Basic Concepts here because all we needed from it was character and string, and only a portion of what it said about those.
 
-This standard refers to some characters by their [General Category] as defined by [Unicode].
+This standard refers to some characters by their \[General Category] as defined by \[Unicode].
 In particular, general categories *Cc* (control codes) and *Z* (separators) are used in this standard without further definition.
 
 This standard uses the name **LF** to refer to U+000A;
@@ -364,7 +364,7 @@ but may have been created in ANSEL by an older application that did no fully imp
 
 ### Normative references
 
-[ANSEL]
+\[ANSEL]
 :   NISO (National Information Standards Organization).
     *ANSI/NISO Z39.47-1993. Extended Latin Alphabet Coded Character Set for Bibliographic Use*.
     1993.
@@ -372,14 +372,18 @@ but may have been created in ANSEL by an older application that did no fully imp
     <http://www.niso.org/apps/group_public/project/details.php?project_id=10>).
     Standard withdrawn, 2013.
 
-[General Category]
+\[FHISO Patterns]
+:   FHISO (Family History Information Standards Organisation).
+    *The Pattern Datatype*.  First public draft.
+
+\[General Category]
 :   The Unicode Consortium. 
     "Character Properties,"
     *The Unicode Standard*, version 14.0.0, section 4.5.
     2021.  
     (See <https://www.unicode.org/versions/Unicode14.0.0/ch04.pdf>)
 
-[MARC-8]
+\[MARC-8]
 :   The Library of Congress.
     "MARC-8 Encoding Environment."
     *MARC 21 Specifications for Record Structure, Character Sets, and Exchange Media*,
@@ -387,16 +391,16 @@ but may have been created in ANSEL by an older application that did no fully imp
     2008.
     (See <https://www.loc.gov/marc/specifications/speccharucs.html>)
 
-[RFC 2119]
+\[RFC 2119]
 :   IETF (Internet Engineering Task Force).  *RFC 2119:  Key words for
     use in RFCs to Indicate Requirement Levels.*  Scott Bradner, eds., 1997.
     (See <https://tools.ietf.org/html/rfc2119>.)
 
-[Unicode]
+\[Unicode]
 :   The Unicode Consortium.  *The Unicode Standard*, version 14.0.0.
     2021.  (See <https://www.unicode.org/versions/Unicode14.0.0/>.)
 
-[US-ASCII]
+\[US-ASCII]
 :   American Standards Association (ASA).
     *American Standard Code for Information Interchange. ASA X3.4-1963.*
     1963.
@@ -405,61 +409,61 @@ but may have been created in ANSEL by an older application that did no fully imp
 
 ### Other references
 
-[Event GEDCOM]
+\[Event GEDCOM]
 :   COMMSOFT, Inc.
     *GEDCOM Event-Oriented Form*, draft release 1.0. 12 September 1994.
 
-[GEDCOM 3.0]
+\[GEDCOM 3.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *Genealogical Data communication (GEDCOM)*, release 3.0.  9 October 1987.
 
-[GEDCOM 4.0]
+\[GEDCOM 4.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, release 4.0.  August 1989.
 
-[GEDCOM 5.0]
+\[GEDCOM 5.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.0.  25 Sep 1991.
 
-[GEDCOM 5.3]
+\[GEDCOM 5.3]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.3.  4 Nov 1993.
 
-[GEDCOM 5.5]
+\[GEDCOM 5.5]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, release 5.5.  2 Jan 1996.
     (See <https://gedcom.io/specifications/ged55.pdf>).
 
-[GEDCOM 5.5.1]
+\[GEDCOM 5.5.1]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
     Re-released without draft notice, 15 Nov 2019.
     (See <https://gedcom.io/specifications/ged551.pdf>).
 
-[GEDCOM 5.5EL]
+\[GEDCOM 5.5EL]
 :   GEDCOM-L.
     *GEDCOM 5.5EL*.  Published 5 Oct 2004, updated through 17 Mar 2018.
     <http://wiki-de.genealogy.net/Gedcom_5.5EL>, accessed 2021-10-12.
 
-[GEDCOM 5.5.5]
+\[GEDCOM 5.5.5]
 :   Tamura Jones.
     *The GEDCOM 5.5.5 Specification with Annotations*. 2 Oct 2019.
 
-[GEDCOM 5.6]
+\[GEDCOM 5.6]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.6.  18 December 2000.
 
-[GEDCOM 7]
+\[GEDCOM 7]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The FamilySearch GEDCOM Standard*, version 7.0.0. 27 May 2021.
     (See <https://gedcom.io/specifications/FamilySearchGEDCOMv7.html>).
 
-[GEDCOM-X]
+\[GEDCOM-X]
 :   Intellectual Reserve, Inc.
     *The GEDCOM X Conceptual Model*. Published 1 June 2012.
     <https://github.com/FamilySearch/gedcomx> accessed 2021-10-12.
 
-[PAF 2.0]
+\[PAF 2.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *Personal Ancestral File™ Release 2.0 Family Records Data Structure Description*.
     December 185.
