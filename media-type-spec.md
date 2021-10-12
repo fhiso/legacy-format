@@ -1,19 +1,48 @@
 ---
-title: "GEDCOM Media Type"
-date: 25 June 2021
+title: "The GEDC Serialisation Format"
+date: 12 October 2021
 numbersections: true
 editors: Luther Tychonievich
 ...
 
-# GEDCOM Media Type
+# The GEDC Serialisation Format
 
-{.ednote ...} This is a **working draft** of a description of the GEDCOM file format independent of any particular GEDCOM specification or standard. It is intended to be fully compatible with GEDCOM version 5.5 through 7.0 and makes an effort to be compatible to earlier GEDCOM versions where those are not in contradiction with one another.
+{.ednote ...} This is a **working draft** of a description of the object model and serialisation scheme used by PAF 2.0 and its successors and by all GEDCOM specifications except GEDCOM-X. It defines only the object model and serialisation scheme, not any particular data model; in this way, it is similar to JSON or XML.
 
-My intention in drafting this document is to have a specification suitable for registering the `text/gedcom` Media Type with the IANA without needing to identify any particular version or data model.
+My intention in drafting this document is to have a specification suitable for registering the `text/gedc` Media Type with the IANA.
+We could then register other media types that use this serialisation,
+such as `text/elf+gedc` or `text/gedcom+gedc`.
 {/}
 
+This standard defines an object model and serialisation format called GEDC.
+GEDC is the underlying format used by many applications and specifications that predate this standard,
+including 
 
-A GEDCOM file is a text file (in any character set, with or without a byte-order mark) storing a representation of a hierarchical set of **structures**.
+- [PAF 2.0]: a manual for software produced by The Family History Department of The Church of Jesus Christ of Latter-Day Saints (FHD) in 1985 
+- [GEDCOM 3.0], [GEDCOM 4.0], [GEDCOM 5.0], [GEDCOM 5.3], [GEDCOM 5.5], [GEDCOM 5.5.1], [GEDCOM 5.6]: specifications published by FHD from 1986 to 2000 
+- [Event GEDCOM]: a specification published by Commsoft in 1994
+- [GEDCOM 5.5EL]: a specification published by GEDCOM-L in 2018
+- [GEDCOM 5.5.5]: a specification published by Tamura Jones in 2019
+- [GEDCOM 7.0]: a specification published by FHD in 2021
+
+Each of these documents has included a definition of GEDC integrated with a definition of a particular data model.
+Each has also included its own restrictions on certain parts of GEDC.
+
+:::note
+GEDCOM is an acronym for GEnealogical Data Communication.
+While most GEDCOM specifications have used GEDC,
+at least three do not:
+
+- PAF 1.0 used an incompatible format that is sometimes called "GEDCOM 1.0"
+- [GEDCOM-X] uses JSON and XML instead of GEDC
+- [GEDCOM 5.6] included two serialisations, one of which was XML
+:::
+
+
+This standard defines the GEDC serialisation format independent of any particular data model.
+It also specifies the five parameters which various GEDC-compliant specifications have used to restrict GEDC,
+together with their allowed range.
+
 
 ## General
 
@@ -24,7 +53,7 @@ The key words **must**, **must not**, **required**, **shall**,
 **shall not**, **should**, **should not**, **recommended**,
 **not recommended**, **may** and **optional** in this standard are to be
 interpreted as described in
-&#x5B;[RFC 2119](https://tools.ietf.org/html/rfc2119)].
+&#x5B;[RFC 2119](https://www.rfc-editor.org/info/rfc2119)].
 
 Indented text in grey or coloured boxes does not form a normative part
 of this standard, and is labelled as either an example or a note.  
@@ -34,12 +63,10 @@ issues, or points where there is not yet consensus; they will be
 resolved and removed for the final standard.  Examples and notes will be
 retained in the standard.
 
-The grammar given here uses the form of EBNF notation defined in §6 of
-&#x5B;[XML](https://www.w3.org/TR/xml11/)], except that no significance is
-attached to the capitalisation of grammar symbols.  *Conforming*
-applications *must not* generate data not conforming to the syntax given
-here, but non-conforming syntax *may* be accepted and processed by a
-*conforming* application in an implementation-defined manner.
+This standard depends on FHISO's **The Pattern Datatype** standard.
+Concepts defined in that standard are used here without further definition.
+
+{.note} In particular, the precise meaning of *pattern*, and *match* are given in [FHISO Patterns].
 
 **Characters** are atomic units of text which are specified by reference to
 their **code point** number in [Unicode], without regard to any particular
@@ -47,260 +74,271 @@ character encoding.
 A **string** is a sequence of zero or more *characters* which is used to
 encode textual data.
 
+*Characters* may be identified in this standard by their hexadecimal
+*code point* prefixed with "U+".
+
+{.example}  The exclamation mark "`!`" is *code point* 33 in Unicode,
+or 21 in hexadecimal.  In this standard it written U+0021.
+
 {.ednote} I chose not to reference Basic Concepts here because all we needed from it was character and string, and only a portion of what it said about those.
 
-{.ednote} C0 Control characters are banned starting with 5.3; should we also ban them?
+This standard refers to some characters by their [General Category] as defined by [Unicode].
+In particular, general categories *Cc* (control codes) and *Z* (separators) are used in this standard without further definition.
 
-## Structures   {#structures}
+This standard uses the name **LF** to refer to U+000A;
+**CR** to refer to U+000D;
+and **CRLF** to refer to U+000A followed by U+000D.
 
-Each structure *shall* have a **tag** which matches production `Tag`
 
-    Tag ::= [A-Z] [A-Z0-9_]* | "_" [A-Z0-9_]+
+## Object model
 
-The tags "`CONC`" and "`CONT`" are used to encode breaks in text payloads during serialization (see {§serialize}) and *must not* be used as the tag of any structure.
+A **GEDC dataset** consists of a forest: a sequence of n-ary trees, where the nodes of the trees are **GEDC structures** and the children of each node are stored as a sequence, not a set.
+In addition to its position in the forest, each *structure* has
 
-{.ednote ...}
-The rules for tags have varied by version:
+- One **tag**, a string from set `Tag`
 
-- 3.0 said "TAG may contain valid character except the TERMINATOR or SPACE".
-- 4.0 said "A tag can consist of any capitalized alpha characters. Use the underscore (`_`) to create a tag that is more than one word"
-- 5.0 said "A tag consists of a variable length sequence of letters and digits, beginning with a letter."
-- 5.3 through 5.5.1 said
-        
-        alpha:= [ (0x41)-(0x5A) | (0x61)-(0x7A) | 0x5F ]
-        alphanum:= [ alpha | digit ]
-        tag:= [ alphanum | tag alphanum ]
+- Zero or one **cross-reference identifier**, a string from set `XrefID` that is not shared by any other *cross-reference identifier* in the dataset.
+
+- Exactly one of the following options:
     
-    5.3 did not say they were case-insensitive or otherwise constraint case, but 5.5 added a separate constraint that "TAGS are always UPPERCASE."
-- 7.0's `Tag` ABNF rule matches the proposed `Tag` production exactly.
-
-None of those preclude tags starting with or being entirely digits, but to the best of my knowledge no system has ever permitted initial digits in tags.
-
-I thus consider the rule to have been an unchanging upper-case alphanum + underscore since 4.0, with 4.0's omission of digits and 5.0's omission of underscore and failure to mention upper-case as accidental specification errors.
-{/}
-
-Each structure *shall* have either a **text payload** consisting of a (possibly empty) string or a **pointer payload** consisting of a reference to another structure, which *may* be a structure within the file or a structure not in the file.
-A structure with text payload equal to the empty string is equivalently said to have "an empty payload" or "no payload".
-
-{.ednote ...}
-Every GEDCOM specification leaves open the ability to distinguish between an empty payload like "`1 XYZ `" and a missing payload like "`1 XYZ`" but no known specification uses this ability. 7.0 was the first to explicitly state they were interchangeable.
-{/}
-
-{.ednote ...}
-The provision of structures not in the file is needed by 7.0's `@VOID@` pointers, and alluded to in 5.5's discussion of the future use of `:` in pointers.
-{/}
-
-Each structure *may* be the **substructure** of exactly one other structure.
-A structure that is not a substructure is called a **record**.
-Substructure relationships *must* be acyclic.
-The substructures of a structure are stored as a sequence, not a set, and the order of the substructures of a structure is significant unless that significance is relaxed by the semantic model the GEDCOM file's structures conform to.
-
-{.ednote ...}
-Order rules have varied widely by version, sometimes via ambiguous statements.
-
-- 3.0 said "The sender and receiver do not have to agree in advance on the order of field occurrence in a record" and "A sending system is not constrained to transmit records in any particular order" and "TAGs may occur in any order".
-- 4.0 said "you can send these tags in any order, as long as you preserve the data relationships".
-- 5.0 and 5.3 gave a meaning to order "when multiple opinions or other items are presented for which only one may be expected by a receiving system".
-- 5.5 and 5.5.1 said order of a single tag is significant, but the order of distinct tags is not.
-- 7.0 said order of a single structure type is significant, and provides a SCHMA whereby distinct tags may have the same structure type.
-{/}
-
-Every GEDCOM file contains two special records: the header and trailer.
-The "header" *must* have tag "`HEAD`" and no payload.
-The "trailer" *must* have tag "`TRLR`", no payload, and no substructures.
-These *shall* be the only structures with these tags and *shall not* be pointed to by any pointer payload.
-Substructures of the header *should* provide metadata about the entire GEDCOM file
-and *should* be sufficient to identify the semantic model the GEDCOM file's structures conform to.
-
-
-## GEDCOM for Family History {#gedc}
-
-One common use of GEDCOM files is for the storage of information related to family history, including representations of individuals, their relationships and life events.
-Several distinct standards exist for using GEDCOM in that way;
-the specific family history data standard in use is indicated by a specific substructure of the header as follows.
-
-If the header of the GEDCOM file contains exactly one structure with tag "`GEDC`", that structure and its substructures identify the semantic model the GEDCOM file's structures conform to.
-Each semantic model is described in its own specification, which define such details as
-
-- the set of tags allowed and their meaning
-- restrictions on payloads
-- semantics equivalence rules, such as relaxations of tag order or equivalences of various tags
-- what pointers to structures not in the file are permitted
-- which serialization relaxations (see {§relax}) are permitted
-- any serialization restrictions (see {§restrict}) that conformant applications are expected to adhere to
-
-{.note ...} The Family History Department of The Church of Jesus Christ of Latter-Day Saints created GEDCOM and has published several GEDCOM specifications.
-
-Early versions of GEDCOM contained no identifying version information and cannot be reliably identified by file content alone.
-
-Four versions are identified by the `GEDC`-tagged substructure of the header having two specific substructures:
-
-- one tagged `FORM` with "`LINEAGE_LINKED`" as its payload
-- one tagged `VERS` with one of the following four strings as its payload: "`5.0`", "`5.3`", "[`5.5`](https://gedcom.io/specifications/ged55.pdf)", or "[`5.5.1`](https://gedcom.io/specifications/ged551.pdf)". The payload identifies the version of "The GEDCOM Standard" to which the file conforms.
-
-The order of these two substructures of `GEDC` is not significant.
-
-Subsequent versions are identified by the `GEDC`-tagged substructure of the header having exactly one substructure with tag `VERS` and payload being a [semantic version](https://semver.org) of "[The FamilySearch GEDCOM Specification](https://gedcom.io/specifications/FamilySearchGEDCOMv7.html)" to which the file conforms.
-
-Groups other that The Family History Department of The Church of Jesus Christ of Latter-Day Saints have also published specifications, but as of 2021 none of these have seen large-scale implementation.
-{/}
-
-## Serialization {#serialize}
-
-Each GEDCOM file consists of the concatenated serialization of every record,
-starting with the header record and ending with the trailer record.
-The order of the other records in the serialization is arbitrary and is not semantically meaningful.
-
-Every structure is given a non-negative integer called its **level** as part of serialization.
-The level of a record is 0;
-the level of each substructure of a structure is one greater than the level of the structure.
-Thus all substructures of a record have level 1;
-all substructures of a substructure of a record have level 2;
-and so on.
-
-A structure may be given a string called its **xref** as part of serialization.
-Any two structures with an xref in a single GEDCOM file *must* have distinct xrefs.
-Any structure pointed to by a pointer payload *must* be given an xref.
-The header and trailer *must not* be given an xref.
-Other structures *may* be given an xref, which *may* be further restricted by a serialization restrictions (see {§restrict}).
-
-The serialization of a structure consists of the concatenation of the following elements in order:
-
-1. the structure's level encoded as a base-ten integer
-2. a *delimiter*
-3. if the structure has an xref,
-    1. an at sign (U+0040 "`@`")
-    2. the structure's xref
-    3. an at sign (U+0040 "`@`")
-    4. a *delimiter*
-4. the structure's tag
-5. a serialization of the structure's payload
-6. a *line break*
-7. the serialization of each of the structure's substructures in order.
-
-The serialization of a pointer payload consists of
-
-1. a single space (U+0020 "` `")
-2. an at sign (U+0040 "`@`")
-3. if the pointed-to structure is within this file, the xref of the pointed-to structure;\
-   otherwise, an xref that is not the xref of any structure in the file
-4. an at sign (U+0040 "`@`")
-
-The serialization of a text payload consists of
-
-1. a single space (U+0020); if the payload is empty, this *may* be omitted
-
-2. the text of the payload, with the following modifications:
-
-    - insert splits into the payload as follows:
-
-        - each *line terminator* *shall* be replaced with a CONT-split
-        - and any number of CONC-splits *may* be added before or after any character.
-        
-        Each split is encoded as
-        
-        1. a *line break*
-        2. the structure's level plus 1, encoded as a base-ten integer
-        3. a *delimiter*
-        4. either `CONT` or `CONC`, depending on the split type
-        5. a single space (U+0020 "` `") which *may* be omitted if this split is immediately followed by another split or if there are no characters in the text payload after this split
-
-    - each at sign (U+0040 "`@`") which is either the first character of the text payload or is immediately preceded by a split, and which is not immediately followed by a number sign (U+0023 "`#`"), *shall* be represented by two at signs (U+0040 U+0040, "`@@`")
-
-
-{.ednote ...}
-The above handling of @ is sufficient to encode both (a) the 1.0 through 5.5.1 specifications written rules where @#...@ is special and all other @ are doubled;
-and (b) the common practice which ignored those rules. In particular,
-
-- it ensures a text paylaod can never be confused with a pointer
-- it keeps pre-7.0 "escape sequences" unchanged
-- it adds the minumum number of @ to meet the above two goals
-- it allows a spec to require more doubling by defining a text payload modification as part of the semantics of payloads in that spec
-{/}
-
-Each **line terminator** matches production `LineTerm`
-
-    LineTerm ::= #xA #xD? | #xD #xA?
-
-When replacing *line terminators* with splits, two-character *line terminators* shall be preferred over one-character *line terminators* in order to minimize the number of splits created.
+    - **No payload**
+    
+    - A **pointer payload**, which points to a structure with a cross-reference identifier in the same dataset
+    
+    - A **string payload**
 
 {.note ...}
-Splits are encoded in a way that intentionally looks like substructures, and parsers can be written that parse every line as if it were a structure, then un-double leading at signs, then remove CONT and CONC substructures by concatenating their payloads to the superstructure's payload.
-
-However, CONT and CONC are not structures: they cannot be pointed to, cannot have pointer payloads, cannot have substructures, cannot appear as records, and cannot be further defined by a GEDCOM-compliant specification.
+While GEDC can distinguish between the "no payload" and "*string payload* containing the empty string" cases, as of 2021 all such specifications have treated these two cases as semantically equivalent.
 {/}
 
-### Canonical serialization
+## Tiers
 
-Canonical GEDCOM serializations are accepted by all GEDCOM processing systems and obey the following limitations:
+There are two tiers of GEDC datasets, distinguished by their *string payloads*:
 
-- Each xref is 20 characters or fewer in length
-    and matches production `Tag`.
-- The same character sequence is used by each **line break** in the file,
-    and that character sequence matches production `LineTerm`.
-- Each **delimiter** is a single space character (U+0020 "` `").
-- CONC-splits are not used.
-
-### Serialization relaxations {#relax}
-
-Specifications and tools may chose to selectively relax canonical restrictions while still abiding by the following restrictions:
-
-- Each xref *shall* match production `XrefRelaxed`
-
-        XrefRelaxed ::= [a-zA-Z0-9_] [#x20-#x3E#x41-#7xE]*
-
-- Each line break *shall* match production `LineBreakRelaxed`
+Tier-1 GEDC
+:   *String payloads* contain neither *LF* nor *CR*
+    and may be limited to at most *maxLen* code points.
     
-        LineBreakRelaxed ::= [#x9#x20]* [#xA#xD] [#x9#xA#xD#x20]*
+Tier-2 GEDC
+:   *String payloads* can contain line breaks and have unlimited length, but cannot distinguish between *LF*, *CR*, and *CRLF*.
 
-- Each delimiter *shall* match production `DelimiterRelaxed`
 
-        DelimiterRelaxed ::= [#x9#x20]+
+Tier-1 and tier-2 datasets have the same expressive power by virtual of the Tier-1 [CONT and CONC universal tags](#cont-and-conc).
+During serialisation, a tier-2 dataset is first converted to a tier-1 dataset, then serialised;
+similarly, parsing first produces a tier-1 dataset which is then converted to a tier-2 dataset.
 
-{.example ...}
-FamilySearch GEDCOM 7.0 mostly describes the canonical form, but uses the following relaxations:
-
-- allows xref to be any length
-- requires xrefs match `[A-Z0-9_]+`
-- requires line breaks to match `LineTerm`, but does not require them to all be the same
-
-Because these relaxations obey the relaxed rules above, they are consistent with the GEDCOM file format.
+{.note ...}
+Early GEDC-compatible specifications were designed for memory-constrained applications and discussed tier-1 only.
+More recent specifications generally operate in tier-2.
 {/}
 
+## Serialisation
 
-### Serialization restrictions {#restrict}
+Each Tier-1 *structure* can be expressed as a single line of text;
+an entire dataset is serialised by converting all *structures* to lines in a preorder traversal of the dataset
+and concatenating the lines with a string from the set `lineSep` between each one,
+optionally adding another string from the set `lineSep` at the end.
 
-A specification *may* impose additional restrictions on serialization that GEDCOM file producers must obey to be considered conformant to that specification.
+Each line consists of the following:
 
-Examples of such restrictions include but are not limited to
+1. An integer expressed with base-10 ASCII digits called the line's **level**.
+    Root nodes have *level* 0;
+    other *structures* have *level* one greater than their parent node.
+    
+    A line with *level* $n > 0$ represents a substructure of the nearest preceding line with *level* $n-1$.
 
-- how to serialize pointers to structures not in the file
-- a maximum number of characters of a text payload that may be serialized without an intervening split
-- where CONC-splits are permitted
-- a requirement that empty payloads always (or never) include the optional space character
-- which not-pointed-to structures are given xrefs
-- the use of a specific character set or set of character sets
-- the agreement between the character set and some structure in the GEDCOM file
-- limitations on permitted xrefs
+2. A string from set `Delim`
 
-{.example ...}
-FamilySearch GEDCOM 7.0 includes the following serialization restrictions:
+3. If the *structure* has a *cross-reference identifier*,
+    1. U+0040 (commercial at, `@`)
+    2. the *structure*'s *cross-reference identifier*
+    3. U+0040 (commercial at, `@`)
+    4. A string from set `Delim`
 
-- only one external structure may be pointed to, and pointers to it are serialized as `@VOID@`
-- no CONC-splits allowed
-- records may be given xref, but substructures may not
-- must use the UTF-8 character set
-- xrefs must not be the specific  string "`VOID`"
+5. The *structure*'s *tag*
+
+6. If the *structure* has a *pointer payload*,
+    
+    1. U+0020 (a single space)
+    2. U+0040 (commercial at, `@`)
+    3. the *cross-reference identifier* of the pointed-to *structure*
+    4. U+0040 (commercial at, `@`)
+
+    Otherwise, if the *structure* has a *string payload*,
+
+    1. U+0020 (a single space)
+    2. if the *string payload* begins with U+0040 (`@`)
+        but not with U+0040 U+0023 (`@#`),
+        then the first character is doubled by inserting a U+0040 here
+    3. the *structure*'s *string payload*
+
+## Universal Tags
+
+The semantics meaning of each *structure*, *tag*, and *string payload* is generally left to individual data models to define.
+However, the five specific *structures*, identified by their *tag* and position in the dataset, have special universal meaning regardless of the data model in use.
+
+### HEAD
+
+The first structure in every GEDC dataset *must* have *tag* "`HEAD`",
+with no cross-reference identifier and no payload.
+This structure is called the **header**.
+Metadata about the dataset itself *should* be placed in the *header*;
+regular data *should* be placed elsewhere in the dataset.
+
+### HEAD.GEDC
+
+At most one substructure of the *header* may have *tag* "`GEDC`".
+This structure is called the **data model identifier**.
+The *data model identifier* *must not* have a cross-reference identifier and *should not* have a payload.
+Information used to identify the specific data model used in the dataset *should* be placed in the *data model identifier* and its substructures.
+
+### HEAD.CHAR
+
+At most one substructure of the *header* may have *tag* "`GEDC`".
+This structure is called the **character set hit**.
+The *character set hit* *must not* have a cross-reference identifier and *must* have a payload
+which identifies the character set in which this dataset was originally serialised.
+
+### CONT and CONC   {#cont-and-conc}
+
+*Structures* with the *tag* "`CONT`" or the *tag* "`CONC`" are restricted as follows:
+
+- Must not appear anywhere in tier-2 datasets
+- Must not be roots of a tree
+- Must not be a substructure of structure with *pointer payloads*
+- Must not be a substructure of structure with *tag* "`CONT`" or "`CONC`" 
+- Any structure that appears before it in the sequence of substructures must also have *tag* "`CONT`" or "`CONC`"
+
+Additionally, these structures never have cross-reference identifiers
+and never have pointer payloads.
+
+If a *structures* with *tag* "`CONT`" or  `CONC`", or its superstructure, has no payload, it *shall* be treated as it if has an empty string payload instead.
+
+A *structure* whose first substructure has *tag* "`CONC`"
+can be converted to an equivalent *structure* without that substructure
+by concatenating the substructure's payload to the end of the superstructure's payload.
+
+A *structure* whose first substructure has *tag* "`CONT`"
+can be converted to an equivalent *structure* without that substructure
+by concatenating one `lineBreak` followed by the substructure's payload to the end of the superstructure's payload.
+If the superstructure's string payload ended with U+000D, the `lineBreak` chosen *must not* be U+000A.
+
+## Parametrisation
+
+Several variants of GEDC datasets exist; all are broadly compatible, but some impose more restrictions than others on characters and lengths.
+These variants are defined by five parameters.
+
+There is one numeric parameter:
+
+*maxLen*
+:   The maximum number of characters that may appear a tier-1 *string payload*.
+    
+    Valid values are any positive integer or two special values:
+    
+    - "Unconstrained", effectively meaning ∞
+    - "Unconstrained with no CONC", effectively meaning ∞ and prohibiting structures with tag `CONC` even in tier-1.
+
+There are four parameters that are sets of strings.
+Two (`Tag` and `XrefID`) limit contents of *structures*
+and all four constrain serialised representations.
+The serialisation-only sets (`LineSep` and `Delim`) are limited to range over a specific set of characters characters in order to facilitate [Character encoding detection].
+None of these sets may ever contain the empty string.
+
+`Tag`
+:   The set of permitted *tags*.
+    
+    This set always includes all strings matching the *pattern* `[_A-Z][_A-Z0-9]{1,7}`.
+    
+    No string in this set ever includes any character from general category *Cc* or *Z*.
+    
+    No string in this set ever begins with U+0040 (`@`).
+    
+    The default value of this set is all strings that match the *pattern*
+    `[_A-Z][_A-Z0-9]*`.
+
+`XrefID`
+:   The set of permitted *cross-reference identifies*.
+    
+    This set always includes all strings matching the *pattern* `[A-Z0-9]{1,15}`.
+    
+    No string in this set ever includes any character from general category *Cc* except U+0009 (horizontal tab).
+
+    No string in this set ever contains U+0040 (`@`).
+    
+    No string in this set ever begins with U+0023 (`#`).
+
+    The default value of this set is all strings that match the *pattern*
+    `[A-Z0-9][_A-Z0-9]*`.
+
+`LineSep`
+:   The set of strings that can occur between two serialised lines.
+
+    This set always includes *LF*, *CR*, and *CRLF*.
+
+    This set may be defined to include additional strings
+    that begin with either *LF* or *CR*
+    and contain only *LF*, *CR*, space (U+0020), and tab (U+0009).
+    
+    The default value for this set is its minimal value: {*LF*, *CR*, *CRLF*}.
+
+`Delim`
+:   The set of strings that can occur between the pre-payload components of a line.
+    
+    This set always includes the length-1 string containing just U+0020 (space).
+    
+    This set may be defined to include additional strings
+    contain only space (U+0020) and tab (U+0009).
+
+    The default value for this set is its minimal value: just the single-space string.
+
+{.note ...}
+General-purpose GEDC processing libraries can be created
+by parsing with the most generous possible definitions of these parameters:
+
+- unconstrained *maxLen*
+- `Tag` is one or more characters other than *Cc* or *Z* that do not begin with `@`
+- `XrefID` is one or more characters other than `@` and non-tab *Cc* and that do not begin with `#`
+- `LineSep` is any sequence of ASCII whitespace beginning with either *CR* or *LF*
+- `Delim` is any sequence of spaces and tabs
+
+and serialise with the most limited possible definitions
+
+- `Tag` is implicit in the tags used in the dataset
+- `XrefID` is the strings matching the *pattern* `[_A-Z0-9]{1,15}`
+- `LineSep` is just CRLF, or just CR, or just LF
+- `Delim` is just a single space
+
+However, *maxLen* does need to be specified
+as "Unconstrained with no CONC" is incompatible with any finite bound.
 {/}
 
-## Character Sets
+## Character encoding detection
 
-The serialization process defined in {§serialize} describes a relationship between a string an a set of interlinked structures, as defined in {§structures}.
-That string can be serialized into binary data using any character set, including both unicode and non-unicode encodings.
+GEDC datasets are serialised as text, and can be converted to octets using any character set.
 
-GEDCOM predates the first version of [Unicode] and has recommended different character encodings in different versions (see {§gedc}), including [US-ASCII], [ANSEL], and [Unicode].
-Some versions recommended the use of a structure with tag `CHAR` in the header of the GEDCOM file with a payload that identifies the character encoding in use.
-Specific payloads of the `CHAR`-tagged structure included:
+If the character set is specified externally to and along with the octet stream (for example by an HTTP Content-type header), any character set may be used.
+
+Otherwise, the following character sets may be used:
+
+- UTF-32LE, UTF-32BE, UTF-16LE, UTF-16BE
+    
+    Detected either by a leading byte-order mark
+    or by by consulting the first four bytes of the file:
+    
+    | first 4 bytes | encoding |
+    |---------------|----------|
+    | 00 30 00 20   | UTF-16BE |
+    | 30 00 20 00   | UTF-16LE |
+    | 00 00 00 30   | UTF-32BE |
+    | 30 00 00 00   | UTF-32LE |
+
+- An ASCII-compatible character set -- i.e., one where a byte between 01 and 7F (inclusive) always indicates the corresponding code point.
+    
+    To detect the specific character encoding, parse the header (skipping any bytes outside the 01–7F range) to find the *character set hint*.
+    If there is no character set hint, the encoding is UTF-8.
+    Otherwise, the payload of the *character set hint* is the name of the character set in use.
+
+Specific character set names known to have been used by previous specifications include
 
 `CHAR` payload      Character sets represented
 ----------------    ---------------------------------
@@ -309,14 +347,15 @@ Specific payloads of the `CHAR`-tagged structure included:
 `UNICODE`           UTF-16LE or UTF-16BE, as defined by [Unicode]
 `UTF-8`             UTF-8, as defined by [Unicode]
 
-There are known to be systems that provide GEDCOM files which they indicate are in one character set
-that have a `CHAR` in the header claiming a different character set.
-Such files are in violation of their respective standards
-and there exists no reliable way to determine if the providing systems
-correctly adjusted the character encoding without modifying the `CHAR`,
-or misidentified the character encoding,
-or applied another encoding on top of the already-encoded data.
 
+{.note ...}
+GEDC predates Unicode
+and early specifications that used the GEDC object model and serialisation format
+presented ANSEL as the recommended character encoding.
+Files that lack the *character set hint* and are not valid UTF-8
+are not conformant with this specification,
+but may have been created in ANSEL by an older application that did no fully implement its specification.
+{/}
 
 
 
@@ -333,6 +372,13 @@ or applied another encoding on top of the already-encoded data.
     <http://www.niso.org/apps/group_public/project/details.php?project_id=10>).
     Standard withdrawn, 2013.
 
+[General Category]
+:   The Unicode Consortium. 
+    "Character Properties,"
+    *The Unicode Standard*, version 14.0.0, section 4.5.
+    2021.  
+    (See <https://www.unicode.org/versions/Unicode14.0.0/ch04.pdf>)
+
 [MARC-8]
 :   The Library of Congress.
     "MARC-8 Encoding Environment."
@@ -347,8 +393,8 @@ or applied another encoding on top of the already-encoded data.
     (See <https://tools.ietf.org/html/rfc2119>.)
 
 [Unicode]
-:   The Unicode Consortium.  *The Unicode Standard*, version 12.1.0.
-    2019.  (See <https://www.unicode.org/versions/Unicode12.1.0/>.)
+:   The Unicode Consortium.  *The Unicode Standard*, version 14.0.0.
+    2021.  (See <https://www.unicode.org/versions/Unicode14.0.0/>.)
 
 [US-ASCII]
 :   American Standards Association (ASA).
@@ -356,45 +402,68 @@ or applied another encoding on top of the already-encoded data.
     1963.
     (See <https://www.sr-ix.com/Archive/CharCodeHist/X3.4-1963/index.html>)
 
-[XML]
-:   W3C (World Wide Web Consortium). *Extensible Markup Language (XML) 1.1*, 
-    2nd edition.  Tim Bray, Jean Paoli, C. M. Sperberg-McQueen, Eve
-    Maler, François Yergeau, and John Cowan eds., 2006.  W3C
-    Recommendation.  (See <https://www.w3.org/TR/xml11/>.)
 
 ### Other references
 
+[Event GEDCOM]
+:   COMMSOFT, Inc.
+    *GEDCOM Event-Oriented Form*, draft release 1.0. 12 September 1994.
+
 [GEDCOM 3.0]
-:   The Church of Jesus Christ of Latter-day Saints.
-    *The GEDCOM Standard*, release 3.0.  9 October 1987.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
+    *Genealogical Data communication (GEDCOM)*, release 3.0.  9 October 1987.
 
 [GEDCOM 4.0]
-:   The Church of Jesus Christ of Latter-day Saints.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, release 4.0.  August 1989.
 
 [GEDCOM 5.0]
-:   The Church of Jesus Christ of Latter-day Saints.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.0.  25 Sep 1991.
 
 [GEDCOM 5.3]
-:   The Church of Jesus Christ of Latter-day Saints.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.3.  4 Nov 1993.
 
 [GEDCOM 5.5]
-:   The Church of Jesus Christ of Latter-day Saints.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, release 5.5.  2 Jan 1996.
     (See <https://gedcom.io/specifications/ged55.pdf>).
 
 [GEDCOM 5.5.1]
-:   The Church of Jesus Christ of Latter-day Saints.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
     Re-released without draft notice, 15 Nov 2019.
     (See <https://gedcom.io/specifications/ged551.pdf>).
 
+[GEDCOM 5.5EL]
+:   GEDCOM-L.
+    *GEDCOM 5.5EL*.  Published 5 Oct 2004, updated through 17 Mar 2018.
+    <http://wiki-de.genealogy.net/Gedcom_5.5EL>, accessed 2021-10-12.
+
+[GEDCOM 5.5.5]
+:   Tamura Jones.
+    *The GEDCOM 5.5.5 Specification with Annotations*. 2 Oct 2019.
+
+[GEDCOM 5.6]
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
+    *The GEDCOM Standard*, draft release 5.6.  18 December 2000.
+
 [GEDCOM 7]
-:   The Church of Jesus Christ of Latter-day Saints.
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The FamilySearch GEDCOM Standard*, version 7.0.0. 27 May 2021.
     (See <https://gedcom.io/specifications/FamilySearchGEDCOMv7.html>).
+
+[GEDCOM-X]
+:   Intellectual Reserve, Inc.
+    *The GEDCOM X Conceptual Model*. Published 1 June 2012.
+    <https://github.com/FamilySearch/gedcomx> accessed 2021-10-12.
+
+[PAF 2.0]
+:   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
+    *Personal Ancestral File™ Release 2.0 Family Records Data Structure Description*.
+    December 185.
+
 
 ----
 Copyright © 2021, [Family History Information Standards Organisation,
