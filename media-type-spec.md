@@ -28,7 +28,7 @@ including
 Each of these documents has included a definition of GEDC integrated with a definition of a particular data model.
 Each has also included its own restrictions on certain parts of GEDC.
 
-:::note
+{note ...}
 GEDCOM is an acronym for GEnealogical Data Communication.
 While most GEDCOM specifications have used GEDC,
 at least three do not:
@@ -36,7 +36,7 @@ at least three do not:
 - PAF 1.0 used an incompatible format that is sometimes called "GEDCOM 1.0"
 - \[GEDCOM-X] uses JSON and XML instead of GEDC
 - \[GEDCOM 5.6] included two serialisations, one of which was XML
-:::
+{/}
 
 
 This standard defines the GEDC serialisation format independent of any particular data model.
