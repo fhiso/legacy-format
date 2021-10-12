@@ -18,12 +18,12 @@ This standard defines an object model and serialisation format called GEDC.
 GEDC is the underlying format used by many applications and specifications that predate this standard,
 including 
 
-- [PAF 2.0]: a manual for software produced by The Family History Department of The Church of Jesus Christ of Latter-Day Saints (FHD) in 1985 
-- [GEDCOM 3.0], [GEDCOM 4.0], [GEDCOM 5.0], [GEDCOM 5.3], [GEDCOM 5.5], [GEDCOM 5.5.1], [GEDCOM 5.6]: specifications published by FHD from 1986 to 2000 
-- [Event GEDCOM]: a specification published by Commsoft in 1994
-- [GEDCOM 5.5EL]: a specification published by GEDCOM-L in 2018
-- [GEDCOM 5.5.5]: a specification published by Tamura Jones in 2019
-- [GEDCOM 7.0]: a specification published by FHD in 2021
+- \[PAF 2.0]: a manual for software produced by The Family History Department of The Church of Jesus Christ of Latter-Day Saints (FHD) in 1985 
+- \[GEDCOM 3.0], \[GEDCOM 4.0], \[GEDCOM 5.0], \[GEDCOM 5.3], \[GEDCOM 5.5], \[GEDCOM 5.5.1], \[GEDCOM 5.6]: specifications published by FHD from 1986 to 2000 
+- \[Event GEDCOM]: a specification published by Commsoft in 1994
+- \[GEDCOM 5.5EL]: a specification published by GEDCOM-L in 2018
+- \[GEDCOM 5.5.5]: a specification published by Tamura Jones in 2019
+- \[GEDCOM 7.0]: a specification published by FHD in 2021
 
 Each of these documents has included a definition of GEDC integrated with a definition of a particular data model.
 Each has also included its own restrictions on certain parts of GEDC.
@@ -34,8 +34,8 @@ While most GEDCOM specifications have used GEDC,
 at least three do not:
 
 - PAF 1.0 used an incompatible format that is sometimes called "GEDCOM 1.0"
-- [GEDCOM-X] uses JSON and XML instead of GEDC
-- [GEDCOM 5.6] included two serialisations, one of which was XML
+- \[GEDCOM-X] uses JSON and XML instead of GEDC
+- \[GEDCOM 5.6] included two serialisations, one of which was XML
 :::
 
 
@@ -63,13 +63,13 @@ issues, or points where there is not yet consensus; they will be
 resolved and removed for the final standard.  Examples and notes will be
 retained in the standard.
 
-This standard depends on FHISO's **The Pattern Datatype** standard.
+This standard depends on FHISO's **The Pattern Datatype** standard described in \[FHISO Patterns].
 Concepts defined in that standard are used here without further definition.
 
-{.note} In particular, the precise meaning of *pattern*, and *match* are given in [FHISO Patterns].
+{.note} In particular, the precise meaning of *pattern*, and *match* are given in \[FHISO Patterns].
 
 **Characters** are atomic units of text which are specified by reference to
-their **code point** number in [Unicode], without regard to any particular
+their **code point** number in \[Unicode], without regard to any particular
 character encoding.
 A **string** is a sequence of zero or more *characters* which is used to
 encode textual data.
@@ -82,7 +82,7 @@ or 21 in hexadecimal.  In this standard it written U+0021.
 
 {.ednote} I chose not to reference Basic Concepts here because all we needed from it was character and string, and only a portion of what it said about those.
 
-This standard refers to some characters by their [General Category] as defined by [Unicode].
+This standard refers to some characters by their \[General Category] as defined by \[Unicode].
 In particular, general categories *Cc* (control codes) and *Z* (separators) are used in this standard without further definition.
 
 This standard uses the name **LF** to refer to U+000A;
@@ -95,9 +95,9 @@ and **CRLF** to refer to U+000A followed by U+000D.
 A **GEDC dataset** consists of a forest: a sequence of n-ary trees, where the nodes of the trees are **GEDC structures** and the children of each node are stored as a sequence, not a set.
 In addition to its position in the forest, each *structure* has
 
-- One **tag**, a string from set `Tag`
+- One **tag**, a *string* from set `Tag`
 
-- Zero or one **cross-reference identifier**, a string from set `XrefID` that is not shared by any other *cross-reference identifier* in the dataset.
+- Zero or one **cross-reference identifier**, a *string* from set `XrefID` that is not shared by any other *cross-reference identifier* in the dataset.
 
 - Exactly one of the following options:
     
@@ -136,8 +136,8 @@ More recent specifications generally operate in tier-2.
 
 Each Tier-1 *structure* can be expressed as a single line of text;
 an entire dataset is serialised by converting all *structures* to lines in a preorder traversal of the dataset
-and concatenating the lines with a string from the set `lineSep` between each one,
-optionally adding another string from the set `lineSep` at the end.
+and concatenating the lines with a *string* from the set `lineSep` between each one,
+optionally adding another *string* from the set `lineSep` at the end.
 
 Each line consists of the following:
 
@@ -147,13 +147,13 @@ Each line consists of the following:
     
     A line with *level* $n > 0$ represents a substructure of the nearest preceding line with *level* $n-1$.
 
-2. A string from set `Delim`
+2. A *string* from set `Delim`
 
 3. If the *structure* has a *cross-reference identifier*,
     1. U+0040 (commercial at, `@`)
     2. the *structure*'s *cross-reference identifier*
     3. U+0040 (commercial at, `@`)
-    4. A string from set `Delim`
+    4. A *string* from set `Delim`
 
 5. The *structure*'s *tag*
 
@@ -201,18 +201,18 @@ which identifies the character set in which this dataset was originally serialis
 
 ### CONT and CONC   {#cont-and-conc}
 
-*Structures* with the *tag* "`CONT`" or the *tag* "`CONC`" are restricted as follows:
+Each *structure* with *tag* "`CONT`" or "`CONC`" is restricted as follows:
 
 - Must not appear anywhere in tier-2 datasets
-- Must not be roots of a tree
-- Must not be a substructure of structure with *pointer payloads*
-- Must not be a substructure of structure with *tag* "`CONT`" or "`CONC`" 
+- Must not be the root of a tree
+- Must not be a substructure of a structure with a *pointer payload*
+- Must not be a substructure of a structure with *tag* "`CONT`" or "`CONC`" 
 - Any structure that appears before it in the sequence of substructures must also have *tag* "`CONT`" or "`CONC`"
 
 Additionally, these structures never have cross-reference identifiers
 and never have pointer payloads.
 
-If a *structures* with *tag* "`CONT`" or  `CONC`", or its superstructure, has no payload, it *shall* be treated as it if has an empty string payload instead.
+If a *structures* with *tag* "`CONT`" or  `CONC`" or its superstructure has no payload, it *shall* be treated as it if has an empty *string payload* instead.
 
 A *structure* whose first substructure has *tag* "`CONC`"
 can be converted to an equivalent *structure* without that substructure
@@ -221,11 +221,11 @@ by concatenating the substructure's payload to the end of the superstructure's p
 A *structure* whose first substructure has *tag* "`CONT`"
 can be converted to an equivalent *structure* without that substructure
 by concatenating one `lineBreak` followed by the substructure's payload to the end of the superstructure's payload.
-If the superstructure's string payload ended with U+000D, the `lineBreak` chosen *must not* be U+000A.
+If the superstructure's *string payload* ended with U+000D, the `lineBreak` chosen *must not* be U+000A.
 
 ## Parametrisation
 
-Several variants of GEDC datasets exist; all are broadly compatible, but some impose more restrictions than others on characters and lengths.
+Several dialects of GEDC datasets exist; all are broadly compatible, but some impose more restrictions than others on characters and lengths.
 These variants are defined by five parameters.
 
 There is one numeric parameter:
@@ -238,7 +238,7 @@ There is one numeric parameter:
     - "Unconstrained", effectively meaning ∞
     - "Unconstrained with no CONC", effectively meaning ∞ and prohibiting structures with tag `CONC` even in tier-1.
 
-There are four parameters that are sets of strings.
+There are four parameters that are sets of *strings*.
 Two (`Tag` and `XrefID`) limit contents of *structures*
 and all four constrain serialised representations.
 The serialisation-only sets (`LineSep` and `Delim`) are limited to range over a specific set of characters characters in order to facilitate [Character encoding detection].
@@ -247,49 +247,49 @@ None of these sets may ever contain the empty string.
 `Tag`
 :   The set of permitted *tags*.
     
-    This set always includes all strings matching the *pattern* `[_A-Z][_A-Z0-9]{1,7}`.
+    This set always includes all *strings* matching the *pattern* `[_A-Z][_A-Z0-9]{1,7}`.
     
-    No string in this set ever includes any character from general category *Cc* or *Z*.
+    No *string* in this set ever includes any character from general category *Cc* or *Z*.
     
-    No string in this set ever begins with U+0040 (`@`).
+    No *string* in this set ever begins with U+0040 (`@`).
     
-    The default value of this set is all strings that match the *pattern*
+    The default value of this set is all *strings* that match the *pattern*
     `[_A-Z][_A-Z0-9]*`.
 
 `XrefID`
 :   The set of permitted *cross-reference identifies*.
     
-    This set always includes all strings matching the *pattern* `[A-Z0-9]{1,15}`.
+    This set always includes all *strings* matching the *pattern* `[A-Z0-9]{1,15}`.
     
-    No string in this set ever includes any character from general category *Cc* except U+0009 (horizontal tab).
+    No *string* in this set ever includes any character from general category *Cc* except U+0009 (horizontal tab).
 
-    No string in this set ever contains U+0040 (`@`).
+    No *string* in this set ever contains U+0040 (`@`).
     
-    No string in this set ever begins with U+0023 (`#`).
+    No *string* in this set ever begins with U+0023 (`#`).
 
-    The default value of this set is all strings that match the *pattern*
+    The default value of this set is all *strings* that match the *pattern*
     `[A-Z0-9][_A-Z0-9]*`.
 
 `LineSep`
-:   The set of strings that can occur between two serialised lines.
+:   The set of *strings* that can occur between two serialised lines.
 
     This set always includes *LF*, *CR*, and *CRLF*.
 
-    This set may be defined to include additional strings
+    This set may be defined to include additional *strings*
     that begin with either *LF* or *CR*
     and contain only *LF*, *CR*, space (U+0020), and tab (U+0009).
     
     The default value for this set is its minimal value: {*LF*, *CR*, *CRLF*}.
 
 `Delim`
-:   The set of strings that can occur between the pre-payload components of a line.
+:   The set of *strings* that can occur between the pre-payload components of a line.
     
-    This set always includes the length-1 string containing just U+0020 (space).
+    This set always includes the length-1 *string* containing just U+0020 (space).
     
-    This set may be defined to include additional strings
+    This set may be defined to include additional *strings*
     contain only space (U+0020) and tab (U+0009).
 
-    The default value for this set is its minimal value: just the single-space string.
+    The default value for this set is its minimal value: just the single-space *string*.
 
 {.note ...}
 General-purpose GEDC processing libraries can be created
@@ -304,7 +304,7 @@ by parsing with the most generous possible definitions of these parameters:
 and serialise with the most limited possible definitions
 
 - `Tag` is implicit in the tags used in the dataset
-- `XrefID` is the strings matching the *pattern* `[_A-Z0-9]{1,15}`
+- `XrefID` is the *strings* matching the *pattern* `[_A-Z0-9]{1,15}`
 - `LineSep` is just CRLF, or just CR, or just LF
 - `Delim` is just a single space
 
@@ -364,7 +364,7 @@ but may have been created in ANSEL by an older application that did no fully imp
 
 ### Normative references
 
-[ANSEL]
+\[ANSEL]
 :   NISO (National Information Standards Organization).
     *ANSI/NISO Z39.47-1993. Extended Latin Alphabet Coded Character Set for Bibliographic Use*.
     1993.
@@ -372,14 +372,18 @@ but may have been created in ANSEL by an older application that did no fully imp
     <http://www.niso.org/apps/group_public/project/details.php?project_id=10>).
     Standard withdrawn, 2013.
 
-[General Category]
+\[FHISO Patterns]
+:   FHISO (Family History Information Standards Organisation).
+    *The Pattern Datatype*.  First public draft.
+
+\[General Category]
 :   The Unicode Consortium. 
     "Character Properties,"
     *The Unicode Standard*, version 14.0.0, section 4.5.
     2021.  
     (See <https://www.unicode.org/versions/Unicode14.0.0/ch04.pdf>)
 
-[MARC-8]
+\[MARC-8]
 :   The Library of Congress.
     "MARC-8 Encoding Environment."
     *MARC 21 Specifications for Record Structure, Character Sets, and Exchange Media*,
@@ -387,16 +391,16 @@ but may have been created in ANSEL by an older application that did no fully imp
     2008.
     (See <https://www.loc.gov/marc/specifications/speccharucs.html>)
 
-[RFC 2119]
+\[RFC 2119]
 :   IETF (Internet Engineering Task Force).  *RFC 2119:  Key words for
     use in RFCs to Indicate Requirement Levels.*  Scott Bradner, eds., 1997.
     (See <https://tools.ietf.org/html/rfc2119>.)
 
-[Unicode]
+\[Unicode]
 :   The Unicode Consortium.  *The Unicode Standard*, version 14.0.0.
     2021.  (See <https://www.unicode.org/versions/Unicode14.0.0/>.)
 
-[US-ASCII]
+\[US-ASCII]
 :   American Standards Association (ASA).
     *American Standard Code for Information Interchange. ASA X3.4-1963.*
     1963.
@@ -405,61 +409,61 @@ but may have been created in ANSEL by an older application that did no fully imp
 
 ### Other references
 
-[Event GEDCOM]
+\[Event GEDCOM]
 :   COMMSOFT, Inc.
     *GEDCOM Event-Oriented Form*, draft release 1.0. 12 September 1994.
 
-[GEDCOM 3.0]
+\[GEDCOM 3.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *Genealogical Data communication (GEDCOM)*, release 3.0.  9 October 1987.
 
-[GEDCOM 4.0]
+\[GEDCOM 4.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, release 4.0.  August 1989.
 
-[GEDCOM 5.0]
+\[GEDCOM 5.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.0.  25 Sep 1991.
 
-[GEDCOM 5.3]
+\[GEDCOM 5.3]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.3.  4 Nov 1993.
 
-[GEDCOM 5.5]
+\[GEDCOM 5.5]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, release 5.5.  2 Jan 1996.
     (See <https://gedcom.io/specifications/ged55.pdf>).
 
-[GEDCOM 5.5.1]
+\[GEDCOM 5.5.1]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.5.1.  2 Oct 1999.
     Re-released without draft notice, 15 Nov 2019.
     (See <https://gedcom.io/specifications/ged551.pdf>).
 
-[GEDCOM 5.5EL]
+\[GEDCOM 5.5EL]
 :   GEDCOM-L.
     *GEDCOM 5.5EL*.  Published 5 Oct 2004, updated through 17 Mar 2018.
     <http://wiki-de.genealogy.net/Gedcom_5.5EL>, accessed 2021-10-12.
 
-[GEDCOM 5.5.5]
+\[GEDCOM 5.5.5]
 :   Tamura Jones.
     *The GEDCOM 5.5.5 Specification with Annotations*. 2 Oct 2019.
 
-[GEDCOM 5.6]
+\[GEDCOM 5.6]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The GEDCOM Standard*, draft release 5.6.  18 December 2000.
 
-[GEDCOM 7]
+\[GEDCOM 7]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *The FamilySearch GEDCOM Standard*, version 7.0.0. 27 May 2021.
     (See <https://gedcom.io/specifications/FamilySearchGEDCOMv7.html>).
 
-[GEDCOM-X]
+\[GEDCOM-X]
 :   Intellectual Reserve, Inc.
     *The GEDCOM X Conceptual Model*. Published 1 June 2012.
     <https://github.com/FamilySearch/gedcomx> accessed 2021-10-12.
 
-[PAF 2.0]
+\[PAF 2.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *Personal Ancestral File™ Release 2.0 Family Records Data Structure Description*.
     December 185.
