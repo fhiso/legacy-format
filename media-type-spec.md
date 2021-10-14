@@ -342,11 +342,20 @@ Specific character set names known to have been used by previous specifications 
 
 `CHAR` payload      Character sets represented
 ----------------    ---------------------------------
-`ANSEL`             [ANSEL] with the [MARC-8] extensions
+`ANSEL`             [ANSEL] with extensions lised below
 `ASCII`             [US-ASCII]
 `UNICODE`           UTF-16LE or UTF-16BE, as defined by [Unicode]
 `UTF-8`             UTF-8, as defined by [Unicode]
 
+Several early GEDC specifications used a flavor of ANSEL ammended with the following nonstandard byte-to-encoding pairs:
+
+ Byte   Code-point   Rendered   Described in [GEDCOM 5.3] as
+------ ------------ ----------  -----------------------------
+ BE     U+25A1       □          empty box
+ BF     U+25A0       ■          black box
+ CD     U+0065       e          e in middle of line -- no precise Unicode parallel
+ CE     U+006F       o          o in middle of line -- no precise Unicode parallel
+ CF     U+00DF       ß          Es Zet
 
 {.note ...}
 GEDC predates Unicode
@@ -382,14 +391,6 @@ but may have been created in ANSEL by an older application that did no fully imp
     *The Unicode Standard*, version 14.0.0, section 4.5.
     2021.  
     (See <https://www.unicode.org/versions/Unicode14.0.0/ch04.pdf>)
-
-\[MARC-8]
-:   The Library of Congress.
-    "MARC-8 Encoding Environment."
-    *MARC 21 Specifications for Record Structure, Character Sets, and Exchange Media*,
-    Character sets and encoding options: Part 2.
-    2008.
-    (See <https://www.loc.gov/marc/specifications/speccharucs.html>)
 
 \[RFC 2119]
 :   IETF (Internet Engineering Task Force).  *RFC 2119:  Key words for
