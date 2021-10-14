@@ -467,7 +467,7 @@ but may have been created in ANSEL by an older application that did no fully imp
 \[PAF 2.0]
 :   The Family History Department of The Church of Jesus Christ of Latter-day Saints.
     *Personal Ancestral File™ Release 2.0 Family Records Data Structure Description*.
-    December 185.
+    December 1985.
 
 
 ----
