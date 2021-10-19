@@ -216,7 +216,7 @@ C0     |U+00B0 |              | Not 5.5               |
 C1     |U+2113 |              | Not 5.5               | 
 C2     |U+2117 |              | Not 5.5               | 
 C3     |U+00A9 |              |                       |
-C4     |U+2667 |              | Not 5.5               | 
+C4     |U+266F |              | Not 5.5               | 
 C5     |U+00BF |              |                       |
 C6     |U+00A1 |              |                       |
 C7     |U+00DF |              | Not 5.5               | MARC 21 extension
