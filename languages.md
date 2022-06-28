@@ -12,8 +12,8 @@ tags and because Cantonese is the main language spoken in Hong Kong,
 means any Chinese dialect localised for Hong Kong.
 
 **Catalan_Spn**.  Presumably this represents the Catalan language
-(`cn`), as spoken in Spain, though [GEDCOM] is silent on this point.
-The preferred code is therefore `cn-ES`.  Why Catalan should be singled
+(`ca`), as spoken in Spain, though [GEDCOM] is silent on this point.
+The preferred code is therefore `ca-ES`.  Why Catalan should be singled
 out as the only language to be given a regional variant is unclear, as
 Catalan is not widely spoken outside Spain.  Perhaps the GEDCOM authors
 considered Occitan (`oc`) and dialects of it such as Gascon and
