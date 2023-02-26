@@ -1,7 +1,7 @@
 ---
 title: "Extended Legacy Format (ELF)"
 subtitle: Date, Age and Time Microformats
-date: 30 December 2018
+date: 8 October 2019
 numbersections: true
 ...
 
@@ -45,14 +45,24 @@ FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
 name having been chosen to avoid confusion with any other updates or
 extensions to GEDCOM, or any future use of the name by The Church of
-Jesus Christ of Latter-day Saints.  This document is one of three that
-form the initial suite of ELF standards, known collectively as ELF 1.0.0:
+Jesus Christ of Latter-day Saints.  This document is one of five that
+form the initial suite of ELF standards, known collectively as ELF
+1.0.0:
+
+* **ELF: Primer**.  This is not a formal standard, but is being
+  released alongside the ELF standards to provide a broad overview of
+  ELF written in a less formal style.  It gives particular emphasis to
+  how ELF differs from GEDCOM.
 
 * **ELF: Serialisation Format**.  This standard defines a
   general-purpose serialisation format based on the GEDCOM data format
-  which encodes a *dataset* as a hierarchical series of *lines*, and
-  provides low-level facilities such as escaping and extensibility
-  mechanisms.
+  which encodes a dataset as a hierarchical series of lines, and
+  provides low-level facilities such as escaping.
+
+* **ELF: Schemas**.  This standard defines flexible extensibility and
+  validation mechanisms on top of the serialisation layer.  Although it
+  is an *optional* component of ELF 1.0.0, future ELF extensions to ELF
+  will be defined using ELF schemas.
 
 * **ELF: Date, Age and Time Microformats**.  This standard defines
   microformats for representing dates, ages and times in arbitrary calendars,
@@ -60,15 +70,15 @@ form the initial suite of ELF standards, known collectively as ELF 1.0.0:
   Republican and Hebrew calendars.  
 
 * **ELF: Data Model**.  This standard defines a data model based on the
-  lineage-linked GEDCOM form, reformulated in terms of the
-  serialisation model described in this document.  It is not a major
-  update to the GEDCOM data model, but rather a basis for future
-  extension.
+  lineage-linked GEDCOM form, reformulated to be usable with the ELF
+  serialisation model and schemas.  It is not a major update to the
+  GEDCOM data model, but rather a basis for future extension and
+  revision.
 
-{.ednote}  At the time this draft was published, neither [ELF Data
-Model] nor [ELF Serialisation] were yet at the stage of having a first
-public draft available, however FHISO's Technical Standing Committee
-(TSC) are working on them and hope to have first drafts available soon.  
+{.ednote}  At the time this draft was published, none of the other
+documents are yet at the stage of having a first public draft available,
+however FHISO's Technical Standing Committee (TSC) are working on them
+and hope to have first drafts available soon.  
 
 An explanation of the conventions used in this standard can be found in
 {§conventions}, and the general concepts associated with time, calendars
@@ -359,7 +369,7 @@ date* as it identifies a particular *calendar month*, but not a specific
 *calendar day* within that month.
 
 {.note}  Under this definition, an *incomplete date* is a *date* when it
-is being used to identify a particular *calendar date*, but with limited
+is being used to identify a particular *calendar day*, but with limited
 *precision*.  
 
 An **epoch** is an *instant* which serves as a reference point for a
@@ -454,7 +464,7 @@ dates were recorded in these forms.
 ### Uncertainty                                           {#uncertainty}
 
 The **precision** of a stated value, such as a *date*, is a measure of
-how specificity with which the value has been specified: the more
+the specificity with which the value has been specified: the more
 specifically, the greater the *precision*.  Values with relatively high
 or low *precision* may be described as relatively **precise** or
 **imprecise**, respectively.
@@ -625,7 +635,7 @@ of the uncertainty is from lack of knowledge of what happened and when.
 
 {.ednote}  This whole section may vanish in a future draft.
 
-The *datatypes* defined in this standard are *not recommended* for us in
+The *datatypes* defined in this standard are *not recommended* for use in
 serialisation formats other than with ELF.
 
 {.ednote ...} In due course we need to decide FHISO's preferred way of
@@ -807,9 +817,38 @@ written with any alternative form of *whitespace*.
 of the use case that lead to its inclusion and have removed it again.
 
 {.note}  [GEDCOM 5.5.1] includes one further *calendar escape*,
-`@#ROMAN@`, which it reserved for future use, presumably for use with
+`@#DROMAN@`, which it reserved for future use, presumably for use with
 Roman Republican *calendar*.  This standard does not reserve this
 *calendar escape*.
+
+{.ednote ...}  Should we standardise a basic Roman calendar using the
+*calendar escape* `@#DROMAN@`?  The lengths of the months would be left
+unspecified, for the simple reason that they are not always known, though
+we might safely limit the *calendar day* to being a two digit number.
+It would probably use the twelve *month names* of the Gregorian
+calendar, including `JUL` and `AUG`, despite them being called Quintilis
+and Sextilis at the time.   We would need a *month name* for
+Intercalaris, the intercalary month inserted in or after February.  As
+`INT` risks conflicting with the *date modifier* for *interpreted
+dates*, `MER` might be best as Intercalaris was also called Mercedonius.
+We would also need *month names* for Intercalaris Prior and Intercalaris
+Posterior, the two exceptional inserted in 46&nbsp;BC to realign the
+calendar with the equinoxes in preparation for the introduction of
+the Julian calendar.  `IC1` and `IC2` would work.  The `A.D.` and `B.C.`
+*epoch names* would be supported.  `A.U.C.` (for *ab urbe condita* –
+since the founding of Rome) would need careful consideration.
+
+The need for this calendar arises surprisingly often.  Pompey, the 
+famous Roman general, was born on 29 September 106&nbsp;BC, as reckoned
+in the Roman calendar, but this date cannot be converted into the
+proleptic Julian or Gregorian calendar with certainty because the
+precise lengths of the years around this time are not known.  A
+comprehensive discussion of this can be found in [Roman Dates].
+Even though no genealogies back to Roman times can currently be proved,
+they are commonly encountered, and the fact that a genealogy cannot be
+proved does not necessarily mean it is not useful to record it, perhaps
+for the purpose of critical review.
+{/}
 
 The `@#DUNKNOWN@` *calendar escape* is permanently reserved.  Third
 parties *must not* define calendars with this name and applications
@@ -982,7 +1021,7 @@ names, and *must* be at least three *characters* long.
 
 {.example}  The French Republican *calendar* has twelve months named
 Vendémiaire, Brumaire, Frimaire, Nivôse, Pluviôse, Ventôse, Germinal,
-Floréal, Prairial, Messidor, Thermidor and Fructidor.  If ELF, as
+Floréal, Prairial, Messidor, Thermidor and Fructidor.  In ELF, as
 described in {§french}, these are abbreviated `VEND`, `BRUM`, `FRIM`,
 `NIVO`, `PLUV`, `VENT`, `GERM`, `FLOR`, `PRAI`, `MESS`, `THER` and
 `FRUC`.  In addition, each year had five or six consecutive intercalary
@@ -998,9 +1037,9 @@ names* *must not* be used.
 long to avoid conflicting with *epoch names*.
 
 The following words are reserved and *must not* be used as *month
-names* in any calendar: `ABT`, `AFT`, `AND`, `BEF`, `BET`, `CAL`, `EST`,
-`EVERY`, `FOR`, `FROM`, `INT`, `POS`, `REP`, `TIME`, `UNCERT`, `UNK` and
-`ZONE`.
+names* in any calendar: `ABT`, `AFT`, `AND`, `BCE`, `BEF`, `BET`, `CAL`,
+`EST`, `EVERY`, `FOR`, `FROM`, `INT`, `POS`, `REP`, `TIME`, `UNCERT`,
+`UNK` and `ZONE`.
 
 {.note}  Many of these words have specific meanings in the ELF *date*
 *datatypes*.  The words `EVERY`, `FOR`, `POS`, `REP`, `TIME`, `UNCERT`,
@@ -1148,7 +1187,7 @@ above, and otherwise *must not*.
 
 {.example}  The *dual year* "`1616/8`" is not in abbreviated form
 because there is no *logical year* number ending in 8 which is at most
-one year away from the *historical year* 1618.  This is therefore
+one year away from the *historical year* 1616.  This is therefore
 considered an unabbreviated *dual year*, representing the *historical
 year* 1618 and the *logical year* 8.  Very probably this will result in
 the *date* not being *well-formed* in the applicable *calendar*, in which
@@ -1241,7 +1280,7 @@ paragraph:
 > interchangeable.
 
 This was added to allow the Julian and Gregorian *calendars* to define
-"`B.C.E.`" as an alias for the "`B.C.`", however the current draft does
+"`B.C.E.`" as an alias for "`B.C.`", however the current draft does
 not do that, and it seems an unnecessary complication.  If the BCE form
 is added, this paragraph needs reinstating.
 {/}
@@ -1302,9 +1341,9 @@ that its *precision* is lower than would have been the case without the
 *date* is estimated using statistical likelihoods or cultural norms.
 
 {.example}  If it is known that the first and third children in a family
-were born in 1897 and 1900, the second child's birth *may* be recorded
-as "`ABT 1899`" as the *date* of birth is fairly well bounded, even if
-twins were involved.  
+were born in 1897 and 1900, respectively, the second child's birth *may*
+be recorded as "`ABT 1899`" as the *date* of birth is fairly well
+bounded, even if twins were involved.  
 
 {.note}  The `ABT` token is currently by far the most commonly used of
 the three approximated tokens.
@@ -1319,7 +1358,7 @@ four were born between 1897 and 1900, a researcher might conclude that
 it is probable that next child was born shortly afterwards and estimate
 the *date* of birth as "`EST 1903`".  The `ABT` token *should not* be used
 in this case, unless there is additional evidence that the fourth child
-was not much younger.
+was not very much younger.
 
 {.example}  It can sometimes be useful to provide a crude estimate of
 an individual's *date* of birth.  If a baptism register records a
@@ -1689,7 +1728,10 @@ omitted.
 
 {.ednote} Do we want "`B.C.E.`" and "`C.E.`" (standing for Before Common
 Era and Common Era, respectively) as aliases?  There is no technical
-justification for adding them.
+justification for adding them.  Supporting "`BCE`" as an alias for
+"`B.C.E.`" is problematic as it is three letters long, meaning matches
+the `Month` production rather than `Epoch` production.  However "`BCE`"
+has been reserved so it cannot be used as a *month name*.
 
 Regardless of *epoch name*, the *logical year* *shall* be an integer
 greater than 0.
@@ -1935,7 +1977,7 @@ in place of the *logical year* in the preceding rules.
 definition of the Julian *calendar*, because subtracting 5 from 1 gives
 &minus;4 which is divisible by 4.  In fact, the year 5&nbsp;BC was
 almost certainly not a *leap year* as the Augustan reform was still
-taking effect at this point.  There is disagreement between historians
+taking effect at this point.  There is disagreement between scholars
 on the exact details of the reform, but is generally accepted that by
 AD&nbsp;8 the rule for *leap years* given above was being applied
 correctly.  Any use of the Julian calendar (in its final Augustan form)
@@ -1966,7 +2008,7 @@ founding of the First Republic, nor are zero or negative *logical years*
 permitted.
 
 {.ednote}  If it proves undesirable to have an anonymous *epoch name*,
-the usual phrase are "l'époque républicaine" and "l'ère de la republique".
+the usual phrases are "l'époque républicaine" and "l'ère de la republique".
 An *epoch name* of "`E.R.`" would therefore seem appropriate.
 
 The *logical year* *shall* be an integer greater than 0 and *should*
@@ -2097,21 +2139,21 @@ gives the usual form of their name in English and Hebrew, and the number
 of *calendar days* in each month.  The *calendar days* in each *calendar
 month* are numbered sequentially starting with 1.
 
--------  ----------     -------      ---------------------
-`TSH`    Tishrei           תשרי      30 days
-`CSH`    Cheshvan         חשוון      29 days, or sometimes 30 days &mdash; see below
-`KSL`    Kislev            כסלו      30 days, or sometimes 29 days &mdash; see below
-`TVT`    Tevet              טבת      29 days
-`SHV`    Shevat             שבט      30 days
-`ADR`    Adar I           אדר א      30 days, if present &mdash; see below
-`ADS`    Adar II          אדר ב      29 days
-`NSN`    Nisan             ניסן      30 days
-`IYR`    Iyar              אייר      29 days
-`SVN`    Sivan            סיוון      30 days
-`TMZ`    Tammuz            תמוז      29 days
-`AAV`    Av                  אב      30 days
-`ELL`    Elul              אלול      29 days
--------  ----------     -------      ---------------------
+-------  ----------  -----------------------------      ---------------------
+`TSH`    Tishrei                              תשרי      30 days
+`CSH`    Cheshvan                            חשוון      29 days, or sometimes 30 days &mdash; see below
+`KSL`    Kislev                               כסלו      30 days, or sometimes 29 days &mdash; see below
+`TVT`    Tevet                                 טבת      29 days
+`SHV`    Shevat                                שבט      30 days
+`ADR`    Adar I       <span dir="rtl">אדר א</span>      30 days, if present &mdash; see below
+`ADS`    Adar II      <span dir="rtl">אדר ב</span>      29 days
+`NSN`    Nisan                                ניסן      30 days
+`IYR`    Iyar                                 אייר      29 days
+`SVN`    Sivan                               סיוון      30 days
+`TMZ`    Tammuz                               תמוז      29 days
+`AAV`    Av                                     אב      30 days
+`ELL`    Elul                                 אלול      29 days
+-------  ----------  -----------------------------      ---------------------
 
 {.note}  The English names given above are transliterations of the
 Hebrew, and many variants of the transliterations can be found.
@@ -2471,7 +2513,7 @@ which match the following `Age` production:
 
     Age      ::= ( [<>] S? )? ( Duration | BareYear ) | AgeWord
 
-    Duration ::= [0-9]+ | [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
+    Duration ::= [0-9]+ "y" ( S? [0-9]+ "m" )? ( S? [0-9]+ "d")?
                  | [0-9]+ "m" ( S? [0-9]+ "d" )? | [0-9]+ "d"
     BareYear ::= [0-9]+
     AgeWord  ::= "CHILD" | "INFANT" | "STILLBORN"
@@ -2561,7 +2603,7 @@ calendar could consider their age in years to be several years greater
 than if they were reckoning their age using the Gregorian calendar
 because the Islamic *calendar year* is around 11 *calendar days* shorter
 than the Gregorian *calendar year*.  ELF does not provide a means of
-specifying which *calendar* was when recording an *age*.
+specifying which *calendar* was used when recording an *age*.
 
 {.note}  A future version of ELF may add facilities to specify which
 *calendar* is being used for *ages* and also to allow an explicit
@@ -2751,7 +2793,7 @@ specification.
 
 [GEDCOM X Dates]
 :    Intellectual Reserve Inc.  *The GEDCOM X Date Format*.
-     Stable draft, accessed December 2018.  See <http://gedcomx.org/>.
+     Stable draft, accessed December 2018.  (See <http://gedcomx.org/>.)
 
 [ISO 8601]
 :   ISO (International Organization for Standardization).  *ISO
@@ -2768,6 +2810,11 @@ specification.
     *The Pattern Datatype*.  First public draft.
     (See <https://fhiso.org/TR/patterns>.)
 
+[Roman Dates]
+:   Chris Bennett. "Roman Dates."  Website, accessed October 2019.  
+    (See <http://www.instonebrewer.com/TyndaleSites/Egypt/ptolemies/chron/chronology.htm>.)
+    Last updated 2012.
+
 [XSD Pt2]
 :   W3C (World Wide Web Consortium). *W3C XML Schema Definition Language 
     (XSD) 1.1 Part 2: Datatypes*.  David Peterson, Shudi Gao (高殊镝),
@@ -2782,7 +2829,7 @@ specification.
 \vfill
 
 ----
-Copyright © 2018, [Family History Information Standards Organisation,
+Copyright © 2018–19, [Family History Information Standards Organisation,
 Inc](https://fhiso.org/).
 The text of this standard is available under the
 [Creative Commons Attribution 4.0 International

@@ -31,10 +31,11 @@ genealogical data between applications and data providers.  Its most
 recent version is GEDCOM 5.5.1 which was produced in 1999, but despite
 many technological advances since then, GEDCOM has remained unchanged.
 
-{.note} Strictly, [GEDCOM 5.5] was the last version to be publicly
-released back in 1995.  However a draft dated 2 October 1999 of a
-proposed [GEDCOM 5.5.1] was made public; it is generally considered to
-have the status of a standard and has been widely implemented as such.
+{.note} A draft of [GEDCOM 5.5.1] was released in October 1999.  It came
+to be considered to have the status of a standard and was widely
+implemented as such, despite not being formally published as a standard.
+This omission was corrected in November 2019 when the Church published
+it as a standard, unaltered except for the title page.  
 
 FHISO are undertaking a program of work to produce a modernised yet
 backward-compatible reformulation of GEDCOM under the name ELF, the new
@@ -715,10 +716,10 @@ encoding* of the octet stream.  Otherwise, the *character encoding*
 {.note}  This is a change from [GEDCOM 5.5.1] where the default is
 ANSEL; however, since a `CHAR` *line string* is required in all versions
 of GEDCOM since 5.4, and ELF does not aim to be compatible with versions
-older than 5.5, the default is moot.  ELF changes the default, though
-requires *ELF writers* to include a `CHAR` *serialisation metadata
-structure*.  A future version of ELF will likely remove this
-requirement.
+older than 5.5, GEDCOM's default is largely moot.  ELF changes the
+default, though requires *ELF writers* to include a `CHAR`
+*serialisation metadata structure*.  A future version of ELF will likely
+remove this requirement.
 
 If the *character encoding* is one which the application does not
 support, the application *shall* issue an error and stop reading the
