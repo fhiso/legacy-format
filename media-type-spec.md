@@ -174,7 +174,7 @@ Each line consists of the following:
 
 ## Universal Tags
 
-The semantics meaning of each *structure*, *tag*, and *string payload* is generally left to individual data models to define.
+The semantic meaning of each *structure*, *tag*, and *string payload* is generally left to individual data models to define.
 However, the five specific *structures*, identified by their *tag* and position in the dataset, have special universal meaning regardless of the data model in use.
 
 ### HEAD
@@ -212,7 +212,7 @@ Each *structure* with *tag* "`CONT`" or "`CONC`" is restricted as follows:
 Additionally, these structures never have cross-reference identifiers
 and never have pointer payloads.
 
-If a *structures* with *tag* "`CONT`" or  `CONC`" or its superstructure has no payload, it *shall* be treated as it if has an empty *string payload* instead.
+If a *structure* with *tag* "`CONT`" or  `CONC`" or its superstructure has no payload, it *shall* be treated as it if has an empty *string payload* instead.
 
 A *structure* whose first substructure has *tag* "`CONC`"
 can be converted to an equivalent *structure* without that substructure
@@ -241,7 +241,7 @@ There is one numeric parameter:
 There are four parameters that are sets of *strings*.
 Two (`Tag` and `XrefID`) limit contents of *structures*
 and all four constrain serialised representations.
-The serialisation-only sets (`LineSep` and `Delim`) are limited to range over a specific set of characters characters in order to facilitate [Character encoding detection].
+The serialisation-only sets (`LineSep` and `Delim`) are limited to range over a specific set of characters in order to facilitate [Character encoding detection].
 None of these sets may ever contain the empty string.
 
 `Tag`
@@ -323,7 +323,7 @@ Otherwise, the following character sets may be used:
 - UTF-32LE, UTF-32BE, UTF-16LE, UTF-16BE
     
     Detected either by a leading byte-order mark
-    or by by consulting the first four bytes of the file:
+    or by consulting the first four bytes of the file:
     
     | first 4 bytes | encoding |
     |---------------|----------|
@@ -342,12 +342,12 @@ Specific character set names known to have been used by previous specifications 
 
 `CHAR` payload      Character sets represented
 ----------------    ---------------------------------
-`ANSEL`             [ANSEL] with extensions lised below
+`ANSEL`             [ANSEL] with extensions listed below
 `ASCII`             [US-ASCII]
 `UNICODE`           UTF-16LE or UTF-16BE, as defined by [Unicode]
 `UTF-8`             UTF-8, as defined by [Unicode]
 
-Several early GEDC specifications used a flavor of ANSEL ammended with the following nonstandard byte-to-encoding pairs:
+Several early GEDC specifications used a flavor of ANSEL amended with the following nonstandard character encodings:
 
  Byte   Code-point   Rendered   Described in [GEDCOM 5.3] as
 ------ ------------ ----------  -----------------------------
